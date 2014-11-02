@@ -20,7 +20,7 @@ import org.junit.Test;
 import src.FileToStringAdapter;
 
 public class UT_FileToStringAdapter {
-    private String projectPath = "";
+    private String projectPath = "tests/";
     //projectPath can be "" (same as "./") or any relative or absolute path. It is only used for the 2 constructors
     private String smallFileContents = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\r\nABCDEFGHIJKLMNOPQRSTUVWXYZ\r\nabcdefghijklmnopqrstuvwxyz\r\nabcdefghijklmnopqrstuvwxyz";
     private FileToStringAdapter smallFile = new FileToStringAdapter(projectPath+"smallFile.txt");

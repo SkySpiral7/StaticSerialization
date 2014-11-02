@@ -23,6 +23,7 @@ import java.util.Scanner;
  * <p>I have no idea if this class is thread safe and which parts would be.</p>
  */
 //TODO: performance: use the bufferedreader example: mytools
+//Files.lines() has searching and a spliterator
 public class FileToStringAdapter extends File {
     private static final long serialVersionUID = 6167875537836192550L;
 
