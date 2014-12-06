@@ -98,7 +98,7 @@ maxFinds=maxDepth=-1;</pre></code>
 	   List<File> myFilePathsFound = new ArrayList<File>();
        List<File> unexploreredDirectories = new ArrayList<File>();
        if((!findFiles && !findFolders) || maxFinds==0) return myFilePathsFound;
-       if(maxDepth!=-1) maxDepth+=countCharOccurrencesInString(rootFolder.getAbsolutePath(), '\\')+1;
+       if(maxDepth!=-1) maxDepth+=countCharOccurrencesInString(rootFolder.getAbsolutePath(), File.separatorChar)+1;
   			//this math is done to convert maxDepth from relative depth to absolute depth
        		//if(maxDepth!=-1) is not necessary but is more clear
        unexploreredDirectories.add(rootFolder);
@@ -110,7 +110,7 @@ maxFinds=maxDepth=-1;</pre></code>
          for (int anUnorganizedArrayIndex=0; anUnorganizedArrayIndex < anUnorganizedArray.length; anUnorganizedArrayIndex++)
          {
              thisFile=anUnorganizedArray[anUnorganizedArrayIndex];
-             currentDepth=countCharOccurrencesInString(thisFile.getAbsolutePath(), '\\');
+             currentDepth=countCharOccurrencesInString(thisFile.getAbsolutePath(), File.separatorChar);
              if(thisFile.isDirectory() && currentDepth!=maxDepth && subFolderCriteria.matcher(thisFile.getName()).find()) unexploreredDirectories.add(thisFile);
              if(!thisFile.isDirectory() && findFiles && fileCriteria.matcher(thisFile.getName()).find()) myFilePathsFound.add(thisFile);
              else if(thisFile.isDirectory() && findFolders && folderCriteria.matcher(thisFile.getName()).find()) myFilePathsFound.add(thisFile);
