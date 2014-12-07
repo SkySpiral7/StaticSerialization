@@ -1,27 +1,24 @@
 package src.sameobject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 //TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
-//HashSet was right: using a map is the easiest way to implement a set. Can't be reverse since map needs to associate keys to values
-public class SameObjectSet<E> implements Set<E> {
+public class SameObjectSet<E> implements Set<E>
+{
+	private SameObjectList<E> dataList;
 
-    /** Dummy value to associate with an Object in the backing Map.
-     * The value is Boolean.TRUE. I didn't need to create a new object.
-     * Plus it is truthy to make debugging slightly easier.*/
-	private final static Boolean PRESENT = Boolean.TRUE; 
-	private SameObjectMap<E, Boolean> dataMap;
-
-	public SameObjectSet(){dataMap = new SameObjectMap<E, Boolean>();}
+	public SameObjectSet(){dataList = new SameObjectList<E>();}
 	public SameObjectSet(Collection<? extends E> initialElements){this(); this.addAll(initialElements);}
 	public SameObjectSet(E[] initialElements){this(Arrays.asList(initialElements));}
 
 	@Override
 	public int size() {
-		return dataMap.size();
+		return dataList.size();
 	}
 
 	@Override
@@ -31,7 +28,7 @@ public class SameObjectSet<E> implements Set<E> {
 
 	@Override
 	public boolean contains(Object objectToFind) {
-		return dataMap.containsKey(objectToFind);
+		return dataList.contains(objectToFind);
 	}
 
 	@Override
@@ -45,23 +42,23 @@ public class SameObjectSet<E> implements Set<E> {
 
 	@Override
 	public Iterator<E> iterator() {
-		return dataMap.keyList.iterator();
+		return dataList.iterator();
 	}
 
 	@Override
 	public Object[] toArray() {
-		return dataMap.keyList.toArray();
+		return dataList.toArray();
 	}
 
 	@Override
 	public <T> T[] toArray(T[] destinationArray) {
-		return dataMap.keyList.toArray(destinationArray);
+		return dataList.toArray(destinationArray);
 	}
 
 	@Override
 	public boolean add(E newElement) {
 		if(this.contains(newElement)) return false;
-		return dataMap.put(newElement, PRESENT).booleanValue();  //haha nice
+		return dataList.add(newElement);  //always returns true
 	}
 
 	@Override
@@ -76,9 +73,7 @@ public class SameObjectSet<E> implements Set<E> {
 
 	@Override
 	public boolean remove(Object objectToRemove) {
-		if(!this.contains(objectToRemove)) return false;
-		dataMap.remove(objectToRemove);
-		return true;
+		return dataList.remove(objectToRemove);
 	}
 
 	@Override
@@ -93,21 +88,17 @@ public class SameObjectSet<E> implements Set<E> {
 
 	@Override
 	public boolean retainAll(Collection<?> collectionToRetain) {
-		boolean hasChanged = false;
-		hasChanged = dataMap.keyList.retainAll(collectionToRetain);
-		dataMap.valueList = (SameObjectList<Boolean>) dataMap.valueList.subList(0, this.size());
-		//only works because all values are the same
-		return hasChanged;
+		return dataList.retainAll(collectionToRetain);
 	}
 
 	@Override
 	public void clear() {
-		dataMap.clear();
+		dataList.clear();
 	}
 	
 	@Override
 	public int hashCode() {
-		return dataMap.keyList.hashCode();
+		return dataList.hashCode();
 	}
 
 	@Override
@@ -133,13 +124,19 @@ public class SameObjectSet<E> implements Set<E> {
 			for(int index = 0; index < this.size(); index++)
 			{
 				stringBuilder.append('"');
-				stringBuilder.append(dataMap.keyList.get(index));
+				stringBuilder.append(dataList.get(index));
 				stringBuilder.append("\": true");
 				if(index+1 < this.size()) stringBuilder.append(", ");
 			}
 		}
 		stringBuilder.append("}}");
 		return stringBuilder.toString();
+	}
+	
+	//note that it is not a live list. ie it is a copy
+	public List<E> asList()
+	{
+		return new ArrayList<>(dataList);
 	}
 
 }

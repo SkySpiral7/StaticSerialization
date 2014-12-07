@@ -12,9 +12,8 @@ import java.util.Set;
 //key and value can both be null. also point out the plentiful constructors
 public final class SameObjectMap<K,V> implements Map<K,V>
 {
-	//package scope so that SameObjectSet can use them directly
-	SameObjectList<K> keyList;
-	SameObjectList<V> valueList;
+	private SameObjectList<K> keyList;
+	private SameObjectList<V> valueList;
 
 	public SameObjectMap()
 	{
@@ -117,7 +116,7 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 		SameObjectSet<Map.Entry<K, V>> entrySet = new SameObjectSet<>();
 		for(int index = 0; index < this.size(); index++)
 		{
-			entrySet.add(new Entry<K,V>(keyList.get(index), valueList.get(index)));
+			entrySet.add(new Entry<K,V>(keyList.get(index), valueList.get(index), keyList, valueList));
 		}
 		return entrySet;
 	}
@@ -171,11 +170,15 @@ public final class SameObjectMap<K,V> implements Map<K,V>
     private static final class Entry<K,V> implements Map.Entry<K,V> {
     	private K key;
     	private V value;
+    	private SameObjectList<K> keyList;
+    	private SameObjectList<V> valueList;
     	
-    	public Entry(K key, V value)
+    	public Entry(K key, V value, SameObjectList<K> keyList, SameObjectList<V> valueList)
     	{
     		this.key = key;
     		this.value = value;
+    		this.keyList = keyList;
+    		this.valueList = valueList;
     	}
     	
 		@Override public K getKey(){return key;}
@@ -183,7 +186,9 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 
 		@Override
 		public V setValue(V value) {
-			throw new UnsupportedOperationException("I don't know how to implement this.");
+			int index = keyList.indexOf(key);
+			if(index != -1) throw new IllegalStateException("This entry no longer exists in the map.");
+			return valueList.set(index, value);
 		}
     }
 
