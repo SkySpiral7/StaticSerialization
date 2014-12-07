@@ -14,8 +14,8 @@ public class SameObjectList<E> extends ArrayList<E> {
 
 	public SameObjectList(){}
 	public SameObjectList(int initialCapacity){super(initialCapacity);}
-	public SameObjectList(Collection<? extends E> c){super(c);}
-	public SameObjectList(E[] ar){super(Arrays.asList(ar));}
+	public SameObjectList(Collection<? extends E> initialElements){super(initialElements);}
+	public SameObjectList(E[] initialElements){super(Arrays.asList(initialElements));}
 
 	@Override
 	public boolean contains(Object objectToFind) {
@@ -110,6 +110,19 @@ public class SameObjectList<E> extends ArrayList<E> {
 	@Override
 	public Object clone() {
 		throw new RuntimeException(new CloneNotSupportedException());
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("{\"class\": \"");
+		stringBuilder.append(this.getClass().getName());
+		stringBuilder.append("\", \"hexHash\": \"");
+		stringBuilder.append(Integer.toHexString(this.hashCode()));
+		stringBuilder.append("\", \"data\": ");
+		stringBuilder.append(super.toString());
+		stringBuilder.append('}');
+		return stringBuilder.toString();
 	}
 
 }

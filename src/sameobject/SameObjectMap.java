@@ -8,16 +8,19 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import javax.naming.OperationNotSupportedException;
-
 //TODO :add javadoc. note that it violates some of the interface because it does not use element.equals
 //key and value can both be null. also point out the plentiful constructors
 public final class SameObjectMap<K,V> implements Map<K,V>
 {
-	private SameObjectList<K> keyList;
-	private SameObjectList<V> valueList;
+	//package scope so that SameObjectSet can use them directly
+	SameObjectList<K> keyList;
+	SameObjectList<V> valueList;
 
-	public SameObjectMap(){this.clear();}
+	public SameObjectMap()
+	{
+		keyList = new SameObjectList<>();
+		valueList = new SameObjectList<>();
+	}
 	public SameObjectMap(List<K> initialKeyList, List<V> initialValueList)
 	{
 		this.keyList = new SameObjectList<>(initialKeyList);
@@ -70,7 +73,7 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 		if(this.getClass().equals(otherMap.getClass()))
 		{
 			@SuppressWarnings("unchecked")
-			//this will throw if children of K and V are involved
+			//this will throw if children of K or V are involved
 			SameObjectMap<K, V> otherSameObjectMap = (SameObjectMap<K, V>) otherMap;
 			for(int index = 0; index < otherSameObjectMap.keyList.size(); index++)
 			{
@@ -78,7 +81,8 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 			}
 		}
 		Set<? extends K> otherKeySet = otherMap.keySet();
-		//I can't use entrySet because of some generics issue
+		//I can't use entrySet because of some kind of generics issue
+		//well I could cast it like I do above but I'd rather not have 2 points of failure
 		for(K otherKey : otherKeySet)
 		{
 			this.put(otherKey, otherMap.get(otherKey));
@@ -94,13 +98,13 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 
 	@Override
 	public void clear() {
-		keyList = new SameObjectList<>();
-		valueList = new SameObjectList<>();
+		keyList.clear();
+		valueList.clear();
 	}
 
 	@Override
 	public Set<K> keySet() {
-		throw new RuntimeException("It is not possible to return a keySet because sets uses .equals for uniqueness", new OperationNotSupportedException());
+		return new SameObjectSet<>(keyList);
 	}
 
 	@Override
@@ -109,36 +113,37 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 	}
 
 	@Override
-	public Set<java.util.Map.Entry<K, V>> entrySet() {
-		throw new RuntimeException("It is not possible to return an entrySet because sets uses .equals for uniqueness", new OperationNotSupportedException());
+	public Set<Map.Entry<K, V>> entrySet() {
+		SameObjectSet<Map.Entry<K, V>> entrySet = new SameObjectSet<>();
+		for(int index = 0; index < this.size(); index++)
+		{
+			entrySet.add(new Entry<K,V>(keyList.get(index), valueList.get(index)));
+		}
+		return entrySet;
 	}
 	
 	@Override
 	public String toString() {
-		StringBuilder str = new StringBuilder();
-		str.append(super.toString());
-		str.append('{');
-		if(this.isEmpty())
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("{\"class\": \"");
+		stringBuilder.append(this.getClass().getName());
+		stringBuilder.append("\", \"hexHash\": \"");
+		stringBuilder.append(Integer.toHexString(this.hashCode()));
+		stringBuilder.append("\", \"data\": {");
+		if(!this.isEmpty())
 		{
-			str.append('}');
-			return str.toString();
+			for(int index = 0; index < keyList.size(); index++)
+			{
+				stringBuilder.append('"');
+				stringBuilder.append(keyList.get(index));
+				stringBuilder.append("\": \"");
+				stringBuilder.append(valueList.get(index));
+				stringBuilder.append('"');
+				if(index+1 < keyList.size()) stringBuilder.append(", ");
+			}
 		}
-		str.append('{');
-		str.append(keyList.get(0));
-		str.append(", ");
-		str.append(valueList.get(0));
-		str.append('}');
-		for(int index = 1; index < keyList.size(); index++)
-		{
-			str.append(", ");
-			str.append('{');
-			str.append(keyList.get(index));
-			str.append(", ");
-			str.append(valueList.get(index));
-			str.append('}');
-		}
-		str.append('}');
-		return str.toString();
+		stringBuilder.append("}}");
+		return stringBuilder.toString();
 	}
 	
 	@Override
@@ -147,9 +152,7 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 		if(obj == null) return false;
 		if(!this.getClass().equals(obj.getClass())) return false;
 
-		@SuppressWarnings("unchecked")
-		//this will throw if children of K and V are involved
-		SameObjectMap<K, V> other = (SameObjectMap<K, V>) obj;
+		SameObjectMap<?, ?> other = (SameObjectMap<?, ?>) obj;
 
 		//if(size() != other.size()) return false;  //covered by keyList.equals
 		if(!this.keyList.equals(other.keyList)) return false;
@@ -164,5 +167,24 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 		hash = hash * 31 + valueList.hashCode();
 		return hash;
 	}
+	
+    private static final class Entry<K,V> implements Map.Entry<K,V> {
+    	private K key;
+    	private V value;
+    	
+    	public Entry(K key, V value)
+    	{
+    		this.key = key;
+    		this.value = value;
+    	}
+    	
+		@Override public K getKey(){return key;}
+		@Override public V getValue(){return value;}
+
+		@Override
+		public V setValue(V value) {
+			throw new UnsupportedOperationException("I don't know how to implement this.");
+		}
+    }
 
 }
