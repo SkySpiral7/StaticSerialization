@@ -1,23 +1,33 @@
-package src;
+package src.sameobject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.naming.OperationNotSupportedException;
 
+//TODO :add javadoc. note that it violates some of the interface because it does not use element.equals
+//key and value can both be null. also point out the plentiful constructors
 public final class SameObjectMap<K,V> implements Map<K,V>
 {
+	private SameObjectList<K> keyList;
+	private SameObjectList<V> valueList;
 
-	private ArrayList<K> keyList;
-	private ArrayList<V> valueList;
-	
-	public SameObjectMap()
+	public SameObjectMap(){this.clear();}
+	public SameObjectMap(List<K> initialKeyList, List<V> initialValueList)
 	{
-		this.clear();
+		this.keyList = new SameObjectList<>(initialKeyList);
+		this.valueList = new SameObjectList<>(initialValueList);
 	}
-	
+	public SameObjectMap(K[] initialKeyArray, V[] initialValueArray){this(Arrays.asList(initialKeyArray), Arrays.asList(initialValueArray));}
+	public SameObjectMap(List<K> initialKeyList, V[] initialValueArray){this(initialKeyList, Arrays.asList(initialValueArray));}
+	public SameObjectMap(K[] initialKeyArray, List<V> initialValueList){this(Arrays.asList(initialKeyArray), initialValueList);}
+	public SameObjectMap(Map<? extends K, ? extends V> otherMap){this(); this.putAll(otherMap);}
+
 	@Override
 	public int size() {
 		return keyList.size();
@@ -30,59 +40,28 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 
 	@Override
 	public boolean containsKey(Object key) {
-		//I can't use return keyList.contains(key); because ArrayList.contains uses .equals
-		for(K keyInMap : keyList)
-		{
-			if(keyInMap == key) return true;
-		}
-		return false;
+		return keyList.contains(key);
 	}
 
 	@Override
 	public boolean containsValue(Object value) {
-		//I can't use return valueList.contains(value); because ArrayList.contains uses .equals
-		for(V valueInMap : valueList)
-		{
-			if(valueInMap == value) return true;
-		}
-		return false;
+		return valueList.contains(value);
 	}
 
 	@Override
 	public V get(Object key) {
-		//I can't use ArrayList.indexOf because it uses .equals
-		for(int index = 0; index < keyList.size(); index++)
-		{
-			if(keyList.get(index) == key) return valueList.get(index);
-		}
-		throw new IllegalArgumentException(key+" was not found in map. Please use containsKey if that is your desired behavior.");
+		int index = keyList.indexOf(key);
+		if(index == -1) throw new NoSuchElementException(key+" was not found in map. Please use containsKey if that is your desired behavior.");
+		return valueList.get(index);
 	}
 
 	@Override
 	public V put(K key, V value) {
-		//I can't use ArrayList.indexOf because it uses .equals
-		for(int index = 0; index < keyList.size(); index++)
-		{
-			if(keyList.get(index) == key){valueList.set(index, value); return value;}
-		}
+		int index = keyList.indexOf(key);
+		if(index != -1) return valueList.set(index, value);
 		keyList.add(key);
 		valueList.add(value);
-		//ArrayList is not a set so add works as expected
 		return value;
-	}
-
-	@Override
-	public V remove(Object key) {
-		//I can't use ArrayList.indexOf because it uses .equals
-		for(int index = 0; index < keyList.size(); index++)
-		{
-			if(keyList.get(index) == key)
-			{
-				keyList.remove(index);
-				return valueList.remove(index);
-			}
-		}
-		throw new IllegalArgumentException(key+" was not found in map. Please use containsKey if that is your desired behavior.");
 	}
 
 	@Override
@@ -107,9 +86,16 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 	}
 
 	@Override
+	public V remove(Object key) {
+		int index = keyList.indexOf(key);
+		if(index == -1) throw new NoSuchElementException(key+" was not found in map. Please use containsKey if that is your desired behavior.");
+		return valueList.remove(index);
+	}
+
+	@Override
 	public void clear() {
-		keyList = new ArrayList<>();
-		valueList = new ArrayList<>();
+		keyList = new SameObjectList<>();
+		valueList = new SameObjectList<>();
 	}
 
 	@Override
@@ -119,7 +105,7 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 
 	@Override
 	public Collection<V> values() {
-		return new ArrayList<>(valueList);  //return a copy
+		return new ArrayList<>(valueList);  //return a copy in a list that acts normal
 	}
 
 	@Override
@@ -164,15 +150,10 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 		@SuppressWarnings("unchecked")
 		//this will throw if children of K and V are involved
 		SameObjectMap<K, V> other = (SameObjectMap<K, V>) obj;
-		
-		if(size() != other.size()) return false;
 
-		//I can't use ArrayList.contains, indexOf, or equals because they all use element.equals
-		for(int index = 0; index < keyList.size(); index++)
-		{
-			if(keyList.get(index) != other.keyList.get(index)) return false;
-			if(valueList.get(index) != other.valueList.get(index)) return false;
-		}
+		//if(size() != other.size()) return false;  //covered by keyList.equals
+		if(!this.keyList.equals(other.keyList)) return false;
+		if(!this.valueList.equals(other.valueList)) return false;
 		return true;
 	}
 	
