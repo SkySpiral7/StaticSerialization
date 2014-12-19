@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>This list (as the name implies) implements functions based on the object being the same (using
@@ -20,7 +21,7 @@ import java.util.List;
 public class SameObjectList<E> extends ArrayList<E> {
 	private static final long serialVersionUID = 1L;
 
-	private static final int INDEX_NOT_FOUND = - 1;
+	public static final int ELEMENT_NOT_FOUND = - 1;
 
 	/**
 	 * The no-arg construct creates an empty list.
@@ -39,6 +40,7 @@ public class SameObjectList<E> extends ArrayList<E> {
      * iterator.
      *
      * @param initialElements the collection whose elements are to be placed into this list
+     * @throws NullPointerException if initialElements is null
      * @see ArrayList#ArrayList(Collection)
      */
 	public SameObjectList(Collection<? extends E> initialElements){super(initialElements);}
@@ -47,6 +49,7 @@ public class SameObjectList<E> extends ArrayList<E> {
      * array, in the same order.
      *
      * @param initialElements the array whose elements are to be placed into this list
+     * @throws NullPointerException if initialElements is null
      * @see ArrayList#ArrayList(Collection)
      */
 	public SameObjectList(E[] initialElements){super(Arrays.asList(initialElements));}
@@ -64,7 +67,7 @@ public class SameObjectList<E> extends ArrayList<E> {
      */
 	@Override
 	public boolean contains(Object objectToFind) {
-		return this.indexOf(objectToFind) != INDEX_NOT_FOUND;
+		return this.indexOf(objectToFind) != ELEMENT_NOT_FOUND;
 	}
 
     /**
@@ -107,7 +110,7 @@ public class SameObjectList<E> extends ArrayList<E> {
 	@Override
 	public boolean remove(Object objectToRemove) {
 		int index = this.indexOf(objectToRemove);
-		if(index == INDEX_NOT_FOUND) return false;
+		if(index == ELEMENT_NOT_FOUND) return false;
 		remove(index);
 		return true;
 	}
@@ -136,7 +139,6 @@ public class SameObjectList<E> extends ArrayList<E> {
 		return hasChanged;
 	}
 
-	//TODO: use Objects.requireNotNull everywhere
     /**
      * <p>Retains only the elements in this list that are contained in the
      * specified collection. In other words, removes from this list all
@@ -151,11 +153,12 @@ public class SameObjectList<E> extends ArrayList<E> {
      *
      * @param collectionToRetain collection containing elements to be retained in this list
      * @return {@code true} if this list changed as a result of the call
-     * @throws NullPointerException if the specified collection is null
+     * @throws NullPointerException if collectionToRetain is null
      */
 	@Override
 	public boolean retainAll(Collection<?> collectionToRetain) {
 		boolean hasChanged = false;
+		Objects.requireNonNull(collectionToRetain);
 		SameObjectList<?> listToRetain = new SameObjectList<>(collectionToRetain);
 		for(int index=0; index < this.size(); index++)
 		{
@@ -185,7 +188,7 @@ public class SameObjectList<E> extends ArrayList<E> {
 		{
 			if(this.get(index) == objectToFind) return index;
 		}
-		return INDEX_NOT_FOUND;
+		return ELEMENT_NOT_FOUND;
 	}
 
     /**
@@ -204,7 +207,7 @@ public class SameObjectList<E> extends ArrayList<E> {
 		{
 			if(this.get(index-1) == objectToFind) return index;
 		}
-		return INDEX_NOT_FOUND;
+		return ELEMENT_NOT_FOUND;
 	}
 
 	//TODO: make a sublist, map entry, iterator. any more I can think of

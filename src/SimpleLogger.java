@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * This class is a very simple logger. It is useful for quick and dirty debugging.
@@ -38,17 +39,30 @@ public class SimpleLogger {
     * Append to the log. Note that an end line is not added.
     * The log will be created if it does not exist.
     * 
-    * @param line the text to be appended exactly as passed in
+    * @param text the text to be appended exactly as passed in
     */
-   public void append(String line)
+   public void append(String text)
    {
+       Objects.requireNonNull(text);
       try
       {
           BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(log, true)));
-          out.write(line);
+          out.write(text);
           out.close();
       }
        catch(Exception e){throw new RuntimeException(e);}
+   }
+
+   /**
+    * Append to the log. An end line is appended to the string.
+    * The log will be created if it does not exist.
+    * 
+    * @param line the text to be appended followed by a system end line
+    */
+   public void appendLine(String line)
+   {
+       Objects.requireNonNull(line);
+       this.append(line + System.getProperty("line.separator"));
    }
 
    /**

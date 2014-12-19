@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 //TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
@@ -26,7 +27,7 @@ public class SameObjectSet<E> implements Set<E>
 
 	@Override
 	public boolean isEmpty() {
-		return this.size() == 0;
+		return dataList.isEmpty();
 	}
 
 	@Override
@@ -36,11 +37,8 @@ public class SameObjectSet<E> implements Set<E>
 
 	@Override
 	public boolean containsAll(Collection<?> collectionToSearch) {
-		for(Object element : collectionToSearch)
-		{
-			if(!this.contains(element)) return false;
-		}
-		return true;
+		Objects.requireNonNull(collectionToSearch);
+		return dataList.containsAll(collectionToSearch);
 	}
 
 	@Override
@@ -55,6 +53,7 @@ public class SameObjectSet<E> implements Set<E>
 
 	@Override
 	public <T> T[] toArray(T[] destinationArray) {
+		Objects.requireNonNull(destinationArray);
 		return dataList.toArray(destinationArray);
 	}
 
@@ -81,16 +80,13 @@ public class SameObjectSet<E> implements Set<E>
 
 	@Override
 	public boolean removeAll(Collection<?> collectionToRemove) {
-		boolean hasChanged = false;
-		for(Object element : collectionToRemove)
-		{
-			hasChanged = this.remove(element) || hasChanged;  //must be in this order to avoid short circuit
-		}
-		return hasChanged;
+		Objects.requireNonNull(collectionToRemove);
+		return dataList.removeAll(collectionToRemove);
 	}
 
 	@Override
 	public boolean retainAll(Collection<?> collectionToRetain) {
+		Objects.requireNonNull(collectionToRetain);
 		return dataList.retainAll(collectionToRetain);
 	}
 

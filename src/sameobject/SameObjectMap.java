@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 
 //TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
@@ -25,13 +26,15 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 	}
 	public SameObjectMap(List<K> initialKeyList, List<V> initialValueList)
 	{
+		Objects.requireNonNull(initialKeyList);
+		Objects.requireNonNull(initialValueList);
 		this.keyList = new SameObjectList<>(initialKeyList);
 		this.valueList = new SameObjectList<>(initialValueList);
 	}
 	public SameObjectMap(K[] initialKeyArray, V[] initialValueArray){this(Arrays.asList(initialKeyArray), Arrays.asList(initialValueArray));}
 	public SameObjectMap(List<K> initialKeyList, V[] initialValueArray){this(initialKeyList, Arrays.asList(initialValueArray));}
 	public SameObjectMap(K[] initialKeyArray, List<V> initialValueList){this(Arrays.asList(initialKeyArray), initialValueList);}
-	public SameObjectMap(Map<? extends K, ? extends V> otherMap){this(); this.putAll(otherMap);}
+	public SameObjectMap(Map<? extends K, ? extends V> otherMap){this(); Objects.requireNonNull(otherMap); this.putAll(otherMap);}
 
 	@Override
 	public int size() {
@@ -56,14 +59,14 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 	@Override
 	public V get(Object key) {
 		int index = keyList.indexOf(key);
-		if(index == -1) throw new NoSuchElementException(key+" was not found in map. Please use containsKey if that is your desired behavior.");
+		if(index == SameObjectList.ELEMENT_NOT_FOUND) throw new NoSuchElementException(key+" was not found in map. Please use containsKey if that is your desired behavior.");
 		return valueList.get(index);
 	}
 
 	@Override
 	public V put(K key, V value) {
 		int index = keyList.indexOf(key);
-		if(index != -1) return valueList.set(index, value);
+		if(index != SameObjectList.ELEMENT_NOT_FOUND) return valueList.set(index, value);
 		keyList.add(key);
 		valueList.add(value);
 		return value;
@@ -72,6 +75,7 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 	@Override
 	public void putAll(Map<? extends K, ? extends V> otherMap) {
 		if(this == otherMap) return;
+		Objects.requireNonNull(otherMap);
 		if(this.getClass().equals(otherMap.getClass()))
 		{
 			@SuppressWarnings("unchecked")
@@ -94,7 +98,7 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 	@Override
 	public V remove(Object key) {
 		int index = keyList.indexOf(key);
-		if(index == -1) throw new NoSuchElementException(key+" was not found in map. Please use containsKey if that is your desired behavior.");
+		if(index == SameObjectList.ELEMENT_NOT_FOUND) throw new NoSuchElementException(key+" was not found in map. Please use containsKey if that is your desired behavior.");
 		return valueList.remove(index);
 	}
 
@@ -190,7 +194,7 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 		@Override
 		public V setValue(V value) {
 			int index = keyList.indexOf(key);
-			if(index != -1) throw new IllegalStateException("This entry no longer exists in the map.");
+			if(index != SameObjectList.ELEMENT_NOT_FOUND) throw new IllegalStateException("This entry no longer exists in the map.");
 			return valueList.set(index, value);
 		}
     }
