@@ -8,13 +8,16 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-//TODO :add javadoc. note that it violates some of the interface because it does not use element.equals
+//TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
 //key and value can both be null. also point out the plentiful constructors
 public final class SameObjectMap<K,V> implements Map<K,V>
 {
 	private SameObjectList<K> keyList;
 	private SameObjectList<V> valueList;
 
+	/**
+	 * The no-arg construct creates an empty map.
+	 */
 	public SameObjectMap()
 	{
 		keyList = new SameObjectList<>();

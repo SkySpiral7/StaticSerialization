@@ -12,6 +12,9 @@ public class SameObjectSet<E> implements Set<E>
 {
 	private SameObjectList<E> dataList;
 
+	/**
+	 * The no-arg construct creates an empty set.
+	 */
 	public SameObjectSet(){dataList = new SameObjectList<E>();}
 	public SameObjectSet(Collection<? extends E> initialElements){this(); this.addAll(initialElements);}
 	public SameObjectSet(E[] initialElements){this(Arrays.asList(initialElements));}
