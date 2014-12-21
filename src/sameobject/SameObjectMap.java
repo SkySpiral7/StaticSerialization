@@ -9,6 +9,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
+import src.defaultImplementations.MapExternalEntry;
+
 //TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
 //key and value can both be null. also point out the plentiful constructors
 public final class SameObjectMap<K,V> implements Map<K,V>
@@ -123,7 +125,7 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 		SameObjectSet<Map.Entry<K, V>> entrySet = new SameObjectSet<>();
 		for(int index = 0; index < this.size(); index++)
 		{
-			entrySet.add(new Entry<K,V>(keyList.get(index), valueList.get(index), keyList, valueList));
+			entrySet.add(new MapExternalEntry<K,V>(this, keyList.get(index)));
 		}
 		return entrySet;
 	}
@@ -159,6 +161,7 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 		if(!this.getClass().equals(obj.getClass())) return false;
 
 		SameObjectMap<?, ?> other = (SameObjectMap<?, ?>) obj;
+		//it must be same class in order to use SameObjectList.equals
 
 		//if(size() != other.size()) return false;  //covered by keyList.equals
 		if(!this.keyList.equals(other.keyList)) return false;
@@ -173,30 +176,5 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 		hash = hash * 31 + valueList.hashCode();
 		return hash;
 	}
-	
-    private static final class Entry<K,V> implements Map.Entry<K,V> {
-    	private K key;
-    	private V value;
-    	private SameObjectList<K> keyList;
-    	private SameObjectList<V> valueList;
-    	
-    	public Entry(K key, V value, SameObjectList<K> keyList, SameObjectList<V> valueList)
-    	{
-    		this.key = key;
-    		this.value = value;
-    		this.keyList = keyList;
-    		this.valueList = valueList;
-    	}
-    	
-		@Override public K getKey(){return key;}
-		@Override public V getValue(){return value;}
-
-		@Override
-		public V setValue(V value) {
-			int index = keyList.indexOf(key);
-			if(index != SameObjectList.ELEMENT_NOT_FOUND) throw new IllegalStateException("This entry no longer exists in the map.");
-			return valueList.set(index, value);
-		}
-    }
 
 }

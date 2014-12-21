@@ -210,7 +210,6 @@ public class SameObjectList<E> extends ArrayList<E> {
 		return ELEMENT_NOT_FOUND;
 	}
 
-	//TODO: make a sublist, map entry, iterator. any more I can think of
 	/**
      * <p>Returns a view of the portion of this list between the specified
      * {@code fromIndex}, inclusive, and {@code toIndex}, exclusive.  (If
