@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
+import src.JsonHelper;
 import src.defaultImplementations.MapExternalEntry;
 
 //TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
@@ -133,22 +134,14 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 	@Override
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("{\"class\": \"");
-		stringBuilder.append(this.getClass().getName());
-		stringBuilder.append("\", \"hexHash\": \"");
-		stringBuilder.append(Integer.toHexString(this.hashCode()));
-		stringBuilder.append("\", \"data\": {");
-		if(!this.isEmpty())
+		stringBuilder.append(JsonHelper.toStringHeader(this));
+		stringBuilder.append('{');
+		for(int index = 0; index < keyList.size(); index++)
 		{
-			for(int index = 0; index < keyList.size(); index++)
-			{
-				stringBuilder.append('"');
-				stringBuilder.append(keyList.get(index));
-				stringBuilder.append("\": \"");
-				stringBuilder.append(valueList.get(index));
-				stringBuilder.append('"');
-				if(index+1 < keyList.size()) stringBuilder.append(", ");
-			}
+			stringBuilder.append(JsonHelper.stringify(keyList.get(index)));
+			stringBuilder.append(": ");
+			stringBuilder.append(JsonHelper.stringify(valueList.get(index)));
+			if(index+1 < keyList.size()) stringBuilder.append(", ");
 		}
 		stringBuilder.append("}}");
 		return stringBuilder.toString();

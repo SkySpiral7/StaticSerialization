@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import src.JsonHelper;
+
 /**
  * <p>This list (as the name implies) implements functions based on the object being the same (using
  * pointer equality eg ==) instead of using .equals(). Therefore this class violates some of the contract
@@ -268,21 +270,22 @@ public class SameObjectList<E> extends ArrayList<E> {
 	public Object clone() {
 		throw new RuntimeException(new CloneNotSupportedException());
 	}
-	
+
 	/**
-	 * <p>The string returned is JSON therefore it may prove useful in some way beyond readability.
+	 * <p>The string returned is JSON-like therefore it may prove useful in some way beyond readability.
 	 * The string returned has the class, hash code, and element data clearly labeled.</p>
 	 */
 	@Override
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("{\"class\": \"");
-		stringBuilder.append(this.getClass().getName());
-		stringBuilder.append("\", \"hexHash\": \"");
-		stringBuilder.append(Integer.toHexString(this.hashCode()));
-		stringBuilder.append("\", \"data\": ");
-		stringBuilder.append(super.toString());
-		stringBuilder.append('}');
+		stringBuilder.append(JsonHelper.toStringHeader(this));
+		stringBuilder.append('[');
+		for(int index=0; index < this.size(); index++)
+		{
+			stringBuilder.append(JsonHelper.stringify(this.get(index)));
+			if(index+1 < this.size()) stringBuilder.append(", ");
+		}
+		stringBuilder.append("]}");
 		return stringBuilder.toString();
 	}
 

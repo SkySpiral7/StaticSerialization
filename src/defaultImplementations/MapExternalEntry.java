@@ -3,6 +3,8 @@ package src.defaultImplementations;
 import java.util.Map;
 import java.util.Objects;
 
+import src.JsonHelper;
+
 //created when entrySet is called. Can't be used as the map's internal data since it depends on the map
 //also see: java.util.AbstractMap.SimpleEntry<K, V> and java.util.AbstractMap.SimpleImmutableEntry<K, V>
 //TODO: make a sublist, iterator, list iterator, deque node. any more I can think of
@@ -53,21 +55,22 @@ public class MapExternalEntry<K,V> implements Map.Entry<K,V> {
 	public int hashCode() {
 		synchronized (underlyingMap) {
 			int keyHash=Objects.hashCode(key);
-			int valueHash=Objects.hashCode(this.getValue());  //calls this.confirmExistence()
+			int valueHash=Objects.hashCode(this.getValue());  //this.getValue() calls this.confirmExistence()
 	        return keyHash^valueHash;
 		}
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder str = new StringBuilder();
-		str.append("{\"");
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append(JsonHelper.toStringHeader(this));
+		stringBuilder.append('{');
 		synchronized (underlyingMap) {
-			str.append(key);
-			str.append("\": \"");
-			str.append(this.getValue());  //calls this.confirmExistence()
-			str.append("\"}");
-	        return str.toString();
+			stringBuilder.append(JsonHelper.stringify(key));
+			stringBuilder.append(": ");
+			stringBuilder.append(JsonHelper.stringify(this.getValue()));  //this.getValue() calls this.confirmExistence()
+			stringBuilder.append("}}");
+	        return stringBuilder.toString();
 		}
     }
 }

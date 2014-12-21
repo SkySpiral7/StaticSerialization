@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import src.JsonHelper;
+
 //TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
 public class SameObjectSet<E> implements Set<E>
 {
@@ -113,20 +115,13 @@ public class SameObjectSet<E> implements Set<E>
 	@Override
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("{\"class\": \"");
-		stringBuilder.append(this.getClass().getName());
-		stringBuilder.append("\", \"hexHash\": \"");
-		stringBuilder.append(Integer.toHexString(this.hashCode()));
-		stringBuilder.append("\", \"data\": {");
-		if(!this.isEmpty())
+		stringBuilder.append(JsonHelper.toStringHeader(this));
+		stringBuilder.append('{');
+		for(int index = 0; index < this.size(); index++)
 		{
-			for(int index = 0; index < this.size(); index++)
-			{
-				stringBuilder.append('"');
-				stringBuilder.append(dataList.get(index));
-				stringBuilder.append("\": true");
-				if(index+1 < this.size()) stringBuilder.append(", ");
-			}
+			stringBuilder.append(JsonHelper.stringify(dataList.get(index)));
+			stringBuilder.append(": true");
+			if(index+1 < this.size()) stringBuilder.append(", ");
 		}
 		stringBuilder.append("}}");
 		return stringBuilder.toString();
