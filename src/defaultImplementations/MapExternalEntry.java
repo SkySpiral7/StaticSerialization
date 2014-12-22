@@ -9,8 +9,8 @@ import src.JsonHelper;
 //also see: java.util.AbstractMap.SimpleEntry<K, V> and java.util.AbstractMap.SimpleImmutableEntry<K, V>
 //TODO: make a sublist, iterator, list iterator, deque node. any more I can think of
 public class MapExternalEntry<K,V> implements Map.Entry<K,V> {
-	private Map<K,V> underlyingMap;
-	private K key;
+	private final Map<K,V> underlyingMap;
+	private final K key;
 
 	public MapExternalEntry(Map<K,V> underlyingMap, K key)
 	{

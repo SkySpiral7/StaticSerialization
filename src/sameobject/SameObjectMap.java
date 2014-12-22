@@ -14,10 +14,10 @@ import src.defaultImplementations.MapExternalEntry;
 
 //TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
 //key and value can both be null. also point out the plentiful constructors
-public final class SameObjectMap<K,V> implements Map<K,V>
+public class SameObjectMap<K,V> implements Map<K,V>
 {
-	private SameObjectList<K> keyList;
-	private SameObjectList<V> valueList;
+	private final SameObjectList<K> keyList;
+	private final SameObjectList<V> valueList;
 
 	/**
 	 * The no-arg construct creates an empty map.
@@ -150,15 +150,16 @@ public final class SameObjectMap<K,V> implements Map<K,V>
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) return true;
-		if(obj == null) return false;
-		if(!this.getClass().equals(obj.getClass())) return false;
+		if(!(obj instanceof Map<?,?>)) return false;
 
-		SameObjectMap<?, ?> other = (SameObjectMap<?, ?>) obj;
-		//it must be same class in order to use SameObjectList.equals
+		Map<?, ?> other = (Map<?, ?>) obj;
+		if(size() != other.size()) return false;
 
-		//if(size() != other.size()) return false;  //covered by keyList.equals
-		if(!this.keyList.equals(other.keyList)) return false;
-		if(!this.valueList.equals(other.valueList)) return false;
+		for(Object key : other.keySet())
+		{
+			if(!this.containsKey(key)) return false;
+			if(this.get(key) != other.get(key)) return false;
+		}
 		return true;
 	}
 	

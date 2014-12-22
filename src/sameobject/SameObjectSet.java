@@ -1,9 +1,7 @@
 package src.sameobject;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -11,58 +9,34 @@ import java.util.Set;
 import src.JsonHelper;
 
 //TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
-public class SameObjectSet<E> implements Set<E>
+public class SameObjectSet<E> extends SameObjectList<E> implements Set<E>
 {
-	private SameObjectList<E> dataList;
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The no-arg construct creates an empty set.
 	 */
-	public SameObjectSet(){dataList = new SameObjectList<E>();}
+	public SameObjectSet(){super();}
+	public SameObjectSet(int initialCapacity){super(initialCapacity);}
 	public SameObjectSet(Collection<? extends E> initialElements){this(); this.addAll(initialElements);}
 	public SameObjectSet(E[] initialElements){this(Arrays.asList(initialElements));}
 
 	@Override
-	public int size() {
-		return dataList.size();
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return dataList.isEmpty();
-	}
-
-	@Override
-	public boolean contains(Object objectToFind) {
-		return dataList.contains(objectToFind);
-	}
-
-	@Override
 	public boolean containsAll(Collection<?> collectionToSearch) {
 		Objects.requireNonNull(collectionToSearch);
-		return dataList.containsAll(collectionToSearch);
-	}
-
-	@Override
-	public Iterator<E> iterator() {
-		return dataList.iterator();
-	}
-
-	@Override
-	public Object[] toArray() {
-		return dataList.toArray();
+		return super.containsAll(collectionToSearch);
 	}
 
 	@Override
 	public <T> T[] toArray(T[] destinationArray) {
 		Objects.requireNonNull(destinationArray);
-		return dataList.toArray(destinationArray);
+		return super.toArray(destinationArray);
 	}
 
 	@Override
 	public boolean add(E newElement) {
 		if(this.contains(newElement)) return false;
-		return dataList.add(newElement);  //always returns true
+		return super.add(newElement);  //always returns true
 	}
 
 	@Override
@@ -76,42 +50,28 @@ public class SameObjectSet<E> implements Set<E>
 	}
 
 	@Override
-	public boolean remove(Object objectToRemove) {
-		return dataList.remove(objectToRemove);
-	}
-
-	@Override
 	public boolean removeAll(Collection<?> collectionToRemove) {
 		Objects.requireNonNull(collectionToRemove);
-		return dataList.removeAll(collectionToRemove);
+		return super.removeAll(collectionToRemove);
 	}
 
 	@Override
 	public boolean retainAll(Collection<?> collectionToRetain) {
 		Objects.requireNonNull(collectionToRetain);
-		return dataList.retainAll(collectionToRetain);
-	}
-
-	@Override
-	public void clear() {
-		dataList.clear();
-	}
-	
-	@Override
-	public int hashCode() {
-		return dataList.hashCode();
+		return super.retainAll(collectionToRetain);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if(obj == this) return true;
+		if(obj instanceof List<?>) return super.equals(obj);
 		if(!(obj instanceof Set<?>)) return false;
 
 		Set<?> otherList = (Set<?>) obj;
 		if(this.size() != otherList.size()) return false;
 		return this.containsAll(otherList);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
@@ -119,18 +79,12 @@ public class SameObjectSet<E> implements Set<E>
 		stringBuilder.append('{');
 		for(int index = 0; index < this.size(); index++)
 		{
-			stringBuilder.append(JsonHelper.stringify(dataList.get(index)));
+			stringBuilder.append(JsonHelper.stringify(this.get(index)));
 			stringBuilder.append(": true");
 			if(index+1 < this.size()) stringBuilder.append(", ");
 		}
 		stringBuilder.append("}}");
 		return stringBuilder.toString();
-	}
-	
-	//note that it is not a live list. ie it is a copy
-	public List<E> asList()
-	{
-		return new ArrayList<>(dataList);
 	}
 
 }
