@@ -5,9 +5,19 @@ import java.util.Objects;
 
 import src.JsonHelper;
 
-//created when entrySet is called. Can't be used as the map's internal data since it depends on the map
-//also see: java.util.AbstractMap.SimpleEntry<K, V> and java.util.AbstractMap.SimpleImmutableEntry<K, V>
 //TODO: make a sublist, iterator, list iterator, deque node. any more I can think of
+/**
+ * This Map.Entry can be created when Map.entrySet is called but can't be used to represent a map's
+ * internal data this class depends on a map already having data. This class is thread safe and modifications
+ * will affect the underlying map. Therefore setValue will throw if the underlying map throws on modification.
+ *
+ * @param <K> the data type of the key of the Map.Entry
+ * @param <V> the data type of the value of the Map.Entry
+ * 
+ * @see java.util.AbstractMap.SimpleEntry
+ * @see java.util.AbstractMap.SimpleImmutableEntry
+ */
+//TODO: javadoc everything in all files
 public class MapEntryExternal<K,V> implements Map.Entry<K,V> {
 	private final Map<K,V> underlyingMap;
 	private final K key;
