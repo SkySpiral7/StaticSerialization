@@ -8,7 +8,10 @@ import java.util.Set;
 
 import src.JsonHelper;
 
-//TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
+/**
+ * @deprecated use IdentityHashSet instead
+ * @see IdentityHashSet
+ */
 public class SameObjectSet<E> extends SameObjectList<E> implements Set<E>
 {
 	private static final long serialVersionUID = 1L;
@@ -18,7 +21,7 @@ public class SameObjectSet<E> extends SameObjectList<E> implements Set<E>
 	 */
 	public SameObjectSet(){super();}
 	public SameObjectSet(int initialCapacity){super(initialCapacity);}
-	public SameObjectSet(Collection<? extends E> initialElements){this(); this.addAll(initialElements);}
+	public SameObjectSet(Collection<? extends E> initialElements){this(initialElements.size()); this.addAll(initialElements);}
 	public SameObjectSet(E[] initialElements){this(Arrays.asList(initialElements));}
 
 	@Override

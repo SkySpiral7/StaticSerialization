@@ -3,6 +3,7 @@ package src.sameobject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -10,10 +11,13 @@ import java.util.Objects;
 import java.util.Set;
 
 import src.JsonHelper;
-import src.defaultImplementations.MapExternalEntry;
+import src.defaultImplementations.MapEntryExternal;
 
-//TODO: add javadoc. note that it violates some of the interface because it does not use element.equals
 //key and value can both be null. also point out the plentiful constructors
+/**
+ * @deprecated use java.util.IdentityHashMap instead
+ * @see IdentityHashMap
+ */
 public class SameObjectMap<K,V> implements Map<K,V>
 {
 	private final SameObjectList<K> keyList;
@@ -81,9 +85,8 @@ public class SameObjectMap<K,V> implements Map<K,V>
 		Objects.requireNonNull(otherMap);
 		if(this.getClass().equals(otherMap.getClass()))
 		{
-			@SuppressWarnings("unchecked")
-			//this will throw if children of K or V are involved
-			SameObjectMap<K, V> otherSameObjectMap = (SameObjectMap<K, V>) otherMap;
+			//TODO: not sure if this works
+			SameObjectMap<? extends K, ? extends V> otherSameObjectMap = (SameObjectMap<? extends K, ? extends V>) otherMap;
 			for(int index = 0; index < otherSameObjectMap.keyList.size(); index++)
 			{
 				this.put(otherSameObjectMap.keyList.get(index), otherSameObjectMap.valueList.get(index));
@@ -126,7 +129,7 @@ public class SameObjectMap<K,V> implements Map<K,V>
 		SameObjectSet<Map.Entry<K, V>> entrySet = new SameObjectSet<>();
 		for(int index = 0; index < this.size(); index++)
 		{
-			entrySet.add(new MapExternalEntry<K,V>(this, keyList.get(index)));
+			entrySet.add(new MapEntryExternal<K,V>(this, keyList.get(index)));
 		}
 		return entrySet;
 	}

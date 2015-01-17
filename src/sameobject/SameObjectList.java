@@ -9,6 +9,8 @@ import java.util.Objects;
 import src.JsonHelper;
 
 /**
+ * @deprecated use sun.awt.util.IdentityArrayList (for RandomAccess) or sun.awt.util.IdentityLinkedList (for a Deque) instead
+ * 
  * <p>This list (as the name implies) implements functions based on the object being the same (using
  * pointer equality eg ==) instead of using .equals(). Therefore this class violates some of the contract
  * of List and Collection by design.</p>
@@ -19,6 +21,9 @@ import src.JsonHelper;
  * 
  * <p>Note that this class can't be cloned or serialized and modifications done to a sublist
  * will not affect the original list.</p>
+ * 
+ * @see IdentityArrayList
+ * @see IdentityLinkedList
  */
 public class SameObjectList<E> extends ArrayList<E> {
 	private static final long serialVersionUID = 1L;

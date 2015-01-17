@@ -8,11 +8,11 @@ import src.JsonHelper;
 //created when entrySet is called. Can't be used as the map's internal data since it depends on the map
 //also see: java.util.AbstractMap.SimpleEntry<K, V> and java.util.AbstractMap.SimpleImmutableEntry<K, V>
 //TODO: make a sublist, iterator, list iterator, deque node. any more I can think of
-public class MapExternalEntry<K,V> implements Map.Entry<K,V> {
+public class MapEntryExternal<K,V> implements Map.Entry<K,V> {
 	private final Map<K,V> underlyingMap;
 	private final K key;
 
-	public MapExternalEntry(Map<K,V> underlyingMap, K key)
+	public MapEntryExternal(Map<K,V> underlyingMap, K key)
 	{
 		this.underlyingMap = underlyingMap;
 		this.key = key;
@@ -42,7 +42,7 @@ public class MapExternalEntry<K,V> implements Map.Entry<K,V> {
 
 	@Override
 	public boolean equals(Object obj) {
-        if(this==obj) return true;
+        if(this == obj) return true;
         if(!(obj instanceof Map.Entry)) return false;
         Map.Entry<?,?> otherEntry = (Map.Entry<?,?>)obj;
         if(!Objects.equals(this.key, otherEntry.getKey())) return false;
@@ -69,8 +69,8 @@ public class MapExternalEntry<K,V> implements Map.Entry<K,V> {
 			stringBuilder.append(JsonHelper.stringify(key));
 			stringBuilder.append(": ");
 			stringBuilder.append(JsonHelper.stringify(this.getValue()));  //this.getValue() calls this.confirmExistence()
-			stringBuilder.append("}}");
-	        return stringBuilder.toString();
 		}
+		stringBuilder.append("}}");
+        return stringBuilder.toString();
     }
 }
