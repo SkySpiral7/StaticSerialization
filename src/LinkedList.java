@@ -16,17 +16,17 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
      * The size of the list is stored so that this.size() is O(1) complexity and
      * this.get(int) can check if the index is out of bounds without iteration.
      */
-	private int size;
+	protected int size;
     /**
      * A pointer to the first node or null if the list is empty
      * If the list has 1 element then first == last.
      */
-    private DequeNode<E> first;
+	protected DequeNode<E> first;
     /**
      * A pointer to the last node or null if the list is empty
      * If the list has 1 element then first == last.
      */
-    private DequeNode<E> last;
+    protected DequeNode<E> last;
 
     /**
      * Constructs an empty list.
@@ -74,22 +74,15 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 		return true;
 	}
 
-	private void insertNodeAfter(DequeNode<E> prev, E data) {
+	protected void insertNodeAfter(DequeNode<E> prev, E data) {
 		//assert(size != Integer.MAX_VALUE);
-		size++;
-		if (prev == null)  //insert first
-		{
-			DequeNode<E> newNode = new DequeNode<E>(data, first);
-			if(size == 1) last = newNode;  //if(was empty) since size has already been incremented
-			else first.setPrev(newNode);
-			first = newNode;
-			return;
-		}
-		DequeNode<E> next = prev.getNext();
-		DequeNode<E> newNode = new DequeNode<E>(prev, data, next);
-		prev.setNext(newNode);
+		DequeNode<E> next = null;
+		if(prev != null) next = prev.getNext();
+		DequeNode<E> newNode = DequeNode.Factory.createNodeBetween(prev, data, next);
+		if(prev == null) first = newNode;  //insert first
 		if(next == null) last = newNode;  //insert last
-		else next.setPrev(newNode);  //insert between
+		//these also cover if list was empty. insert between is covered by the factory
+		size++;
 	}
 
 	@Override
@@ -116,16 +109,15 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 		return removeNode(last);
 	}
 
-	private E removeNode(DequeNode<E> nodeToRemove) {
+	protected E removeNode(DequeNode<E> nodeToRemove) {
 		//assert(!this.empty() && nodeToRemove != null);
 		E returnValue = nodeToRemove.getData();
 	    DequeNode<E> before = nodeToRemove.getPrev();
 	    DequeNode<E> after = nodeToRemove.getNext();
 
-	    if(before != null) before.setNext(after);
-	    else first = after;  //since the first node is being removed
-	    if(after != null) after.setPrev(before);
-	    else last = before;  //since the last node is being removed
+	    if(before == null) first = after;  //since the first node is being removed
+	    if(after == null) last = before;  //since the last node is being removed
+	    nodeToRemove.remove();
 		size--;
 
 	    return returnValue;

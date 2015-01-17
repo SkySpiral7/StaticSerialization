@@ -1,47 +1,49 @@
 package src.defaultImplementations;
 
 /**
- * This is mutable bean for the nodes of a Deque. It is not thread safe.
+ * This is mutable class for the nodes of a Deque. It keeps itself linked together but is not thread safe.
+ * There is only 1 public constructor, for other ways to create notes use the factory.
+ *
  * @param <E> the data type to be stored
+ * @see Factory
  */
 public class DequeNode<E> {
     /**
      * the data that this node holds
      */
-    private E data;
+	protected E data;
     /**
      * the next node or null if there is no next node
      */
-    private DequeNode<E> next;
+	protected DequeNode<E> next;
 	/**
      * the previous node or null if there is no previous node
      */
-    private DequeNode<E> prev;
+	protected DequeNode<E> prev;
 
     /**
      * Create a stand alone node that does not have a previous or next node.
-     * @see #DequeNode(DequeNode, Object, DequeNode)
+     * This is the only public constructor because there is nothing to link together.
+     * For other ways to create nodes use the Factory.
+     * @see Factory
      */
     public DequeNode(E data){this(null, data, null);}
     /**
-     * Create a last node that does not have a next node.
-     * @see #DequeNode(DequeNode, Object, DequeNode)
+     * A short hand to set the fields. Linking can only be done in Factory because I can't use this in a constructor.
      */
-    public DequeNode(DequeNode<E> prev, E data){this(prev, data, null);}
-    /**
-     * Create a first node that does not have a previous node.
-     * @see #DequeNode(DequeNode, Object, DequeNode)
-     */
-    public DequeNode(E data, DequeNode<E> next){this(null, data, next);}
-    /**
-     * @param prev the node that comes before this node or null if there is no previous node
-     * @param data the data that this node holds
-     * @param next the node that comes after this node or null if there is no next node
-     */
-    public DequeNode(DequeNode<E> prev, E data, DequeNode<E> next) {
-        this.data = data;
+    protected DequeNode(DequeNode<E> prev, E data, DequeNode<E> next) {
+		this.data = data;
         this.next = next;
         this.prev = prev;
+    }
+
+    /**
+     * Removes this node from the list. The neighboring nodes are linked together and this node becomes stand alone (no neighbors).
+     */
+    public void remove() {
+	    if(prev != null) prev.next = next;
+	    if(next != null) next.prev = prev;
+	    prev = next = null;
     }
 
     /**
@@ -89,14 +91,57 @@ public class DequeNode<E> {
      */
     public void setData(E data){this.data = data;}
 
-    /**
-     * @param the next node or null if there is no next node
-     */
-	public void setNext(DequeNode<E> next){this.next = next;}
+    //TODO: add public methods for insertion
 
-	/**
-     * @param the previous node or null if there is no previous node
+    /**
+     * This factory creates nodes and links them together.
      */
-	public void setPrev(DequeNode<E> prev){this.prev = prev;}
+	public static class Factory {
+	    /**
+	     * Create a stand alone node that does not have a previous or next node.
+	     * @see DequeNode
+	     * @see #createNodeBetween(DequeNode, Object, DequeNode)
+	     */
+		public static <E> DequeNode<E> createStandAloneNode(E data){return new DequeNode<E>(data);}
+
+	    /**
+		 * Insert a new node that comes before the node given.
+		 * @return the newly created node
+		 * @see #createNodeBetween(DequeNode, Object, DequeNode)
+		 */
+		public static <E> DequeNode<E> createNodeBefore(E data, DequeNode<E> next) {
+			DequeNode<E> prev = null;
+			if(next != null) prev = next.getPrev();
+			return createNodeBetween(prev, data, next);
+		}
+
+		/**
+		 * Prev and next will both be linked to the new node and the new node will be linked to each of them.
+		 *
+		 * @param prev the node that comes before this node or null if there is no previous node
+		 * @param data the data that this node holds
+		 * @param next the node that comes after this node or null if there is no next node
+		 * @return the newly created node
+		 */
+		public static <E> DequeNode<E> createNodeBetween(DequeNode<E> prev, E data, DequeNode<E> next) {
+			DequeNode<E> newNode = new DequeNode<E>(prev, data, next);
+
+		    if(prev != null) prev.next = newNode;
+		    if(next != null) next.prev = newNode;
+
+		    return newNode;
+		}
+
+		/**
+		 * Insert a new node that comes after the node given.
+		 * @return the newly created node
+	     * @see #createNodeBetween(DequeNode, Object, DequeNode)
+	     */
+		public static <E> DequeNode<E> createNodeAfter(DequeNode<E> prev, E data) {
+			DequeNode<E> next = null;
+			if(prev != null) next = prev.getNext();
+			return createNodeBetween(prev, data, next);
+		}
+	}
 
 }
