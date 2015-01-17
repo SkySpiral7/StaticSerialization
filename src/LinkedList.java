@@ -10,7 +10,9 @@ import java.util.ListIterator;
 import src.defaultImplementations.DequeNode;
 
 public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E> {
-    /**
+	public static final int ELEMENT_NOT_FOUND = - 1;
+
+	/**
      * The size of the list is stored so that this.size() is O(1) complexity and
      * this.get(int) can check if the index is out of bounds without iteration.
      */
@@ -60,14 +62,34 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
 	@Override
 	public boolean offerFirst(E newElement) {
-		// TODO Auto-generated method stub
-		return false;
+		if(size == Integer.MAX_VALUE) return false;
+		insertNodeAfter(null, newElement);
+		return true;
 	}
 
 	@Override
 	public boolean offerLast(E newElement) {
-		// TODO Auto-generated method stub
-		return false;
+		if(size == Integer.MAX_VALUE) return false;
+		insertNodeAfter(last, newElement);  //if(this.isEmpty()) then it will insert first
+		return true;
+	}
+
+	private void insertNodeAfter(DequeNode<E> prev, E data) {
+		//assert(size != Integer.MAX_VALUE);
+		size++;
+		if (prev == null)  //insert first
+		{
+			DequeNode<E> newNode = new DequeNode<E>(data, first);
+			if(size == 1) last = newNode;  //if(was empty) since size has already been incremented
+			else first.setPrev(newNode);
+			first = newNode;
+			return;
+		}
+		DequeNode<E> next = prev.getNext();
+		DequeNode<E> newNode = new DequeNode<E>(prev, data, next);
+		prev.setNext(newNode);
+		if(next == null) last = newNode;  //insert last
+		else next.setPrev(newNode);  //insert between
 	}
 
 	@Override
@@ -85,15 +107,28 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 	@Override
 	public E pollFirst() {
 		if(size == 0) return null;
-		// TODO Auto-generated method stub
-		return null;
+		return removeNode(first);
 	}
 
 	@Override
 	public E pollLast() {
 		if(size == 0) return null;
-		// TODO Auto-generated method stub
-		return null;
+		return removeNode(last);
+	}
+
+	private E removeNode(DequeNode<E> nodeToRemove) {
+		//assert(!this.empty() && nodeToRemove != null);
+		E returnValue = nodeToRemove.getData();
+	    DequeNode<E> before = nodeToRemove.getPrev();
+	    DequeNode<E> after = nodeToRemove.getNext();
+
+	    if(before != null) before.setNext(after);
+	    else first = after;  //since the first node is being removed
+	    if(after != null) after.setPrev(before);
+	    else last = before;  //since the last node is being removed
+		size--;
+
+	    return returnValue;
 	}
 
 	@Override
@@ -120,14 +155,18 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
 	@Override
 	public boolean removeFirstOccurrence(Object elementToRemove) {
-		// TODO Auto-generated method stub
-		return false;
+		int index = this.indexOf(elementToRemove);
+		if(index == ELEMENT_NOT_FOUND) return false;
+		remove(index);
+		return true;
 	}
 
 	@Override
 	public boolean removeLastOccurrence(Object elementToRemove) {
-		// TODO Auto-generated method stub
-		return false;
+		int index = this.lastIndexOf(elementToRemove);
+		if(index == ELEMENT_NOT_FOUND) return false;
+		remove(index);
+		return true;
 	}
 
 	@Override

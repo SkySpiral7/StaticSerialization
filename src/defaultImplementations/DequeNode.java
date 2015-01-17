@@ -1,12 +1,21 @@
 package src.defaultImplementations;
 
 /**
- * This is an immutable bean for the nodes of a Deque.
+ * This is mutable bean for the nodes of a Deque. It is not thread safe.
  * @param <E> the data type to be stored
  */
 public class DequeNode<E> {
+    /**
+     * the data that this node holds
+     */
     private E data;
+    /**
+     * the next node or null if there is no next node
+     */
     private DequeNode<E> next;
+	/**
+     * the previous node or null if there is no previous node
+     */
     private DequeNode<E> prev;
 
     /**
@@ -74,5 +83,20 @@ public class DequeNode<E> {
      * @return the previous node or null if there is no previous node
      */
     public DequeNode<E> getPrev(){return prev;}
+
+    /**
+     * @param the data that this node holds
+     */
+    public void setData(E data){this.data = data;}
+
+    /**
+     * @param the next node or null if there is no next node
+     */
+	public void setNext(DequeNode<E> next){this.next = next;}
+
+	/**
+     * @param the previous node or null if there is no previous node
+     */
+	public void setPrev(DequeNode<E> prev){this.prev = prev;}
 
 }
