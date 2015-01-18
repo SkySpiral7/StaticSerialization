@@ -7,11 +7,11 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-import src.defaultImplementations.DequeNodeIterator;
 import src.defaultImplementations.DequeNode;
+import src.defaultImplementations.DequeNodeIterator;
 import src.defaultImplementations.DescendingListIterator;
 
-public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E> {
+public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>, ModCountList<E> {
 	public static final int ELEMENT_NOT_FOUND = - 1;
 
 	/**
@@ -78,25 +78,27 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
 	protected void insertNodeAfter(DequeNode<E> prev, E data) {
 		//assert(size != Integer.MAX_VALUE);
-		DequeNode<E> next = null;
-		if(prev != null) next = prev.getNext();
+		DequeNode<E> next;
+		if(prev == null) next = first;
+		else next = prev.getNext();
 		DequeNode<E> newNode = DequeNode.Factory.createNodeBetween(prev, data, next);
 		if(prev == null) first = newNode;  //insert first
 		if(next == null) last = newNode;  //insert last
 		//these also cover if list was empty. insert between is covered by the factory
 		size++;
+		modCount++;
 	}
 
 	@Override
 	public E removeFirst() {
 		if(size == 0) throw new IllegalStateException("The list is empty. The first element can't be removed because it doesn't exist");
-		return pollFirst();
+		return removeNode(first);
 	}
 
 	@Override
 	public E removeLast() {
 		if(size == 0) throw new IllegalStateException("The list is empty. The last element can't be removed because it doesn't exist");
-		return pollLast();
+		return removeNode(last);
 	}
 
 	@Override
@@ -121,30 +123,33 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 	    if(after == null) last = before;  //since the last node is being removed
 	    nodeToRemove.remove();
 		size--;
+		modCount++;
 
 	    return returnValue;
 	}
 
 	@Override
 	public E getFirst() {
-		return get(0);
+		rangeCheckForGet(0);  //checks for not empty
+		return first.getData();
 	}
 
 	@Override
 	public E getLast() {
-		return get(size-1);
+		rangeCheckForGet(0);  //checks for not empty
+		return last.getData();
 	}
 
 	@Override
 	public E peekFirst() {
 		if(size == 0) return null;
-		return getFirst();
+		return first.getData();
 	}
 
 	@Override
 	public E peekLast() {
 		if(size == 0) return null;
-		return getLast();
+		return last.getData();
 	}
 
 	@Override
@@ -220,26 +225,124 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
         if(index < 0 || index >= size()) throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
 
+    protected void rangeCheckForAdd(int index) {
+    	if(index == size) return;
+    	rangeCheckForGet(index);
+    }
+
     protected String outOfBoundsMsg(int index) {
         return "Index: "+index+", Size: "+size();
     }
 
-    /*
-	JRE LinkedList also has these:
-	add(E)
-	add(int, E)
-	addAll(int, Collection<? extends E>)
-	addAll(Collection<? extends E>)
-	clear()
-	contains(Object)
-	get(int)
-	indexOf(Object)
-	lastIndexOf(Object)
-	remove(int)
-	remove(Object)
-	set(int, E)
-	spliterator()
-	toArray()
-	toArray(T[])
-	*/
+    @Override
+    public boolean add(E newElement) {
+		if(size == Integer.MAX_VALUE) return false;
+    	insertNodeAfter(last, newElement);
+    	return true;
+    }
+    
+    @Override
+    public void add(int insertionIndex, E newElement) {
+    	if(size == Integer.MAX_VALUE) return;
+        if(insertionIndex == size){this.addLast(newElement); return;}
+        if(insertionIndex == 0){this.addFirst(newElement); return;}
+    	insertNodeAfter(getNode(insertionIndex), newElement);
+    }
+
+    @Override
+    public boolean addAll(int insertionIndex, Collection<? extends E> newElements) {
+    	if(size <= (Integer.MAX_VALUE - newElements.size())) return false;  //must use subtraction to prevent overflow
+    	rangeCheckForAdd(insertionIndex);
+        boolean modified = false;
+        Iterator<? extends E> newElementsIterator = newElements.iterator();
+        DequeNode<E> insertAfterThisNode = getNode(insertionIndex);
+        while (newElementsIterator.hasNext()) {
+        	insertNodeAfter(insertAfterThisNode, newElementsIterator.next());
+            modified = true;
+        }
+        return modified;
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends E> newElements) {
+    	if(size <= (Integer.MAX_VALUE - newElements.size())) return false;  //must use subtraction to prevent overflow
+    	return super.addAll(newElements);
+    }
+
+    @Override
+    public void clear() {
+    	while(size != 0) removeNode(first);
+    	//unlinking the nodes ensures garbage collection
+    	modCount++;
+    }
+
+    @Override
+    public E get(int index) {
+		rangeCheckForGet(index);
+		return getNode(index).getData();
+    }
+
+    @Override
+    public int lastIndexOf(Object objectToFind) {
+        int index = size;
+        if (objectToFind == null) {
+            for (DequeNode<E> currentNode = last; currentNode != null; currentNode = currentNode.getPrev()) {
+                index--;
+                if(currentNode.getData() == null) return index;
+            }
+        } else {
+            for (DequeNode<E> currentNode = last; currentNode != null; currentNode = currentNode.getPrev()) {
+                index--;
+                if(objectToFind.equals(currentNode.getData())) return index;
+            }
+        }
+        return ELEMENT_NOT_FOUND;
+    }
+
+    @Override
+    public E remove(int index) {
+    	modCount++;
+    	return getNode(index).remove().getData();
+    }
+
+    public DequeNode<E> getNode(int index) {
+    	rangeCheckForGet(index);
+
+    	if (index < (size >> 1)) {
+    		DequeNode<E> currentNode = first;
+            for(int i = 0; i < index; i++) currentNode = currentNode.getNext();
+            return currentNode;
+        } else {
+        	DequeNode<E> currentNode = last;
+            for(int i = size - 1; i > index; i--) currentNode = currentNode.getPrev();
+            return currentNode;
+        }
+    }
+
+    @Override
+    public E set(int index, E newValue) {
+        DequeNode<E> nodeToChange = getNode(index);
+        E oldValue = nodeToChange.getData();
+        nodeToChange.setData(newValue);
+        //doesn't increment modCount because there was no structural change
+        return oldValue;
+    }
+
+    @Override
+	public int getModCount() {
+		return modCount;
+	}
+
+    //uses super.isEmpty() in AbstractCollection
+    //uses super.toArray() in AbstractCollection
+    //uses super.toArray(T[]) in AbstractCollection
+    //uses super.containsAll() in AbstractCollection
+    //uses super.removeAll(Collection<?>) in AbstractCollection
+    //uses super.retainAll(Collection<?>) in AbstractCollection
+    //uses super.remove(Object) in AbstractCollection
+    //uses super.contains(Object) in AbstractCollection
+    //uses super.iterator() in AbstractSequentialList
+    //uses super.indexOf(Object) from AbstractList
+    //JRE LinkedList also has spliterator(), toArray(), toArray(T[])
+
 }

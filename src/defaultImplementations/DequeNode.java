@@ -39,11 +39,13 @@ public class DequeNode<E> {
 
     /**
      * Removes this node from the list. The neighboring nodes are linked together and this node becomes stand alone (no neighbors).
+     * @return itself
      */
-    public void remove() {
+    public DequeNode<E> remove() {
 	    if(prev != null) prev.next = next;
 	    if(next != null) next.prev = prev;
 	    prev = next = null;
+	    return this;
     }
 
     /**
