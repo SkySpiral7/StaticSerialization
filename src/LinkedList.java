@@ -7,7 +7,9 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import src.defaultImplementations.DequeNodeIterator;
 import src.defaultImplementations.DequeNode;
+import src.defaultImplementations.DescendingListIterator;
 
 public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E> {
 	public static final int ELEMENT_NOT_FOUND = - 1;
@@ -198,14 +200,15 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
 	@Override
 	public Iterator<E> descendingIterator() {
-		// TODO Auto-generated method stub
-		return null;
+		return DescendingListIterator.createInverse(this.listIterator());
 	}
 
 	@Override
-	public ListIterator<E> listIterator(int index) {
-		// TODO Auto-generated method stub
-		return null;
+	public ListIterator<E> listIterator(int startingIndex) {
+		rangeCheckForGet(startingIndex);
+		ListIterator<E> returnValue = new DequeNodeIterator.ValueIterator<E>(first, 0);
+		while(returnValue.nextIndex() != startingIndex) returnValue.next();
+		return returnValue;
 	}
 
 	@Override
@@ -213,7 +216,15 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 		return size;
 	}
 
-	/*
+    protected void rangeCheckForGet(int index) {
+        if(index < 0 || index >= size()) throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+    }
+
+    protected String outOfBoundsMsg(int index) {
+        return "Index: "+index+", Size: "+size();
+    }
+
+    /*
 	JRE LinkedList also has these:
 	add(E)
 	add(int, E)

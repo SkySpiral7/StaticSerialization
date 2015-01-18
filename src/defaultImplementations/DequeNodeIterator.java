@@ -9,15 +9,15 @@ import java.util.Objects;
  * It also assumes that the list will never have Integer.MAX_VALUE elements or more.
  * @param <E> the data type stored in the DequeNode
  */
-public class DequeIterator<E> implements ListIterator<DequeNode<E>> {
-	private DequeNode<E> nextNode;
-	private int nextIndex;
-	private DequeNode<E> previouslyVistedNode;
-	private boolean amAtEnd;
+public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>> {
+	protected DequeNode<E> nextNode;
+	protected int nextIndex;
+	protected DequeNode<E> previouslyVistedNode;
+	protected boolean amAtEnd;
 
 	//not null. use Collections.emptyListIterator()
 	//maybe allow empty so that add can become entire list
-	public DequeIterator(DequeNode<E> startingNode, int startingIndex) {
+	public DequeNodeIterator(DequeNode<E> startingNode, int startingIndex) {
 		Objects.requireNonNull(startingNode);
 		nextNode = startingNode;
 		nextIndex = startingIndex;
@@ -103,6 +103,39 @@ public class DequeIterator<E> implements ListIterator<DequeNode<E>> {
 		else DequeNode.Factory.createNodeBefore(newNode.getData(), nextNode);
 		previouslyVistedNode = null;
 		nextIndex++;
+	}
+
+	public static class ValueIterator<E> implements ListIterator<E> {
+		protected DequeNodeIterator<E> underlyingIterator;
+
+		public ValueIterator(DequeNode<E> startingNode, int startingIndex){underlyingIterator = new DequeNodeIterator<E>(startingNode, startingIndex);}
+		public ValueIterator(DequeNodeIterator<E> underlyingIterator){this.underlyingIterator = underlyingIterator;}
+
+		@Override public boolean hasNext(){return underlyingIterator.hasNext();}
+		@Override public boolean hasPrevious() {return underlyingIterator.hasPrevious();}
+		@Override public int nextIndex() {return underlyingIterator.nextIndex();}
+		@Override public int previousIndex(){return underlyingIterator.previousIndex();}
+		@Override public void remove(){underlyingIterator.remove();}
+
+		@Override
+		public E next() {
+			return underlyingIterator.next().getData();
+		}
+
+		@Override
+		public E previous() {
+			return underlyingIterator.previous().getData();
+		}
+
+		@Override
+		public void set(E newElementData) {
+			underlyingIterator.set(new DequeNode<E>(newElementData));
+		}
+
+		@Override
+		public void add(E newElementData) {
+			underlyingIterator.add(new DequeNode<E>(newElementData));
+		}
 	}
 
 }
