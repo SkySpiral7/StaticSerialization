@@ -91,25 +91,25 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
 	@Override
 	public E removeFirst() {
-		if(size == 0) throw new IllegalStateException("The list is empty. The first element can't be removed because it doesn't exist");
+		if(isEmpty()) throw new IllegalStateException("The list is empty. The first element can't be removed because it doesn't exist");
 		return removeNode(first);
 	}
 
 	@Override
 	public E removeLast() {
-		if(size == 0) throw new IllegalStateException("The list is empty. The last element can't be removed because it doesn't exist");
+		if(isEmpty()) throw new IllegalStateException("The list is empty. The last element can't be removed because it doesn't exist");
 		return removeNode(last);
 	}
 
 	@Override
 	public E pollFirst() {
-		if(size == 0) return null;
+		if(isEmpty()) return null;
 		return removeNode(first);
 	}
 
 	@Override
 	public E pollLast() {
-		if(size == 0) return null;
+		if(isEmpty()) return null;
 		return removeNode(last);
 	}
 
@@ -142,13 +142,13 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
 	@Override
 	public E peekFirst() {
-		if(size == 0) return null;
+		if(isEmpty()) return null;
 		return first.getData();
 	}
 
 	@Override
 	public E peekLast() {
-		if(size == 0) return null;
+		if(isEmpty()) return null;
 		return last.getData();
 	}
 
@@ -271,7 +271,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
     @Override
     public void clear() {
-    	while(size != 0) removeNode(first);
+    	while(!isEmpty()) removeNode(first);
     	//unlinking the nodes ensures garbage collection
     }
 
