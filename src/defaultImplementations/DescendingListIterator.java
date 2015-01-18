@@ -7,9 +7,14 @@ public class DescendingListIterator<E> implements ListIterator<E> {
 
     protected DescendingListIterator(ListIterator<E> iteratorToReverse){this.underlyingIterator = iteratorToReverse;}
 
-    public static <E> ListIterator<E> createInverse(ListIterator<E> iteratorToReverse) {
+    public static <E> ListIterator<E> iterateBackwards(ListIterator<E> iteratorToReverse) {
     	if(iteratorToReverse instanceof DescendingListIterator) return ((DescendingListIterator<E>) iteratorToReverse).underlyingIterator;
     	return new DescendingListIterator<E>(iteratorToReverse);
+    }
+
+    public static <E> ListIterator<E> iterateBackwardsFromEnd(ListIterator<E> iteratorToReverse) {
+    	while(iteratorToReverse.hasNext()) iteratorToReverse.next();
+    	return iterateBackwards(iteratorToReverse);
     }
 
 	@Override public void remove(){underlyingIterator.remove();}

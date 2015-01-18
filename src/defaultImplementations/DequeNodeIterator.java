@@ -138,4 +138,25 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>> {
 		}
 	}
 
+	public static class IndexAgnosticDequeIterator<E> extends DequeNodeIterator<E> {
+		public IndexAgnosticDequeIterator(DequeNode<E> startingNode) {
+			super(startingNode, -1);
+		}
+		@Override
+		public int nextIndex(){return -1;}
+		@Override
+		public int previousIndex(){return -1;}
+	}
+
+	public static class IndexAgnosticValueIterator<E> extends ValueIterator<E> {
+		public IndexAgnosticValueIterator(DequeNode<E> startingNode) {
+			super(startingNode, -1);
+		}
+		public IndexAgnosticValueIterator(DequeNodeIterator<E> underlyingIterator){super(underlyingIterator);}
+		@Override
+		public int nextIndex(){return -1;}
+		@Override
+		public int previousIndex(){return -1;}
+	}
+
 }

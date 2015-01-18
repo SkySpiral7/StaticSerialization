@@ -205,14 +205,13 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
 	@Override
 	public Iterator<E> descendingIterator() {
-		return DescendingListIterator.createInverse(this.listIterator());
+		return DescendingListIterator.iterateBackwards(new DequeNodeIterator.ValueIterator<E>(last, size));
 	}
 
 	@Override
 	public ListIterator<E> listIterator(int startingIndex) {
 		rangeCheckForGet(startingIndex);
-		ListIterator<E> returnValue = new DequeNodeIterator.ValueIterator<E>(first, 0);
-		while(returnValue.nextIndex() != startingIndex) returnValue.next();
+		ListIterator<E> returnValue = new DequeNodeIterator.ValueIterator<E>(getNode(startingIndex), startingIndex);
 		return returnValue;
 	}
 
@@ -244,8 +243,9 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
     @Override
     public void add(int insertionIndex, E newElement) {
     	if(size == Integer.MAX_VALUE) return;
-        if(insertionIndex == size){this.addLast(newElement); return;}
-        if(insertionIndex == 0){this.addFirst(newElement); return;}
+        //if(insertionIndex == size){this.addLast(newElement); return;}
+        //if(insertionIndex == 0){this.addFirst(newElement); return;}
+    	//calling getNode is more efficient.
     	insertNodeAfter(getNode(insertionIndex), newElement);
     }
 
@@ -273,7 +273,6 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
     public void clear() {
     	while(size != 0) removeNode(first);
     	//unlinking the nodes ensures garbage collection
-    	modCount++;
     }
 
     @Override
@@ -301,8 +300,10 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
     @Override
     public E remove(int index) {
-    	modCount++;
-    	return getNode(index).remove().getData();
+    	DequeNode<E> nodeToRemove = getNode(index);
+    	E returnValue = nodeToRemove.getData();
+    	removeNode(nodeToRemove);
+    	return returnValue;
     }
 
     public DequeNode<E> getNode(int index) {
