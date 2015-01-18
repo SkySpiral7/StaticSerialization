@@ -1,5 +1,7 @@
 package src.defaultImplementations;
 
+import java.util.Objects;
+
 /**
  * This is mutable class for the nodes of a Deque. It keeps itself linked together but is not thread safe.
  * There is only 1 public constructor, for other ways to create notes use the factory.
@@ -70,7 +72,7 @@ public class DequeNode<E> {
     public boolean equals(Object obj) {
     	if(this == obj) return true;
     	if(!(obj instanceof DequeNode)) return false;  //this includes null check and child classes
-    	return data.equals(((DequeNode<?>) obj).data);
+    	return Objects.equals(data, (((DequeNode<?>) obj).data));
     }
 
     /**

@@ -11,18 +11,18 @@ import src.defaultImplementations.DequeNodeIterator;
 import src.defaultImplementations.DescendingListIterator;
 
 public class InfinitelyLinkedList<E> extends LinkedList<E> {
-	protected BigInteger biggerSize;
-	/**
-	 * False if the list has more elements than maxBigInteger. True otherwise.
-	 */
-	protected boolean knownSize;
-
 	public static final int INVALID_SIZE = -1;
 	protected final static BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
 	protected final static BigInteger maxInt = BigInteger.valueOf(Integer.MAX_VALUE);
 	private static BigInteger maxUnsignedIntegerValue;
 	private static BigInteger bitsInAnIntegerArray;
 	private static BigInteger maxBigInteger;
+
+	protected BigInteger biggerSize;
+	/**
+	 * False if the list has more elements than maxBigInteger. True otherwise.
+	 */
+	protected boolean knownSize;
 
 	public InfinitelyLinkedList(){size = INVALID_SIZE; biggerSize = BigInteger.ZERO; knownSize = true;}
     public InfinitelyLinkedList(Collection<? extends E> initialElements){this(); addAll(initialElements);}
