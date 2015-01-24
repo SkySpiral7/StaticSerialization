@@ -51,11 +51,12 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 		//TODO: is everything accounted for?
 	}
 
+	//requires 1.8 I assume before that it would throw ArrayIndexOutOfBoundsException
 	protected static BigInteger changeBigInteger(BigInteger bigIntToChange, int sizeChangeAmount) {
 		try {
 			return bigIntToChange.add(BigInteger.valueOf(sizeChangeAmount));
 		}
-		catch(Throwable e) {  //ArithmeticException (from overflow) or OutOfMemoryError etc
+		catch(Throwable e) {  //ArithmeticException (from 1.8 overflow) or OutOfMemoryError etc
 			return INVALID_SIZE_BIG_INTEGER;
 		}
 	}

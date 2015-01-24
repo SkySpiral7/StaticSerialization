@@ -2,12 +2,15 @@ package src;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import src.defaultImplementations.DequeNode;
 import src.defaultImplementations.DequeNodeIterator;
+import src.defaultImplementations.DescendingListIterator;
 
 //aka InfinInt
 //maxes: int[] 2^(32 * (2^31-1))-1 long[] 2^(64 * (2^31-1))-1
@@ -56,33 +59,39 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public static InfiniteInteger littleEndian(long[] valueArray, boolean isNegative) {
-		//TODO: method stub
-		return null;
+		Long[] wrappedValues = new Long[valueArray.length];
+		for(int i=0; i < valueArray.length; i++){wrappedValues[i] = Long.valueOf(valueArray[i]);}
+		return littleEndian(Arrays.asList(wrappedValues).listIterator(), isNegative);
 	}
 
 	public static InfiniteInteger bigEndian(long[] valueArray, boolean isNegative) {
+		Long[] wrappedValues = new Long[valueArray.length];
+		for(int i=0; i < valueArray.length; i++){wrappedValues[i] = Long.valueOf(valueArray[i]);}
+		return bigEndian(Arrays.asList(wrappedValues).listIterator(), isNegative);
+	}
+
+	public static InfiniteInteger littleEndian(Iterator<Long> valueArray, boolean isNegative) {
 		//TODO: method stub
 		return null;
 	}
 
-	//TODO: make a long iterator. make methods for them. have big ends wrap reverse iterator. have long[] wrap long iterator
-
-	//includes 0
-	public Stream<InfiniteInteger> allNonNegativeIntegers() {
-		//TODO: method stub
-		return null;
+	public static InfiniteInteger bigEndian(ListIterator<Long> valueArray, boolean isNegative) {
+		return littleEndian(DescendingListIterator.iterateBackwards(valueArray), isNegative);
 	}
 
-	//includes 0
-	public Stream<InfiniteInteger> allNonPositiveIntegers() {
-		//TODO: method stub
-		return null;
-	}
-
-	//ie: 0, 1, -1, 2, -2, 3, -3
-	public Stream<InfiniteInteger> allIntegers() {
-		//TODO: method stub
-		return null;
+	/**
+	 * This method returns an infinite stream of all integers.
+	 * NaN, +Infinity, and -Infinity will not be included in the stream.
+	 * The stream's order is: 0, 1, -1, 2, -2, 3, -3, 4, -4...
+	 * 
+	 * @return a stream of all integers
+	 */
+	public Stream<InfiniteInteger> streamAllIntegers() {
+		return Stream.iterate(ZERO, (InfiniteInteger previous) -> {
+				if(previous == ZERO) return new InfiniteInteger(1);
+				if(previous.isNegative) return previous.abs().add(1);
+				return previous.negate();
+			});
 	}
 
 	@Override
@@ -128,8 +137,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	public InfiniteInteger add(long value) {
 		//TODO: currently assumes all positive
 		if(!this.isFinite() || value == 0) return this;
+		if(this == ZERO) return new InfiniteInteger(value);
 		long sum, valueRemaining = value;
-		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because this will be modified
+		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
 		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
@@ -166,7 +176,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 				sum = Integer.toUnsignedLong(thisCursor.getData()) + lowValue;
 
 				//TODO: test: is &low the same as (int)?
-				//TODO: confirm: is >>> 32 the number I want?
+				//TODO: confirm: is >>> 32 the number I want
 				returnCursor.setData((int) (sum & LOW_MASK_64));
 				sum >>>=32;
 
@@ -206,7 +216,6 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	public InfiniteInteger add(BigInteger value) {
 		//TODO: currently assumes all positive
 		if(!this.isFinite() || value.compareTo(BigInteger.ZERO) == 0) return this;
-		if(this == POSITIVE_INFINITITY || this == NOT_A_NUMBER) return this;
 		if(value.compareTo(bigIntegerMaxLong) != 1) return add(value.longValue());
 		InfiniteInteger returnValue = this;
 		BigInteger valueRemaining = value;
@@ -257,35 +266,44 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return null;
     }
 
-    public InfiniteInteger divideDropRemainder(long val) {
+    public IntegerQuotient<InfiniteInteger> divide(long val) {
 		// TODO method stub
 		return null;
+    }
+
+    public IntegerQuotient<InfiniteInteger> divide(BigInteger val) {
+		// TODO method stub
+		return null;
+    }
+
+    public IntegerQuotient<InfiniteInteger> divide(InfiniteInteger val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger divideDropRemainder(long val) {
+		return divide(val).getWholeResult();
     }
 
     public InfiniteInteger divideDropRemainder(BigInteger val) {
-		// TODO method stub
-		return null;
+		return divide(val).getWholeResult();
     }
 
     public InfiniteInteger divideDropRemainder(InfiniteInteger val) {
-		// TODO method stub
-		return null;
+		return divide(val).getWholeResult();
     }
 
-    //TODO: wait mod "differs from remainder in that it always returns a non-negative"?
+    //aka remainder, divideDropWhole, divideReturnRemainder
     public InfiniteInteger mod(long val) {
-		// TODO method stub
-		return null;
+		return divide(val).getRemainder();
     }
 
     public InfiniteInteger mod(BigInteger val) {
-		// TODO method stub
-		return null;
+		return divide(val).getRemainder();
     }
 
     public InfiniteInteger mod(InfiniteInteger val) {
-		// TODO method stub
-		return null;
+		return divide(val).getRemainder();
     }
 
     public InfiniteInteger pow(long val) {
@@ -305,8 +323,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
     //this^this
     public InfiniteInteger selfPower() {
-		// TODO method stub
-		return null;
+		return pow(this);
     }
 
     public InfiniteInteger abs() {
@@ -328,11 +345,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
     /**
      * @return -1, 0 or 1 as the value of this number is negative, zero or
-     *         positive.
+     *         positive respectively. NaN returns 0.
      */
     public byte signum() {
     	if(isNegative) return -1;
-    	if(this == ZERO) return 0;
+    	if(this == ZERO || this == NOT_A_NUMBER) return 0;
         return 1;
     }
 
@@ -384,6 +401,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(!(obj instanceof InfiniteInteger)) return false;  //includes null check and children
 		InfiniteInteger other = (InfiniteInteger) obj;
 		if(other == ZERO || other == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY || other == NOT_A_NUMBER) return false;
+		if(isNegative != other.isNegative) return false;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		DequeNode<Integer> otherCursor = other.magnitudeHead;
 		while (thisCursor != null && otherCursor != null)
@@ -395,12 +413,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return (thisCursor == otherCursor);  //they must both be null (at end)
 	}
 
+	//collisions are, in theory, likely
 	@Override
 	public int hashCode() {
-		//collisions are, in theory, likely
 		DequeNode<Integer> cursor = magnitudeHead;
-		int hash = cursor.getData();
-		cursor = cursor.getNext();
+		int hash = Boolean.hashCode(isNegative);
 		while (cursor != null)
 		{
 			hash ^= cursor.getData();
@@ -426,14 +443,83 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	@Override
 	public InfiniteInteger copy() {
-		// TODO Auto-generated method stub
-		return null;
+		if(!this.isFinite() || this == ZERO) return this;
+		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
+		returnValue.isNegative = isNegative;
+		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+		DequeNode<Integer> thisCursor = this.magnitudeHead;
+
+		returnCursor.setData(thisCursor.getData());
+		thisCursor = thisCursor.getNext();
+		while (thisCursor != null)
+		{
+			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, thisCursor.getData());
+			thisCursor = thisCursor.getNext();
+		}
+		return returnValue;
 	}
 
+	//natural order. but 0 < NaN < 1
 	@Override
-	public int compareTo(InfiniteInteger o) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int compareTo(InfiniteInteger other) {
+		byte thisSmaller = -1, thisBigger = 1, sameValue = 0;
+
+		if(this == other) return sameValue;
+		if(this == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY) return thisBigger;
+		if(this == NEGATIVE_INFINITITY || other == POSITIVE_INFINITITY) return thisSmaller;
+
+		if (this == NOT_A_NUMBER)
+		{
+			if(other == ZERO || other.isNegative) return thisBigger;
+			return thisSmaller;  //since other != NaN
+		}
+		if (other == NOT_A_NUMBER)
+		{
+			if(this == ZERO || this.isNegative) return thisSmaller;
+			return thisBigger;  //since this != NaN
+		}
+
+		if(isNegative && !other.isNegative) return thisSmaller;
+		if(!isNegative && other.isNegative) return thisBigger;
+
+		//at this point: they are not the same object, they have the same sign, they are not special values.
+		//since the lengths can be any integer I first need to compare lengths
+
+		DequeNode<Integer> otherCursor = other.magnitudeHead;
+		DequeNode<Integer> thisCursor = this.magnitudeHead;
+		while (thisCursor.getNext() != null || otherCursor.getNext() != null)
+		{
+			if (thisCursor.getNext() != null && otherCursor.getNext() != null)
+			{
+				thisCursor = thisCursor.getNext();
+				otherCursor = otherCursor.getNext();
+			}
+			else if(thisCursor.getNext() != null) return thisBigger;
+			else return thisSmaller;
+		}
+
+		//they have the same number of nodes and both cursors are pointing to the most significant (last) node
+		Integer thisData, otherData;
+		while (thisCursor.getPrev() != null)
+		{
+			thisData = thisCursor.getData();
+			otherData = otherCursor.getData();
+			if(thisData.intValue() != otherData.intValue()) return thisData.compareTo(otherData);
+			thisCursor = thisCursor.getPrev();
+			otherCursor = otherCursor.getPrev();
+		}
+
+		//same length and all nodes have the same data
+		return sameValue;
+	}
+
+	//even though it can't be sorted like this
+	public int compareTo(BigInteger other) {
+		return this.compareTo(valueOf(other));
+	}
+
+	public int compareTo(long other) {
+		return this.compareTo(valueOf(other));
 	}
 
 }
