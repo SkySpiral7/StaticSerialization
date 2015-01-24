@@ -4,6 +4,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import src.defaultImplementations.DequeNode;
 import src.defaultImplementations.DequeNodeIterator;
@@ -11,7 +12,7 @@ import src.defaultImplementations.DequeNodeIterator;
 //aka InfinInt
 //maxes: int[] 2^(32 * (2^31-1))-1 long[] 2^(64 * (2^31-1))-1
 //string (base 10): 10^(2^31-1) which is much smaller; big int: ?
-public class InfiniteInteger extends Number implements Copyable<InfiniteInteger> {
+public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>, Comparable<InfiniteInteger> {
 	private static final long serialVersionUID = 1L;
 
 	public static final InfiniteInteger ZERO = new InfiniteInteger(0);
@@ -54,6 +55,36 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return ZERO.add(value);
 	}
 
+	public static InfiniteInteger littleEndian(long[] valueArray, boolean isNegative) {
+		//TODO: method stub
+		return null;
+	}
+
+	public static InfiniteInteger bigEndian(long[] valueArray, boolean isNegative) {
+		//TODO: method stub
+		return null;
+	}
+
+	//TODO: make a long iterator. make methods for them. have big ends wrap reverse iterator. have long[] wrap long iterator
+
+	//includes 0
+	public Stream<InfiniteInteger> allNonNegativeIntegers() {
+		//TODO: method stub
+		return null;
+	}
+
+	//includes 0
+	public Stream<InfiniteInteger> allNonPositiveIntegers() {
+		//TODO: method stub
+		return null;
+	}
+
+	//ie: 0, 1, -1, 2, -2, 3, -3
+	public Stream<InfiniteInteger> allIntegers() {
+		//TODO: method stub
+		return null;
+	}
+
 	@Override
 	public int intValue() {
 		return (int) longValue();
@@ -71,10 +102,21 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	@Override
 	public long longValue() {
-		return getBigIntegerValue().longValue();
+		// TODO method stub
+		return 0;
 	}
 
-	public BigInteger getBigIntegerValue() {
+	public long longValueExact() {
+		// TODO method stub
+		return 0;
+	}
+
+	public BigInteger bigIntegerValue() {
+		// TODO method stub
+		return null;
+	}
+
+	public BigInteger bigIntegerValueExact() {
 		// TODO method stub
 		return null;
 	}
@@ -200,7 +242,134 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return null;
 	}
 
-	public boolean isNaN(){return this == NOT_A_NUMBER;}
+    public InfiniteInteger multiply(long val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger multiply(BigInteger val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger multiply(InfiniteInteger val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger divideDropRemainder(long val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger divideDropRemainder(BigInteger val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger divideDropRemainder(InfiniteInteger val) {
+		// TODO method stub
+		return null;
+    }
+
+    //TODO: wait mod "differs from remainder in that it always returns a non-negative"?
+    public InfiniteInteger mod(long val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger mod(BigInteger val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger mod(InfiniteInteger val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger pow(long val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger pow(BigInteger val) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger pow(InfiniteInteger val) {
+		// TODO method stub
+		return null;
+    }
+
+    //this^this
+    public InfiniteInteger selfPower() {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger abs() {
+    	if(!isNegative || isNaN()) return this;  //includes this == 0 and +Infinity
+    	if(this == NEGATIVE_INFINITITY) return POSITIVE_INFINITITY;
+    	InfiniteInteger returnValue = copy();
+    	returnValue.isNegative = false;
+    	return returnValue;
+    }
+
+    public InfiniteInteger negate() {
+    	if(isNaN() || this == ZERO) return this;
+    	if(this == NEGATIVE_INFINITITY) return POSITIVE_INFINITITY;
+    	if(this == POSITIVE_INFINITITY) return NEGATIVE_INFINITITY;
+    	InfiniteInteger returnValue = copy();
+    	returnValue.isNegative = !isNegative;
+    	return returnValue;
+    }
+
+    /**
+     * @return -1, 0 or 1 as the value of this number is negative, zero or
+     *         positive.
+     */
+    public byte signum() {
+    	if(isNegative) return -1;
+    	if(this == ZERO) return 0;
+        return 1;
+    }
+
+    public InfiniteInteger shiftLeft(long n) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger shiftLeft(BigInteger n) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger shiftLeft(InfiniteInteger n) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger shiftRight(long n) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger shiftRight(BigInteger n) {
+		// TODO method stub
+		return null;
+    }
+
+    public InfiniteInteger shiftRight(InfiniteInteger n) {
+		// TODO method stub
+		return null;
+    }
+
+    //TODO: add min/max. maybe static (InfInt, InfInt) only?
+    //big int also has bitwise operations. gcd. and weird methods
+
+    public boolean isNaN(){return this == NOT_A_NUMBER;}
 	public static boolean isNaN(InfiniteInteger num){return num.isNaN();}
 	public boolean isInfinite(){return (this == POSITIVE_INFINITITY || this == NEGATIVE_INFINITITY);}
 	public static boolean isInfinite(InfiniteInteger num){return num.isInfinite();}
@@ -259,6 +428,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	public InfiniteInteger copy() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public int compareTo(InfiniteInteger o) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }
