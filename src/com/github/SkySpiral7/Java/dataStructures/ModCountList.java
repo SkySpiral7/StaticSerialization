@@ -1,4 +1,4 @@
-package src;
+package com.github.SkySpiral7.Java.dataStructures;
 
 import java.util.AbstractList;
 import java.util.List;

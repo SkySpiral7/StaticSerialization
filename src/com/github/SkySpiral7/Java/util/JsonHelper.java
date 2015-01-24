@@ -1,4 +1,4 @@
-package src;
+package com.github.SkySpiral7.Java.util;
 
 import java.util.Objects;
 

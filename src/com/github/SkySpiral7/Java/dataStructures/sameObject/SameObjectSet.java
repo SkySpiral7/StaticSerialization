@@ -1,4 +1,4 @@
-package src.sameobject;
+package com.github.SkySpiral7.Java.dataStructures.sameObject;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import src.JsonHelper;
+import com.github.SkySpiral7.Java.util.JsonHelper;
 
 /**
  * @deprecated use IdentityHashSet instead

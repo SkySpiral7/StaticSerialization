@@ -1,4 +1,4 @@
-package src;
+package com.github.SkySpiral7.Java;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -8,9 +8,11 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import src.defaultImplementations.DequeNode;
-import src.defaultImplementations.DequeNodeIterator;
-import src.defaultImplementations.DescendingListIterator;
+import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
+import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
+import com.github.SkySpiral7.Java.iterators.ReadOnlyListIterator;
+import com.github.SkySpiral7.Java.pojo.DequeNode;
+import com.github.SkySpiral7.Java.pojo.IntegerQuotient;
 
 //aka InfinInt
 //maxes: int[] 2^(32 * (2^31-1))-1 long[] 2^(64 * (2^31-1))-1

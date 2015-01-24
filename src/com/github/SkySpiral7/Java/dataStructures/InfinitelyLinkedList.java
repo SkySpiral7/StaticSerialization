@@ -1,4 +1,4 @@
-package src;
+package com.github.SkySpiral7.Java.dataStructures;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-import src.defaultImplementations.DequeNode;
-import src.defaultImplementations.DequeNodeIterator;
-import src.defaultImplementations.DescendingListIterator;
+import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
+import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
+import com.github.SkySpiral7.Java.pojo.DequeNode;
 
 public class InfinitelyLinkedList<E> extends LinkedList<E> {
 	public static final int INVALID_SIZE = -1;

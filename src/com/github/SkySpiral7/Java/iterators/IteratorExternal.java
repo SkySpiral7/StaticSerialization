@@ -1,4 +1,4 @@
-package src.defaultImplementations;
+package com.github.SkySpiral7.Java.iterators;
 
 import java.util.AbstractList;
 import java.util.ConcurrentModificationException;
@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
-import src.ModCountList;
+import com.github.SkySpiral7.Java.dataStructures.ModCountList;
 
 /**
  * Copied from AbstractList.Itr with few changes. Note that the underlyingList must have the following methods defined:

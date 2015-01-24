@@ -1,9 +1,9 @@
-package src.defaultImplementations;
+package com.github.SkySpiral7.Java.dataStructures;
 
 import java.util.Map;
 import java.util.Objects;
 
-import src.JsonHelper;
+import com.github.SkySpiral7.Java.util.JsonHelper;
 
 //TODO: make a sublist, iterator, list iterator, deque node. any more I can think of
 /**

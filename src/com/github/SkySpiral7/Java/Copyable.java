@@ -1,4 +1,4 @@
-package src;
+package com.github.SkySpiral7.Java;
 
 /**
  * Just like the kind you see everywhere.

@@ -1,4 +1,4 @@
-package tests;
+package com.github.SkySpiral7.Java;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -16,8 +16,6 @@ import java.util.Arrays;
 
 import org.junit.Ignore;
 import org.junit.Test;
-
-import src.FileToStringAdapter;
 
 public class UT_FileToStringAdapter {
     private String projectPath = "tests/";

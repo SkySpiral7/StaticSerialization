@@ -1,4 +1,4 @@
-package src;
+package com.github.SkySpiral7.Java;
 
 import java.io.BufferedWriter;
 import java.io.File;

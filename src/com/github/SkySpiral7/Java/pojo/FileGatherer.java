@@ -1,4 +1,4 @@
-package src;
+package com.github.SkySpiral7.Java.pojo;
 
 import java.io.File;
 import java.util.ArrayList;

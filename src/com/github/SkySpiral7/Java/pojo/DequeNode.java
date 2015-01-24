@@ -1,4 +1,4 @@
-package src.defaultImplementations;
+package com.github.SkySpiral7.Java.pojo;
 
 import java.util.Objects;
 

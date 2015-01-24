@@ -1,11 +1,11 @@
-package src.defaultImplementations;
+package com.github.SkySpiral7.Java.iterators;
 
 import java.util.AbstractList;
 import java.util.ConcurrentModificationException;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-import src.ModCountList;
+import com.github.SkySpiral7.Java.dataStructures.ModCountList;
 
 /**
  * Copied from AbstractList.ListItr with few changes. In addition to those defined IteratorExternal the underlyingList must also

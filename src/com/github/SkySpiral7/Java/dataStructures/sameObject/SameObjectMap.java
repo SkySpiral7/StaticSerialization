@@ -1,4 +1,4 @@
-package src.sameobject;
+package com.github.SkySpiral7.Java.dataStructures.sameObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,8 +10,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
-import src.JsonHelper;
-import src.defaultImplementations.MapEntryExternal;
+import com.github.SkySpiral7.Java.dataStructures.MapEntryExternal;
+import com.github.SkySpiral7.Java.util.JsonHelper;
 
 //key and value can both be null. also point out the plentiful constructors
 /**

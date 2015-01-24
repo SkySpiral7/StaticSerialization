@@ -1,4 +1,4 @@
-package src;
+package com.github.SkySpiral7.Java.iterators;
 
 import java.util.ListIterator;
 

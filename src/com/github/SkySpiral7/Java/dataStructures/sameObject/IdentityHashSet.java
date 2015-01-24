@@ -1,4 +1,4 @@
-package src.sameobject;
+package com.github.SkySpiral7.Java.dataStructures.sameObject;
 
 import java.util.AbstractSet;
 import java.util.Arrays;

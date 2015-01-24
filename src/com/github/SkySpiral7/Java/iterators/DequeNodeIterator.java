@@ -1,8 +1,11 @@
-package src.defaultImplementations;
+package com.github.SkySpiral7.Java.iterators;
 
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+
+import com.github.SkySpiral7.Java.pojo.DequeNode;
+import com.github.SkySpiral7.Java.pojo.DequeNode.Factory;
 
 /**
  * This is a ListIterator for a Deque. It is not thread safe and assumes the deque won't be modified by another class.

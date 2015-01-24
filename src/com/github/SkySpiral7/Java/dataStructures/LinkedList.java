@@ -1,4 +1,4 @@
-package src;
+package com.github.SkySpiral7.Java.dataStructures;
 
 import java.util.AbstractSequentialList;
 import java.util.Arrays;
@@ -7,9 +7,9 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-import src.defaultImplementations.DequeNode;
-import src.defaultImplementations.DequeNodeIterator;
-import src.defaultImplementations.DescendingListIterator;
+import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
+import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
+import com.github.SkySpiral7.Java.pojo.DequeNode;
 
 public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>, ModCountList<E> {
 	public static final int ELEMENT_NOT_FOUND = - 1;
