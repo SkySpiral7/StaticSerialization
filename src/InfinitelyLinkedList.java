@@ -12,19 +12,16 @@ import src.defaultImplementations.DescendingListIterator;
 
 public class InfinitelyLinkedList<E> extends LinkedList<E> {
 	public static final int INVALID_SIZE = -1;
-	protected final static BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
-	protected final static BigInteger maxInt = BigInteger.valueOf(Integer.MAX_VALUE);
-	private static BigInteger maxUnsignedIntegerValue;
-	private static BigInteger bitsInAnIntegerArray;
-	private static BigInteger maxBigInteger;
+	public static final BigInteger INVALID_SIZE_BIG_INTEGER = BigInteger.valueOf(INVALID_SIZE);
+	protected final static BigInteger BIG_INTEGER_MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
 
 	protected BigInteger biggerSize;
 	/**
-	 * False if the list has more elements than maxBigInteger. True otherwise.
+	 * True if the list has more elements than the max of BigInteger. False otherwise.
 	 */
-	protected boolean knownSize;
+	protected boolean sizeOverflow;
 
-	public InfinitelyLinkedList(){size = INVALID_SIZE; biggerSize = BigInteger.ZERO; knownSize = true;}
+	public InfinitelyLinkedList(){size = INVALID_SIZE; biggerSize = BigInteger.ZERO; sizeOverflow = false;}
     public InfinitelyLinkedList(Collection<? extends E> initialElements){this(); addAll(initialElements);}
     public InfinitelyLinkedList(E[] initialElements){this(Arrays.asList(initialElements));}
 
@@ -47,60 +44,30 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 		changeSize(1);
 	}
 
-	protected void changeSize(int sizeChange) {
-		//assert(sizeChange != 0); and that if sizeChange is negative it will not cause either size to be negative (if size is known)
-		if(sizeChange > 0 && !bigIntegerWillLosePrecision(sizeChange)){biggerSize.add(BigInteger.valueOf(sizeChange)); return;}
-		if(sizeChange > 0){biggerSize = BigInteger.ONE; knownSize = false; return;}
-		biggerSize.add(BigInteger.valueOf(sizeChange));
+	protected void changeSize(int sizeChangeAmount) {
+		biggerSize = changeBigInteger(biggerSize, sizeChangeAmount);
+		if(biggerSize == INVALID_SIZE_BIG_INTEGER){sizeOverflow = true; biggerSize = BigInteger.ONE; return;}
 		if(biggerSize.compareTo(BigInteger.ZERO) == 0) countSize();
+		//TODO: is everything accounted for?
+	}
+
+	protected static BigInteger changeBigInteger(BigInteger bigIntToChange, int sizeChangeAmount) {
+		try {
+			return bigIntToChange.add(BigInteger.valueOf(sizeChangeAmount));
+		}
+		catch(Throwable e) {  //ArithmeticException (from overflow) or OutOfMemoryError etc
+			return INVALID_SIZE_BIG_INTEGER;
+		}
 	}
 
 	protected void countSize() {
+		//TODO: add a constructor flag that prevents countSize
 		BigInteger newSize = BigInteger.ZERO;
 		Iterator<E> iter = iterator();
-		while(iter.hasNext() && !bigIntegerWillLosePrecision(1))
-			{newSize=newSize.add(BigInteger.ONE); iter.next();}
-		if(!iter.hasNext()){knownSize = true; biggerSize = newSize;}
-		else biggerSize = getMaxBigInteger();
-	}
-
-	protected boolean bigIntegerWillLosePrecision(int sizeChange) {
-		if(biggerSize.compareTo(maxLong) != 1) return false;  //quick check
-		//if(biggerSize.compareTo(getMaxUnsignedIntegerValue()) != 1) return false;  //always false because I already compared max long
-		if(biggerSize.compareTo(getBitsInAnIntegerArray()) != 1) return false;
-		//multiple size checks prevent the unnecessary calculation of maxBigInteger
-		return (getMaxBigInteger().subtract(biggerSize).compareTo(BigInteger.valueOf(sizeChange)) == 1);
-	}
-
-	protected static BigInteger getMaxUnsignedIntegerValue() {
-		if(maxUnsignedIntegerValue == null) maxUnsignedIntegerValue = BigInteger.valueOf(2).pow(32).subtract(BigInteger.ONE);
-		return maxUnsignedIntegerValue;
-	}
-
-	protected static BigInteger getBitsInAnIntegerArray() {
-		if(bitsInAnIntegerArray == null) bitsInAnIntegerArray = getMaxUnsignedIntegerValue().multiply(BigInteger.valueOf(31)).subtract(BigInteger.ONE);
-		return bitsInAnIntegerArray;
-	}
-
-	//TODO: double check the edge
-	protected static BigInteger getMaxBigInteger() {
-		if (maxBigInteger == null)
-		{
-			maxBigInteger = BigInteger.valueOf(2);
-			BigInteger exponentRemaining = getBitsInAnIntegerArray();
-			while (exponentRemaining.compareTo(BigInteger.TEN) == 1)
-			{
-				maxBigInteger.shiftLeft(10);
-				exponentRemaining.subtract(BigInteger.TEN);
-			}
-			while (exponentRemaining.signum() == 1)
-			{
-				maxBigInteger.shiftLeft(1);
-				exponentRemaining.subtract(BigInteger.ONE);
-			}
-			maxBigInteger.subtract(BigInteger.ONE);  //this is the most expensive math due to tons of borrowing
-		}
-		return maxBigInteger;
+		while(iter.hasNext() && newSize != INVALID_SIZE_BIG_INTEGER)
+			{newSize = changeBigInteger(newSize, 1); iter.next();}
+		if(!iter.hasNext()){sizeOverflow = false; biggerSize = newSize;}
+		else biggerSize = BigInteger.TEN;  //TODO: don't recount for 10?
 	}
 
 	@Override
@@ -118,18 +85,18 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 	}
 
 	public BigInteger getBigSize() {
-		if(!knownSize) return BigInteger.valueOf(INVALID_SIZE);
+		if(sizeOverflow) return INVALID_SIZE_BIG_INTEGER;
 		return biggerSize;
 	}
 
 	@Override
 	public int size() {
-		if(!knownSize || biggerSize.compareTo(maxInt) == 1) return INVALID_SIZE;
+		if(sizeOverflow || biggerSize.compareTo(BIG_INTEGER_MAX_INT) == 1) return INVALID_SIZE;
 		return biggerSize.intValue();
 	}
 
 	protected void rangeCheckForGet(BigInteger index) {
-		if(!knownSize) return;
+		if(sizeOverflow) return;
 		if(biggerSize.compareTo(index) != 1) outOfBoundsMsg(index);
 	}
 
@@ -147,7 +114,8 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
     }
 
     protected String outOfBoundsMsg(BigInteger index) {
-        return "Index: "+index+", Size: "+biggerSize;
+		//if(sizeOverflow) return "Index: "+index+", Size: Too Large";  //is never out of range
+    	return "Index: "+index+", Size: "+biggerSize;
     }
 
     @Override
@@ -195,10 +163,10 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 		return getNode(index).getData();
     }
 
-    //super.clear will work fine since removeNode will eventually make size == 0
+    //super.clear will work fine since it calls isEmpty and removeNode
 
     public boolean containsFromEnd(Object objectToFind) {
-        Iterator<E> it = descendingIterator();
+    	Iterator<E> it = descendingIterator();
         if (objectToFind==null) {
             while (it.hasNext())
                 if (it.next()==null)
@@ -278,7 +246,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 
 	@Override
     public int lastIndexOf(Object objectToFind) {
-        if(biggerSize.compareTo(maxInt) == 1) throw new IllegalStateException("The list is larger than an Integer can represent.");
+        if(biggerSize.compareTo(BIG_INTEGER_MAX_INT) == 1) throw new IllegalStateException("The list is larger than an Integer can represent.");
     	int index = size;
         if (objectToFind == null) {
             for (DequeNode<E> currentNode = last; currentNode != null; currentNode = currentNode.getPrev()) {
@@ -295,7 +263,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
     }
 
     public BigInteger lastBigIndexOf(Object objectToFind) {
-        if(!knownSize) throw new IllegalStateException("The list is larger than BigInteger can represent.");
+        if(sizeOverflow) throw new IllegalStateException("The list is larger than BigInteger can represent.");
         BigInteger index = biggerSize;
         if (objectToFind == null) {
             for (DequeNode<E> currentNode = last; currentNode != null; currentNode = currentNode.getPrev()) {
@@ -326,7 +294,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
     public DequeNode<E> getNode(BigInteger index) {
     	rangeCheckForGet(index);
 
-    	if (knownSize && biggerSize.shiftRight(1).compareTo(index) == -1)
+    	if (!sizeOverflow && biggerSize.shiftRight(1).compareTo(index) == -1)
     	{
         	DequeNode<E> currentNode = last;
             for(BigInteger i = biggerSize.subtract(BigInteger.ONE); i.compareTo(index) == 1; i=i.subtract(BigInteger.ONE))
