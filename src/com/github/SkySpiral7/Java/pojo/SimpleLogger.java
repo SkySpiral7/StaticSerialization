@@ -62,7 +62,7 @@ public class SimpleLogger {
    public void appendLine(String line)
    {
        Objects.requireNonNull(line);
-       this.append(line + System.getProperty("line.separator"));
+       this.append(line + System.lineSeparator());
    }
 
    /**

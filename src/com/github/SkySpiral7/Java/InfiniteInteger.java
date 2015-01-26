@@ -98,7 +98,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	@Override
 	public int intValue() {
-		return (int) longValue();
+		int returnValue = Math.abs(magnitudeHead.getData().intValue());
+		if(isNegative) return -returnValue;
+		return returnValue;
 	}
 
 	@Override
@@ -244,8 +246,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public InfiniteInteger subtract(BigInteger value) {
-		// TODO method stub
-		return null;
+		return subtract(InfiniteInteger.valueOf(value));
 	}
 
 	public InfiniteInteger subtract(InfiniteInteger value) {
@@ -253,17 +254,16 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return null;
 	}
 
-    public InfiniteInteger multiply(long val) {
+    public InfiniteInteger multiply(long value) {
 		// TODO method stub
 		return null;
     }
 
-    public InfiniteInteger multiply(BigInteger val) {
-		// TODO method stub
-		return null;
+    public InfiniteInteger multiply(BigInteger value) {
+		return multiply(InfiniteInteger.valueOf(value));
     }
 
-    public InfiniteInteger multiply(InfiniteInteger val) {
+    public InfiniteInteger multiply(InfiniteInteger value) {
 		// TODO method stub
 		return null;
     }
@@ -274,8 +274,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public IntegerQuotient<InfiniteInteger> divide(BigInteger val) {
-		// TODO method stub
-		return null;
+		return divide(InfiniteInteger.valueOf(val));
     }
 
     public IntegerQuotient<InfiniteInteger> divide(InfiniteInteger val) {
@@ -314,8 +313,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger pow(BigInteger val) {
-		// TODO method stub
-		return null;
+		return pow(InfiniteInteger.valueOf(val));
     }
 
     public InfiniteInteger pow(InfiniteInteger val) {
@@ -361,8 +359,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger shiftLeft(BigInteger n) {
-		// TODO method stub
-		return null;
+		return shiftLeft(InfiniteInteger.valueOf(n));
     }
 
     public InfiniteInteger shiftLeft(InfiniteInteger n) {
@@ -376,8 +373,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger shiftRight(BigInteger n) {
-		// TODO method stub
-		return null;
+		return shiftRight(InfiniteInteger.valueOf(n));
     }
 
     public InfiniteInteger shiftRight(InfiniteInteger n) {
@@ -443,6 +439,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		// TODO method stub it can always fit
 	}
 
+	//javadoc the ones that will not be copied and that being immutable is not all that usefull to the outside
 	@Override
 	public InfiniteInteger copy() {
 		if(!this.isFinite() || this == ZERO) return this;

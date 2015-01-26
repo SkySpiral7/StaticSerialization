@@ -1,5 +1,6 @@
 package com.github.SkySpiral7.Java.dataStructures;
 
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -14,8 +15,8 @@ import com.github.SkySpiral7.Java.util.JsonHelper;
  * @param <K> the data type of the key of the Map.Entry
  * @param <V> the data type of the value of the Map.Entry
  * 
- * @see java.util.AbstractMap.SimpleEntry
- * @see java.util.AbstractMap.SimpleImmutableEntry
+ * @see AbstractMap.SimpleEntry
+ * @see AbstractMap.SimpleImmutableEntry
  */
 //TODO: javadoc everything in all files
 public class MapEntryExternal<K,V> implements Map.Entry<K,V> {
