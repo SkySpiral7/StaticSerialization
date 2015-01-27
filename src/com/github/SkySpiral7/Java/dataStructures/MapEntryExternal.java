@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import com.github.SkySpiral7.Java.util.JsonHelper;
 
-//TODO: make a sublist, iterator, list iterator, deque node. any more I can think of
+//TODO: make a sublist and any more I can think of
 /**
  * This Map.Entry can be created when Map.entrySet is called but can't be used to represent a map's
  * internal data this class depends on a map already having data. This class is thread safe and modifications
