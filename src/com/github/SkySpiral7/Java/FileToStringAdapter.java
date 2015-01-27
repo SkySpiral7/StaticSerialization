@@ -341,7 +341,7 @@ public class FileToStringAdapter extends File {
      * @see String#compareTo(String)
      */
     public int compareContents(CharSequence cs) {
-    	//TODO: method stub
+    	//TODO: method stubs
         return 0;
     }
 
@@ -351,7 +351,7 @@ public class FileToStringAdapter extends File {
      * @see String#compareToIgnoreCase(String)
      */
     public int compareContentsIgnoreCase(CharSequence cs) {
-        //TODO: method stub
+        //method stub
         return 0;
     }
 
@@ -361,7 +361,7 @@ public class FileToStringAdapter extends File {
      * @see String#startsWith(String, int)
      */
     public boolean startsWith(String prefix, long offset) {
-        //TODO: method stub
+        //method stub
         return false;
     }
 
@@ -376,7 +376,7 @@ public class FileToStringAdapter extends File {
      * @see String#endsWith(String)
      */
     public boolean endsWith(String suffix) {
-        //TODO: method stub
+        //method stub
         return false;
     }
 
@@ -393,7 +393,7 @@ public class FileToStringAdapter extends File {
      * @see String#indexOf(int, int)
      */
     public long indexOf(char ch, long fromIndex) {
-        //TODO: method stub
+        //method stub
         return -1;
     }
 
@@ -410,7 +410,7 @@ public class FileToStringAdapter extends File {
      * @see String#lastIndexOf(int, int)
      */
     public long lastIndexOf(char ch, long fromIndex) {
-        //TODO: method stub
+        //method stub
     	return -1;
     }
 
@@ -427,7 +427,7 @@ public class FileToStringAdapter extends File {
      * @see String#indexOf(String, int)
      */
     public long indexOf(String str, long fromIndex) {
-        //TODO: method stub
+        //method stub
         return 0;
     }
 
@@ -444,7 +444,7 @@ public class FileToStringAdapter extends File {
      * @see String#lastIndexOf(String, int)
      */
     public long lastIndexOf(String str, long fromIndex) {
-        //TODO: method stub
+        //method stub
         return 0;
     }
 
@@ -559,7 +559,7 @@ public class FileToStringAdapter extends File {
      * @see String#replace(char, char)
      */
     public void replaceAll(char target, char replacement) throws IOException {
-        //TODO: method stub
+        //method stub
     }
 
     /**
@@ -568,7 +568,7 @@ public class FileToStringAdapter extends File {
      * @see String#replaceFirst(String, String)
      */
     public void replaceFirst(CharSequence target, CharSequence replacement) throws IOException {
-        //TODO: method stub
+        //method stub
     }
 
     /**
@@ -577,7 +577,7 @@ public class FileToStringAdapter extends File {
      * @see String#replaceAll(String, String)
      */
     public void replaceAll(CharSequence target, CharSequence replacement) throws IOException {
-        //TODO: method stub
+        //method stub
     }
 
     /**
@@ -587,7 +587,7 @@ public class FileToStringAdapter extends File {
      * @see String#split(String, int)
      */
     public String[] split(String separator, int limit) {
-        //TODO: method stub
+        //method stub
         return null;
     }
 
@@ -603,7 +603,7 @@ public class FileToStringAdapter extends File {
      * @see String#toLowerCase(Locale)
      */
     public void toLowerCase(Locale locale) throws IOException {
-        //TODO: method stub
+        //method stub
     }
 
     /**
@@ -617,7 +617,7 @@ public class FileToStringAdapter extends File {
      * @see String#toUpperCase(Locale)
      */
     public void toUpperCase(Locale locale) throws IOException {
-        //TODO: method stub
+        //method stub
     }
 
     /**
@@ -631,7 +631,7 @@ public class FileToStringAdapter extends File {
      * @see String#trim()
      */
     public void trimFileContents() throws IOException {
-        //TODO: method stub
+        //method stub
     }
 
     /**
@@ -639,7 +639,7 @@ public class FileToStringAdapter extends File {
      * @see String#trim()
      */
     public void trimEachLine() throws IOException {
-        //TODO: method stub
+        //method stub
     }
 
     /**
@@ -647,7 +647,7 @@ public class FileToStringAdapter extends File {
      * @see String#trim()
      */
     public void trimLinesTrailing() throws IOException {
-        //TODO: method stub
+        //method stub
     }
 
     /**
@@ -655,7 +655,7 @@ public class FileToStringAdapter extends File {
      * @see String#trim()
      */
     public void removeRedundantBlankLines() throws IOException {
-        //TODO: method stub
+        //method stub
     }
 
     /**
@@ -663,6 +663,6 @@ public class FileToStringAdapter extends File {
      * @see String#trim()
      */
     public void removeAllBlankLines() throws IOException {
-        //TODO: method stub
+        //method stub
     }
 }

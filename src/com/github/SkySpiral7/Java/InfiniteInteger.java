@@ -73,7 +73,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public static InfiniteInteger littleEndian(Iterator<Long> valueArray, boolean isNegative) {
-		//TODO: method stub
+		//TODO: method stubs
 		return null;
 	}
 
@@ -115,22 +115,22 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	@Override
 	public long longValue() {
-		// TODO method stub
+		// method stub
 		return 0;
 	}
 
 	public long longValueExact() {
-		// TODO method stub
+		// method stub
 		return 0;
 	}
 
 	public BigInteger bigIntegerValue() {
-		// TODO method stub
+		// method stub
 		return null;
 	}
 
 	public BigInteger bigIntegerValueExact() {
-		// TODO method stub
+		// method stub
 		return null;
 	}
 
@@ -139,9 +139,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public InfiniteInteger add(long value) {
-		//TODO: currently assumes all positive
 		if(!this.isFinite() || value == 0) return this;
 		if(this == ZERO) return new InfiniteInteger(value);
+		if(!isNegative && value < 0) return this.subtract(Math.abs(value));
+		if(isNegative && value > 0) return new InfiniteInteger(value).subtract(this.abs());
+		if(isNegative && value < 0) return this.abs().add(Math.abs(value)).negate();
+		//the rest is for if both positive
 		long sum, valueRemaining = value;
 		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
 		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
@@ -179,8 +182,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 				highValue = (int) (valueRemaining >>> 32);
 				sum = Integer.toUnsignedLong(thisCursor.getData()) + lowValue;
 
-				//TODO: test: is &low the same as (int)?
-				//TODO: confirm: is >>> 32 the number I want
+				//TODO: test: is &low the same as (int)? yes
+				//TODO: confirm: is >>> 32 the number I want? I think it's 31 somehow
 				returnCursor.setData((int) (sum & LOW_MASK_64));
 				sum >>>=32;
 
@@ -236,12 +239,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//TODO: currently assumes all positive
 		if(!this.isFinite() || value == ZERO) return this;
 		if(!value.isFinite() || this == ZERO) return value;
-		// TODO method stub
+		// method stub
 		return null;
 	}
 
 	public InfiniteInteger subtract(long value) {
-		// TODO method stub
+		// method stub
 		return null;
 	}
 
@@ -250,12 +253,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public InfiniteInteger subtract(InfiniteInteger value) {
-		// TODO method stub
+		// method stub
 		return null;
 	}
 
     public InfiniteInteger multiply(long value) {
-		// TODO method stub
+		// method stub
 		return null;
     }
 
@@ -264,12 +267,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger multiply(InfiniteInteger value) {
-		// TODO method stub
+		// method stub
 		return null;
     }
 
     public IntegerQuotient<InfiniteInteger> divide(long val) {
-		// TODO method stub
+		// method stub
 		return null;
     }
 
@@ -278,7 +281,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public IntegerQuotient<InfiniteInteger> divide(InfiniteInteger val) {
-		// TODO method stub
+		// method stub
 		return null;
     }
 
@@ -308,7 +311,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger pow(long val) {
-		// TODO method stub
+		// method stub
 		return null;
     }
 
@@ -317,7 +320,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger pow(InfiniteInteger val) {
-		// TODO method stub
+		// method stub
 		return null;
     }
 
@@ -354,7 +357,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger shiftLeft(long n) {
-		// TODO method stub
+		// method stub
 		return null;
     }
 
@@ -363,12 +366,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger shiftLeft(InfiniteInteger n) {
-		// TODO method stub
+		// method stub
 		return null;
     }
 
     public InfiniteInteger shiftRight(long n) {
-		// TODO method stub
+		// method stub
 		return null;
     }
 
@@ -377,7 +380,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger shiftRight(InfiniteInteger n) {
-		// TODO method stub
+		// method stub
 		return null;
     }
 
@@ -426,7 +429,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	@Override
 	public String toString() {
-		//TODO method stub
+		//method stub
 		//BigInteger > string max
 		//BigInteger.toString(any) doesn't check range and will just crash
 		//BigInteger.toString(not small) is recursive and will run out of RAM
@@ -436,7 +439,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public void toFile(File writeToHere) {
-		// TODO method stub it can always fit
+		// method stub it can always fit
 	}
 
 	//javadoc the ones that will not be copied and that being immutable is not all that usefull to the outside
