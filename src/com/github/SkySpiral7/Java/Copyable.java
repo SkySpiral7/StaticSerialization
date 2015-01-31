@@ -38,6 +38,7 @@ package com.github.SkySpiral7.Java;
  * @see #copy()
  */
 //TODO: use copyable everywhere
+//TODO: the one advantage of clone is that it gives a shallow copy. also super.copy() means the child needs a copy constructor
 public interface Copyable<T> {
     /**
      * <p>Creates and returns a copy of this object. The precise meaning

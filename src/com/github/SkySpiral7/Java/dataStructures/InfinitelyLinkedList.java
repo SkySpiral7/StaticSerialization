@@ -97,8 +97,8 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 	}
 
 	protected void rangeCheckForGet(BigInteger index) {
-		if(sizeOverflow) return;
-		if(biggerSize.compareTo(index) != 1) outOfBoundsMsg(index);
+		if(sizeOverflow) return;  //index is never out of range
+		if(biggerSize.compareTo(index) != 1) throw new IndexOutOfBoundsException("Index: "+index+", Size: "+biggerSize);
 	}
 
 	//add is ALWAYS possible by definition of this class
@@ -108,16 +108,6 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 	protected void rangeCheckForGet(int index) {
 		rangeCheckForGet(BigInteger.valueOf(index));
 	}
-
-    @Override
-    protected String outOfBoundsMsg(int index) {
-        return outOfBoundsMsg(BigInteger.valueOf(index));
-    }
-
-    protected String outOfBoundsMsg(BigInteger index) {
-		//if(sizeOverflow) return "Index: "+index+", Size: Too Large";  //is never out of range
-    	return "Index: "+index+", Size: "+biggerSize;
-    }
 
     @Override
     public boolean add(E newElement) {

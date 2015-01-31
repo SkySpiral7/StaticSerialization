@@ -21,8 +21,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	private static final long serialVersionUID = 1L;
 
 	public static final InfiniteInteger ZERO = new InfiniteInteger(0);
-	public static final InfiniteInteger NOT_A_NUMBER = new InfiniteInteger(false);
+	/**Common abbreviation for "not a number". This constant is the result of invalid math such as 0/0.*/
+	public static final InfiniteInteger NaN = new InfiniteInteger(false);
+	/**+&infin; is a concept rather than a number but will be returned by math such as 1/0.*/
 	public static final InfiniteInteger POSITIVE_INFINITITY = new InfiniteInteger(true);
+	/**-&infin; is a concept rather than a number but will be returned by math such as -1/0.*/
 	public static final InfiniteInteger NEGATIVE_INFINITITY = new InfiniteInteger(false);
 
 	//protected static final BigInteger bigIntegerMaxUnsignedLong = BigInteger.valueOf(Long.MAX_VALUE).shiftLeft(1).add(BigInteger.ONE);
@@ -41,7 +44,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	/**
 	 * This constructor is used to make special constants.
 	 * My making the head null it does something the other constructor can't.
-	 * @param isNegative used for positive and negative infinity. Meaningless to not a number.
+	 * @param isNegative used for positive and negative infinity. Meaningless to NaN.
 	 */
 	protected InfiniteInteger(boolean isNegative){magnitudeHead = null; this.isNegative = isNegative;}
 	protected InfiniteInteger(long value) {
@@ -88,7 +91,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * 
 	 * @return a stream of all integers
 	 */
-	public Stream<InfiniteInteger> streamAllIntegers() {
+	public static Stream<InfiniteInteger> streamAllIntegers() {
 		return Stream.iterate(ZERO, (InfiniteInteger previous) -> {
 				if(previous == ZERO) return new InfiniteInteger(1);
 				if(previous.isNegative) return previous.abs().add(1);
@@ -352,7 +355,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      */
     public byte signum() {
     	if(isNegative) return -1;
-    	if(this == ZERO || this == NOT_A_NUMBER) return 0;
+    	if(this == ZERO || this == NaN) return 0;
         return 1;
     }
 
@@ -387,21 +390,19 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     //TODO: add min/max. maybe static (InfInt, InfInt) only?
     //big int also has bitwise operations. gcd. and weird methods
 
-    public boolean isNaN(){return this == NOT_A_NUMBER;}
-	public static boolean isNaN(InfiniteInteger num){return num.isNaN();}
+    public boolean isNaN(){return this == NaN;}
 	public boolean isInfinite(){return (this == POSITIVE_INFINITITY || this == NEGATIVE_INFINITITY);}
-	public static boolean isInfinite(InfiniteInteger num){return num.isInfinite();}
 	public boolean isFinite(){return (!this.isNaN() && !this.isInfinite());}
-	public static boolean isFinite(InfiniteInteger num){return (!num.isNaN() && !num.isInfinite());}
+	public void signalNaN(){if(this == NaN) throw new ArithmeticException("Not a number.");}
 
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) return true;
-		if(this == ZERO || this == POSITIVE_INFINITITY || this == NEGATIVE_INFINITITY || this == NOT_A_NUMBER) return false;
+		if(this == ZERO || this == POSITIVE_INFINITITY || this == NEGATIVE_INFINITITY || this == NaN) return false;
 		//these are singletons. if not the same object then it's not equal
 		if(!(obj instanceof InfiniteInteger)) return false;  //includes null check and children
 		InfiniteInteger other = (InfiniteInteger) obj;
-		if(other == ZERO || other == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY || other == NOT_A_NUMBER) return false;
+		if(other == ZERO || other == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY || other == NaN) return false;
 		if(isNegative != other.isNegative) return false;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		DequeNode<Integer> otherCursor = other.magnitudeHead;
@@ -462,6 +463,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	//natural order. but 0 < NaN < 1
+	//&plusmn;&infin; is as expected
 	@Override
 	public int compareTo(InfiniteInteger other) {
 		byte thisSmaller = -1, thisBigger = 1, sameValue = 0;
@@ -470,12 +472,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(this == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY) return thisBigger;
 		if(this == NEGATIVE_INFINITITY || other == POSITIVE_INFINITITY) return thisSmaller;
 
-		if (this == NOT_A_NUMBER)
+		if (this == NaN)
 		{
 			if(other == ZERO || other.isNegative) return thisBigger;
 			return thisSmaller;  //since other != NaN
 		}
-		if (other == NOT_A_NUMBER)
+		if (other == NaN)
 		{
 			if(this == ZERO || this.isNegative) return thisSmaller;
 			return thisBigger;  //since this != NaN

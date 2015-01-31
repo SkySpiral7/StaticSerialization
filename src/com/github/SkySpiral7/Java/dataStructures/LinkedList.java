@@ -7,11 +7,15 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import com.github.SkySpiral7.Java.Copyable;
 import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
 import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
 import com.github.SkySpiral7.Java.pojo.DequeNode;
 
-public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>, ModCountList<E> {
+//yes some things were copied from JRE stuff
+//consider copying JRE LL read/write object.
+//useless crap in JRE LL: linkfirst/last, unlinkfirst/last, is/checkindex
+public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>, ModCountList<E>, Copyable<LinkedList<E>> {
 	public static final int ELEMENT_NOT_FOUND = - 1;
 
 	/**
@@ -221,16 +225,13 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 	}
 
     protected void rangeCheckForGet(int index) {
-        if(index < 0 || index >= size()) throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+        if(index < 0 || index >= size()) throw new IndexOutOfBoundsException("Index: "+index+", Size: "+size());
+        //TODO: make a ListIndexOutOfBoundsException
     }
 
     protected void rangeCheckForAdd(int index) {
     	if(index == size) return;
     	rangeCheckForGet(index);
-    }
-
-    protected String outOfBoundsMsg(int index) {
-        return "Index: "+index+", Size: "+size();
     }
 
     @Override
@@ -330,13 +331,42 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
     }
 
     @Override
+    public Object[] toArray() {
+        Object[] result = new Object[size];
+        int i = 0;
+        for (DequeNode<E> cursor = first; cursor != null; cursor = cursor.getNext())
+    		{result[i] = cursor.getData(); i++;}
+        return result;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T[] toArray(T[] destination) {
+    	if (destination.length < size)
+            destination = (T[])java.lang.reflect.Array.newInstance(
+                                destination.getClass().getComponentType(), size);
+        int i = 0;
+        //result exists in order to cause an ArrayStoreException instead of a ClassCastException
+        Object[] result = destination;
+        for (DequeNode<E> cursor = first; cursor != null; cursor = cursor.getNext())
+        	{result[i] = cursor.getData(); i++;}
+
+        if (destination.length > size)
+            destination[size] = null;
+
+        return destination;
+    }
+
+    @Override
 	public int getModCount() {
 		return modCount;
 	}
+	@Override
+	public LinkedList<E> copy() {
+		return new LinkedList<E>(this);  //acts as a copy constructor
+	}
 
     //uses super.isEmpty() in AbstractCollection
-    //uses super.toArray() in AbstractCollection
-    //uses super.toArray(T[]) in AbstractCollection
     //uses super.containsAll() in AbstractCollection
     //uses super.removeAll(Collection<?>) in AbstractCollection
     //uses super.retainAll(Collection<?>) in AbstractCollection
@@ -344,6 +374,6 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
     //uses super.contains(Object) in AbstractCollection
     //uses super.iterator() in AbstractSequentialList
     //uses super.indexOf(Object) from AbstractList
-    //JRE LinkedList also has spliterator(), toArray(), toArray(T[])
+    //JRE LinkedList also has spliterator()
 
 }
