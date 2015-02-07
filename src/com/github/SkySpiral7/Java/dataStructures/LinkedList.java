@@ -240,14 +240,14 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
     	insertNodeAfter(last, newElement);
     	return true;
     }
-    
+
     @Override
     public void add(int insertionIndex, E newElement) {
     	if(size == Integer.MAX_VALUE) return;
         //if(insertionIndex == size){this.addLast(newElement); return;}
         //if(insertionIndex == 0){this.addFirst(newElement); return;}
     	//calling getNode is more efficient.
-    	insertNodeAfter(getNode(insertionIndex), newElement);
+    	insertNodeAfter(getNode(insertionIndex).getPrev(), newElement);
     }
 
     @Override
@@ -256,7 +256,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
     	rangeCheckForAdd(insertionIndex);
         boolean modified = false;
         Iterator<? extends E> newElementsIterator = newElements.iterator();
-        DequeNode<E> insertAfterThisNode = getNode(insertionIndex);
+        DequeNode<E> insertAfterThisNode = getNode(insertionIndex).getPrev();
         while (newElementsIterator.hasNext()) {
         	insertNodeAfter(insertAfterThisNode, newElementsIterator.next());
             modified = true;
