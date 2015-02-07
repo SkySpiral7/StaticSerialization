@@ -29,12 +29,12 @@ public class UT_FileToStringAdapter {
     //Integer.MAX_VALUE is for the 0s and (8*1024) is for the end lines of the 0s
 
     @Test
-    public void test_contentsAsString() {
+    public void contentsAsString() {
         assertEquals(smallFileContents, smallFile.contentsAsString());
     }
 
     @Test
-    public void test_isEmpty() throws IOException {
+    public void isEmpty() throws IOException {
         FileToStringAdapter tempFile = new FileToStringAdapter(File.createTempFile("FileToStringAdapterTempFile", ".txt"));
         tempFile.deleteOnExit();
         assertTrue(tempFile.isEmpty());
@@ -42,7 +42,7 @@ public class UT_FileToStringAdapter {
     }
 
     @Test
-    public void test_isEmpty_throw() {
+    public void isEmpty_throw() {
     	FileToStringAdapter noContentFile = new FileToStringAdapter(".");
         assertTrue(noContentFile.isDirectory());
         try
@@ -64,7 +64,7 @@ public class UT_FileToStringAdapter {
     }
 
     @Test
-    public void test_charAt() {
+    public void charAt() {
         assertThat(smallFile.charAt(1), is('B'));
 
         //if(largeFile.exists()) assertThat(largeFile.charAt(largeFile.length()-4), is('y'));
@@ -72,7 +72,7 @@ public class UT_FileToStringAdapter {
     }
 
     @Test
-    public void test_countCharacters() {
+    public void countCharacters() {
         assertEquals(smallFile.length(), smallFile.countCharacters());
         //note that this is only true because the file is ascii encoding
 
@@ -80,13 +80,13 @@ public class UT_FileToStringAdapter {
     }
 
     @Test(expected=IndexOutOfBoundsException.class)
-    public void test_charAt_Throw() {
+    public void charAt_Throw() {
         assertThat(smallFile.length(), is(lessThan(2000L)));
         smallFile.charAt(2000);  //will throw
     }
 
     @Test
-    public void test_getChars() {
+    public void getChars() {
         char[] testArray = new char[26];
         testArray[0]='A';
         smallFile.getChars(1, 26, testArray, 1);
@@ -102,7 +102,7 @@ public class UT_FileToStringAdapter {
     }
 
     @Test
-    public void test_equals() {
+    public void equals() {
         File smallAsFile = new File(smallFile.getAbsolutePath());
         assertTrue(smallFile.equals(smallAsFile));
         assertFalse(largeFile.equals(smallAsFile));
@@ -121,7 +121,7 @@ public class UT_FileToStringAdapter {
     }
 
     @Test
-    public void test_contentEquals() {
+    public void contentEquals() {
         assertTrue(smallFile.contentEquals(smallFileContents));
         assertFalse(smallFile.contentEquals("AB"));
 
@@ -129,7 +129,7 @@ public class UT_FileToStringAdapter {
     }
 
     @Test
-    public void test_contentEqualsIgnoreCase() {
+    public void contentEqualsIgnoreCase() {
         assertTrue(smallFile.contentEqualsIgnoreCase(smallFileContents.toLowerCase()));
 
         if(largeFile.exists()) assertFalse(largeFile.contentEquals(smallFileContents.toLowerCase()));
@@ -137,7 +137,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_compareContents() {
+    public void compareContents() {
         assertEquals(0, smallFile.compareContents(smallFileContents));
         assertThat(smallFile.compareContents(smallFileContents.toUpperCase()), is(greaterThan(0)));
         assertThat(smallFile.compareContents("A"), is(greaterThan(0)));
@@ -149,7 +149,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_compareContentsIgnoreCase() {
+    public void compareContentsIgnoreCase() {
         assertEquals(0, smallFile.compareContentsIgnoreCase(smallFileContents.toLowerCase()));
         assertThat(smallFile.compareContentsIgnoreCase("A"), is(greaterThan(0)));
         assertThat(smallFile.compareContentsIgnoreCase(smallFileContents+smallFileContents), is(lessThan(0)));
@@ -159,7 +159,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_startsWith() {
+    public void startsWith() {
         assertTrue(smallFile.startsWith("ABCD"));
         assertTrue(smallFile.startsWith("BCD", 1));
         assertFalse(smallFile.startsWith("abcd"));
@@ -176,7 +176,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_endsWith() {
+    public void endsWith() {
         assertTrue(smallFile.endsWith("wxyz"));
         assertFalse(smallFile.endsWith("WXYZ"));
 
@@ -189,7 +189,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_indexOf() {
+    public void indexOf() {
         assertEquals(1, smallFile.indexOf('B'));
         assertEquals(29, smallFile.indexOf('B', 3));
         assertEquals(2, smallFile.indexOf("CD"));
@@ -206,7 +206,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_lastIndexOf() {
+    public void lastIndexOf() {
         assertEquals(29, smallFile.lastIndexOf('B'));
         assertEquals(80, smallFile.lastIndexOf('y', smallFileContents.length()-5));
         assertEquals(30, smallFile.lastIndexOf("CD"));
@@ -222,7 +222,7 @@ public class UT_FileToStringAdapter {
     }
 
     @Test
-    public void test_substring() {
+    public void substring() {
         assertEquals("abcdefghijklmnopqrstuvwxyz", smallFile.substring(84));
         assertEquals("BCD", smallFile.substring(1, 4));
 
@@ -234,37 +234,37 @@ public class UT_FileToStringAdapter {
     }
 
     @Test(expected=IndexOutOfBoundsException.class)
-    public void test_contentsAsString_throw() {
+    public void contentsAsString_throw() {
         if(!largeFile.exists()) throw new IndexOutOfBoundsException();
         //this is done so that it will pass if large file doesn't exist
         largeFile.contentsAsString();
     }
 
     @Test(expected=IndexOutOfBoundsException.class)
-    public void test_substring_beginIndex_throw_negative() {
+    public void substring_beginIndex_throw_negative() {
         smallFile.substring(-1);
     }
 
     @Test(expected=IndexOutOfBoundsException.class)
-    public void test_substring_beginIndex_throw_largerThanFile() {
+    public void substring_beginIndex_throw_largerThanFile() {
         assertThat(smallFile.length(), is(lessThan(2000L)));
         smallFile.substring(2000);
     }
 
     @Test(expected=IndexOutOfBoundsException.class)
-    public void test_substring_endIndex_throw_negative() {
+    public void substring_endIndex_throw_negative() {
         smallFile.substring(0, -1);
         //this also tests if beginIndex > endIndex. there isn't a way to separate these 2 tests
     }
 
     @Test(expected=IndexOutOfBoundsException.class)
-    public void test_substring_endIndex_throw_largerThanFile() {
+    public void substring_endIndex_throw_largerThanFile() {
         assertThat(smallFile.length(), is(lessThan(2000L)));
         smallFile.substring(0, 2000);
     }
 
     @Test
-    public void test_concat() throws IOException {
+    public void concat() throws IOException {
         FileToStringAdapter tempFile = new FileToStringAdapter(File.createTempFile("FileToStringAdapterTempFile", ".txt"));
         tempFile.deleteOnExit();
         assertTrue(tempFile.isEmpty());
@@ -274,7 +274,7 @@ public class UT_FileToStringAdapter {
     }
 
     @Test
-    public void test_setFileContents() throws IOException {
+    public void setFileContents() throws IOException {
         FileToStringAdapter tempFile = new FileToStringAdapter(File.createTempFile("FileToStringAdapterTempFile", ".txt"));
         tempFile.deleteOnExit();
         assertTrue(tempFile.isEmpty());
@@ -287,7 +287,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_contains() {
+    public void contains() {
         assertTrue(smallFile.contains("bcd"));
         assertFalse(smallFile.contains("bcD"));
 
@@ -300,7 +300,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_replace() throws IOException {
+    public void replace() throws IOException {
         FileToStringAdapter tempFile = new FileToStringAdapter(File.createTempFile("FileToStringAdapterTempFile", ".txt"));
         tempFile.deleteOnExit();
         assertTrue(tempFile.isEmpty());
@@ -320,7 +320,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_split() throws IOException {
+    public void split() throws IOException {
         FileToStringAdapter tempFile = new FileToStringAdapter(File.createTempFile("FileToStringAdapterTempFile", ".txt"));
         tempFile.deleteOnExit();
         assertTrue(tempFile.isEmpty());
@@ -331,7 +331,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_toLowerCase() throws IOException {
+    public void toLowerCase() throws IOException {
         FileToStringAdapter tempFile = new FileToStringAdapter(File.createTempFile("FileToStringAdapterTempFile", ".txt"));
         tempFile.deleteOnExit();
         assertTrue(tempFile.isEmpty());
@@ -342,7 +342,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_toUpperCase() throws IOException {
+    public void toUpperCase() throws IOException {
         FileToStringAdapter tempFile = new FileToStringAdapter(File.createTempFile("FileToStringAdapterTempFile", ".txt"));
         tempFile.deleteOnExit();
         assertTrue(tempFile.isEmpty());
@@ -353,7 +353,7 @@ public class UT_FileToStringAdapter {
 
     @Test
     @Ignore
-    public void test_trim() throws IOException {
+    public void trim() throws IOException {
         FileToStringAdapter tempFile = new FileToStringAdapter(File.createTempFile("FileToStringAdapterTempFile", ".txt"));
         tempFile.deleteOnExit();
         assertTrue(tempFile.isEmpty());

@@ -2,12 +2,15 @@ package com.github.SkySpiral7.Java.pojo;
 
 import java.util.Objects;
 
+import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
+
 /**
  * This is mutable class for the nodes of a Deque. It keeps itself linked together but is not thread safe.
  * There is only 1 public constructor, for other ways to create notes use the factory.
  *
  * @param <E> the data type to be stored
  * @see Factory
+ * @see DequeNodeIterator
  */
 public class DequeNode<E> {
     /**

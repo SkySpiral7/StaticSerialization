@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import sun.awt.util.IdentityArrayList;
+import sun.awt.util.IdentityLinkedList;
+
 import com.github.SkySpiral7.Java.util.JsonHelper;
 
 /**
