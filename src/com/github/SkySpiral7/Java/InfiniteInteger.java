@@ -28,12 +28,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	/**-&infin; is a concept rather than a number but will be returned by math such as -1/0.*/
 	public static final InfiniteInteger NEGATIVE_INFINITITY = new InfiniteInteger(false);
 
-	//protected static final BigInteger bigIntegerMaxUnsignedLong = BigInteger.valueOf(Long.MAX_VALUE).shiftLeft(1).add(BigInteger.ONE);
 	protected static final BigInteger bigIntegerMaxLong = BigInteger.valueOf(Long.MAX_VALUE);
 	//private static InfiniteInteger maxBigInteger;
-	/**This is also max unsigned integer*/
-	public static final int LOW_MASK_64 = 0xFFFF_FFFF;
-	//public static final long HIGH_MASK_64 = 0xFFFF_FFFF_0000_0000L;
 
 	/**
 	 * Little endian: the first node is the least significant.
@@ -50,8 +46,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	protected InfiniteInteger(long value) {
 		isNegative = (value < 0);
 		value = Math.abs(value);
-		magnitudeHead = DequeNode.Factory.createStandAloneNode((int) (value & LOW_MASK_64));
-		if(value > LOW_MASK_64) DequeNode.Factory.createNodeAfter(magnitudeHead, ((int) (value >>> 32)));
+		magnitudeHead = DequeNode.Factory.createStandAloneNode((int) value);
+		value >>>= 32;
+		if(value > 0) DequeNode.Factory.createNodeAfter(magnitudeHead, ((int) value));
 	}
 
 	public static InfiniteInteger valueOf(long value) {
@@ -144,9 +141,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	public InfiniteInteger add(long value) {
 		if(!this.isFinite() || value == 0) return this;
 		if(this == ZERO) return new InfiniteInteger(value);
+
+		//delegations based on the sign of each
 		if(!isNegative && value < 0) return this.subtract(Math.abs(value));
-		if(isNegative && value > 0) return new InfiniteInteger(value).subtract(this.abs());
+		if(isNegative && value > 0) return new InfiniteInteger(value).subtract(this.abs());  //valueOf() isn't needed since value != 0
 		if(isNegative && value < 0) return this.abs().add(Math.abs(value)).negate();
+
 		//the rest is for if both positive
 		long sum, valueRemaining = value;
 		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
@@ -155,76 +155,34 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		int lowValue, highValue;
 		while (thisCursor != null)
 		{
-			/*
-			int lowValue = (int) (valueRemaining & LOW_MASK_64);
-			int lowData = (int) (thisCursor.getData() & LOW_MASK_64);
-			long lowResult = lowData+lowValue;
-			int lowlowResult = (int) (lowResult & LOW_MASK_64);
-			int highlowResult = (int) (lowResult >>> 32);
-
-			int highValue = (int) (valueRemaining >>> 32);
-			int highData = (int) (thisCursor.getData() >>> 32);
-			long highResult = highData+highValue+highlowResult;
-			int lowhighResult = (int) (highResult & LOW_MASK_64);
-			valueRemaining = (int) (highResult >>> 32);
-
-			long result = (lowhighResult << 32) + lowlowResult;
-			*/
-
-			/*long spaceAvailable = (Integer.toUnsignedLong(Integer.MAX_UNSIGNED_VALUE) - Integer.toUnsignedLong(thisCursor.getData()));
-			if(spaceAvailable >= valueRemaining){
-				returnCursor.setData((int) (Integer.toUnsignedLong(thisCursor.getData())+Integer.toUnsignedLong((int) valueRemaining)));
-				valueRemaining = 0;}
-			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
-			thisCursor = thisCursor.getNext();*/
-
 			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
-			if (valueRemaining != 0)
-			{
-				lowValue = ((int) (valueRemaining & LOW_MASK_64));
-				highValue = (int) (valueRemaining >>> 32);
-				sum = Integer.toUnsignedLong(thisCursor.getData()) + lowValue;
+			lowValue = (int) valueRemaining;
+			highValue = (int) (valueRemaining >>> 32);
+			sum = Integer.toUnsignedLong(thisCursor.getData()) + Integer.toUnsignedLong(lowValue);
 
-				//TODO: test: is &low the same as (int)? yes
-				//TODO: confirm: is >>> 32 the number I want? I think it's 31 somehow
-				returnCursor.setData((int) (sum & LOW_MASK_64));
-				sum >>>=32;
+			returnCursor.setData((int) sum);
+			sum >>>= 32;
 
-				valueRemaining = sum + highValue;
-			}
+			valueRemaining = sum + highValue;
 
 			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
 			thisCursor = thisCursor.getNext();
-
-			if (valueRemaining != 0 && thisCursor != null)
-			{
-				lowValue = ((int) (valueRemaining & LOW_MASK_64));
-				highValue = (int) (valueRemaining >>> 32);
-				sum = Integer.toUnsignedLong(thisCursor.getData()) + lowValue;
-
-				returnCursor.setData((int) (sum & LOW_MASK_64));
-				sum >>>=32;
-
-				valueRemaining = sum + highValue;
-				returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
-				thisCursor = thisCursor.getNext();
-			}
-
 		}
 		if (valueRemaining != 0)
 		{
-			lowValue = ((int) (valueRemaining & LOW_MASK_64));
+			//the addition's carry causes the return value to have more nodes
+			lowValue = (int) valueRemaining;
 			highValue = (int) (valueRemaining >>> 32);
 			returnCursor.setData(lowValue);
 			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, highValue);
 		}
-		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last one since has only leading 0s
+		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last node since it is leading 0s
 		//do not use else. this can occur either way
 		return returnValue;
 	}
 
 	public InfiniteInteger add(BigInteger value) {
-		//TODO: currently assumes all positive
+		//TODO: move this to valueOf(big) and have add(big) delegate
 		if(!this.isFinite() || value.compareTo(BigInteger.ZERO) == 0) return this;
 		if(value.compareTo(bigIntegerMaxLong) != 1) return add(value.longValue());
 		InfiniteInteger returnValue = this;
@@ -288,6 +246,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return null;
     }
 
+    //aka divideReturnWhole
     public InfiniteInteger divideDropRemainder(long val) {
 		return divide(val).getWholeResult();
     }
@@ -327,7 +286,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return null;
     }
 
-    //this^this
+    //this^this. exists mostly as a testimony that this class really can hold any integer
     public InfiniteInteger selfPower() {
 		return pow(this);
     }
@@ -443,7 +402,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		// method stub it can always fit
 	}
 
-	//javadoc the ones that will not be copied and that being immutable is not all that usefull to the outside
+	//javadoc the ones that will not be copied and that being immutable is not all that useful to the outside
 	@Override
 	public InfiniteInteger copy() {
 		if(!this.isFinite() || this == ZERO) return this;
@@ -519,11 +478,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	//even though it can't be sorted like this
 	public int compareTo(BigInteger other) {
-		return this.compareTo(valueOf(other));
+		return this.compareTo(InfiniteInteger.valueOf(other));
 	}
 
 	public int compareTo(long other) {
-		return this.compareTo(valueOf(other));
+		return this.compareTo(InfiniteInteger.valueOf(other));
 	}
 
 }
