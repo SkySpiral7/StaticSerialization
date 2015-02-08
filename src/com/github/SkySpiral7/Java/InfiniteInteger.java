@@ -20,6 +20,8 @@ import com.github.SkySpiral7.Java.pojo.IntegerQuotient;
 public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>, Comparable<InfiniteInteger> {
 	private static final long serialVersionUID = 1L;
 
+	/**This constant represents 0 and it is the only InfiniteInteger that can be 0 (singleton).
+	 * Therefore it is safe to use pointer equality for comparison: <code>if(infiniteIntegerVar == InfiniteInteger.ZERO)</code>*/
 	public static final InfiniteInteger ZERO = new InfiniteInteger(0);
 	/**Common abbreviation for "not a number". This constant is the result of invalid math such as 0/0.*/
 	public static final InfiniteInteger NaN = new InfiniteInteger(false);
@@ -27,9 +29,6 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	public static final InfiniteInteger POSITIVE_INFINITITY = new InfiniteInteger(true);
 	/**-&infin; is a concept rather than a number but will be returned by math such as -1/0.*/
 	public static final InfiniteInteger NEGATIVE_INFINITITY = new InfiniteInteger(false);
-
-	protected static final BigInteger bigIntegerMaxLong = BigInteger.valueOf(Long.MAX_VALUE);
-	//private static InfiniteInteger maxBigInteger;
 
 	/**
 	 * Little endian: the first node is the least significant.
@@ -56,8 +55,22 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return new InfiniteInteger(value);
 	}
 	public static InfiniteInteger valueOf(BigInteger value) {
-		if(value.compareTo(bigIntegerMaxLong) != 1) return valueOf(value.longValue());
-		return ZERO.add(value);
+		final BigInteger bigIntegerMaxLong = BigInteger.valueOf(Long.MAX_VALUE);
+		if(value.compareTo(bigIntegerMaxLong) != 1) return InfiniteInteger.valueOf(value.longValue());
+
+		InfiniteInteger returnValue = InfiniteInteger.ZERO;
+		if(value.compareTo(BigInteger.ZERO) == 0) return returnValue;
+
+		boolean willBeNegative = (value.signum() == -1);
+		BigInteger valueRemaining = value.abs();
+		while (valueRemaining.compareTo(bigIntegerMaxLong) == 1)
+		{
+			returnValue = returnValue.add(Long.MAX_VALUE);
+			valueRemaining = valueRemaining.subtract(bigIntegerMaxLong);
+		}
+		returnValue = returnValue.add(valueRemaining.longValue());
+		returnValue.isNegative = willBeNegative;
+		return returnValue;
 	}
 
 	public static InfiniteInteger littleEndian(long[] valueArray, boolean isNegative) {
@@ -78,7 +91,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public static InfiniteInteger bigEndian(ListIterator<Long> valueArray, boolean isNegative) {
-		return littleEndian(DescendingListIterator.iterateBackwards(valueArray), isNegative);
+		return littleEndian(DescendingListIterator.iterateBackwardsFromEnd(valueArray), isNegative);
 	}
 
 	/**
@@ -146,6 +159,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(!isNegative && value < 0) return this.subtract(Math.abs(value));
 		if(isNegative && value > 0) return new InfiniteInteger(value).subtract(this.abs());  //valueOf() isn't needed since value != 0
 		if(isNegative && value < 0) return this.abs().add(Math.abs(value)).negate();
+		//TODO: later consider making a mutable InfiniteInteger for speed (like above) that immutable would wrap
 
 		//the rest is for if both positive
 		long sum, valueRemaining = value;
@@ -182,18 +196,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public InfiniteInteger add(BigInteger value) {
-		//TODO: move this to valueOf(big) and have add(big) delegate
-		if(!this.isFinite() || value.compareTo(BigInteger.ZERO) == 0) return this;
-		if(value.compareTo(bigIntegerMaxLong) != 1) return add(value.longValue());
-		InfiniteInteger returnValue = this;
-		BigInteger valueRemaining = value;
-		while (valueRemaining.compareTo(bigIntegerMaxLong) == 1)
-		{
-			returnValue = returnValue.add(Long.MAX_VALUE);
-			valueRemaining = valueRemaining.subtract(bigIntegerMaxLong);
-		}
-		returnValue = returnValue.add(valueRemaining.longValue());
-		return returnValue;
+		return this.add(InfiniteInteger.valueOf(value));
 	}
 
 	public InfiniteInteger add(InfiniteInteger value) {

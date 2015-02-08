@@ -272,8 +272,10 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
     @Override
     public void clear() {
-    	while(!isEmpty()) removeNode(first);
-    	//unlinking the nodes ensures garbage collection
+    	//unlinking all the nodes is cargo cult. the garbage collector can handle it
+    	first = last = null;
+    	size = 0;
+    	modCount++;
     }
 
     @Override
