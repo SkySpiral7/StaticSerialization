@@ -54,16 +54,19 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(value == 0) return ZERO;
 		return new InfiniteInteger(value);
 	}
+
 	public static InfiniteInteger valueOf(BigInteger value) {
+		boolean willBeNegative = (value.signum() == -1);
+		BigInteger valueRemaining = value.abs();
+
 		final BigInteger bigIntegerMaxLong = BigInteger.valueOf(Long.MAX_VALUE);
-		if(value.compareTo(bigIntegerMaxLong) != 1) return InfiniteInteger.valueOf(value.longValue());
+		if(valueRemaining.compareTo(bigIntegerMaxLong) != 1) return InfiniteInteger.valueOf(value.longValue());
+		//if abs is less than or equal to max long. ie if it fits in a long then delegate
 
 		InfiniteInteger returnValue = InfiniteInteger.ZERO;
 		if(value.compareTo(BigInteger.ZERO) == 0) return returnValue;
 
-		boolean willBeNegative = (value.signum() == -1);
-		BigInteger valueRemaining = value.abs();
-		while (valueRemaining.compareTo(bigIntegerMaxLong) == 1)
+		while (valueRemaining.compareTo(bigIntegerMaxLong) == 1)  //while larger than
 		{
 			returnValue = returnValue.add(Long.MAX_VALUE);
 			valueRemaining = valueRemaining.subtract(bigIntegerMaxLong);
@@ -151,6 +154,13 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return new ReadOnlyListIterator<Integer>(new DequeNodeIterator.IndexAgnosticValueIterator<Integer>(magnitudeHead));
 	}
 
+	protected DequeNode<Integer> getMagnitudeTail() {
+		//TODO: make a variable for magnitudeTail
+		DequeNode<Integer> tail = magnitudeHead;
+		while(tail.getNext() != null) tail = tail.getNext();
+		return tail;
+	}
+
 	public InfiniteInteger add(long value) {
 		if(!this.isFinite() || value == 0) return this;
 		if(this == ZERO) return new InfiniteInteger(value);
@@ -200,16 +210,42 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public InfiniteInteger add(InfiniteInteger value) {
-		//TODO: currently assumes all positive
 		if(!this.isFinite() || value == ZERO) return this;
 		if(!value.isFinite() || this == ZERO) return value;
-		// method stub
-		return null;
+
+		//delegations based on the sign of each
+		if(!isNegative && value.isNegative) return this.subtract(value.abs());
+		if(isNegative && !value.isNegative) return value.subtract(this.abs());
+		if(isNegative && value.isNegative) return this.abs().add(value.abs()).negate();
+
+		//the rest is for if both positive
+		long sum = 0;
+		InfiniteInteger returnValue = this.copy();
+		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+		ListIterator<Integer> valueMagIterator = value.magnitudeIterator();
+		int lowSum, highSum;
+		while (valueMagIterator.hasNext() || sum != 0)
+		{
+			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
+			lowSum = (int) sum;
+			highSum = (int) (sum >>> 32);
+			sum = Integer.toUnsignedLong(returnCursor.getData().intValue());
+			if(valueMagIterator.hasNext()) sum += Integer.toUnsignedLong(valueMagIterator.next().intValue());
+			sum += Integer.toUnsignedLong(lowSum);
+
+			returnCursor.setData((int) sum);
+			sum >>>= 32;
+			sum += highSum;
+
+			if(returnCursor.getNext() == null) returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
+			else returnCursor = returnCursor.getNext();
+		}
+		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last node since it is leading 0s
+		return returnValue;
 	}
 
 	public InfiniteInteger subtract(long value) {
-		// method stub
-		return null;
+		return subtract(InfiniteInteger.valueOf(value));
 	}
 
 	public InfiniteInteger subtract(BigInteger value) {
@@ -222,8 +258,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
     public InfiniteInteger multiply(long value) {
-		// method stub
-		return null;
+		return multiply(InfiniteInteger.valueOf(value));
     }
 
     public InfiniteInteger multiply(BigInteger value) {
@@ -236,8 +271,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public IntegerQuotient<InfiniteInteger> divide(long val) {
-		// method stub
-		return null;
+		return divide(InfiniteInteger.valueOf(val));
     }
 
     public IntegerQuotient<InfiniteInteger> divide(BigInteger val) {
@@ -276,8 +310,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger pow(long val) {
-		// method stub
-		return null;
+		return pow(InfiniteInteger.valueOf(val));
     }
 
     public InfiniteInteger pow(BigInteger val) {
@@ -322,8 +355,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger shiftLeft(long n) {
-		// method stub
-		return null;
+		return shiftLeft(InfiniteInteger.valueOf(n));
     }
 
     public InfiniteInteger shiftLeft(BigInteger n) {
@@ -336,8 +368,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     }
 
     public InfiniteInteger shiftRight(long n) {
-		// method stub
-		return null;
+		return shiftRight(InfiniteInteger.valueOf(n));
     }
 
     public InfiniteInteger shiftRight(BigInteger n) {
@@ -392,18 +423,35 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	@Override
 	public String toString() {
+		if(this == POSITIVE_INFINITITY) return "+\u221E";
+		if(this == NEGATIVE_INFINITITY) return "-\u221E";
+		if(this == NaN) return "NaN";
+		if(this == ZERO) return "0";
+		String returnValue = "+ ";
+		if(isNegative) returnValue = "- ";
 		//method stub
 		//BigInteger > string max
 		//BigInteger.toString(any) doesn't check range and will just crash
 		//BigInteger.toString(not small) is recursive and will run out of RAM
 		//instead of messing with all that I think I'll just return the base 10 string if possible or "> 2^max+" otherwise
 		//unfortunately this stores in base 2 so I don't know how to display it in base 10
-		return "2^?";
+		//return "2^?";
+
+		//string for debugging:
+		StringBuilder stringBuilder = new StringBuilder(returnValue);
+		for (DequeNode<Integer> cursor = magnitudeHead; cursor != null; cursor = cursor.getNext())
+		{
+			stringBuilder.append(cursor.getData());
+			stringBuilder.append(", ");
+		}
+		return stringBuilder.toString();
 	}
 
 	public void toFile(File writeToHere) {
 		// method stub it can always fit
 	}
+    //I previously implemented writeObject but there doesn't seem to be any way to implement readObject
+    //since I don't know how many nodes there are, therefore I deleted writeObject and trust the JVM to serialize
 
 	//javadoc the ones that will not be copied and that being immutable is not all that useful to the outside
 	@Override
