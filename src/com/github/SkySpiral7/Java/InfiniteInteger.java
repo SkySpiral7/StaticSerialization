@@ -114,9 +114,10 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	@Override
 	public int intValue() {
-		int returnValue = Math.abs(magnitudeHead.getData().intValue());
-		if(isNegative) return -returnValue;
-		return returnValue;
+		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be even partially represented as an int.");
+		int intValue = magnitudeHead.getData().intValue() & Integer.MAX_VALUE;  //drop the sign bit (can't use Math.abs because the nodes are unsigned)
+		if(isNegative) return -intValue;
+		return intValue;
 	}
 
 	@Override
@@ -131,13 +132,28 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	@Override
 	public long longValue() {
-		// method stub
-		return 0;
+		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be even partially represented as a long.");
+		if(this == ZERO) return 0;
+
+		long longValue = Integer.toUnsignedLong(magnitudeHead.getData());
+		if (magnitudeHead.getNext() != null)
+		{
+			longValue += (Integer.toUnsignedLong(magnitudeHead.getNext().getData()) << 32);
+		}
+		longValue &= Long.MAX_VALUE;  //drop the sign bit (can't use Math.abs because the nodes are unsigned)
+		if(isNegative) return -longValue;
+		return longValue;
 	}
 
 	public long longValueExact() {
-		// method stub
-		return 0;
+		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be represented as a long.");
+		if(magnitudeHead.getNext() != null && magnitudeHead.getNext().getNext() != null)
+			throw new ArithmeticException("This InfiniteInteger can't be represented as a long.");
+			//if there are too many nodes then the number is too large
+		if(magnitudeHead.getNext() != null && (magnitudeHead.getNext().getData().intValue() & Long.MIN_VALUE) != 0)
+			throw new ArithmeticException("This InfiniteInteger can't be represented as a signed long.");
+			//the & Min part checks that the most significant bit must be clear since it will be dropped to make the number signed
+		return longValue();
 	}
 
 	public BigInteger bigIntegerValue() {

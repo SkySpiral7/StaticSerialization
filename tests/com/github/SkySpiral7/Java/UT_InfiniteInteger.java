@@ -8,6 +8,7 @@ import static org.junit.Assert.assertSame;
 import java.math.BigInteger;
 import java.util.ListIterator;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class UT_InfiniteInteger {
@@ -65,6 +66,7 @@ public class UT_InfiniteInteger {
 
     @Test
     public void fastPaths() {
+    	//TODO: more fast paths?
     	assertSame(InfiniteInteger.POSITIVE_INFINITITY, InfiniteInteger.POSITIVE_INFINITITY.add(12));
     	assertSame(InfiniteInteger.NEGATIVE_INFINITITY, InfiniteInteger.NEGATIVE_INFINITITY.add(12));
     	assertSame(InfiniteInteger.NaN, InfiniteInteger.NaN.add(12));
@@ -84,6 +86,45 @@ public class UT_InfiniteInteger {
     	InfiniteInteger.ZERO.add(12);
     	InfiniteInteger.valueOf(BigInteger.TEN);
     	/**/
+    }
+
+    @Test
+    public void intValue() {
+    	assertEquals(5, InfiniteInteger.valueOf(5).intValue());
+    	assertEquals(Integer.MAX_VALUE, InfiniteInteger.valueOf(Integer.MAX_VALUE).intValue());
+    	infiniteInteger = InfiniteInteger.valueOf(Integer.MAX_VALUE).add(Integer.MAX_VALUE).add(1);
+    	assertEquals(Integer.MAX_VALUE, infiniteInteger.intValue());
+
+    	assertEquals(-1, InfiniteInteger.valueOf(-1).intValue());
+    	assertEquals(-Integer.MAX_VALUE, InfiniteInteger.valueOf(-Integer.MAX_VALUE).intValue());
+    	infiniteInteger = InfiniteInteger.valueOf(Integer.MAX_VALUE).add(Integer.MAX_VALUE).add(1).negate();
+    	assertEquals(-Integer.MAX_VALUE, infiniteInteger.intValue());
+    }
+
+    @Test
+    public void longValue() {
+    	assertEquals(5, InfiniteInteger.valueOf(5).longValue());
+    	assertEquals(Long.MAX_VALUE, InfiniteInteger.valueOf(Long.MAX_VALUE).longValue());
+    	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(1);
+    	assertEquals(Long.MAX_VALUE, infiniteInteger.longValue());
+
+    	assertEquals(-1, InfiniteInteger.valueOf(-1).longValue());
+    	assertEquals(-Long.MAX_VALUE, InfiniteInteger.valueOf(-Long.MAX_VALUE).longValue());
+    	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(1).negate();
+    	assertEquals(-Long.MAX_VALUE, infiniteInteger.longValue());
+    }
+
+    @Test
+    public void longValueExact() {
+    	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE);
+    	assertEquals(Long.MAX_VALUE, infiniteInteger.longValueExact());  //let throw on test fail
+
+    	infiniteInteger = infiniteInteger.add(2);
+    	try{infiniteInteger.longValueExact(); Assert.fail("Did not throw when > signed long.");}
+    	catch(ArithmeticException e){}
+
+    	try{infiniteInteger.add(Long.MAX_VALUE).longValueExact(); Assert.fail("Did not throw when > unsigned long.");}
+    	catch(ArithmeticException e){}
     }
 
     @Test
