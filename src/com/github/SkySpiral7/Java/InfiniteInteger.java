@@ -190,6 +190,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//the rest is for if both positive
 		long sum, valueRemaining = value;
 		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
+		//TODO: test changing this to copy() then test multiply(long)
 		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
@@ -274,7 +275,43 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
     public InfiniteInteger multiply(long value) {
-		return multiply(InfiniteInteger.valueOf(value));
+		if(value == 0 && this.isInfinite()) return NaN;
+    	if(!this.isFinite() || value == 1) return this;
+		if(this == ZERO || value == 0) return ZERO;
+    	if(value == -1) return this.negate();
+
+		long product, valueRemaining = value;
+		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
+		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+		DequeNode<Integer> thisCursor = this.magnitudeHead;
+		int lowValue, highValue;
+		while (thisCursor != null)
+		{
+			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
+			lowValue = (int) valueRemaining;
+			highValue = (int) (valueRemaining >>> 32);
+			product = Integer.toUnsignedLong(thisCursor.getData()) * Integer.toUnsignedLong(lowValue);
+
+			returnCursor.setData((int) product);
+			product >>>= 32;
+
+			valueRemaining = product * highValue;
+
+			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
+			thisCursor = thisCursor.getNext();
+		}
+		if (valueRemaining != 0)
+		{
+			//the addition's carry causes the return value to have more nodes
+			lowValue = (int) valueRemaining;
+			highValue = (int) (valueRemaining >>> 32);
+			returnCursor.setData(lowValue);
+			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, highValue);
+		}
+		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last node since it is leading 0s
+		//do not use else. this can occur either way
+		returnValue.isNegative = (isNegative != value < 0);  //!= acts as xor
+		return returnValue;
     }
 
     public InfiniteInteger multiply(BigInteger value) {
