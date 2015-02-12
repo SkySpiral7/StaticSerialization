@@ -43,11 +43,20 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 */
 	protected InfiniteInteger(boolean isNegative){magnitudeHead = null; this.isNegative = isNegative;}
 	protected InfiniteInteger(long value) {
-		isNegative = (value < 0);
-		value = Math.abs(value);
-		magnitudeHead = DequeNode.Factory.createStandAloneNode((int) value);
-		value >>>= 32;
-		if(value > 0) DequeNode.Factory.createNodeAfter(magnitudeHead, ((int) value));
+		if (value == Long.MIN_VALUE)
+		{
+			isNegative = true;
+			magnitudeHead = DequeNode.Factory.createStandAloneNode(0);
+			DequeNode.Factory.createNodeAfter(magnitudeHead, Integer.MIN_VALUE);
+		}
+		else
+		{
+			isNegative = (value < 0);
+			value = Math.abs(value);
+			magnitudeHead = DequeNode.Factory.createStandAloneNode((int) value);
+			value >>>= 32;
+			if(value > 0) DequeNode.Factory.createNodeAfter(magnitudeHead, ((int) value));
+		}
 	}
 
 	public static InfiniteInteger valueOf(long value) {
@@ -106,7 +115,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 */
 	public static Stream<InfiniteInteger> streamAllIntegers() {
 		return Stream.iterate(ZERO, (InfiniteInteger previous) -> {
-				if(previous == ZERO) return new InfiniteInteger(1);
+				if(previous == ZERO) return InfiniteInteger.valueOf(1);
 				if(previous.isNegative) return previous.abs().add(1);
 				return previous.negate();
 			});
@@ -179,11 +188,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	public InfiniteInteger add(long value) {
 		if(!this.isFinite() || value == 0) return this;
-		if(this == ZERO) return new InfiniteInteger(value);
+		if(this == ZERO) return InfiniteInteger.valueOf(value);
+		if(value == Long.MIN_VALUE) return this.add(InfiniteInteger.valueOf(value));  //special case to avoid bug
 
 		//delegations based on the sign of each
 		if(!isNegative && value < 0) return this.subtract(Math.abs(value));
-		if(isNegative && value > 0) return new InfiniteInteger(value).subtract(this.abs());  //valueOf() isn't needed since value != 0
+		if(isNegative && value > 0) return InfiniteInteger.valueOf(value).subtract(this.abs());
 		if(isNegative && value < 0) return this.abs().add(Math.abs(value)).negate();
 		//TODO: later consider making a mutable InfiniteInteger for speed (like above) that immutable would wrap
 
@@ -338,6 +348,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
     //aka divideReturnWhole
     public InfiniteInteger divideDropRemainder(long val) {
+    	//getMagnitudeTail()...?
 		return divide(val).getWholeResult();
     }
 
@@ -351,6 +362,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
     //aka remainder, divideDropWhole, divideReturnRemainder
     public InfiniteInteger mod(long val) {
+    	//longVal % val
 		return divide(val).getRemainder();
     }
 
@@ -372,12 +384,19 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
     public InfiniteInteger pow(InfiniteInteger val) {
 		// method stub
+    	//call mutliply in a loop for now
 		return null;
     }
 
     //this^this. exists mostly as a testimony that this class really can hold any integer
     public InfiniteInteger selfPower() {
 		return pow(this);
+    }
+
+    //why not. same reason as self power
+    public InfiniteInteger factorial() {
+		// method stub
+		return null;
     }
 
     public InfiniteInteger abs() {
@@ -415,9 +434,21 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return shiftLeft(InfiniteInteger.valueOf(n));
     }
 
-    public InfiniteInteger shiftLeft(InfiniteInteger n) {
-		// method stub
-		return null;
+    //this*2^x
+    public InfiniteInteger shiftLeft(InfiniteInteger value) {
+		if(value == ZERO || !this.isFinite()) return this;
+		if(value.isNegative) return shiftRight(value);
+
+		InfiniteInteger returnValue = this.copy();
+		InfiniteInteger valueRemaining = value;
+		while (valueRemaining.compareTo(32) != -1)
+		{
+			returnValue.magnitudeHead = DequeNode.Factory.createNodeBefore(0, returnValue.magnitudeHead);
+			valueRemaining = valueRemaining.subtract(32);
+		}
+		//method stub
+
+		return returnValue;
     }
 
     public InfiniteInteger shiftRight(long n) {
@@ -428,9 +459,23 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return shiftRight(InfiniteInteger.valueOf(n));
     }
 
-    public InfiniteInteger shiftRight(InfiniteInteger n) {
-		// method stub
-		return null;
+    //this/2^x
+    public InfiniteInteger shiftRight(InfiniteInteger value) {
+		if(value == ZERO || !this.isFinite()) return this;
+		if(value.isNegative) return shiftLeft(value);
+
+		InfiniteInteger returnValue = this.copy();
+		InfiniteInteger valueRemaining = value;
+		while (valueRemaining.compareTo(32) != -1)
+		{
+			returnValue.magnitudeHead = returnValue.magnitudeHead.getNext();
+			if(returnValue.magnitudeHead == null) return ZERO;
+			returnValue.magnitudeHead.getPrev().remove();
+			valueRemaining = valueRemaining.subtract(32);
+		}
+		//method stub
+
+		return returnValue;
     }
 
     //TODO: add min/max. maybe static (InfInt, InfInt) only?
@@ -494,7 +539,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		StringBuilder stringBuilder = new StringBuilder(returnValue);
 		for (DequeNode<Integer> cursor = magnitudeHead; cursor != null; cursor = cursor.getNext())
 		{
-			stringBuilder.append(cursor.getData());
+			stringBuilder.append(Integer.toHexString(cursor.getData().intValue()));
 			stringBuilder.append(", ");
 		}
 		return stringBuilder.toString();

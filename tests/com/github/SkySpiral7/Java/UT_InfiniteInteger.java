@@ -37,6 +37,14 @@ public class UT_InfiniteInteger {
     	assertEquals(0, magnitudeIterator.next().intValue());
     	assertEquals(1, magnitudeIterator.next().intValue());
     	assertFalse(magnitudeIterator.hasNext());
+
+    	//special case is negative but can't use Math.abs
+//    	infiniteInteger = InfiniteInteger.valueOf(1).add(Long.MIN_VALUE);
+//    	assertEquals(-1, infiniteInteger.signum());
+//    	assertEquals(0, infiniteInteger.magnitudeHead.getData().intValue());
+//    	assertEquals(Integer.MIN_VALUE, infiniteInteger.magnitudeHead.getNext().getData().intValue());
+//    	assertNull(infiniteInteger.magnitudeHead.getNext().getNext());
+    	//TODO: this test requires subtraction
     }
 
     @Test
@@ -157,6 +165,13 @@ public class UT_InfiniteInteger {
     	assertEquals(1, infiniteInteger.signum());
     	assertNull(infiniteInteger.magnitudeHead.getNext());
     	assertEquals(2_147_483_648L, Integer.toUnsignedLong(infiniteInteger.magnitudeHead.getData().intValue()));
+
+    	//special case: can't use Math.abs
+    	infiniteInteger = InfiniteInteger.valueOf(Long.MIN_VALUE);
+    	assertEquals(-1, infiniteInteger.signum());
+    	assertEquals(0, infiniteInteger.magnitudeHead.getData().intValue());
+    	assertEquals(Integer.MIN_VALUE, infiniteInteger.magnitudeHead.getNext().getData().intValue());
+    	assertNull(infiniteInteger.magnitudeHead.getNext().getNext());
     }
 
 }
