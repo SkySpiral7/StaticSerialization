@@ -13,7 +13,7 @@ import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
 import com.github.SkySpiral7.Java.iterators.ReadOnlyListIterator;
 import com.github.SkySpiral7.Java.pojo.DequeNode;
 import com.github.SkySpiral7.Java.pojo.IntegerQuotient;
-import com.github.SkySpiral7.Java.util.BitHelper;
+import com.github.SkySpiral7.Java.util.BitWiseUtil;
 
 //aka InfinInt
 //maxes: int[] 2^(32 * (2^31-1))-1 long[] 2^(64 * (2^31-1))-1
@@ -501,7 +501,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		int smallValueRemaining = valueRemaining.intValue();
 		DequeNode<Integer> returnCursor = returnValue.getMagnitudeTail();
 
-		int overflow = BitHelper.getHighNBits(returnCursor.getData().intValue(), smallValueRemaining);
+		int overflow = BitWiseUtil.getHighestNBits(returnCursor.getData().intValue(), smallValueRemaining);
 			//overflow contains what would fall off when shifting left
 		overflow >>>= (32 - smallValueRemaining);
 			//shift overflow right so that it appears in the least significant place of the following node
@@ -534,9 +534,24 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			returnValue.magnitudeHead.getPrev().remove();
 			valueRemaining = valueRemaining.subtract(32);
 		}
-		//method stub
 
-		return null;
+		final int smallValueRemaining = valueRemaining.intValue();
+		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+
+		while (returnCursor.getNext() != null)
+		{
+			returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
+			int underflow = (int) BitWiseUtil.getLowestNBits(returnCursor.getNext().getData().intValue(), smallValueRemaining);
+				//underflow contains what would fall off when shifting right
+			underflow <<= (32 - smallValueRemaining);
+				//shift underflow left so that it appears in the most significant place of the previous node
+			if(underflow != 0) returnCursor.setData(returnCursor.getData().intValue() | underflow);
+			returnCursor = returnCursor.getNext();
+		}
+		//last node simply shifts
+		returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
+
+		return returnValue;
     }
 
     //TODO: add min/max. maybe static (InfInt, InfInt) only?
@@ -611,6 +626,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
     //I previously implemented writeObject but there doesn't seem to be any way to implement readObject
     //since I don't know how many nodes there are, therefore I deleted writeObject and trust the JVM to serialize
+	//TODO: possible to serialize by putting a long for count of following nodes that exist and repeat
 
 	//javadoc the ones that will not be copied and that being immutable is not all that useful to the outside
 	@Override

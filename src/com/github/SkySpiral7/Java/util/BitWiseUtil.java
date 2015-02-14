@@ -1,13 +1,15 @@
 package com.github.SkySpiral7.Java.util;
 
-public class BitHelper {
-	private BitHelper(){}
+public class BitWiseUtil {
+	private BitWiseUtil(){}
 
     public static final long HIGH_64 = 0xFFFF_FFFF__FFFF_FFFFL;
 
-    public static boolean isPowerOf2(long x){return ((x & -x) == x);}
+    public static boolean isPowerOf2(long x){return ((x & -x) == x);}  //also works for Long.MIN_VALUE but maybe not unsigned
+    public static boolean isEven(long x){return ((x & 1) == 0);}
+    public static boolean isOdd(long x){return ((x & 1) == 1);}  //these work for negative and unsigned values
 
-    public static long getLowNBits(long value, int nBitsToKeep)
+    public static long getLowestNBits(long value, int nBitsToKeep)
     {
     	if(nBitsToKeep > 64) throw new IllegalArgumentException();
     	if(nBitsToKeep == 64) return value;
@@ -16,7 +18,7 @@ public class BitHelper {
     	return (value & bitMask);
     }
 
-    public static long getHighNBits(long value, int nBitsToKeep)
+    public static long getHighestNBits(long value, int nBitsToKeep)
     {
     	if(nBitsToKeep > 64) throw new IllegalArgumentException();
     	if(nBitsToKeep == 64) return value;
@@ -25,7 +27,7 @@ public class BitHelper {
     	return (value & bitMask);
     }
 
-    public static int getHighNBits(int value, int nBitsToKeep)
+    public static int getHighestNBits(int value, int nBitsToKeep)
     {
     	if(nBitsToKeep > 32) throw new IllegalArgumentException();
     	if(nBitsToKeep == 32) return value;
@@ -35,7 +37,7 @@ public class BitHelper {
     	return (value & bitMask);
     }
 
-    public static short getHighNBits(short value, int nBitsToKeep)
+    public static short getHighestNBits(short value, int nBitsToKeep)
     {
     	if(nBitsToKeep > 16) throw new IllegalArgumentException();
     	if(nBitsToKeep == 16) return value;
@@ -45,7 +47,7 @@ public class BitHelper {
     	return ((short) (value & bitMask));
     }
 
-    public static byte getHighNBits(byte value, int nBitsToKeep)
+    public static byte getHighestNBits(byte value, int nBitsToKeep)
     {
     	if(nBitsToKeep > 8) throw new IllegalArgumentException();
     	if(nBitsToKeep == 8) return value;
