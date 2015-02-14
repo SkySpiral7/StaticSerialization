@@ -3,6 +3,7 @@ package com.github.SkySpiral7.Java.iterators;
 import java.util.ListIterator;
 
 public class ReadOnlyListIterator<E> implements ListIterator<E> {
+	//TODO: have ReadOnlyList extend the non-list
 	protected ListIterator<E> underlyingIterator;
 
 	public ReadOnlyListIterator(ListIterator<E> underlyingIterator) {

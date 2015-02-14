@@ -3,6 +3,7 @@ package com.github.SkySpiral7.Java;
 import static com.github.SkySpiral7.Java.pojo.Comparison.EQUAL_TO;
 import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN;
 import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN_OR_EQUAL_TO;
+import static com.github.SkySpiral7.Java.pojo.Comparison.LESS_THAN;
 import static com.github.SkySpiral7.Java.pojo.Comparison.LESS_THAN_OR_EQUAL_TO;
 import static com.github.SkySpiral7.Java.util.ComparableSugar.THIS_EQUAL;
 import static com.github.SkySpiral7.Java.util.ComparableSugar.THIS_GREATER;
@@ -155,10 +156,10 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be even partially represented as a long.");
 		if(this == ZERO) return 0;
 
-		long longValue = Integer.toUnsignedLong(magnitudeHead.getData());
+		long longValue = Integer.toUnsignedLong(magnitudeHead.getData().intValue());
 		if (magnitudeHead.getNext() != null)
 		{
-			longValue += (Integer.toUnsignedLong(magnitudeHead.getNext().getData()) << 32);
+			longValue += (Integer.toUnsignedLong(magnitudeHead.getNext().getData().intValue()) << 32);
 		}
 		longValue &= Long.MAX_VALUE;  //drop the sign bit (can't use Math.abs because the nodes are unsigned)
 		if(isNegative) return -longValue;
@@ -219,7 +220,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
 			lowValue = (int) valueRemaining;
 			highValue = (int) (valueRemaining >>> 32);
-			sum = Integer.toUnsignedLong(thisCursor.getData()) + Integer.toUnsignedLong(lowValue);
+			sum = Integer.toUnsignedLong(thisCursor.getData().intValue()) + Integer.toUnsignedLong(lowValue);
 
 			returnCursor.setData((int) sum);
 			sum >>>= 32;
@@ -282,7 +283,53 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public InfiniteInteger subtract(long value) {
-		return subtract(InfiniteInteger.valueOf(value));
+		if(!this.isFinite() || value == 0) return this;
+		if(value == Long.MIN_VALUE) return this.add(InfiniteInteger.valueOf(value).abs());  //special case to avoid bug
+		if(this == ZERO) return InfiniteInteger.valueOf(-value);
+
+		//delegations based on the sign of each
+		if(!isNegative && value < 0) return this.add(Math.abs(value));
+		if(isNegative && value > 0) return this.abs().add(value).negate();
+		if(isNegative && value < 0) return InfiniteInteger.valueOf(Math.abs(value)).subtract(this.abs());
+
+		//the rest is for if both positive
+		if(this.equals(InfiniteInteger.valueOf(value))) return ZERO;
+		if(is(this, LESS_THAN, InfiniteInteger.valueOf(value))) return InfiniteInteger.valueOf(value).subtract(this).negate();
+
+		//this is greater than value
+		long difference, valueRemaining = value;
+		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
+		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+		DequeNode<Integer> thisCursor = this.magnitudeHead;
+		int lowValue, highValue;
+		boolean borrow = false;
+		while (thisCursor != null)
+		{
+			lowValue = (int) valueRemaining;
+			highValue = (int) (valueRemaining >>> 32);
+			difference = Integer.toUnsignedLong(thisCursor.getData().intValue()) - Integer.toUnsignedLong(lowValue);
+				//Long.min is not possible so there's no bug to check
+			borrow = (difference < 0);
+			if(borrow) difference += Integer.toUnsignedLong((int) BitWiseUtil.HIGH_64) +1;  //add max unsigned int +1
+				//this makes difference borrow
+				//the +1 is here for the same reason that when borrowing in base 10 you add 10 instead of 9
+
+			returnCursor.setData((int) difference);
+			//assert((difference >>> 32) == 0);  //due to the borrowing above
+
+			valueRemaining = Integer.toUnsignedLong(highValue);  //TODO: is sign important on any of these?
+			if(borrow) valueRemaining++;  //subtract 1 more
+
+			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
+			thisCursor = thisCursor.getNext();
+		}
+		//assert(valueRemaining == 0);  //because this > value
+		if(returnCursor.getData().intValue() == 0){returnCursor = returnCursor.getPrev(); returnCursor.getNext().remove();}
+			//remove the last node since it is leading 0s
+			//assert(returnCursor != null)  //I already checked that this != value which is the only way for result == 0
+		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //there will be 2 if the last node was borrowed down to 0
+
+		return returnValue;
 	}
 
 	public InfiniteInteger subtract(BigInteger value) {
@@ -338,7 +385,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 //		while (thisCursor != null)
 //		{
 //			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
-//			product = Integer.toUnsignedLong(thisCursor.getData()) * Integer.toUnsignedLong(lowValue);
+//			product = Integer.toUnsignedLong(thisCursor.getData().intValue()) * Integer.toUnsignedLong(lowValue);
 //
 //			returnCursor.setData((int) product);
 //			product >>>= 32;
@@ -357,7 +404,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 //			while (thisCursor != null)
 //			{
 //				//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
-//				product = Integer.toUnsignedLong(thisCursor.getData()) * Integer.toUnsignedLong(highValue);
+//				product = Integer.toUnsignedLong(thisCursor.getData().intValue()) * Integer.toUnsignedLong(highValue);
 //
 //				returnCursor.setData((int) product);
 //				product >>>= 32;
@@ -631,7 +678,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		StringBuilder stringBuilder = new StringBuilder(returnValue);
 		for (DequeNode<Integer> cursor = magnitudeHead; cursor != null; cursor = cursor.getNext())
 		{
-			stringBuilder.append(Integer.toHexString(cursor.getData().intValue()));
+			stringBuilder.append(Integer.toHexString(cursor.getData().intValue()).toUpperCase());
 			stringBuilder.append(", ");
 		}
 		return stringBuilder.toString();
@@ -683,13 +730,16 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		}
 
 		if(isNegative && !other.isNegative) return THIS_LESSER;
-		if(!isNegative && other.isNegative) return THIS_GREATER;
+		if(!isNegative && other.isNegative) return THIS_GREATER;  //also covers if this == ZERO
+		if(this == ZERO && !other.isNegative) return THIS_LESSER;  //since this != other
 
 		//at this point: they are not the same object, they have the same sign, they are not special values.
 		//since the lengths can be any integer I first need to compare lengths
 
 		DequeNode<Integer> otherCursor = other.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
+		//this loop will not execute if they both have 1 node
+		//which is correct since they have equal length and are both pointing to last node
 		while (thisCursor.getNext() != null || otherCursor.getNext() != null)
 		{
 			if (thisCursor.getNext() != null && otherCursor.getNext() != null)
@@ -702,12 +752,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		}
 
 		//they have the same number of nodes and both cursors are pointing to the most significant (last) node
-		Integer thisData, otherData;
-		while (thisCursor.getPrev() != null)
+		int thisData, otherData;
+		while (thisCursor != null)
 		{
-			thisData = thisCursor.getData();
-			otherData = otherCursor.getData();
-			if(thisData.intValue() != otherData.intValue()) return thisData.compareTo(otherData);
+			thisData = thisCursor.getData().intValue();
+			otherData = otherCursor.getData().intValue();
+			if(thisData != otherData) return Integer.compareUnsigned(thisData, otherData);
 			thisCursor = thisCursor.getPrev();
 			otherCursor = otherCursor.getPrev();
 		}

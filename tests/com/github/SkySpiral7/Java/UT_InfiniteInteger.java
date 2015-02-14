@@ -1,9 +1,16 @@
 package com.github.SkySpiral7.Java;
 
+import static com.github.SkySpiral7.Java.pojo.Comparison.EQUAL_TO;
+import static com.github.SkySpiral7.Java.util.ComparableSugar.is;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import java.util.ListIterator;
@@ -71,6 +78,44 @@ public class UT_InfiniteInteger {
     	assertEquals(0, magnitudeIterator.next().intValue());
     	assertEquals(1, magnitudeIterator.next().intValue());
     	assertFalse(magnitudeIterator.hasNext());
+    }
+
+    @Test
+    public void compareTo() {
+    	//don't use hamcrest for these because they would use .equals
+    	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
+    	assertTrue(is(infiniteInteger, EQUAL_TO, infiniteInteger));  //same object
+    	assertTrue(is(infiniteInteger.copy(), EQUAL_TO, infiniteInteger));  //different object same value
+
+    	//use hamcrest for rest to get a more meaningful failure message
+    	assertThat(InfiniteInteger.valueOf(-5), lessThan(InfiniteInteger.valueOf(5)));
+    	assertThat(InfiniteInteger.valueOf(5), greaterThan(InfiniteInteger.valueOf(-5)));
+    	assertThat(InfiniteInteger.valueOf(10), greaterThan(InfiniteInteger.valueOf(5)));
+    	assertThat(infiniteInteger, greaterThan(InfiniteInteger.valueOf(10)));  //left has more nodes
+    	assertThat(infiniteInteger.add(1), greaterThan(infiniteInteger));  //same node count but different value
+    	infiniteInteger = InfiniteInteger.valueOf(Integer.MAX_VALUE).add(1);
+    	assertThat(infiniteInteger.add(1), greaterThan(infiniteInteger));  //make sure nodes are compared unsigned
+    }
+
+    @Test
+    public void compareTo_special() {
+    	//TODO: finish test
+    	//don't use hamcrest for these because they would use .equals
+    	assertTrue(is(InfiniteInteger.ZERO, EQUAL_TO, InfiniteInteger.ZERO));
+
+    	//use hamcrest for rest to get a more meaningful failure message
+    	assertThat(InfiniteInteger.POSITIVE_INFINITITY, greaterThan(InfiniteInteger.ZERO));
+    	assertThat(InfiniteInteger.NEGATIVE_INFINITITY, lessThan(InfiniteInteger.ZERO));
+    }
+
+    @Test
+    public void equals() {
+    	assertEquals(InfiniteInteger.valueOf(10), InfiniteInteger.valueOf(10));
+    	assertEquals(InfiniteInteger.valueOf(5).add(5), InfiniteInteger.valueOf(7).add(3));
+    	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
+    	assertEquals(infiniteInteger, infiniteInteger);
+    	assertEquals(infiniteInteger.copy(), infiniteInteger);
+    	assertNotEquals(infiniteInteger.add(1), infiniteInteger);
     }
 
     @Test
@@ -174,6 +219,45 @@ public class UT_InfiniteInteger {
     }
 
     @Test
+	public void subtract_long() {
+		//simple case
+		infiniteInteger = InfiniteInteger.valueOf(10).subtract(5);
+		assertEquals(1, infiniteInteger.signum());
+		assertEquals(5, infiniteInteger.magnitudeHead.getData().intValue());
+		assertNull(infiniteInteger.magnitudeHead.getNext());
+
+		//simple negative case
+//		infiniteInteger = InfiniteInteger.valueOf(5).subtract(10);
+//		assertEquals(-1, infiniteInteger.signum());
+//		assertEquals(5, infiniteInteger.magnitudeHead.getData().intValue());
+//		assertNull(infiniteInteger.magnitudeHead.getNext());
+
+		//more than max int
+		infiniteInteger = InfiniteInteger.valueOf(4_294_967_295L).subtract(1);
+		assertEquals(1, infiniteInteger.signum());
+		assertEquals(4_294_967_294L, Integer.toUnsignedLong(infiniteInteger.magnitudeHead.getData().intValue()));
+		assertNull(infiniteInteger.magnitudeHead.getNext());
+
+		//more than max long
+//		infiniteInteger = InfiniteInteger.valueOf(1).subtract(Long.MAX_VALUE).subtract(Long.MAX_VALUE).subtract(3);
+//		ListIterator<Integer> magnitudeIterator = infiniteInteger.magnitudeIterator();
+//		assertEquals(-1, infiniteInteger.signum());
+//		assertEquals(0, magnitudeIterator.next().intValue());
+//		assertEquals(0, magnitudeIterator.next().intValue());
+//		assertEquals(1, magnitudeIterator.next().intValue());
+//		assertFalse(magnitudeIterator.hasNext());
+
+		//borrow big
+    	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
+		infiniteInteger = infiniteInteger.subtract(1);
+		ListIterator<Integer> magnitudeIterator = infiniteInteger.magnitudeIterator();
+		assertEquals(1, infiniteInteger.signum());
+		assertEquals(-1, magnitudeIterator.next().intValue());
+		assertEquals(-1, magnitudeIterator.next().intValue());
+		assertFalse(magnitudeIterator.hasNext());
+	}
+
+	@Test
     public void valueOf_BigInteger() {
     	assertEquals(InfiniteInteger.valueOf(5), InfiniteInteger.valueOf(BigInteger.valueOf(5)));
     	assertEquals(InfiniteInteger.valueOf(Long.MAX_VALUE -5), InfiniteInteger.valueOf(BigInteger.valueOf(Long.MAX_VALUE -5)));
