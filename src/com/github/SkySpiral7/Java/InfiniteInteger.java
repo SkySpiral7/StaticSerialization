@@ -1,5 +1,15 @@
 package com.github.SkySpiral7.Java;
 
+import static com.github.SkySpiral7.Java.pojo.Comparison.EQUAL_TO;
+import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN;
+import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN_OR_EQUAL_TO;
+import static com.github.SkySpiral7.Java.pojo.Comparison.LESS_THAN_OR_EQUAL_TO;
+import static com.github.SkySpiral7.Java.util.ComparableSugar.THIS_EQUAL;
+import static com.github.SkySpiral7.Java.util.ComparableSugar.THIS_GREATER;
+import static com.github.SkySpiral7.Java.util.ComparableSugar.THIS_LESSER;
+import static com.github.SkySpiral7.Java.util.ComparableSugar.is;
+import static com.github.SkySpiral7.Java.util.ComparableSugar.isComparisonResult;
+
 import java.io.File;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -66,17 +76,17 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public static InfiniteInteger valueOf(BigInteger value) {
-		boolean willBeNegative = (value.signum() == -1);
+		boolean willBeNegative = (value.signum() == -1);  //don't need to use < 0 because of signum's promise
 		BigInteger valueRemaining = value.abs();
 
 		final BigInteger bigIntegerMaxLong = BigInteger.valueOf(Long.MAX_VALUE);
-		if(valueRemaining.compareTo(bigIntegerMaxLong) != 1) return InfiniteInteger.valueOf(value.longValue());
-		//if abs is less than or equal to max long. ie if it fits in a long then delegate
+		if(is(valueRemaining, LESS_THAN_OR_EQUAL_TO, bigIntegerMaxLong)) return InfiniteInteger.valueOf(value.longValue());
+		//if abs fits in a signed long then delegate
 
 		InfiniteInteger returnValue = InfiniteInteger.ZERO;
-		if(value.compareTo(BigInteger.ZERO) == 0) return returnValue;
+		if(is(value, EQUAL_TO, BigInteger.ZERO)) return InfiniteInteger.valueOf(value.longValue());
 
-		while (valueRemaining.compareTo(bigIntegerMaxLong) == 1)  //while larger than
+		while (is(valueRemaining, GREATER_THAN, bigIntegerMaxLong))
 		{
 			returnValue = returnValue.add(Long.MAX_VALUE);
 			valueRemaining = valueRemaining.subtract(bigIntegerMaxLong);
@@ -492,22 +502,25 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 		InfiniteInteger returnValue = this.copy();
 		InfiniteInteger valueRemaining = value;
-		while (valueRemaining.compareTo(32) != -1)
+		while (isComparisonResult(valueRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
 		{
 			returnValue.magnitudeHead = DequeNode.Factory.createNodeBefore(0, returnValue.magnitudeHead);
 			valueRemaining = valueRemaining.subtract(32);
 		}
 
-		int smallValueRemaining = valueRemaining.intValue();
-		DequeNode<Integer> returnCursor = returnValue.getMagnitudeTail();
-
-		int overflow = BitWiseUtil.getHighestNBits(returnCursor.getData().intValue(), smallValueRemaining);
-			//overflow contains what would fall off when shifting left
-		overflow >>>= (32 - smallValueRemaining);
-			//shift overflow right so that it appears in the least significant place of the following node
-		if(overflow != 0) DequeNode.Factory.createNodeAfter(returnCursor, overflow);
-
-		returnCursor.setData(returnCursor.getData().intValue() << smallValueRemaining);
+		final int smallValueRemaining = valueRemaining.intValue();
+		if (smallValueRemaining != 0)
+		{
+			DequeNode<Integer> returnCursor = returnValue.getMagnitudeTail();
+	
+			int overflow = BitWiseUtil.getHighestNBits(returnCursor.getData().intValue(), smallValueRemaining);
+				//overflow contains what would fall off when shifting left
+			overflow >>>= (32 - smallValueRemaining);
+				//shift overflow right so that it appears in the least significant place of the following node
+			if(overflow != 0) DequeNode.Factory.createNodeAfter(returnCursor, overflow);
+	
+			returnCursor.setData(returnCursor.getData().intValue() << smallValueRemaining);
+		}
 
 		return returnValue;
     }
@@ -527,7 +540,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 		InfiniteInteger returnValue = this.copy();
 		InfiniteInteger valueRemaining = value;
-		while (valueRemaining.compareTo(32) != -1)
+		while (isComparisonResult(valueRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
 		{
 			returnValue.magnitudeHead = returnValue.magnitudeHead.getNext();
 			if(returnValue.magnitudeHead == null) return ZERO;
@@ -536,20 +549,23 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		}
 
 		final int smallValueRemaining = valueRemaining.intValue();
-		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
-
-		while (returnCursor.getNext() != null)
+		if (smallValueRemaining != 0)
 		{
+			DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+	
+			while (returnCursor.getNext() != null)
+			{
+				returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
+				int underflow = (int) BitWiseUtil.getLowestNBits(returnCursor.getNext().getData().intValue(), smallValueRemaining);
+					//underflow contains what would fall off when shifting right
+				underflow <<= (32 - smallValueRemaining);
+					//shift underflow left so that it appears in the most significant place of the previous node
+				if(underflow != 0) returnCursor.setData(returnCursor.getData().intValue() | underflow);
+				returnCursor = returnCursor.getNext();
+			}
+			//last node simply shifts
 			returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
-			int underflow = (int) BitWiseUtil.getLowestNBits(returnCursor.getNext().getData().intValue(), smallValueRemaining);
-				//underflow contains what would fall off when shifting right
-			underflow <<= (32 - smallValueRemaining);
-				//shift underflow left so that it appears in the most significant place of the previous node
-			if(underflow != 0) returnCursor.setData(returnCursor.getData().intValue() | underflow);
-			returnCursor = returnCursor.getNext();
 		}
-		//last node simply shifts
-		returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
 
 		return returnValue;
     }
@@ -651,25 +667,23 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	//&plusmn;&infin; is as expected
 	@Override
 	public int compareTo(InfiniteInteger other) {
-		byte thisSmaller = -1, thisBigger = 1, sameValue = 0;
-
-		if(this == other) return sameValue;
-		if(this == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY) return thisBigger;
-		if(this == NEGATIVE_INFINITITY || other == POSITIVE_INFINITITY) return thisSmaller;
+		if(this == other) return THIS_EQUAL;
+		if(this == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY) return THIS_GREATER;
+		if(this == NEGATIVE_INFINITITY || other == POSITIVE_INFINITITY) return THIS_LESSER;
 
 		if (this == NaN)
 		{
-			if(other == ZERO || other.isNegative) return thisBigger;
-			return thisSmaller;  //since other != NaN
+			if(other == ZERO || other.isNegative) return THIS_GREATER;
+			return THIS_LESSER;  //since other != NaN
 		}
 		if (other == NaN)
 		{
-			if(this == ZERO || this.isNegative) return thisSmaller;
-			return thisBigger;  //since this != NaN
+			if(this == ZERO || this.isNegative) return THIS_LESSER;
+			return THIS_GREATER;  //since this != NaN
 		}
 
-		if(isNegative && !other.isNegative) return thisSmaller;
-		if(!isNegative && other.isNegative) return thisBigger;
+		if(isNegative && !other.isNegative) return THIS_LESSER;
+		if(!isNegative && other.isNegative) return THIS_GREATER;
 
 		//at this point: they are not the same object, they have the same sign, they are not special values.
 		//since the lengths can be any integer I first need to compare lengths
@@ -683,8 +697,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 				thisCursor = thisCursor.getNext();
 				otherCursor = otherCursor.getNext();
 			}
-			else if(thisCursor.getNext() != null) return thisBigger;
-			else return thisSmaller;
+			else if(thisCursor.getNext() != null) return THIS_GREATER;
+			else return THIS_LESSER;
 		}
 
 		//they have the same number of nodes and both cursors are pointing to the most significant (last) node
@@ -699,7 +713,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		}
 
 		//same length and all nodes have the same data
-		return sameValue;
+		return THIS_EQUAL;
 	}
 
 	//even though it can't be sorted like this

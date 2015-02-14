@@ -3,7 +3,7 @@ package com.github.SkySpiral7.Java.util;
 public class BitWiseUtil {
 	private BitWiseUtil(){}
 
-    public static final long HIGH_64 = 0xFFFF_FFFF__FFFF_FFFFL;
+    public static final long HIGH_64 = -1;  //== 0xFFFF_FFFF__FFFF_FFFFL
 
     public static boolean isPowerOf2(long x){return ((x & -x) == x);}  //also works for Long.MIN_VALUE but maybe not unsigned
     public static boolean isEven(long x){return ((x & 1) == 0);}
@@ -13,6 +13,7 @@ public class BitWiseUtil {
     {
     	if(nBitsToKeep > 64) throw new IllegalArgumentException();
     	if(nBitsToKeep == 64) return value;
+    	if(nBitsToKeep == 0) return 0;
     	int nBitsRemoved = 64 - nBitsToKeep;
     	long bitMask = (HIGH_64 >>> nBitsRemoved);
     	return (value & bitMask);
@@ -22,6 +23,7 @@ public class BitWiseUtil {
     {
     	if(nBitsToKeep > 64) throw new IllegalArgumentException();
     	if(nBitsToKeep == 64) return value;
+    	if(nBitsToKeep == 0) return 0;
     	int nBitsRemoved = 64 - nBitsToKeep;
     	long bitMask = (HIGH_64 << nBitsRemoved);
     	return (value & bitMask);
@@ -31,6 +33,7 @@ public class BitWiseUtil {
     {
     	if(nBitsToKeep > 32) throw new IllegalArgumentException();
     	if(nBitsToKeep == 32) return value;
+    	if(nBitsToKeep == 0) return 0;
     	int nBitsRemoved = 32 - nBitsToKeep;
     	int bitMask = (int) HIGH_64;
     	bitMask <<= nBitsRemoved;
@@ -41,6 +44,7 @@ public class BitWiseUtil {
     {
     	if(nBitsToKeep > 16) throw new IllegalArgumentException();
     	if(nBitsToKeep == 16) return value;
+    	if(nBitsToKeep == 0) return 0;
     	int nBitsRemoved = 16 - nBitsToKeep;
     	short bitMask = (short) HIGH_64;
     	bitMask <<= nBitsRemoved;
@@ -51,6 +55,7 @@ public class BitWiseUtil {
     {
     	if(nBitsToKeep > 8) throw new IllegalArgumentException();
     	if(nBitsToKeep == 8) return value;
+    	if(nBitsToKeep == 0) return 0;
     	int nBitsRemoved = 8 - nBitsToKeep;
     	byte bitMask = (byte) HIGH_64;
     	bitMask <<= nBitsRemoved;
