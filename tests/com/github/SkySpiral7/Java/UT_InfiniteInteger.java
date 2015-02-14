@@ -218,6 +218,8 @@ public class UT_InfiniteInteger {
     	//not sure about this math
     }
 
+	//TODO: makes tests: shift left and right
+
     @Test
 	public void subtract_long() {
 		//simple case

@@ -503,8 +503,20 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
     //why not. same reason as self power
     public InfiniteInteger factorial() {
-		// method stub
-		return null;
+		if(this.isNegative || this == NaN) return NaN;  //factorial is not defined for negative numbers
+		if(this == POSITIVE_INFINITITY) return this;  //-Infinity is covered above
+		if(this == ZERO || this.equals(InfiniteInteger.valueOf(1))) return InfiniteInteger.valueOf(1);
+
+		InfiniteInteger result = this.copy();
+		InfiniteInteger valueRemaining = result.subtract(1);
+    	while (valueRemaining != ZERO)
+    	{
+    		result = result.multiply(valueRemaining);
+    		valueRemaining = valueRemaining.subtract(1);
+    		//it's faster to let multiply(1) fast path then it is to compare valueRemaining to 1
+    		//since multiply will always compare the parameter to 1 anyway
+    	}
+		return result;
     }
 
     public InfiniteInteger abs() {
@@ -545,7 +557,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     //this*2^x
     public InfiniteInteger shiftLeft(InfiniteInteger value) {
 		if(value == ZERO || !this.isFinite()) return this;
-		if(value.isNegative) return shiftRight(value);
+		if(value.isNegative) return this.shiftRight(value.abs());
 
 		InfiniteInteger returnValue = this.copy();
 		InfiniteInteger valueRemaining = value;
@@ -583,7 +595,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     //this/2^x
     public InfiniteInteger shiftRight(InfiniteInteger value) {
 		if(value == ZERO || !this.isFinite()) return this;
-		if(value.isNegative) return shiftLeft(value);
+		if(value.isNegative) return this.shiftLeft(value.abs());
 
 		InfiniteInteger returnValue = this.copy();
 		InfiniteInteger valueRemaining = value;
@@ -690,6 +702,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     //I previously implemented writeObject but there doesn't seem to be any way to implement readObject
     //since I don't know how many nodes there are, therefore I deleted writeObject and trust the JVM to serialize
 	//TODO: possible to serialize by putting a long for count of following nodes that exist and repeat
+	//first test to see if default serialize works
 
 	//javadoc the ones that will not be copied and that being immutable is not all that useful to the outside
 	@Override
