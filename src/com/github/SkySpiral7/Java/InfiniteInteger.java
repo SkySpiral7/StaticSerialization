@@ -200,7 +200,6 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//the rest is for if both positive
 		long sum, valueRemaining = value;
 		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
-		//TODO: test changing this to copy() then test multiply(long)
 		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
@@ -290,29 +289,53 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(this == ZERO || value == 0) return ZERO;
     	if(value == -1) return this.negate();
 
-		long product, valueRemaining = value;
+		long product, valueRemaining = Math.abs(value);
 		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
+		InfiniteInteger carry = new InfiniteInteger(0);
 		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+		DequeNode<Integer> carryCursor = carry.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
-		int lowValue, highValue;
+
+		int lowValue = (int) valueRemaining;
+		int highValue = (int) (valueRemaining >>> 32);
 		while (thisCursor != null)
 		{
 			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
-			lowValue = (int) valueRemaining;
-			highValue = (int) (valueRemaining >>> 32);
 			product = Integer.toUnsignedLong(thisCursor.getData()) * Integer.toUnsignedLong(lowValue);
 
 			returnCursor.setData((int) product);
 			product >>>= 32;
-
-			valueRemaining = product * highValue;
+			carryCursor.setData((int) product);
 
 			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
+			carryCursor = DequeNode.Factory.createNodeAfter(carryCursor, 0);
 			thisCursor = thisCursor.getNext();
+		}
+		if (highValue != 0)
+		{
+			returnCursor = returnValue.magnitudeHead;
+			carryCursor = carry.magnitudeHead.getNext();
+			if(carryCursor == null) carryCursor = DequeNode.Factory.createNodeAfter(carry.magnitudeHead, 0);
+			thisCursor = this.magnitudeHead;
+			while (thisCursor != null)
+			{
+				//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
+				product = Integer.toUnsignedLong(thisCursor.getData()) * Integer.toUnsignedLong(highValue);
+
+				returnCursor.setData((int) product);
+				product >>>= 32;
+				carryCursor.setData((int) product);
+
+				if(returnCursor.getNext() == null) returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
+				else returnCursor = returnCursor.getNext();
+				if(carryCursor.getNext() == null) carryCursor = DequeNode.Factory.createNodeAfter(carryCursor, 0);
+				else carryCursor = carryCursor.getNext();
+				thisCursor = thisCursor.getNext();
+			}
 		}
 		if (valueRemaining != 0)
 		{
-			//the addition's carry causes the return value to have more nodes
+			//the mulitplication's carry causes the return value to have more nodes
 			lowValue = (int) valueRemaining;
 			highValue = (int) (valueRemaining >>> 32);
 			returnCursor.setData(lowValue);
@@ -321,7 +344,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last node since it is leading 0s
 		//do not use else. this can occur either way
 		returnValue.isNegative = (isNegative != value < 0);  //!= acts as xor
-		return returnValue;
+		//method stub. above is useless. Need to start over
+		return null;
     }
 
     public InfiniteInteger multiply(BigInteger value) {
@@ -448,7 +472,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		}
 		//method stub
 
-		return returnValue;
+		return null;
     }
 
     public InfiniteInteger shiftRight(long n) {
@@ -475,7 +499,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		}
 		//method stub
 
-		return returnValue;
+		return null;
     }
 
     //TODO: add min/max. maybe static (InfInt, InfInt) only?
@@ -521,8 +545,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	@Override
 	public String toString() {
-		if(this == POSITIVE_INFINITITY) return "+\u221E";
-		if(this == NEGATIVE_INFINITITY) return "-\u221E";
+		if(this == POSITIVE_INFINITITY) return "+Infinity";  //it doesn't seem like \u221E works
+		if(this == NEGATIVE_INFINITITY) return "-Infinity";
 		if(this == NaN) return "NaN";
 		if(this == ZERO) return "0";
 		String returnValue = "+ ";

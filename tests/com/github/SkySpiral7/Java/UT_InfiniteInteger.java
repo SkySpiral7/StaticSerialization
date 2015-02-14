@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.util.ListIterator;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class UT_InfiniteInteger {
@@ -136,6 +137,43 @@ public class UT_InfiniteInteger {
     }
 
     @Test
+    @Ignore
+    public void multiply_long() {
+    	//simple case
+    	infiniteInteger = InfiniteInteger.valueOf(5).multiply(5);
+    	assertEquals(1, infiniteInteger.signum());
+    	assertEquals(25, infiniteInteger.magnitudeHead.getData().intValue());
+    	assertNull(infiniteInteger.magnitudeHead.getNext());
+
+    	//more than max int
+    	infiniteInteger = InfiniteInteger.valueOf(4_294_967_295L).multiply(-2);
+    	assertEquals(-1, infiniteInteger.signum());
+    	assertEquals(4_294_967_294L, Integer.toUnsignedLong(infiniteInteger.magnitudeHead.getData().intValue()));
+    	assertEquals(1, infiniteInteger.magnitudeHead.getNext().getData().intValue());
+    	assertNull(infiniteInteger.magnitudeHead.getNext().getNext());
+
+    	//more than max long
+    	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).multiply(2).add(2);
+    	ListIterator<Integer> magnitudeIterator = infiniteInteger.magnitudeIterator();
+    	assertEquals(1, infiniteInteger.signum());
+    	assertEquals(0, magnitudeIterator.next().intValue());
+    	assertEquals(0, magnitudeIterator.next().intValue());
+    	assertEquals(1, magnitudeIterator.next().intValue());
+    	assertFalse(magnitudeIterator.hasNext());
+
+    	//multi digit
+    	infiniteInteger = InfiniteInteger.valueOf(-Long.MAX_VALUE).multiply(-Long.MAX_VALUE);
+    	magnitudeIterator = infiniteInteger.magnitudeIterator();
+    	assertEquals(1, infiniteInteger.signum());
+    	assertEquals(1, magnitudeIterator.next().intValue());
+    	assertEquals(0, magnitudeIterator.next().intValue());
+    	assertEquals(0xFFFF_FFFF, magnitudeIterator.next().intValue());
+    	assertEquals(0x3FFF_FFFF, magnitudeIterator.next().intValue());
+    	assertFalse(magnitudeIterator.hasNext());
+    	//not sure about this math
+    }
+
+    @Test
     public void valueOf_BigInteger() {
     	assertEquals(InfiniteInteger.valueOf(5), InfiniteInteger.valueOf(BigInteger.valueOf(5)));
     	assertEquals(InfiniteInteger.valueOf(Long.MAX_VALUE -5), InfiniteInteger.valueOf(BigInteger.valueOf(Long.MAX_VALUE -5)));
@@ -163,8 +201,8 @@ public class UT_InfiniteInteger {
     	//prove that each node is unsigned
     	infiniteInteger = InfiniteInteger.valueOf(2_147_483_648L);
     	assertEquals(1, infiniteInteger.signum());
-    	assertNull(infiniteInteger.magnitudeHead.getNext());
     	assertEquals(2_147_483_648L, Integer.toUnsignedLong(infiniteInteger.magnitudeHead.getData().intValue()));
+    	assertNull(infiniteInteger.magnitudeHead.getNext());
 
     	//special case: can't use Math.abs
     	infiniteInteger = InfiniteInteger.valueOf(Long.MIN_VALUE);
