@@ -2,25 +2,18 @@ package com.github.SkySpiral7.Java.iterators;
 
 import java.util.ListIterator;
 
-public class ReadOnlyListIterator<E> implements ListIterator<E> {
-	//TODO: have ReadOnlyList extend the non-list
-	protected ListIterator<E> underlyingIterator;
+public class ReadOnlyListIterator<E> extends ReadOnlyIterator<E> implements ListIterator<E> {
+	protected ListIterator<E> underlyingListIterator;  //exists so that I don't have to cast underlyingIterator everywhere
 
-	public ReadOnlyListIterator(ListIterator<E> underlyingIterator) {
-		this.underlyingIterator = underlyingIterator;
+	public ReadOnlyListIterator(ListIterator<E> underlyingListIterator) {
+		super(underlyingListIterator);  //sets super.underlyingIterator
+		this.underlyingListIterator = underlyingListIterator;
 	}
 
-	@Override public boolean hasNext(){return underlyingIterator.hasNext();}
-	@Override public E next(){return underlyingIterator.next();}
-	@Override public boolean hasPrevious(){return underlyingIterator.hasPrevious();}
-	@Override public E previous(){return underlyingIterator.previous();}
-	@Override public int nextIndex(){return underlyingIterator.nextIndex();}
-	@Override public int previousIndex(){return underlyingIterator.previousIndex();}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException("This iterator is read only.");
-	}
+	@Override public boolean hasPrevious(){return underlyingListIterator.hasPrevious();}
+	@Override public E previous(){return underlyingListIterator.previous();}
+	@Override public int nextIndex(){return underlyingListIterator.nextIndex();}
+	@Override public int previousIndex(){return underlyingListIterator.previousIndex();}
 
 	@Override
 	public void set(E dummy) {

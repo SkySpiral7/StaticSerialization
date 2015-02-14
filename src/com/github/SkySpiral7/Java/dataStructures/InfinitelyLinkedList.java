@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import com.github.SkySpiral7.Java.ListIndexOutOfBoundsException;
 import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
 import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
 import com.github.SkySpiral7.Java.pojo.DequeNode;
@@ -98,7 +99,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 
 	protected void rangeCheckForGet(BigInteger index) {
 		if(sizeOverflow) return;  //index is never out of range
-		if(biggerSize.compareTo(index) != 1) throw new IndexOutOfBoundsException("Index: "+index+", Size: "+biggerSize);
+		if(biggerSize.compareTo(index) != 1) throw new ListIndexOutOfBoundsException("Index: "+index+", Size: "+biggerSize);
 	}
 
 	//add is ALWAYS possible by definition of this class

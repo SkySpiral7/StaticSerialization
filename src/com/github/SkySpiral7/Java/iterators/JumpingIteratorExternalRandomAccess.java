@@ -2,10 +2,10 @@ package com.github.SkySpiral7.Java.iterators;
 
 import com.github.SkySpiral7.Java.dataStructures.ModCountList;
 
-public class JumpingIteratorExternal<E> extends ListIteratorExternal<E> implements JumpingIterator<E> {
+public class JumpingIteratorExternalRandomAccess<E> extends ListIteratorExternal<E> implements JumpingIterator<E> {
 
-	public JumpingIteratorExternal(ModCountList<E> underlyingList, int initialIndex){super(underlyingList, initialIndex);}
-	public JumpingIteratorExternal(ModCountList<E> underlyingList){super(underlyingList);}
+	public JumpingIteratorExternalRandomAccess(ModCountList<E> underlyingList, int initialIndex){super(underlyingList, initialIndex);}
+	public JumpingIteratorExternalRandomAccess(ModCountList<E> underlyingList){super(underlyingList);}
 
 	@Override
 	public void jumpToBeginning(){cursor = 0;}
