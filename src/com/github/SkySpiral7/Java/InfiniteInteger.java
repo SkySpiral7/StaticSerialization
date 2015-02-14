@@ -13,6 +13,7 @@ import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
 import com.github.SkySpiral7.Java.iterators.ReadOnlyListIterator;
 import com.github.SkySpiral7.Java.pojo.DequeNode;
 import com.github.SkySpiral7.Java.pojo.IntegerQuotient;
+import com.github.SkySpiral7.Java.util.BitHelper;
 
 //aka InfinInt
 //maxes: int[] 2^(32 * (2^31-1))-1 long[] 2^(64 * (2^31-1))-1
@@ -180,7 +181,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	protected DequeNode<Integer> getMagnitudeTail() {
-		//TODO: make a variable for magnitudeTail
+		//TODO: make a variable for magnitudeTail?
 		DequeNode<Integer> tail = magnitudeHead;
 		while(tail.getNext() != null) tail = tail.getNext();
 		return tail;
@@ -289,7 +290,33 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(this == ZERO || value == 0) return ZERO;
     	if(value == -1) return this.negate();
 
-		long product, valueRemaining = Math.abs(value);
+    	/*
+    	 * psudo code that BigInteger uses to multiply:
+    	 * for each value node
+    	 * {
+    	 * 		long smallCarry = 0
+    	 * 		for each node of this
+    	 * 		{
+    	 * 			long product = (this node * value node)
+    	 * 			if(not 0) product += bigCarry node  //from a previous line
+    	 * 			product += smallCarry
+    	 * 			bigCarry node = product low
+    	 * 			smallCarry = product high
+    	 * 		}
+    	 * 		result lowest node is now done = highest remaining smallCarry
+    	 * }
+    	 * 
+    	 * much like:
+    	 *   23
+    	 *  x15
+    	 * ====
+    	 *  115
+    	 * +23 
+    	 * ====
+    	 *  345
+    	 * 
+    	 */
+    	long product, valueRemaining = Math.abs(value);
 		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
 		InfiniteInteger carry = new InfiniteInteger(0);
 		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
@@ -470,9 +497,19 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			returnValue.magnitudeHead = DequeNode.Factory.createNodeBefore(0, returnValue.magnitudeHead);
 			valueRemaining = valueRemaining.subtract(32);
 		}
-		//method stub
 
-		return null;
+		int smallValueRemaining = valueRemaining.intValue();
+		DequeNode<Integer> returnCursor = returnValue.getMagnitudeTail();
+
+		int overflow = BitHelper.getHighNBits(returnCursor.getData().intValue(), smallValueRemaining);
+			//overflow contains what would fall off when shifting left
+		overflow >>>= (32 - smallValueRemaining);
+			//shift overflow right so that it appears in the least significant place of the following node
+		if(overflow != 0) DequeNode.Factory.createNodeAfter(returnCursor, overflow);
+
+		returnCursor.setData(returnCursor.getData().intValue() << smallValueRemaining);
+
+		return returnValue;
     }
 
     public InfiniteInteger shiftRight(long n) {
