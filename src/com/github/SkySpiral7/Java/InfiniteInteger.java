@@ -1,6 +1,5 @@
 package com.github.SkySpiral7.Java;
 
-import static com.github.SkySpiral7.Java.pojo.Comparison.EQUAL_TO;
 import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN;
 import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN_OR_EQUAL_TO;
 import static com.github.SkySpiral7.Java.pojo.Comparison.LESS_THAN;
@@ -85,7 +84,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//if abs fits in a signed long then delegate
 
 		InfiniteInteger returnValue = InfiniteInteger.ZERO;
-		if(is(value, EQUAL_TO, BigInteger.ZERO)) return InfiniteInteger.valueOf(value.longValue());
+		if(value.equals(BigInteger.ZERO)) return InfiniteInteger.valueOf(value.longValue());
 
 		while (is(valueRemaining, GREATER_THAN, bigIntegerMaxLong))
 		{
@@ -122,7 +121,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * This method returns an infinite stream of all integers.
 	 * NaN, +Infinity, and -Infinity will not be included in the stream.
 	 * The stream's order is: 0, 1, -1, 2, -2, 3, -3, 4, -4...
-	 * 
+	 *
 	 * @return a stream of all integers
 	 */
 	public static Stream<InfiniteInteger> streamAllIntegers() {
@@ -362,16 +361,16 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     	 * 		}
     	 * 		result lowest node is now done = highest remaining smallCarry
     	 * }
-    	 * 
+    	 *
     	 * much like:
     	 *   23
     	 *  x15
     	 * ====
     	 *  115
-    	 * +23 
+    	 * +23
     	 * ====
     	 *  345
-    	 * 
+    	 *
     	 */
 //    	long product, valueRemaining = Math.abs(value);
 //		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
@@ -571,14 +570,19 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if (smallValueRemaining != 0)
 		{
 			DequeNode<Integer> returnCursor = returnValue.getMagnitudeTail();
-	
-			int overflow = BitWiseUtil.getHighestNBits(returnCursor.getData().intValue(), smallValueRemaining);
-				//overflow contains what would fall off when shifting left
-			overflow >>>= (32 - smallValueRemaining);
-				//shift overflow right so that it appears in the least significant place of the following node
-			if(overflow != 0) DequeNode.Factory.createNodeAfter(returnCursor, overflow);
-	
-			returnCursor.setData(returnCursor.getData().intValue() << smallValueRemaining);
+
+			while (returnCursor != null)
+			{
+				int overflow = BitWiseUtil.getHighestNBits(returnCursor.getData().intValue(), smallValueRemaining);
+					//overflow contains what would fall off when shifting left
+				overflow >>>= (32 - smallValueRemaining);
+					//shift overflow right so that it appears in the least significant place of the following node
+				if(overflow != 0 && returnCursor.getNext() == null) DequeNode.Factory.createNodeAfter(returnCursor, overflow);
+				else if(overflow != 0) returnCursor.getNext().setData(returnCursor.getNext().getData().intValue() | overflow);
+
+				returnCursor.setData(returnCursor.getData().intValue() << smallValueRemaining);
+				returnCursor = returnCursor.getPrev();
+			}
 		}
 
 		return returnValue;
@@ -611,7 +615,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if (smallValueRemaining != 0)
 		{
 			DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
-	
+
 			while (returnCursor.getNext() != null)
 			{
 				returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);

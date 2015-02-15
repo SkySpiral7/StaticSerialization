@@ -48,7 +48,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 	protected void changeSize(int sizeChangeAmount) {
 		biggerSize = changeBigInteger(biggerSize, sizeChangeAmount);
 		if(biggerSize == INVALID_SIZE_BIG_INTEGER){sizeOverflow = true; biggerSize = BigInteger.ONE; return;}
-		if(biggerSize.compareTo(BigInteger.ZERO) == 0) countSize();
+		if(biggerSize.equals(BigInteger.ZERO)) countSize();
 		//TODO: is everything accounted for?
 	}
 

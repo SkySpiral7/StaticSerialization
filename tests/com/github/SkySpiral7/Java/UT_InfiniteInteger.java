@@ -218,7 +218,21 @@ public class UT_InfiniteInteger {
     	//not sure about this math
     }
 
-	//TODO: makes tests: shift left and right
+	//TODO: makes tests: shift right
+    @Test
+	public void shiftLeft() {
+    	//simple case
+    	assertEqualNodes(InfiniteInteger.valueOf(1).shiftLeft(3), 1, 8);
+
+    	//shift by x32
+    	assertEqualNodes(InfiniteInteger.valueOf(1).shiftLeft(64), 1, 0, 0, 1);
+
+    	//shift more than 32
+    	assertEqualNodes(InfiniteInteger.valueOf(1).shiftLeft(35), 1, 0, 8);
+
+    	//multiple starting nodes (shift not x32)
+    	assertEqualNodes(InfiniteInteger.valueOf(Long.MAX_VALUE).shiftLeft(34), 1, 0, -4, -1, 1);
+    }
 
     @Test
 	public void subtract_long() {
@@ -297,5 +311,22 @@ public class UT_InfiniteInteger {
     	assertEquals(Integer.MIN_VALUE, infiniteInteger.magnitudeHead.getNext().getData().intValue());
     	assertNull(infiniteInteger.magnitudeHead.getNext().getNext());
     }
+
+	private void assertEqualNodes(InfiniteInteger infiniteIntegerParam, int expectedSignum, int... expectedNodes) {
+		assertEquals(generateInfiniteIntegerString(expectedSignum, expectedNodes), infiniteIntegerParam.toString());
+	}
+
+	private String generateInfiniteIntegerString(int signum, int... nodeValues) {
+		if(signum == 0) return "0";
+		String returnValue = "+ ";
+		if(signum == -1) returnValue = "- ";
+		StringBuilder stringBuilder = new StringBuilder(returnValue);
+		for (int node : nodeValues)
+		{
+			stringBuilder.append(Integer.toHexString(node).toUpperCase());
+			stringBuilder.append(", ");
+		}
+		return stringBuilder.toString();
+	}
 
 }
