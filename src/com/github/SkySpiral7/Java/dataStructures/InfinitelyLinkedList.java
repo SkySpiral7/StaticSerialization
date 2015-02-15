@@ -1,11 +1,18 @@
 package com.github.SkySpiral7.Java.dataStructures;
 
-import java.math.BigInteger;
+import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN;
+import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN_OR_EQUAL_TO;
+import static com.github.SkySpiral7.Java.pojo.Comparison.LESS_THAN;
+import static com.github.SkySpiral7.Java.pojo.Comparison.LESS_THAN_OR_EQUAL_TO;
+import static com.github.SkySpiral7.Java.util.ComparableSugar.is;
+import static com.github.SkySpiral7.Java.util.ComparableSugar.isComparisonResult;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import com.github.SkySpiral7.Java.InfiniteInteger;
 import com.github.SkySpiral7.Java.ListIndexOutOfBoundsException;
 import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
 import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
@@ -13,16 +20,10 @@ import com.github.SkySpiral7.Java.pojo.DequeNode;
 
 public class InfinitelyLinkedList<E> extends LinkedList<E> {
 	public static final int INVALID_SIZE = -1;
-	public static final BigInteger INVALID_SIZE_BIG_INTEGER = BigInteger.valueOf(INVALID_SIZE);
-	protected final static BigInteger BIG_INTEGER_MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
 
-	protected BigInteger biggerSize;
-	/**
-	 * True if the list has more elements than the max of BigInteger. False otherwise.
-	 */
-	protected boolean sizeOverflow;
+	protected InfiniteInteger actualSize;
 
-	public InfinitelyLinkedList(){size = INVALID_SIZE; biggerSize = BigInteger.ZERO; sizeOverflow = false;}
+	public InfinitelyLinkedList(){size = INVALID_SIZE; actualSize = InfiniteInteger.ZERO;}
     public InfinitelyLinkedList(Collection<? extends E> initialElements){this(); addAll(initialElements);}
     public InfinitelyLinkedList(E[] initialElements){this(Arrays.asList(initialElements));}
 
@@ -42,72 +43,50 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 	protected void insertNodeAfter(DequeNode<E> prev, E data) {
 		super.insertNodeAfter(prev, data);
 		size--;  //undo size++ but it's ok if modCount overflows
-		changeSize(1);
-	}
-
-	protected void changeSize(int sizeChangeAmount) {
-		biggerSize = changeBigInteger(biggerSize, sizeChangeAmount);
-		if(biggerSize == INVALID_SIZE_BIG_INTEGER){sizeOverflow = true; biggerSize = BigInteger.ONE; return;}
-		if(biggerSize.equals(BigInteger.ZERO)) countSize();
-		//TODO: is everything accounted for?
-	}
-
-	//requires 1.8 I assume before that it would throw ArrayIndexOutOfBoundsException
-	protected static BigInteger changeBigInteger(BigInteger bigIntToChange, int sizeChangeAmount) {
-		try {
-			return bigIntToChange.add(BigInteger.valueOf(sizeChangeAmount));
-		}
-		catch(Throwable t) {  //ArithmeticException (from 1.8 overflow) or OutOfMemoryError etc
-			return INVALID_SIZE_BIG_INTEGER;
-		}
-	}
-
-	protected void countSize() {
-		//TODO: add a constructor flag that prevents countSize
-		BigInteger newSize = BigInteger.ZERO;
-		Iterator<E> iter = iterator();
-		while(iter.hasNext() && newSize != INVALID_SIZE_BIG_INTEGER)
-			{newSize = changeBigInteger(newSize, 1); iter.next();}
-		if(!iter.hasNext()){sizeOverflow = false; biggerSize = newSize;}
-		else biggerSize = BigInteger.TEN;  //TODO: don't recount for 10?
+		actualSize = actualSize.add(1);
 	}
 
 	@Override
 	protected E removeNode(DequeNode<E> nodeToRemove) {
 		E returnValue = super.removeNode(nodeToRemove);
 		size++;  //undo size-- but it's ok if modCount overflows
-		changeSize(-1);
+		actualSize = actualSize.subtract(1);
 		return returnValue;
 	}
 
-	public ListIterator<E> listIterator(BigInteger startingIndex) {
+	public ListIterator<E> listIterator(InfiniteInteger startingIndex) {
 		rangeCheckForGet(startingIndex);
 		ListIterator<E> returnValue = new DequeNodeIterator.IndexAgnosticValueIterator<E>(getNode(startingIndex));
 		return returnValue;
 	}
 
-	public BigInteger getBigSize() {
-		if(sizeOverflow) return INVALID_SIZE_BIG_INTEGER;
-		return biggerSize;
+	public InfiniteInteger getActualSize() {
+		return actualSize;
 	}
 
 	@Override
 	public int size() {
-		if(sizeOverflow || biggerSize.compareTo(BIG_INTEGER_MAX_INT) == 1) return INVALID_SIZE;
-		return biggerSize.intValue();
+		if(isComparisonResult(actualSize.compareTo(Integer.MAX_VALUE), GREATER_THAN)) return INVALID_SIZE;
+		return actualSize.intValue();
 	}
 
-	protected void rangeCheckForGet(BigInteger index) {
-		if(sizeOverflow) return;  //index is never out of range
-		if(biggerSize.compareTo(index) != 1) throw new ListIndexOutOfBoundsException("Index: "+index+", Size: "+biggerSize);
+	@Override
+	protected void rangeCheckForAdd(int index) {
+		rangeCheckForAdd(InfiniteInteger.valueOf(index));
 	}
-
-	//add is ALWAYS possible by definition of this class
-	@Override protected void rangeCheckForAdd(int index){}
 
 	@Override
 	protected void rangeCheckForGet(int index) {
-		rangeCheckForGet(BigInteger.valueOf(index));
+		rangeCheckForGet(InfiniteInteger.valueOf(index));
+	}
+
+	protected void rangeCheckForAdd(InfiniteInteger index) {
+		if(actualSize.equals(index)) return;
+		rangeCheckForGet(index);
+	}
+
+	protected void rangeCheckForGet(InfiniteInteger index) {
+		if(is(index, GREATER_THAN_OR_EQUAL_TO, actualSize)) throw new ListIndexOutOfBoundsException("Index: "+index+", Size: "+actualSize);
 	}
 
     @Override
@@ -121,17 +100,18 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
     	insertNodeAfter(getNode(insertionIndex), newElement);
     }
 
-    public void add(BigInteger insertionIndex, E newElement) {
+    public void add(InfiniteInteger insertionIndex, E newElement) {
     	insertNodeAfter(getNode(insertionIndex), newElement);
     }
 
     @Override
     public boolean addAll(int insertionIndex, Collection<? extends E> newElements) {
-        return addAll(BigInteger.valueOf(insertionIndex), newElements);
+        return addAll(InfiniteInteger.valueOf(insertionIndex), newElements);
     }
 
-    public boolean addAll(BigInteger insertionIndex, Collection<? extends E> newElements) {
-        boolean modified = false;
+    public boolean addAll(InfiniteInteger insertionIndex, Collection<? extends E> newElements) {
+    	rangeCheckForAdd(insertionIndex);
+    	boolean modified = false;
         Iterator<? extends E> newElementsIterator = newElements.iterator();
         DequeNode<E> insertAfterThisNode = getNode(insertionIndex);
         while (newElementsIterator.hasNext()) {
@@ -150,7 +130,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
         return modified;
     }
 
-    public E get(BigInteger index) {
+    public E get(InfiniteInteger index) {
 		rangeCheckForGet(index);
 		return getNode(index).getData();
     }
@@ -238,7 +218,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 
 	@Override
     public int lastIndexOf(Object objectToFind) {
-        if(biggerSize.compareTo(BIG_INTEGER_MAX_INT) == 1) throw new IllegalStateException("The list is larger than an Integer can represent.");
+		if(isComparisonResult(actualSize.compareTo(Integer.MAX_VALUE), GREATER_THAN)) throw new IllegalStateException("The list is larger than an Integer can represent.");
     	int index = size;
         if (objectToFind == null) {
             for (DequeNode<E> currentNode = last; currentNode != null; currentNode = currentNode.getPrev()) {
@@ -254,24 +234,23 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
         return ELEMENT_NOT_FOUND;
     }
 
-    public BigInteger lastBigIndexOf(Object objectToFind) {
-        if(sizeOverflow) throw new IllegalStateException("The list is larger than BigInteger can represent.");
-        BigInteger index = biggerSize;
+    public InfiniteInteger lastActualIndexOf(Object objectToFind) {
+        InfiniteInteger index = actualSize;
         if (objectToFind == null) {
             for (DequeNode<E> currentNode = last; currentNode != null; currentNode = currentNode.getPrev()) {
-            	index=index.subtract(BigInteger.ONE);
+            	index=index.subtract(1);
                 if(currentNode.getData() == null) return index;
             }
         } else {
             for (DequeNode<E> currentNode = last; currentNode != null; currentNode = currentNode.getPrev()) {
-            	index=index.subtract(BigInteger.ONE);
+            	index=index.subtract(1);
                 if(objectToFind.equals(currentNode.getData())) return index;
             }
         }
-        return BigInteger.valueOf(ELEMENT_NOT_FOUND);
+        return InfiniteInteger.valueOf(ELEMENT_NOT_FOUND);
     }
 
-    public E remove(BigInteger index) {
+    public E remove(InfiniteInteger index) {
     	DequeNode<E> nodeToRemove = getNode(index);
     	E returnValue = nodeToRemove.getData();
     	removeNode(nodeToRemove);
@@ -280,23 +259,23 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 
     @Override
     public DequeNode<E> getNode(int index) {
-    	return getNode(BigInteger.valueOf(index));
+    	return getNode(InfiniteInteger.valueOf(index));
     }
 
-    public DequeNode<E> getNode(BigInteger index) {
+    public DequeNode<E> getNode(InfiniteInteger index) {
     	rangeCheckForGet(index);
 
-    	if (!sizeOverflow && biggerSize.shiftRight(1).compareTo(index) == -1)
+    	if (is(index, LESS_THAN_OR_EQUAL_TO, actualSize.shiftRight(1)))
     	{
-        	DequeNode<E> currentNode = last;
-            for(BigInteger i = biggerSize.subtract(BigInteger.ONE); i.compareTo(index) == 1; i=i.subtract(BigInteger.ONE))
+    		DequeNode<E> currentNode = first;
+            for(InfiniteInteger i = InfiniteInteger.ZERO; is(i, LESS_THAN, index); i=i.add(1))
             	currentNode = currentNode.getPrev();
             return currentNode;
         }
-    	else  //if size is unknown then we must count from the beginning
+    	else
     	{
-    		DequeNode<E> currentNode = first;
-            for(BigInteger i = BigInteger.ZERO; i.compareTo(index) == -1; i=i.add(BigInteger.ONE))
+        	DequeNode<E> currentNode = last;
+            for(InfiniteInteger i = actualSize.subtract(1); is(i, GREATER_THAN, index); i=i.subtract(1))
             	currentNode = currentNode.getPrev();
             return currentNode;
         }
@@ -304,10 +283,10 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 
     @Override
     public E set(int index, E newValue) {
-        return set(BigInteger.valueOf(index), newValue);
+        return set(InfiniteInteger.valueOf(index), newValue);
     }
 
-    public E set(BigInteger index, E newValue) {
+    public E set(InfiniteInteger index, E newValue) {
         DequeNode<E> nodeToChange = getNode(index);
         E oldValue = nodeToChange.getData();
         nodeToChange.setData(newValue);

@@ -34,7 +34,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	/**This constant represents 0 and it is the only InfiniteInteger that can be 0 (singleton).
 	 * Therefore it is safe to use pointer equality for comparison: <code>if(infiniteIntegerVar == InfiniteInteger.ZERO)</code>*/
 	public static final InfiniteInteger ZERO = new InfiniteInteger(0);
-	/**Common abbreviation for "not a number". This constant is the result of invalid math such as 0/0.*/
+	/**Common abbreviation for "not a number". This constant is the result of invalid math such as 0/0.
+	 * Note that this is a normal object such that <code>(InfiniteInteger.NaN == InfiniteInteger.NaN)</code> is
+	 * always true. Therefore it is logically correct unlike the floating point unit's NaN.*/
 	public static final InfiniteInteger NaN = new InfiniteInteger(false);
 	/**+&infin; is a concept rather than a number but will be returned by math such as 1/0.*/
 	public static final InfiniteInteger POSITIVE_INFINITITY = new InfiniteInteger(true);
