@@ -16,7 +16,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
 import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
@@ -222,7 +225,13 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	public ListIterator<Integer> magnitudeIterator() {
 		return new ReadOnlyListIterator<Integer>(new DequeNodeIterator.IndexAgnosticValueIterator<Integer>(magnitudeHead));
-		//TODO: make a magnitude stream to better represent that it can be any length
+	}
+
+	//exists to better represent that it can be any length
+	public Stream<Integer> magnitudeStream() {
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+				magnitudeIterator(),
+                Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
 	}
 
 	protected DequeNode<Integer> getMagnitudeTail() {
