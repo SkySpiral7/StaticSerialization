@@ -57,7 +57,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 		try {
 			return bigIntToChange.add(BigInteger.valueOf(sizeChangeAmount));
 		}
-		catch(Throwable e) {  //ArithmeticException (from 1.8 overflow) or OutOfMemoryError etc
+		catch(Throwable t) {  //ArithmeticException (from 1.8 overflow) or OutOfMemoryError etc
 			return INVALID_SIZE_BIG_INTEGER;
 		}
 	}

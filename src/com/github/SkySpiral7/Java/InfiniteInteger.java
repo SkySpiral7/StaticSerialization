@@ -83,17 +83,17 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(is(valueRemaining, LESS_THAN_OR_EQUAL_TO, bigIntegerMaxLong)) return InfiniteInteger.valueOf(value.longValue());
 		//if abs fits in a signed long then delegate
 
-		InfiniteInteger returnValue = InfiniteInteger.ZERO;
+		InfiniteInteger result = InfiniteInteger.ZERO;
 		if(value.equals(BigInteger.ZERO)) return InfiniteInteger.valueOf(value.longValue());
 
 		while (is(valueRemaining, GREATER_THAN, bigIntegerMaxLong))
 		{
-			returnValue = returnValue.add(Long.MAX_VALUE);
+			result = result.add(Long.MAX_VALUE);
 			valueRemaining = valueRemaining.subtract(bigIntegerMaxLong);
 		}
-		returnValue = returnValue.add(valueRemaining.longValue());
-		returnValue.isNegative = willBeNegative;
-		return returnValue;
+		result = result.add(valueRemaining.longValue());
+		result.isNegative = willBeNegative;
+		return result;
 	}
 
 	public static InfiniteInteger littleEndian(long[] valueArray, boolean isNegative) {
@@ -108,13 +108,26 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return bigEndian(Arrays.asList(wrappedValues).listIterator(), isNegative);
 	}
 
-	public static InfiniteInteger littleEndian(Iterator<Long> valueArray, boolean isNegative) {
-		//TODO: method stubs
-		return null;
+	public static InfiniteInteger littleEndian(Iterator<Long> valueIterator, boolean isNegative) {
+		if(!valueIterator.hasNext()) return ZERO;
+		InfiniteInteger result = InfiniteInteger.valueOf(valueIterator.next());
+		result.isNegative = isNegative;
+		DequeNode<Integer> cursor = result.magnitudeHead;
+		if(cursor.getNext() == null) cursor = DequeNode.Factory.createNodeAfter(cursor, 0);
+		while (valueIterator.hasNext())
+		{
+			long value = valueIterator.next();
+			cursor = DequeNode.Factory.createNodeAfter(cursor, (int) value);
+			value >>>= 32;
+			cursor = DequeNode.Factory.createNodeAfter(cursor, (int) value);
+		}
+		while(cursor.getData().intValue() == 0){cursor = cursor.getPrev(); cursor.getNext().remove();}
+		if(result.magnitudeHead.getNext() == null && result.magnitudeHead.getData().intValue() == 0) return ZERO;
+		return result;
 	}
 
-	public static InfiniteInteger bigEndian(ListIterator<Long> valueArray, boolean isNegative) {
-		return littleEndian(DescendingListIterator.iterateBackwardsFromEnd(valueArray), isNegative);
+	public static InfiniteInteger bigEndian(ListIterator<Long> valueIterator, boolean isNegative) {
+		return littleEndian(DescendingListIterator.iterateBackwardsFromEnd(valueIterator), isNegative);
 	}
 
 	/**
@@ -168,26 +181,46 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	public long longValueExact() {
 		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be represented as a long.");
 		if(magnitudeHead.getNext() != null && magnitudeHead.getNext().getNext() != null)
-			throw new ArithmeticException("This InfiniteInteger can't be represented as a long.");
+			throw new ArithmeticException("This InfiniteInteger is too large to be represented as a long.");
 			//if there are too many nodes then the number is too large
 		if(magnitudeHead.getNext() != null && (magnitudeHead.getNext().getData().intValue() & Long.MIN_VALUE) != 0)
-			throw new ArithmeticException("This InfiniteInteger can't be represented as a signed long.");
+			throw new ArithmeticException("This InfiniteInteger is too large to be represented as a signed long.");
 			//the & Min part checks that the most significant bit must be clear since it will be dropped to make the number signed
 		return longValue();
 	}
 
 	public BigInteger bigIntegerValue() {
-		// method stub
+		//TODO: method stubs
 		return null;
 	}
 
 	public BigInteger bigIntegerValueExact() {
-		// method stub
-		return null;
+		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be represented as a BigInteger.");
+		if(this == ZERO) return BigInteger.ZERO;
+
+		try {
+			DequeNode<Integer> cursor = this.magnitudeHead;
+			BigInteger result = BigInteger.valueOf(cursor.getData().intValue());
+			cursor = cursor.getNext();
+			while (cursor != null)
+			{
+				result = result.shiftLeft(32);
+				result = result.or(BigInteger.valueOf(cursor.getData().intValue()));  //faster than add and will do the same thing
+				cursor = cursor.getNext();
+			}
+			if(this.isNegative) result = result.negate();
+			return result;
+		} catch(Throwable t) {
+			//ArithmeticException (from 1.8 overflow) or OutOfMemoryError etc
+			//before 1.8 I assume it would throw ArrayIndexOutOfBoundsException
+			//result.or will not throw but result.shiftLeft might
+			throw new ArithmeticException("This InfiniteInteger is too large to be represented as a BigInteger.");
+		}
 	}
 
 	public ListIterator<Integer> magnitudeIterator() {
 		return new ReadOnlyListIterator<Integer>(new DequeNodeIterator.IndexAgnosticValueIterator<Integer>(magnitudeHead));
+		//TODO: make a magnitude stream to better represent that it can be any length
 	}
 
 	protected DequeNode<Integer> getMagnitudeTail() {
@@ -210,8 +243,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 		//the rest is for if both positive
 		long sum, valueRemaining = value;
-		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
-		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+		InfiniteInteger result = new InfiniteInteger(0);  //can't use ZERO because result will be modified
+		DequeNode<Integer> returnCursor = result.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
 		while (thisCursor != null)
@@ -239,7 +272,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		}
 		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last node since it is leading 0s
 		//do not use else. this can occur either way
-		return returnValue;
+		return result;
 	}
 
 	public InfiniteInteger add(BigInteger value) {
@@ -257,8 +290,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 		//the rest is for if both positive
 		long sum = 0;
-		InfiniteInteger returnValue = this.copy();
-		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+		InfiniteInteger result = this.copy();
+		DequeNode<Integer> returnCursor = result.magnitudeHead;
 		ListIterator<Integer> valueMagIterator = value.magnitudeIterator();
 		int lowSum, highSum;
 		while (valueMagIterator.hasNext() || sum != 0)
@@ -278,7 +311,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			else returnCursor = returnCursor.getNext();
 		}
 		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last node since it is leading 0s
-		return returnValue;
+		return result;
 	}
 
 	public InfiniteInteger subtract(long value) {
@@ -297,8 +330,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 		//this is greater than value
 		long difference, valueRemaining = value;
-		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
-		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+		InfiniteInteger result = new InfiniteInteger(0);  //can't use ZERO because result will be modified
+		DequeNode<Integer> returnCursor = result.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
 		boolean borrow = false;
@@ -328,7 +361,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			//assert(returnCursor != null)  //I already checked that this != value which is the only way for result == 0
 		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //there will be 2 if the last node was borrowed down to 0
 
-		return returnValue;
+		return result;
 	}
 
 	public InfiniteInteger subtract(BigInteger value) {
@@ -373,9 +406,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     	 *
     	 */
 //    	long product, valueRemaining = Math.abs(value);
-//		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
+//		InfiniteInteger result = new InfiniteInteger(0);  //can't use ZERO because result will be modified
 //		InfiniteInteger carry = new InfiniteInteger(0);
-//		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+//		DequeNode<Integer> returnCursor = result.magnitudeHead;
 //		DequeNode<Integer> carryCursor = carry.magnitudeHead;
 //		DequeNode<Integer> thisCursor = this.magnitudeHead;
 //
@@ -396,7 +429,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 //		}
 //		if (highValue != 0)
 //		{
-//			returnCursor = returnValue.magnitudeHead;
+//			returnCursor = result.magnitudeHead;
 //			carryCursor = carry.magnitudeHead.getNext();
 //			if(carryCursor == null) carryCursor = DequeNode.Factory.createNodeAfter(carry.magnitudeHead, 0);
 //			thisCursor = this.magnitudeHead;
@@ -426,7 +459,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 //		}
 //		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last node since it is leading 0s
 //		//do not use else. this can occur either way
-//		returnValue.isNegative = (isNegative != value < 0);  //!= acts as xor
+//		result.isNegative = (isNegative != value < 0);  //!= acts as xor
 		//method stub. above is useless. Need to start over
 		return null;
     }
@@ -521,18 +554,18 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     public InfiniteInteger abs() {
     	if(!isNegative || isNaN()) return this;  //includes this == 0 and +Infinity
     	if(this == NEGATIVE_INFINITITY) return POSITIVE_INFINITITY;
-    	InfiniteInteger returnValue = copy();
-    	returnValue.isNegative = false;
-    	return returnValue;
+    	InfiniteInteger result = copy();
+    	result.isNegative = false;
+    	return result;
     }
 
     public InfiniteInteger negate() {
     	if(isNaN() || this == ZERO) return this;
     	if(this == NEGATIVE_INFINITITY) return POSITIVE_INFINITITY;
     	if(this == POSITIVE_INFINITITY) return NEGATIVE_INFINITITY;
-    	InfiniteInteger returnValue = copy();
-    	returnValue.isNegative = !isNegative;
-    	return returnValue;
+    	InfiniteInteger result = copy();
+    	result.isNegative = !isNegative;
+    	return result;
     }
 
     /**
@@ -558,18 +591,18 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(value == ZERO || !this.isFinite()) return this;
 		if(value.isNegative) return this.shiftRight(value.abs());
 
-		InfiniteInteger returnValue = this.copy();
+		InfiniteInteger result = this.copy();
 		InfiniteInteger valueRemaining = value;
 		while (isComparisonResult(valueRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
 		{
-			returnValue.magnitudeHead = DequeNode.Factory.createNodeBefore(0, returnValue.magnitudeHead);
+			result.magnitudeHead = DequeNode.Factory.createNodeBefore(0, result.magnitudeHead);
 			valueRemaining = valueRemaining.subtract(32);
 		}
 
 		final int smallValueRemaining = valueRemaining.intValue();
 		if (smallValueRemaining != 0)
 		{
-			DequeNode<Integer> returnCursor = returnValue.getMagnitudeTail();
+			DequeNode<Integer> returnCursor = result.getMagnitudeTail();
 
 			while (returnCursor != null)
 			{
@@ -585,7 +618,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			}
 		}
 
-		return returnValue;
+		return result;
     }
 
     public InfiniteInteger shiftRight(long n) {
@@ -601,20 +634,20 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(value == ZERO || !this.isFinite()) return this;
 		if(value.isNegative) return this.shiftLeft(value.abs());
 
-		InfiniteInteger returnValue = this.copy();
+		InfiniteInteger result = this.copy();
 		InfiniteInteger valueRemaining = value;
 		while (isComparisonResult(valueRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
 		{
-			returnValue.magnitudeHead = returnValue.magnitudeHead.getNext();
-			if(returnValue.magnitudeHead == null) return ZERO;
-			returnValue.magnitudeHead.getPrev().remove();
+			result.magnitudeHead = result.magnitudeHead.getNext();
+			if(result.magnitudeHead == null) return ZERO;
+			result.magnitudeHead.getPrev().remove();
 			valueRemaining = valueRemaining.subtract(32);
 		}
 
 		final int smallValueRemaining = valueRemaining.intValue();
 		if (smallValueRemaining != 0)
 		{
-			DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
+			DequeNode<Integer> returnCursor = result.magnitudeHead;
 
 			while (returnCursor.getNext() != null)
 			{
@@ -630,7 +663,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
 		}
 
-		return returnValue;
+		return result;
     }
 
     //TODO: add min/max. maybe static (InfInt, InfInt) only?
@@ -754,7 +787,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 
-		returnCursor.setData(thisCursor.getData());
+		returnCursor.setData(thisCursor.getData());  //must be outside the loop since the first node already exists
 		thisCursor = thisCursor.getNext();
 		while (thisCursor != null)
 		{
