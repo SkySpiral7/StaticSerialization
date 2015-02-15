@@ -170,7 +170,6 @@ public class UT_InfiniteInteger {
     	//not sure about this math
     }
 
-	//TODO: makes tests: shift right
     @Test
 	public void shiftLeft() {
     	//simple case
@@ -184,6 +183,20 @@ public class UT_InfiniteInteger {
 
     	//multiple starting nodes (shift not x32)
     	assertEqualNodes(InfiniteInteger.valueOf(Long.MAX_VALUE).shiftLeft(34), 1, 0, -4, -1, 1);
+    }
+
+    @Test
+	public void shiftRight() {
+    	//simple case
+    	assertEqualNodes(InfiniteInteger.valueOf(1024).shiftRight(3), 1, 128);
+
+    	//shift by x32
+    	infiniteInteger = InfiniteInteger.valueOf(1).shiftLeft(64).add(Long.MAX_VALUE);
+    	assertEqualNodes(infiniteInteger.shiftRight(64), 1, 1);
+
+    	//shift more than 32
+    	infiniteInteger = InfiniteInteger.valueOf(1).shiftLeft(32*3).subtract(1);  //3 nodes all high
+    	assertEqualNodes(infiniteInteger.shiftRight(35), 1, -1, 0x1FFF_FFFF);
     }
 
     @Test
