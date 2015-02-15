@@ -5,15 +5,12 @@ import static com.github.SkySpiral7.Java.util.ComparableSugar.is;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
-import java.util.ListIterator;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -25,26 +22,13 @@ public class UT_InfiniteInteger {
     @Test
     public void add_long() {
     	//simple case
-    	infiniteInteger = InfiniteInteger.valueOf(5).add(5);
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(10, infiniteInteger.magnitudeHead.getData().intValue());
-    	assertNull(infiniteInteger.magnitudeHead.getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(5).add(5), 1, 10);
 
     	//more than max int
-    	infiniteInteger = InfiniteInteger.valueOf(8_589_934_592L).add(5);
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(5, infiniteInteger.magnitudeHead.getData().intValue());
-    	assertEquals(2, infiniteInteger.magnitudeHead.getNext().getData().intValue());
-    	assertNull(infiniteInteger.magnitudeHead.getNext().getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(8_589_934_592L).add(5), 1, 5, 2);
 
     	//more than max long
-    	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
-    	ListIterator<Integer> magnitudeIterator = infiniteInteger.magnitudeIterator();
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(0, magnitudeIterator.next().intValue());
-    	assertEquals(0, magnitudeIterator.next().intValue());
-    	assertEquals(1, magnitudeIterator.next().intValue());
-    	assertFalse(magnitudeIterator.hasNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2), 1, 0, 0, 1);
 
     	//special case is negative but can't use Math.abs
 //    	infiniteInteger = InfiniteInteger.valueOf(1).add(Long.MIN_VALUE);
@@ -58,26 +42,14 @@ public class UT_InfiniteInteger {
     @Test
     public void add_InfiniteInteger() {
     	//simple case
-    	infiniteInteger = InfiniteInteger.valueOf(5).add(InfiniteInteger.valueOf(5));
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(10, infiniteInteger.magnitudeHead.getData().intValue());
-    	assertNull(infiniteInteger.magnitudeHead.getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(5).add(InfiniteInteger.valueOf(5)), 1, 10);
 
     	//more than max int
-    	infiniteInteger = InfiniteInteger.valueOf(8_589_934_592L).add(InfiniteInteger.valueOf(5));
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(5, infiniteInteger.magnitudeHead.getData().intValue());
-    	assertEquals(2, infiniteInteger.magnitudeHead.getNext().getData().intValue());
-    	assertNull(infiniteInteger.magnitudeHead.getNext().getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(8_589_934_592L).add(InfiniteInteger.valueOf(5)), 1, 5, 2);
 
     	//more than max long
     	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(InfiniteInteger.valueOf(Long.MAX_VALUE)).add(InfiniteInteger.valueOf(2));
-    	ListIterator<Integer> magnitudeIterator = infiniteInteger.magnitudeIterator();
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(0, magnitudeIterator.next().intValue());
-    	assertEquals(0, magnitudeIterator.next().intValue());
-    	assertEquals(1, magnitudeIterator.next().intValue());
-    	assertFalse(magnitudeIterator.hasNext());
+    	assertEqualNodes(infiniteInteger, 1, 0, 0, 1);
     }
 
     @Test
@@ -185,36 +157,16 @@ public class UT_InfiniteInteger {
     @Ignore
     public void multiply_long() {
     	//simple case
-    	infiniteInteger = InfiniteInteger.valueOf(5).multiply(5);
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(25, infiniteInteger.magnitudeHead.getData().intValue());
-    	assertNull(infiniteInteger.magnitudeHead.getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(5).multiply(5), 1, 25);
 
     	//more than max int
-    	infiniteInteger = InfiniteInteger.valueOf(4_294_967_295L).multiply(-2);
-    	assertEquals(-1, infiniteInteger.signum());
-    	assertEquals(4_294_967_294L, Integer.toUnsignedLong(infiniteInteger.magnitudeHead.getData().intValue()));
-    	assertEquals(1, infiniteInteger.magnitudeHead.getNext().getData().intValue());
-    	assertNull(infiniteInteger.magnitudeHead.getNext().getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(4_294_967_295L).multiply(-2), -1, (int) 4_294_967_294L, 1);
 
     	//more than max long
-    	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).multiply(2).add(2);
-    	ListIterator<Integer> magnitudeIterator = infiniteInteger.magnitudeIterator();
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(0, magnitudeIterator.next().intValue());
-    	assertEquals(0, magnitudeIterator.next().intValue());
-    	assertEquals(1, magnitudeIterator.next().intValue());
-    	assertFalse(magnitudeIterator.hasNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(Long.MAX_VALUE).multiply(2).add(2), 1, 0, 0, 1);
 
     	//multi digit
-    	infiniteInteger = InfiniteInteger.valueOf(-Long.MAX_VALUE).multiply(-Long.MAX_VALUE);
-    	magnitudeIterator = infiniteInteger.magnitudeIterator();
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(1, magnitudeIterator.next().intValue());
-    	assertEquals(0, magnitudeIterator.next().intValue());
-    	assertEquals(0xFFFF_FFFF, magnitudeIterator.next().intValue());
-    	assertEquals(0x3FFF_FFFF, magnitudeIterator.next().intValue());
-    	assertFalse(magnitudeIterator.hasNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(-Long.MAX_VALUE).multiply(-Long.MAX_VALUE), 1, 1, 0, -1, 0x3FFF_FFFF);
     	//not sure about this math
     }
 
@@ -237,10 +189,7 @@ public class UT_InfiniteInteger {
     @Test
 	public void subtract_long() {
 		//simple case
-		infiniteInteger = InfiniteInteger.valueOf(10).subtract(5);
-		assertEquals(1, infiniteInteger.signum());
-		assertEquals(5, infiniteInteger.magnitudeHead.getData().intValue());
-		assertNull(infiniteInteger.magnitudeHead.getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(10).subtract(5), 1, 5);
 
 		//simple negative case
 //		infiniteInteger = InfiniteInteger.valueOf(5).subtract(10);
@@ -249,10 +198,7 @@ public class UT_InfiniteInteger {
 //		assertNull(infiniteInteger.magnitudeHead.getNext());
 
 		//more than max int
-		infiniteInteger = InfiniteInteger.valueOf(4_294_967_295L).subtract(1);
-		assertEquals(1, infiniteInteger.signum());
-		assertEquals(4_294_967_294L, Integer.toUnsignedLong(infiniteInteger.magnitudeHead.getData().intValue()));
-		assertNull(infiniteInteger.magnitudeHead.getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(4_294_967_295L).subtract(1), 1, (int) 4_294_967_294L);
 
 		//more than max long
 //		infiniteInteger = InfiniteInteger.valueOf(1).subtract(Long.MAX_VALUE).subtract(Long.MAX_VALUE).subtract(3);
@@ -266,11 +212,7 @@ public class UT_InfiniteInteger {
 		//borrow big
     	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
 		infiniteInteger = infiniteInteger.subtract(1);
-		ListIterator<Integer> magnitudeIterator = infiniteInteger.magnitudeIterator();
-		assertEquals(1, infiniteInteger.signum());
-		assertEquals(-1, magnitudeIterator.next().intValue());
-		assertEquals(-1, magnitudeIterator.next().intValue());
-		assertFalse(magnitudeIterator.hasNext());
+    	assertEqualNodes(infiniteInteger, 1, -1, -1);
 	}
 
 	@Test
@@ -286,36 +228,23 @@ public class UT_InfiniteInteger {
     @Test
     public void valueOf_long() {
     	//simple case
-    	infiniteInteger = InfiniteInteger.valueOf(-5);
-    	assertEquals(-1, infiniteInteger.signum());
-    	assertEquals(5, infiniteInteger.magnitudeHead.getData().intValue());
-    	assertNull(infiniteInteger.magnitudeHead.getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(-5), -1, 5);
 
     	//more than max int
-    	infiniteInteger = InfiniteInteger.valueOf(8_589_934_592L);
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(0, infiniteInteger.magnitudeHead.getData().intValue());
-    	assertEquals(2, infiniteInteger.magnitudeHead.getNext().getData().intValue());
-    	assertNull(infiniteInteger.magnitudeHead.getNext().getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(8_589_934_592L), 1, 0, 2);
 
     	//prove that each node is unsigned
-    	infiniteInteger = InfiniteInteger.valueOf(2_147_483_648L);
-    	assertEquals(1, infiniteInteger.signum());
-    	assertEquals(2_147_483_648L, Integer.toUnsignedLong(infiniteInteger.magnitudeHead.getData().intValue()));
-    	assertNull(infiniteInteger.magnitudeHead.getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(2_147_483_648L), 1, (int) 2_147_483_648L);
 
     	//special case: can't use Math.abs
-    	infiniteInteger = InfiniteInteger.valueOf(Long.MIN_VALUE);
-    	assertEquals(-1, infiniteInteger.signum());
-    	assertEquals(0, infiniteInteger.magnitudeHead.getData().intValue());
-    	assertEquals(Integer.MIN_VALUE, infiniteInteger.magnitudeHead.getNext().getData().intValue());
-    	assertNull(infiniteInteger.magnitudeHead.getNext().getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(Long.MIN_VALUE), -1, 0, Integer.MIN_VALUE);
     }
 
 	private void assertEqualNodes(InfiniteInteger infiniteIntegerParam, int expectedSignum, int... expectedNodes) {
 		assertEquals(generateInfiniteIntegerString(expectedSignum, expectedNodes), infiniteIntegerParam.toString());
 	}
 
+	//tightly coupled with the current debugging InfiniteInteger.toString()
 	private String generateInfiniteIntegerString(int signum, int... nodeValues) {
 		if(signum == 0) return "0";
 		String returnValue = "+ ";
