@@ -293,7 +293,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(isNegative && value < 0) return InfiniteInteger.valueOf(Math.abs(value)).subtract(this.abs());
 
 		//the rest is for if both positive
-		if(this.equals(InfiniteInteger.valueOf(value))) return ZERO;
+		if(this.equals(value)) return ZERO;
 		if(is(this, LESS_THAN, InfiniteInteger.valueOf(value))) return InfiniteInteger.valueOf(value).subtract(this).negate();
 
 		//this is greater than value
@@ -505,7 +505,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     public InfiniteInteger factorial() {
 		if(this.isNegative || this == NaN) return NaN;  //factorial is not defined for negative numbers
 		if(this == POSITIVE_INFINITITY) return this;  //-Infinity is covered above
-		if(this == ZERO || this.equals(InfiniteInteger.valueOf(1))) return InfiniteInteger.valueOf(1);
+		if(this == ZERO || this.equals(1)) return InfiniteInteger.valueOf(1);
 
 		InfiniteInteger result = this.copy();
 		InfiniteInteger valueRemaining = result.subtract(1);
@@ -635,16 +635,53 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     public boolean isNaN(){return this == NaN;}
 	public boolean isInfinite(){return (this == POSITIVE_INFINITITY || this == NEGATIVE_INFINITITY);}
 	public boolean isFinite(){return (!this.isNaN() && !this.isInfinite());}
-	public void signalNaN(){if(this == NaN) throw new ArithmeticException("Not a number.");}
+	public void signalNaN(){if(isNaN()) throw new ArithmeticException("Not a number.");}
 
+	//these can't be symmetric
+	public boolean equals(int value) {
+		if(!this.isFinite()) return false;
+		if(magnitudeHead.getNext() != null) return false;  //this is too large to fit into an int
+		int thisIntValue = this.intValue();
+		if(magnitudeHead.getData().intValue() != thisIntValue) return false;  //this is too large to fit into a signed int
+		return (thisIntValue == value);
+	}
+
+	public boolean equals(Integer value) {
+		if(value == null) return false;
+		return this.equals(value.intValue());
+	}
+
+	public boolean equals(long value) {
+		if(!this.isFinite()) return false;
+
+		if(magnitudeHead.getNext() != null && magnitudeHead.getNext().getNext() != null)
+			return false;  //can't fit into long
+		if(magnitudeHead.getNext() != null && (magnitudeHead.getNext().getData().intValue() & Long.MIN_VALUE) != 0)
+			return false;  //can't fit into signed long
+
+		return (value == this.longValue());
+	}
+
+	public boolean equals(Long value) {
+		if(value == null) return false;
+		return this.equals(value.longValue());
+	}
+
+	//asymmetric warning
 	@Override
 	public boolean equals(Object obj) {
-		if(this == obj) return true;
-		if(this == ZERO || this == POSITIVE_INFINITITY || this == NEGATIVE_INFINITITY || this == NaN) return false;
+		if(obj == null) return false;
+		if(obj instanceof InfiniteInteger) return this.equals((InfiniteInteger) obj);
+		if(!this.isFinite()) return false;
+		if(obj instanceof BigInteger) return this.equals(InfiniteInteger.valueOf((BigInteger) obj));
+		if(obj instanceof Number) return this.equals(((Number) obj).longValue());
+		return false;
+	}
+
+	public boolean equals(InfiniteInteger other) {
+		if(this == other) return true;
 		//these are singletons. if not the same object then it's not equal
-		if(!(obj instanceof InfiniteInteger)) return false;  //includes null check and children
-		InfiniteInteger other = (InfiniteInteger) obj;
-		if(other == ZERO || other == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY || other == NaN) return false;
+		if(this == ZERO || !this.isFinite() || other == ZERO || !other.isFinite()) return false;
 		if(isNegative != other.isNegative) return false;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		DequeNode<Integer> otherCursor = other.magnitudeHead;
