@@ -272,7 +272,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			returnCursor.setData((int) sum);
 			sum >>>= 32;
 
-			valueRemaining = sum + highValue;
+			valueRemaining = sum + Integer.toUnsignedLong(highValue);  //TODO: make a test that proves I need to use unsigned
 
 			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
 			thisCursor = thisCursor.getNext();
@@ -320,7 +320,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 			returnCursor.setData((int) sum);
 			sum >>>= 32;
-			sum += highSum;
+			sum += Integer.toUnsignedLong(highSum);
 
 			if(returnCursor.getNext() == null) returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
 			else returnCursor = returnCursor.getNext();
@@ -364,13 +364,14 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			returnCursor.setData((int) difference);
 			//assert((difference >>> 32) == 0);  //due to the borrowing above
 
-			valueRemaining = Integer.toUnsignedLong(highValue);  //TODO: is sign important on any of these?
+			valueRemaining = Integer.toUnsignedLong(highValue);
 			if(borrow) valueRemaining++;  //subtract 1 more
 
 			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
 			thisCursor = thisCursor.getNext();
 		}
 		//assert(valueRemaining == 0);  //because this > value
+		//TODO: isn't there always a leading 0?
 		if(returnCursor.getData().intValue() == 0){returnCursor = returnCursor.getPrev(); returnCursor.getNext().remove();}
 			//remove the last node since it is leading 0s
 			//assert(returnCursor != null)  //I already checked that this != value which is the only way for result == 0
@@ -384,8 +385,56 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public InfiniteInteger subtract(InfiniteInteger value) {
-		// method stub
-		return null;
+		if(!this.isFinite() || value == ZERO) return this;
+		if(this == ZERO || !value.isFinite()) return value.negate();
+
+		//delegations based on the sign of each
+		if(!this.isNegative && value.isNegative) return this.add(value.abs());
+		if(this.isNegative && !value.isNegative) return this.abs().add(value).negate();
+		if(this.isNegative && value.isNegative) return value.abs().subtract(this.abs());
+
+		//the rest is for if both positive
+		if(this.equals(value)) return ZERO;
+		if(is(this, LESS_THAN, value)) return value.subtract(this).negate();
+
+		//this is greater than value
+		long difference = 0;
+		InfiniteInteger result = this.copy();
+		DequeNode<Integer> returnCursor = result.magnitudeHead;
+		ListIterator<Integer> valueMagIterator = value.magnitudeIterator();
+		int lowValue, highValue;
+		byte borrow;
+		while (valueMagIterator.hasNext() || difference != 0)
+		{
+			lowValue = (int) difference;
+			highValue = (int) (difference >>> 32);
+			difference = Integer.toUnsignedLong(returnCursor.getData().intValue());
+			if(valueMagIterator.hasNext()) difference -= Integer.toUnsignedLong(valueMagIterator.next().intValue());
+			difference -= Integer.toUnsignedLong(lowValue);
+				//difference == Long.min won't cause a bug due to how borrow is programmed
+			borrow = 0;
+			while (difference < 0)  //can happen 0-2 times
+			{
+				borrow++;
+				difference += Integer.toUnsignedLong((int) BitWiseUtil.HIGH_64) +1;  //add max unsigned int +1
+				//this makes difference borrow
+				//the +1 is here for the same reason that when borrowing in base 10 you add 10 instead of 9
+			}
+
+			returnCursor.setData((int) difference);
+			//assert((difference >>> 32) == 0);  //due to the borrowing above
+
+			difference = Integer.toUnsignedLong(highValue) + borrow;  //borrow subtracts more
+
+			if(returnCursor.getNext() != null) returnCursor = returnCursor.getNext();
+			//if returnCursor is at the end then the loop is done because this > value
+		}
+		if(returnCursor.getData().intValue() == 0){returnCursor = returnCursor.getPrev(); returnCursor.getNext().remove();}
+			//remove the last node since it is leading 0s
+			//assert(returnCursor != null)  //I already checked that this != value which is the only way for result == 0
+		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //there will be 2 if the last node was borrowed down to 0
+
+		return result;
 	}
 
     public InfiniteInteger multiply(long value) {

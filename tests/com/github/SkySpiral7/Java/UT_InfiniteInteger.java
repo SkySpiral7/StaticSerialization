@@ -236,22 +236,14 @@ public class UT_InfiniteInteger {
     	assertEqualNodes(InfiniteInteger.valueOf(10).subtract(5), 1, 5);
 
 		//simple negative case
-//		infiniteInteger = InfiniteInteger.valueOf(5).subtract(10);
-//		assertEquals(-1, infiniteInteger.signum());
-//		assertEquals(5, infiniteInteger.magnitudeHead.getData().intValue());
-//		assertNull(infiniteInteger.magnitudeHead.getNext());
+    	assertEqualNodes(InfiniteInteger.valueOf(5).subtract(10), -1, 5);
 
 		//more than max int
     	assertEqualNodes(InfiniteInteger.valueOf(4_294_967_295L).subtract(1), 1, (int) 4_294_967_294L);
 
 		//more than max long
-//		infiniteInteger = InfiniteInteger.valueOf(1).subtract(Long.MAX_VALUE).subtract(Long.MAX_VALUE).subtract(3);
-//		ListIterator<Integer> magnitudeIterator = infiniteInteger.magnitudeIterator();
-//		assertEquals(-1, infiniteInteger.signum());
-//		assertEquals(0, magnitudeIterator.next().intValue());
-//		assertEquals(0, magnitudeIterator.next().intValue());
-//		assertEquals(1, magnitudeIterator.next().intValue());
-//		assertFalse(magnitudeIterator.hasNext());
+		infiniteInteger = InfiniteInteger.valueOf(1).subtract(Long.MAX_VALUE).subtract(Long.MAX_VALUE).subtract(3);
+    	assertEqualNodes(infiniteInteger, -1, 0, 0, 1);
 
 		//borrow big
     	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
@@ -261,6 +253,20 @@ public class UT_InfiniteInteger {
     	//special case is negative but can't use Math.abs
     	assertEqualNodes(InfiniteInteger.valueOf(1).subtract(Long.MIN_VALUE), 1, 1, Integer.MIN_VALUE);
 	}
+
+    @Test
+    public void subtract_InfiniteInteger() {
+		//simple case
+    	assertEqualNodes(InfiniteInteger.valueOf(10).subtract(InfiniteInteger.valueOf(5)), 1, 5);
+
+		//more than max int
+    	assertEqualNodes(InfiniteInteger.valueOf(4_294_967_295L).subtract(InfiniteInteger.valueOf(1)), 1, (int) 4_294_967_294L);
+
+		//borrow big
+    	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
+		infiniteInteger = infiniteInteger.subtract(InfiniteInteger.valueOf(1));
+    	assertEqualNodes(infiniteInteger, 1, -1, -1);
+    }
 
 	@Test
     public void valueOf_BigInteger() {
