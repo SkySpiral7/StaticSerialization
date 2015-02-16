@@ -126,8 +126,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			value >>>= 32;
 			cursor = DequeNode.Factory.createNodeAfter(cursor, (int) value);
 		}
-		while(cursor.getData().intValue() == 0){cursor = cursor.getPrev(); cursor.getNext().remove();}
-		if(result.magnitudeHead.getNext() == null && result.magnitudeHead.getData().intValue() == 0) return ZERO;
+		while (cursor.getData().intValue() == 0)  //cursor is always at the last node
+		{
+			cursor = cursor.getPrev();
+			if(cursor == null) return ZERO;  //if the last and only node was 0
+			cursor.getNext().remove();
+		}
 		return result;
 	}
 
@@ -140,7 +144,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * NaN, +Infinity, and -Infinity will not be included in the stream.
 	 * The stream's order is: 0, 1, -1, 2, -2, 3, -3, 4, -4...
 	 *
-	 * @return a stream of all integers
+	 * @return an infinite stream of all integers
 	 */
 	public static Stream<InfiniteInteger> streamAllIntegers() {
 		return Stream.iterate(ZERO, (InfiniteInteger previous) -> {

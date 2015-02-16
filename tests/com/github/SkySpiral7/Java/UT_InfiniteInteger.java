@@ -11,6 +11,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -31,12 +34,7 @@ public class UT_InfiniteInteger {
     	assertEqualNodes(InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2), 1, 0, 0, 1);
 
     	//special case is negative but can't use Math.abs
-//    	infiniteInteger = InfiniteInteger.valueOf(1).add(Long.MIN_VALUE);
-//    	assertEquals(-1, infiniteInteger.signum());
-//    	assertEquals(0, infiniteInteger.magnitudeHead.getData().intValue());
-//    	assertEquals(Integer.MIN_VALUE, infiniteInteger.magnitudeHead.getNext().getData().intValue());
-//    	assertNull(infiniteInteger.magnitudeHead.getNext().getNext());
-    	//TODO: this test requires subtraction
+    	assertEqualNodes(InfiniteInteger.valueOf(-1).add(Long.MIN_VALUE), -1, 1, Integer.MIN_VALUE);
     }
 
     @Test
@@ -50,6 +48,12 @@ public class UT_InfiniteInteger {
     	//more than max long
     	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(InfiniteInteger.valueOf(Long.MAX_VALUE)).add(InfiniteInteger.valueOf(2));
     	assertEqualNodes(infiniteInteger, 1, 0, 0, 1);
+    }
+
+    @Test
+    @Ignore
+    public void bigIntegerValueExact() {
+    	//TODO: not tested
     }
 
     @Test
@@ -92,7 +96,7 @@ public class UT_InfiniteInteger {
 
     @Test
     public void fastPaths() {
-    	//TODO: more fast paths?
+    	//TODO: more fast paths but move them into each other test
     	assertSame(InfiniteInteger.POSITIVE_INFINITITY, InfiniteInteger.POSITIVE_INFINITITY.add(12));
     	assertSame(InfiniteInteger.NEGATIVE_INFINITITY, InfiniteInteger.NEGATIVE_INFINITITY.add(12));
     	assertSame(InfiniteInteger.NaN, InfiniteInteger.NaN.add(12));
@@ -108,6 +112,7 @@ public class UT_InfiniteInteger {
     	assertSame(infiniteInteger, infiniteInteger.add(InfiniteInteger.ZERO));
 
     	//must use debugger to see if the fast path was used for these
+    	//these ones should not be moved since they are not visible
     	/*
     	InfiniteInteger.ZERO.add(12);
     	InfiniteInteger.valueOf(BigInteger.TEN);
@@ -125,6 +130,15 @@ public class UT_InfiniteInteger {
     	assertEquals(-Integer.MAX_VALUE, InfiniteInteger.valueOf(-Integer.MAX_VALUE).intValue());
     	infiniteInteger = InfiniteInteger.valueOf(Integer.MAX_VALUE).add(Integer.MAX_VALUE).add(1).negate();
     	assertEquals(-Integer.MAX_VALUE, infiniteInteger.intValue());
+    }
+
+    @Test
+    public void littleEndian() {
+    	assertSame(InfiniteInteger.ZERO, InfiniteInteger.littleEndian(Collections.emptyIterator(), true));
+    	Iterator<Long> input = Arrays.asList(0L, 0L, 0L, 0L, 0L).iterator();
+    	assertSame(InfiniteInteger.ZERO, InfiniteInteger.littleEndian(input, true));
+    	input = Arrays.asList(1L, 1L, Long.MAX_VALUE, 0L).iterator();
+    	assertEqualNodes(InfiniteInteger.littleEndian(input, true), -1, 1, 0, 1, 0, -1, Integer.MAX_VALUE);
     }
 
     @Test
@@ -200,6 +214,23 @@ public class UT_InfiniteInteger {
     }
 
     @Test
+	public void streamAllIntegers() {
+		Iterator<InfiniteInteger> integerIterator = InfiniteInteger.streamAllIntegers().iterator();
+		assertSame(InfiniteInteger.ZERO, integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(1), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(-1), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(2), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(-2), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(3), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(-3), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(4), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(-4), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(5), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(-5), integerIterator.next());
+		assertTrue(integerIterator.hasNext());  //continues forever
+	}
+
+	@Test
 	public void subtract_long() {
 		//simple case
     	assertEqualNodes(InfiniteInteger.valueOf(10).subtract(5), 1, 5);
@@ -226,6 +257,9 @@ public class UT_InfiniteInteger {
     	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
 		infiniteInteger = infiniteInteger.subtract(1);
     	assertEqualNodes(infiniteInteger, 1, -1, -1);
+
+    	//special case is negative but can't use Math.abs
+    	assertEqualNodes(InfiniteInteger.valueOf(1).subtract(Long.MIN_VALUE), 1, 1, Integer.MIN_VALUE);
 	}
 
 	@Test
