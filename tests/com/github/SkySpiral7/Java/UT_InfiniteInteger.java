@@ -168,7 +168,6 @@ public class UT_InfiniteInteger {
     }
 
     @Test
-    @Ignore
     public void multiply_long() {
     	//simple case
     	assertEqualNodes(InfiniteInteger.valueOf(5).multiply(5), 1, 25);
@@ -181,7 +180,8 @@ public class UT_InfiniteInteger {
 
     	//multi digit
     	assertEqualNodes(InfiniteInteger.valueOf(-Long.MAX_VALUE).multiply(-Long.MAX_VALUE), 1, 1, 0, -1, 0x3FFF_FFFF);
-    	//not sure about this math
+    	//first pass should be: + 1, 7FFFFFFF, 7FFFFFFF
+    	//second pass should be: + 0, 80000001, 7FFFFFFF, 3FFFFFFF
     }
 
     @Test

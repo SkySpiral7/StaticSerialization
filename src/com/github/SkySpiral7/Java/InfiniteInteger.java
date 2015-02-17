@@ -442,6 +442,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     	if(!this.isFinite() || value == 1) return this;
 		if(this == ZERO || value == 0) return ZERO;
     	if(value == -1) return this.negate();
+    	if(this.equals(1)) return InfiniteInteger.valueOf(value);
 
     	/*
     	 * psudo code that BigInteger uses to multiply:
@@ -469,63 +470,49 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     	 *  345
     	 *
     	 */
-//    	long product, valueRemaining = Math.abs(value);
-//		InfiniteInteger result = new InfiniteInteger(0);  //can't use ZERO because result will be modified
-//		InfiniteInteger carry = new InfiniteInteger(0);
-//		DequeNode<Integer> returnCursor = result.magnitudeHead;
-//		DequeNode<Integer> carryCursor = carry.magnitudeHead;
-//		DequeNode<Integer> thisCursor = this.magnitudeHead;
-//
-//		int lowValue = (int) valueRemaining;
-//		int highValue = (int) (valueRemaining >>> 32);
-//		while (thisCursor != null)
-//		{
-//			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
-//			product = Integer.toUnsignedLong(thisCursor.getData().intValue()) * Integer.toUnsignedLong(lowValue);
-//
-//			returnCursor.setData((int) product);
-//			product >>>= 32;
-//			carryCursor.setData((int) product);
-//
-//			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
-//			carryCursor = DequeNode.Factory.createNodeAfter(carryCursor, 0);
-//			thisCursor = thisCursor.getNext();
-//		}
-//		if (highValue != 0)
-//		{
-//			returnCursor = result.magnitudeHead;
-//			carryCursor = carry.magnitudeHead.getNext();
-//			if(carryCursor == null) carryCursor = DequeNode.Factory.createNodeAfter(carry.magnitudeHead, 0);
-//			thisCursor = this.magnitudeHead;
-//			while (thisCursor != null)
-//			{
-//				//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
-//				product = Integer.toUnsignedLong(thisCursor.getData().intValue()) * Integer.toUnsignedLong(highValue);
-//
-//				returnCursor.setData((int) product);
-//				product >>>= 32;
-//				carryCursor.setData((int) product);
-//
-//				if(returnCursor.getNext() == null) returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
-//				else returnCursor = returnCursor.getNext();
-//				if(carryCursor.getNext() == null) carryCursor = DequeNode.Factory.createNodeAfter(carryCursor, 0);
-//				else carryCursor = carryCursor.getNext();
-//				thisCursor = thisCursor.getNext();
-//			}
-//		}
-//		if (valueRemaining != 0)
-//		{
-//			//the mulitplication's carry causes the return value to have more nodes
-//			lowValue = (int) valueRemaining;
-//			highValue = (int) (valueRemaining >>> 32);
-//			returnCursor.setData(lowValue);
-//			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, highValue);
-//		}
-//		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last node since it is leading 0s
-//		//do not use else. this can occur either way
-//		result.isNegative = (isNegative != value < 0);  //!= acts as xor
-		//method stub. above is useless. Need to start over
-		return null;
+		boolean resultIsNegative = (isNegative != value < 0);  //!= acts as xor
+    	long valueRemaining = Math.abs(value);
+
+		int lowValue = (int) valueRemaining;
+		int highValue = (int) (valueRemaining >>> 32);
+
+		InfiniteInteger result = thisMultiply(lowValue, 0);
+		if(highValue != 0) result = result.add(thisMultiply(highValue, 1));
+		//TODO: refactor this into a loop
+    	result.isNegative = resultIsNegative;
+
+		return result;
+    }
+
+    protected InfiniteInteger thisMultiply(int value, int digitShift) {
+    	if(value == 0) return ZERO;
+    	InfiniteInteger result = this.copy();
+    	result.isNegative = false;  //faster than abs (which might not copy)
+		DequeNode<Integer> resultCursor = result.magnitudeHead;
+		long product;
+		int carry = 0;
+		boolean isHuge;
+    	while (resultCursor != null)
+		{
+			//max unsigned int * max unsigned int < max unsigned long but will end up being negative which makes adding carry impossible
+    		product = Integer.toUnsignedLong(resultCursor.getData().intValue());
+    		product *= Integer.toUnsignedLong(value);
+    		isHuge = product < 0;
+    		product &= Long.MAX_VALUE;  //TODO: is Long.min possible?
+    		product += Integer.toUnsignedLong(carry);
+    		if(isHuge) product |= Long.MIN_VALUE;
+
+			resultCursor.setData((int) product);
+			product >>>= 32;
+			carry = (int) product;
+			//assert((product >>> 32) == 0);
+
+			resultCursor = resultCursor.getNext();
+		}
+    	resultCursor = result.getMagnitudeTail();
+    	if(carry != 0) DequeNode.Factory.createNodeAfter(resultCursor, carry);
+    	else if(resultCursor.getData().intValue() == 0) resultCursor.remove();
+    	return result.shiftLeft(digitShift*32);
     }
 
     public InfiniteInteger multiply(BigInteger value) {
@@ -726,6 +713,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			//last node simply shifts
 			returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
 		}
+		if(result.magnitudeHead.getNext() == null && result.magnitudeHead.getData().intValue() == 0) return ZERO;
 
 		return result;
     }
