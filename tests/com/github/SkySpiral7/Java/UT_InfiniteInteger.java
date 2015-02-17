@@ -19,6 +19,13 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+/**
+ * Methods that simply delegate do not need a test.
+ * Additionally the following do not need a test:
+ * the other versions of littleEndian and bigEndian, magnitude Iterator and Stream,
+ * getMagnitudeTail, selfPower, factorial, abs, negate, signum, isNaN, isInfinite, isFinite, signalNaN,
+ * the other versions of equals, hashCode, copy, toFile (but toString should be tested when finished)
+ */
 public class UT_InfiniteInteger {
     private InfiniteInteger infiniteInteger;
 
@@ -54,6 +61,7 @@ public class UT_InfiniteInteger {
     @Ignore
     public void bigIntegerValueExact() {
     	//TODO: not tested
+    	//it should not test the max size as that takes way too long. Although putting it in another ignored test is fine
     }
 
     @Test
@@ -180,6 +188,23 @@ public class UT_InfiniteInteger {
 
     	//multi digit
     	assertEqualNodes(InfiniteInteger.valueOf(-Long.MAX_VALUE).multiply(-Long.MAX_VALUE), 1, 1, 0, -1, 0x3FFF_FFFF);
+    	//first pass should be: + 1, 7FFFFFFF, 7FFFFFFF
+    	//second pass should be: + 0, 80000001, 7FFFFFFF, 3FFFFFFF
+    }
+
+    @Test
+    public void multiply_InfiniteInteger() {
+    	//simple case
+    	assertEqualNodes(InfiniteInteger.valueOf(5).multiply(InfiniteInteger.valueOf(5)), 1, 25);
+
+    	//more than max int
+    	assertEqualNodes(InfiniteInteger.valueOf(4_294_967_295L).multiply(InfiniteInteger.valueOf(-2)), -1, (int) 4_294_967_294L, 1);
+
+    	//more than max long
+    	assertEqualNodes(InfiniteInteger.valueOf(Long.MAX_VALUE).multiply(2).add(InfiniteInteger.valueOf(2)), 1, 0, 0, 1);
+
+    	//multi digit
+    	assertEqualNodes(InfiniteInteger.valueOf(-Long.MAX_VALUE).multiply(InfiniteInteger.valueOf(-Long.MAX_VALUE)), 1, 1, 0, -1, 0x3FFF_FFFF);
     	//first pass should be: + 1, 7FFFFFFF, 7FFFFFFF
     	//second pass should be: + 0, 80000001, 7FFFFFFF, 3FFFFFFF
     }
