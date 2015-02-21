@@ -45,7 +45,7 @@ public interface Copyable<T> {
      * of "copy" may depend on the class of the object. The general
      * intent is that, for any object {@code x}, the expressions:</p>
      * <blockquote>
-     * <code>x.copy() != x &amp;&amp; x.copy().equals(x) &amp;&amp; x.clone().getClass() == x.getClass()</code></blockquote>
+     * <code>x.copy() != x &amp;&amp; x.copy().equals(x) &amp;&amp; x.copy().getClass() == x.getClass()</code></blockquote>
      * will be true. However it is possible that one of the parent classes has defined copy but
      * the child has not in which case only the part that was copied needs to obey these expectations.
      * </p>

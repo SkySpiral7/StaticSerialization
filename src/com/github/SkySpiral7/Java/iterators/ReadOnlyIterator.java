@@ -2,6 +2,14 @@ package com.github.SkySpiral7.Java.iterators;
 
 import java.util.Iterator;
 
+/**
+ * This is a decorator class for an Iterator. The changed functionality is that
+ * the data can't be changed (ie is read only). Remove will throw if called
+ * everything else delegates to the underlying ListIterator.
+ *
+ * @param <E> the element types contained in the list iterator
+ * @see ReadOnlyListIterator
+ */
 public class ReadOnlyIterator<E> implements Iterator<E> {
 	protected Iterator<E> underlyingIterator;
 

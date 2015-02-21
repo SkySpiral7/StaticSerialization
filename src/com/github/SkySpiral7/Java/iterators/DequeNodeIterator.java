@@ -150,6 +150,15 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>> {
 		public int previousIndex(){return -1;}
 	}
 
+	/**
+	 * This class iterates over the data of DequeNodes but does not know the index.
+	 * Calling nextIndex or previousIndex will return -1. All other methods are
+	 * the same as ValueIterator.
+	 *
+	 * @param <E> the type of element contained in the nodes
+	 * @see IndexAgnosticDequeIterator
+	 * @see ValueIterator
+	 */
 	public static class IndexAgnosticValueIterator<E> extends ValueIterator<E> {
 		public IndexAgnosticValueIterator(DequeNode<E> startingNode) {
 			super(startingNode, -1);
