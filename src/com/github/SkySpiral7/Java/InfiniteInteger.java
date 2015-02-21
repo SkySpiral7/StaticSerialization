@@ -262,6 +262,18 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	/**
+	 * Entire code: <blockquote>{@code return (float) longValue();}</blockquote>
+	 * @see #longValue()
+	 */
+	@Override public float floatValue(){return (float) longValue();}
+	/**
+	 * Entire code: <blockquote>{@code return (double) longValue();}</blockquote>
+	 * @see #longValue()
+	 */
+	@Override public double doubleValue(){return (double) longValue();}
+	//TODO: I can have the floating points return Infinity or NaN
+
+	/**
 	 * This method returns the least significant 31 bits of the number represented by this InfiniteInteger.
 	 * The int is then given the same sign as this class. This is different than a narrowing cast because
 	 * normally the bits would be unchanged signed or otherwise but this method performs a two's complement.
@@ -276,18 +288,6 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(isNegative) return -intValue;
 		return intValue;
 	}
-
-	/**
-	 * Entire code: <blockquote>{@code return (float) longValue();}</blockquote>
-	 * @see #longValue()
-	 */
-	@Override public float floatValue(){return (float) longValue();}
-	/**
-	 * Entire code: <blockquote>{@code return (double) longValue();}</blockquote>
-	 * @see #longValue()
-	 */
-	@Override public double doubleValue(){return (double) longValue();}
-	//TODO: I can have the floating points return Infinity or NaN
 
 	/**
 	 * This method returns the least significant 63 bits of the number represented by this InfiniteInteger.
@@ -770,7 +770,71 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return result;
     }
 
-    public IntegerQuotient<InfiniteInteger> divide(long val) {
+    /**
+	 * This method delegates because the formula used is exactly the same.
+	 * Entire code: <blockquote>{@code return this.shiftLeft(InfiniteInteger.valueOf(n));}</blockquote>
+	 *
+	 * @see #shiftLeft(InfiniteInteger)
+	 * @see #valueOf(long)
+	 */
+	public InfiniteInteger shiftLeft(long n){return this.shiftLeft(InfiniteInteger.valueOf(n));}
+
+	/**
+	 * Entire code: <blockquote>{@code return this.shiftLeft(InfiniteInteger.valueOf(n));}</blockquote>
+	 * @see #shiftLeft(InfiniteInteger)
+	 * @see #valueOf(BigInteger)
+	 */
+	public InfiniteInteger shiftLeft(BigInteger n){return this.shiftLeft(InfiniteInteger.valueOf(n));}
+
+	//TODO: rename shifts, parameters, and some local variables
+
+	/**
+	 * Returns an InfiniteInteger whose value is {@code (this << shiftDistance)}.
+	 * If the shift distance is negative then a right shift is performed instead.
+	 * Computes <tt>this * 2<sup>shiftDistance</sup></tt>.
+	 * Note that the nodes are unsigned and this operation ignores sign.
+	 * Therefore the shift won't change the sign.
+	 * Examples: InfiniteInteger.valueOf(-10).shiftLeft(1) is -20 and InfiniteInteger.valueOf(100).shiftLeft(2) is 400.
+	 *
+	 * @param  shiftDistance in bits
+	 * @return the result including &plusmn;&infin; and NaN
+	 * @see #shiftRight(InfiniteInteger)
+	 */
+	public InfiniteInteger shiftLeft(InfiniteInteger shiftDistance) {
+		if(shiftDistance == ZERO || !this.isFinite()) return this;
+		if(shiftDistance.isNegative) return this.shiftRight(shiftDistance.abs());
+	
+		InfiniteInteger result = this.copy();
+		InfiniteInteger valueRemaining = shiftDistance;
+		while (isComparisonResult(valueRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
+		{
+			result.magnitudeHead = DequeNode.Factory.createNodeBefore(0, result.magnitudeHead);
+			valueRemaining = valueRemaining.subtract(32);
+		}
+	
+		final int smallValueRemaining = valueRemaining.intValue();
+		if (smallValueRemaining != 0)
+		{
+			DequeNode<Integer> returnCursor = result.getMagnitudeTail();
+	
+			while (returnCursor != null)
+			{
+				int overflow = BitWiseUtil.getHighestNBits(returnCursor.getData().intValue(), smallValueRemaining);
+					//overflow contains what would fall off when shifting left
+				overflow >>>= (32 - smallValueRemaining);
+					//shift overflow right so that it appears in the least significant place of the following node
+				if(overflow != 0 && returnCursor.getNext() == null) DequeNode.Factory.createNodeAfter(returnCursor, overflow);
+				else if(overflow != 0) returnCursor.getNext().setData(returnCursor.getNext().getData().intValue() | overflow);
+	
+				returnCursor.setData(returnCursor.getData().intValue() << smallValueRemaining);
+				returnCursor = returnCursor.getPrev();
+			}
+		}
+	
+		return result;
+	}
+
+	public IntegerQuotient<InfiniteInteger> divide(long val) {
 		return divide(InfiniteInteger.valueOf(val));
     }
 
@@ -803,7 +867,74 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return divide(val).getWholeResult();
     }
 
-    //aka remainder, divideDropWhole, divideReturnRemainder
+    /**
+	 * This method delegates because the formula used is exactly the same.
+	 * Entire code: <blockquote>{@code return this.shiftRight(InfiniteInteger.valueOf(n));}</blockquote>
+	 *
+	 * @see #shiftRight(InfiniteInteger)
+	 * @see #valueOf(long)
+	 */
+	public InfiniteInteger shiftRight(long n){return shiftRight(InfiniteInteger.valueOf(n));}
+
+	/**
+	 * Entire code: <blockquote>{@code return this.shiftRight(InfiniteInteger.valueOf(n));}</blockquote>
+	 * @see #shiftRight(InfiniteInteger)
+	 * @see #valueOf(BigInteger)
+	 */
+	public InfiniteInteger shiftRight(BigInteger n){return shiftRight(InfiniteInteger.valueOf(n));}
+
+	/**
+	 * Returns an InfiniteInteger whose value is {@code (this >>> shiftDistance)}.
+	 * If the shift distance is negative then a left shift is performed instead.
+	 * Computes <tt>truncate(this / 2<sup>shiftDistance</sup>)</tt>.
+	 * Note that the nodes are unsigned and this operation ignores sign.
+	 * Also note that truncation occurs which means the low numbers are thrown away not rounded.
+	 * Therefore the shift is always 0 filled and won't change the sign (unless the result is ZERO).
+	 * Examples: InfiniteInteger.valueOf(-10).shiftRight(1) is -5 and InfiniteInteger.valueOf(100).shiftRight(2) is 25.
+	 * And 3 >>> 1 == 1.
+	 *
+	 * @param  shiftDistance in bits
+	 * @return the result including &plusmn;&infin; and NaN
+	 * @see #shiftLeft(InfiniteInteger)
+	 */
+	public InfiniteInteger shiftRight(InfiniteInteger shiftDistance) {
+		if(shiftDistance == ZERO || !this.isFinite()) return this;
+		if(shiftDistance.isNegative) return this.shiftLeft(shiftDistance.abs());
+	
+		InfiniteInteger result = this.copy();
+		InfiniteInteger valueRemaining = shiftDistance;
+		while (isComparisonResult(valueRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
+		{
+			result.magnitudeHead = result.magnitudeHead.getNext();
+			if(result.magnitudeHead == null) return ZERO;
+			result.magnitudeHead.getPrev().remove();
+			valueRemaining = valueRemaining.subtract(32);
+		}
+	
+		final int smallValueRemaining = valueRemaining.intValue();
+		if (smallValueRemaining != 0)
+		{
+			DequeNode<Integer> returnCursor = result.magnitudeHead;
+	
+			while (returnCursor.getNext() != null)
+			{
+				returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
+				int underflow = (int) BitWiseUtil.getLowestNBits(returnCursor.getNext().getData().intValue(), smallValueRemaining);
+					//underflow contains what would fall off when shifting right
+				underflow <<= (32 - smallValueRemaining);
+					//shift underflow left so that it appears in the most significant place of the previous node
+				if(underflow != 0) returnCursor.setData(returnCursor.getData().intValue() | underflow);
+				returnCursor = returnCursor.getNext();
+			}
+			//last node simply shifts
+			returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
+		}
+		if(result.magnitudeHead.getNext() == null && result.magnitudeHead.getData().intValue() == 0) return ZERO;
+	
+		return result;
+	}
+
+	//aka remainder, divideDropWhole, divideReturnRemainder
     public InfiniteInteger mod(long val) {
     	//longVal % val
 		return divide(val).getRemainder();
@@ -922,135 +1053,6 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
         return 1;
     }
 
-	/**
-	 * This method delegates because the formula used is exactly the same.
-	 * Entire code: <blockquote>{@code return this.shiftLeft(InfiniteInteger.valueOf(n));}</blockquote>
-	 *
-	 * @see #shiftLeft(InfiniteInteger)
-	 * @see #valueOf(long)
-	 */
-    public InfiniteInteger shiftLeft(long n){return this.shiftLeft(InfiniteInteger.valueOf(n));}
-	/**
-	 * Entire code: <blockquote>{@code return this.shiftLeft(InfiniteInteger.valueOf(n));}</blockquote>
-	 * @see #shiftLeft(InfiniteInteger)
-	 * @see #valueOf(BigInteger)
-	 */
-    public InfiniteInteger shiftLeft(BigInteger n){return this.shiftLeft(InfiniteInteger.valueOf(n));}
-
-    //TODO: doc commit, sort commit. then come back to dos
-    //TODO: consider renaming shifts
-    /**
-     * Returns an InfiniteInteger whose value is {@code (this << shiftDistance)}.
-     * If the shift distance is negative then a right shift is performed instead.
-     * Computes <tt>this * 2<sup>shiftDistance</sup></tt>.
-     * Note that the nodes are unsigned and this operation ignores sign.
-     * Therefore the shift won't change the sign.
-     * Examples: InfiniteInteger.valueOf(-10).shiftLeft(1) is -20 and InfiniteInteger.valueOf(100).shiftLeft(2) is 400.
-     *
-     * @param  shiftDistance in bits
-     * @return the result including &plusmn;&infin; and NaN
-     * @see #shiftRight(InfiniteInteger)
-     */
-    public InfiniteInteger shiftLeft(InfiniteInteger shiftDistance) {
-		if(shiftDistance == ZERO || !this.isFinite()) return this;
-		if(shiftDistance.isNegative) return this.shiftRight(shiftDistance.abs());
-
-		InfiniteInteger result = this.copy();
-		InfiniteInteger valueRemaining = shiftDistance;
-		while (isComparisonResult(valueRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
-		{
-			result.magnitudeHead = DequeNode.Factory.createNodeBefore(0, result.magnitudeHead);
-			valueRemaining = valueRemaining.subtract(32);
-		}
-
-		final int smallValueRemaining = valueRemaining.intValue();
-		if (smallValueRemaining != 0)
-		{
-			DequeNode<Integer> returnCursor = result.getMagnitudeTail();
-
-			while (returnCursor != null)
-			{
-				int overflow = BitWiseUtil.getHighestNBits(returnCursor.getData().intValue(), smallValueRemaining);
-					//overflow contains what would fall off when shifting left
-				overflow >>>= (32 - smallValueRemaining);
-					//shift overflow right so that it appears in the least significant place of the following node
-				if(overflow != 0 && returnCursor.getNext() == null) DequeNode.Factory.createNodeAfter(returnCursor, overflow);
-				else if(overflow != 0) returnCursor.getNext().setData(returnCursor.getNext().getData().intValue() | overflow);
-
-				returnCursor.setData(returnCursor.getData().intValue() << smallValueRemaining);
-				returnCursor = returnCursor.getPrev();
-			}
-		}
-
-		return result;
-    }
-
-	/**
-	 * This method delegates because the formula used is exactly the same.
-	 * Entire code: <blockquote>{@code return this.shiftRight(InfiniteInteger.valueOf(n));}</blockquote>
-	 *
-	 * @see #shiftRight(InfiniteInteger)
-	 * @see #valueOf(long)
-	 */
-    public InfiniteInteger shiftRight(long n){return shiftRight(InfiniteInteger.valueOf(n));}
-	/**
-	 * Entire code: <blockquote>{@code return this.shiftRight(InfiniteInteger.valueOf(n));}</blockquote>
-	 * @see #shiftRight(InfiniteInteger)
-	 * @see #valueOf(BigInteger)
-	 */
-    public InfiniteInteger shiftRight(BigInteger n){return shiftRight(InfiniteInteger.valueOf(n));}
-
-    /**
-     * Returns an InfiniteInteger whose value is {@code (this >>> shiftDistance)}.
-     * If the shift distance is negative then a left shift is performed instead.
-     * Computes <tt>truncate(this / 2<sup>shiftDistance</sup>)</tt>.
-     * Note that the nodes are unsigned and this operation ignores sign.
-     * Also note that truncation occurs which means the low numbers are thrown away not rounded.
-     * Therefore the shift is always 0 filled and won't change the sign (unless the result is ZERO).
-     * Examples: InfiniteInteger.valueOf(-10).shiftRight(1) is -5 and InfiniteInteger.valueOf(100).shiftRight(2) is 25.
-     * And 3 >>> 1 == 1.
-     *
-     * @param  shiftDistance in bits
-     * @return the result including &plusmn;&infin; and NaN
-     * @see #shiftLeft(InfiniteInteger)
-     */
-    public InfiniteInteger shiftRight(InfiniteInteger shiftDistance) {
-		if(shiftDistance == ZERO || !this.isFinite()) return this;
-		if(shiftDistance.isNegative) return this.shiftLeft(shiftDistance.abs());
-
-		InfiniteInteger result = this.copy();
-		InfiniteInteger valueRemaining = shiftDistance;
-		while (isComparisonResult(valueRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
-		{
-			result.magnitudeHead = result.magnitudeHead.getNext();
-			if(result.magnitudeHead == null) return ZERO;
-			result.magnitudeHead.getPrev().remove();
-			valueRemaining = valueRemaining.subtract(32);
-		}
-
-		final int smallValueRemaining = valueRemaining.intValue();
-		if (smallValueRemaining != 0)
-		{
-			DequeNode<Integer> returnCursor = result.magnitudeHead;
-
-			while (returnCursor.getNext() != null)
-			{
-				returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
-				int underflow = (int) BitWiseUtil.getLowestNBits(returnCursor.getNext().getData().intValue(), smallValueRemaining);
-					//underflow contains what would fall off when shifting right
-				underflow <<= (32 - smallValueRemaining);
-					//shift underflow left so that it appears in the most significant place of the previous node
-				if(underflow != 0) returnCursor.setData(returnCursor.getData().intValue() | underflow);
-				returnCursor = returnCursor.getNext();
-			}
-			//last node simply shifts
-			returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
-		}
-		if(result.magnitudeHead.getNext() == null && result.magnitudeHead.getData().intValue() == 0) return ZERO;
-
-		return result;
-    }
-
     //TODO: add min/max. maybe static (InfInt, InfInt) only?
     //big int also has bitwise operations. gcd. and weird methods
 
@@ -1079,27 +1081,6 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @throws ArithmeticException if this == NaN
 	 */
 	public void signalNaN(){if(isNaN()) throw new ArithmeticException("Not a number.");}
-
-	/**
-	 * Compares this InfiniteInteger with the specified value for numeric equality.
-	 * Note that this equality is symmetric with Long.valueOf(value).equals(this.longValueExact())
-	 * only if this <= Long.MAX_VALUE.
-	 *
-	 * @param value the value to be compared to this
-	 * @return true if this InfiniteInteger has the same numeric value as the value parameter
-	 * @see #longValueExact()
-	 * @see #compareTo(long)
-	 */
-	public boolean equals(long value) {
-		if(!this.isFinite()) return false;
-
-		if(magnitudeHead.getNext() != null && magnitudeHead.getNext().getNext() != null)
-			return false;  //this is larger than max unsigned long (this check does need to be made)
-		if(magnitudeHead.getNext() != null && (magnitudeHead.getNext().getData().intValue() & Long.MIN_VALUE) != 0)
-			return false;  //this is larger than max signed long
-
-		return (value == this.longValue());
-	}
 
 	/**
 	 * Compares this InfiniteInteger with the specified object for numeric equality.
@@ -1149,7 +1130,113 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return (thisCursor == otherCursor);  //they must both be null (at end)
 	}
 
-    /**
+	/**
+	 * Compares this InfiniteInteger with the specified value for numeric equality.
+	 * Note that this equality is symmetric with Long.valueOf(value).equals(this.longValueExact())
+	 * only if this <= Long.MAX_VALUE.
+	 *
+	 * @param value the value to be compared to this
+	 * @return true if this InfiniteInteger has the same numeric value as the value parameter
+	 * @see #longValueExact()
+	 * @see #compareTo(long)
+	 */
+	public boolean equals(long value) {
+		if(!this.isFinite()) return false;
+
+		if(magnitudeHead.getNext() != null && magnitudeHead.getNext().getNext() != null)
+			return false;  //this is larger than max unsigned long (this check does need to be made)
+		if(magnitudeHead.getNext() != null && (magnitudeHead.getNext().getData().intValue() & Long.MIN_VALUE) != 0)
+			return false;  //this is larger than max signed long
+
+		return (value == this.longValue());
+	}
+
+	/**
+	 * Compares this InfiniteInteger with the specified other for numeric equality.
+	 * The natural order is as expected with &plusmn;&infin; being at either end.
+	 * However for the sake of sorting 0 < NaN < 1.
+	 *
+	 * @param other the value to be compared to this
+	 * @return -1, 0 or 1 if this InfiniteInteger is numerically less than, equal
+	 *         to, or greater than other.
+	 */
+	@Override
+	public int compareTo(InfiniteInteger other) {
+		if(this == other) return THIS_EQUAL;
+		if(this == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY) return THIS_GREATER;
+		if(this == NEGATIVE_INFINITITY || other == POSITIVE_INFINITITY) return THIS_LESSER;
+	
+		if (this == NaN)
+		{
+			if(other == ZERO || other.isNegative) return THIS_GREATER;
+			return THIS_LESSER;  //since other != NaN
+		}
+		if (other == NaN)
+		{
+			if(this == ZERO || this.isNegative) return THIS_LESSER;
+			return THIS_GREATER;  //since this != NaN
+		}
+	
+		if(isNegative && !other.isNegative) return THIS_LESSER;
+		if(!isNegative && other.isNegative) return THIS_GREATER;  //also covers if this == ZERO
+		if(this == ZERO && !other.isNegative) return THIS_LESSER;  //since this != other
+	
+		//at this point: they are not the same object, they have the same sign, they are not special values.
+		//since the lengths can be any integer I first need to compare lengths
+	
+		DequeNode<Integer> otherCursor = other.magnitudeHead;
+		DequeNode<Integer> thisCursor = this.magnitudeHead;
+		//this loop will not execute if they both have 1 node
+		//which is correct since they have equal length and are both pointing to last node
+		while (thisCursor.getNext() != null || otherCursor.getNext() != null)
+		{
+			if (thisCursor.getNext() != null && otherCursor.getNext() != null)
+			{
+				thisCursor = thisCursor.getNext();
+				otherCursor = otherCursor.getNext();
+			}
+			else if(thisCursor.getNext() != null) return THIS_GREATER;
+			else return THIS_LESSER;
+		}
+	
+		//they have the same number of nodes and both cursors are pointing to the most significant (last) node
+		int thisData, otherData;
+		while (thisCursor != null)
+		{
+			thisData = thisCursor.getData().intValue();
+			otherData = otherCursor.getData().intValue();
+			if(thisData != otherData) return Integer.compareUnsigned(thisData, otherData);
+			thisCursor = thisCursor.getPrev();
+			otherCursor = otherCursor.getPrev();
+		}
+	
+		//same length and all nodes have the same data
+		return THIS_EQUAL;
+	}
+
+	/**
+	 * Compares this InfiniteInteger with the specified other for numeric equality.
+	 * Even though sorting is not possible this method returns as expected.
+	 * Entire code: <blockquote>{@code return this.compareTo(InfiniteInteger.valueOf(other));}</blockquote>
+	 *
+	 * @param other the value to be compared to this
+	 * @see #compareTo(InfiniteInteger)
+	 * @see Comparable#compareTo(Object)
+	 */
+	public int compareTo(BigInteger other){return this.compareTo(InfiniteInteger.valueOf(other));}
+
+	/**
+	 * Compares this InfiniteInteger with the specified other for numeric equality.
+	 * Even though sorting is not possible this method returns as expected.
+	 * Entire code: <blockquote>{@code return this.compareTo(InfiniteInteger.valueOf(other));}</blockquote>
+	 *
+	 * @param other the value to be compared to this
+	 * @see #compareTo(InfiniteInteger)
+	 * @see Comparable#compareTo(Object)
+	 */
+	public int compareTo(long other){return this.compareTo(InfiniteInteger.valueOf(other));}
+
+	/**
      * Returns the hash code for this InfiniteInteger.
      * Collisions are, in theory, likely when comparing all possible integers
      * with all possible values that can fit into int.
@@ -1229,89 +1316,5 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		}
 		return returnValue;
 	}
-
-	/**
-	 * Compares this InfiniteInteger with the specified other for numeric equality.
-	 * The natural order is as expected with &plusmn;&infin; being at either end.
-	 * However for the sake of sorting 0 < NaN < 1.
-	 *
-	 * @param other the value to be compared to this
-     * @return -1, 0 or 1 if this InfiniteInteger is numerically less than, equal
-     *         to, or greater than other.
-	 */
-	@Override
-	public int compareTo(InfiniteInteger other) {
-		if(this == other) return THIS_EQUAL;
-		if(this == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY) return THIS_GREATER;
-		if(this == NEGATIVE_INFINITITY || other == POSITIVE_INFINITITY) return THIS_LESSER;
-
-		if (this == NaN)
-		{
-			if(other == ZERO || other.isNegative) return THIS_GREATER;
-			return THIS_LESSER;  //since other != NaN
-		}
-		if (other == NaN)
-		{
-			if(this == ZERO || this.isNegative) return THIS_LESSER;
-			return THIS_GREATER;  //since this != NaN
-		}
-
-		if(isNegative && !other.isNegative) return THIS_LESSER;
-		if(!isNegative && other.isNegative) return THIS_GREATER;  //also covers if this == ZERO
-		if(this == ZERO && !other.isNegative) return THIS_LESSER;  //since this != other
-
-		//at this point: they are not the same object, they have the same sign, they are not special values.
-		//since the lengths can be any integer I first need to compare lengths
-
-		DequeNode<Integer> otherCursor = other.magnitudeHead;
-		DequeNode<Integer> thisCursor = this.magnitudeHead;
-		//this loop will not execute if they both have 1 node
-		//which is correct since they have equal length and are both pointing to last node
-		while (thisCursor.getNext() != null || otherCursor.getNext() != null)
-		{
-			if (thisCursor.getNext() != null && otherCursor.getNext() != null)
-			{
-				thisCursor = thisCursor.getNext();
-				otherCursor = otherCursor.getNext();
-			}
-			else if(thisCursor.getNext() != null) return THIS_GREATER;
-			else return THIS_LESSER;
-		}
-
-		//they have the same number of nodes and both cursors are pointing to the most significant (last) node
-		int thisData, otherData;
-		while (thisCursor != null)
-		{
-			thisData = thisCursor.getData().intValue();
-			otherData = otherCursor.getData().intValue();
-			if(thisData != otherData) return Integer.compareUnsigned(thisData, otherData);
-			thisCursor = thisCursor.getPrev();
-			otherCursor = otherCursor.getPrev();
-		}
-
-		//same length and all nodes have the same data
-		return THIS_EQUAL;
-	}
-
-	/**
-	 * Compares this InfiniteInteger with the specified other for numeric equality.
-	 * Even though sorting is not possible this method returns as expected.
-	 * Entire code: <blockquote>{@code return this.compareTo(InfiniteInteger.valueOf(other));}</blockquote>
-	 *
-	 * @param other the value to be compared to this
-	 * @see #compareTo(InfiniteInteger)
-	 * @see Comparable#compareTo(Object)
-	 */
-	public int compareTo(BigInteger other){return this.compareTo(InfiniteInteger.valueOf(other));}
-	/**
-	 * Compares this InfiniteInteger with the specified other for numeric equality.
-	 * Even though sorting is not possible this method returns as expected.
-	 * Entire code: <blockquote>{@code return this.compareTo(InfiniteInteger.valueOf(other));}</blockquote>
-	 *
-	 * @param other the value to be compared to this
-	 * @see #compareTo(InfiniteInteger)
-	 * @see Comparable#compareTo(Object)
-	 */
-	public int compareTo(long other){return this.compareTo(InfiniteInteger.valueOf(other));}
 
 }
