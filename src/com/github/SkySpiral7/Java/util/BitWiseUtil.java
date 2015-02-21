@@ -62,7 +62,7 @@ public class BitWiseUtil {
     	return ((byte) (value & bitMask));
     }
 
-    public static long multiplyBy2PowerN(long value, int nPower){return (value << nPower);}
-    public static long divideBy2PowerN(long value, int nPower){return (value >> nPower);}
+    public static long multiplyByPowerOf2(long value, int exponent){return (value << exponent);}
+    public static long divideByPowerOf2(long value, int exponent){return (value >> exponent);}
 
 }

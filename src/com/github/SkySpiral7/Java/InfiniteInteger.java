@@ -92,11 +92,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * This constructor is the only way to get a copy of 0 that can be safely modified.
 	 * This is not a public constructor in order to maintain the ZERO singleton.
 	 *
-	 * @param value the desired numeric value
+	 * @param baseValue the desired numeric value
 	 * @see #valueOf(long)
 	 */
-	protected InfiniteInteger(long value) {
-		if (value == Long.MIN_VALUE)  //Math.abs isn't possible for this
+	protected InfiniteInteger(long baseValue) {
+		if (baseValue == Long.MIN_VALUE)  //Math.abs isn't possible for this
 		{
 			isNegative = true;
 			magnitudeHead = DequeNode.Factory.createStandAloneNode(0);
@@ -104,11 +104,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		}
 		else
 		{
-			isNegative = (value < 0);
-			value = Math.abs(value);
-			magnitudeHead = DequeNode.Factory.createStandAloneNode((int) value);
-			value >>>= 32;
-			if(value > 0) DequeNode.Factory.createNodeAfter(magnitudeHead, ((int) value));
+			isNegative = (baseValue < 0);
+			baseValue = Math.abs(baseValue);
+			magnitudeHead = DequeNode.Factory.createStandAloneNode((int) baseValue);
+			baseValue >>>= 32;
+			if(baseValue > 0) DequeNode.Factory.createNodeAfter(magnitudeHead, ((int) baseValue));
 		}
 	}
 
@@ -362,7 +362,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 				//TODO: create helper for Integer.toUnsignedLong(cursor.getData().intValue())
 				cursor = cursor.getNext();
 			}
-			if(this.isNegative) result = result.negate();
+			if(this.isNegative) return result.negate();
 			return result;
 		} catch(Throwable t) {
 			//ArithmeticException (from 1.8 overflow) or OutOfMemoryError etc
@@ -419,7 +419,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * Note that the formula used is designed for a long and is slightly more efficient
      * than calling add(InfiniteInteger.valueOf(value)) would be.
      *
-     * @param  value the value to be added to this InfiniteInteger.
+     * @param  value the operand to be added to this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
      * @see #add(InfiniteInteger)
      */
@@ -438,7 +438,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//the rest is for if both positive
 		long sum, valueRemaining = value;
 		InfiniteInteger result = new InfiniteInteger(0);  //can't use ZERO because result will be modified
-		DequeNode<Integer> returnCursor = result.magnitudeHead;
+		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
 		while (thisCursor != null)
@@ -448,12 +448,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			highValue = (int) (valueRemaining >>> 32);
 			sum = Integer.toUnsignedLong(thisCursor.getData().intValue()) + Integer.toUnsignedLong(lowValue);
 
-			returnCursor.setData((int) sum);
+			resultCursor.setData((int) sum);
 			sum >>>= 32;
 
 			valueRemaining = sum + Integer.toUnsignedLong(highValue);  //TODO: make a test that proves I need to use unsigned
 
-			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
+			resultCursor = DequeNode.Factory.createNodeAfter(resultCursor, 0);
 			thisCursor = thisCursor.getNext();
 		}
 		if (valueRemaining != 0)
@@ -461,10 +461,10 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			//the addition's carry causes the return value to have more nodes
 			lowValue = (int) valueRemaining;
 			highValue = (int) (valueRemaining >>> 32);
-			returnCursor.setData(lowValue);
-			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, highValue);
+			resultCursor.setData(lowValue);
+			resultCursor = DequeNode.Factory.createNodeAfter(resultCursor, highValue);
 		}
-		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last node since it is leading 0s
+		if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //remove the last node since it is leading 0s
 		//do not use else. this can occur either way
 		return result;
 	}
@@ -479,7 +479,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     /**
      * Returns an InfiniteInteger whose value is {@code (this + value)}.
      *
-     * @param  value the value to be added to this InfiniteInteger.
+     * @param  value the operand to be added to this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
      * @see #add(long)
      */
@@ -495,7 +495,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//the rest is for if both positive
 		long sum = 0;
 		InfiniteInteger result = this.copy();
-		DequeNode<Integer> returnCursor = result.magnitudeHead;
+		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		ListIterator<Integer> valueMagIterator = value.magnitudeIterator();
 		int lowSum, highSum;
 		while (valueMagIterator.hasNext() || sum != 0)
@@ -503,18 +503,18 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
 			lowSum = (int) sum;
 			highSum = (int) (sum >>> 32);
-			sum = Integer.toUnsignedLong(returnCursor.getData().intValue());
+			sum = Integer.toUnsignedLong(resultCursor.getData().intValue());
 			if(valueMagIterator.hasNext()) sum += Integer.toUnsignedLong(valueMagIterator.next().intValue());
 			sum += Integer.toUnsignedLong(lowSum);
 
-			returnCursor.setData((int) sum);
+			resultCursor.setData((int) sum);
 			sum >>>= 32;
 			sum += Integer.toUnsignedLong(highSum);
 
-			if(returnCursor.getNext() == null) returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
-			else returnCursor = returnCursor.getNext();
+			if(resultCursor.getNext() == null) resultCursor = DequeNode.Factory.createNodeAfter(resultCursor, 0);
+			else resultCursor = resultCursor.getNext();
 		}
-		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //remove the last node since it is leading 0s
+		if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //remove the last node since it is leading 0s
 		return result;
 	}
 
@@ -523,7 +523,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * Note that the formula used is designed for a long and is slightly more efficient
      * than calling subtract(InfiniteInteger.valueOf(value)) would be.
      *
-     * @param  value the value to be subtracted from this InfiniteInteger.
+     * @param  value the operand to be subtracted from this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
      * @see #subtract(InfiniteInteger)
      */
@@ -544,7 +544,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//this is greater than value
 		long difference, valueRemaining = value;
 		InfiniteInteger result = new InfiniteInteger(0);  //can't use ZERO because result will be modified
-		DequeNode<Integer> returnCursor = result.magnitudeHead;
+		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
 		boolean borrow = false;
@@ -559,21 +559,21 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 				//this makes difference borrow
 				//the +1 is here for the same reason that when borrowing in base 10 you add 10 instead of 9
 
-			returnCursor.setData((int) difference);
+			resultCursor.setData((int) difference);
 			//assert((difference >>> 32) == 0);  //due to the borrowing above
 
 			valueRemaining = Integer.toUnsignedLong(highValue);
 			if(borrow) valueRemaining++;  //subtract 1 more
 
-			returnCursor = DequeNode.Factory.createNodeAfter(returnCursor, 0);
+			resultCursor = DequeNode.Factory.createNodeAfter(resultCursor, 0);
 			thisCursor = thisCursor.getNext();
 		}
 		//assert(valueRemaining == 0);  //because this > value
 		//TODO: isn't there always a leading 0?
-		if(returnCursor.getData().intValue() == 0){returnCursor = returnCursor.getPrev(); returnCursor.getNext().remove();}
+		if(resultCursor.getData().intValue() == 0){resultCursor = resultCursor.getPrev(); resultCursor.getNext().remove();}
 			//remove the last node since it is leading 0s
 			//assert(returnCursor != null)  //I already checked that this != value which is the only way for result == 0
-		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //there will be 2 if the last node was borrowed down to 0
+		if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //there will be 2 if the last node was borrowed down to 0
 
 		return result;
 	}
@@ -588,7 +588,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     /**
      * Returns an InfiniteInteger whose value is {@code (this - value)}.
      *
-     * @param  value the value to be subtracted from this InfiniteInteger.
+     * @param  value the operand to be subtracted from this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
      * @see #subtract(long)
      */
@@ -608,39 +608,39 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//this is greater than value
 		long difference = 0;
 		InfiniteInteger result = this.copy();
-		DequeNode<Integer> returnCursor = result.magnitudeHead;
+		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		ListIterator<Integer> valueMagIterator = value.magnitudeIterator();
 		int lowValue, highValue;
-		byte borrow;
+		byte borrowCount;
 		while (valueMagIterator.hasNext() || difference != 0)
 		{
 			lowValue = (int) difference;
 			highValue = (int) (difference >>> 32);
-			difference = Integer.toUnsignedLong(returnCursor.getData().intValue());
+			difference = Integer.toUnsignedLong(resultCursor.getData().intValue());
 			if(valueMagIterator.hasNext()) difference -= Integer.toUnsignedLong(valueMagIterator.next().intValue());
 			difference -= Integer.toUnsignedLong(lowValue);
 				//difference == Long.min won't cause a bug due to how borrow is programmed
-			borrow = 0;
+			borrowCount = 0;
 			while (difference < 0)  //can happen 0-2 times
 			{
-				borrow++;
+				borrowCount++;
 				difference += Integer.toUnsignedLong((int) BitWiseUtil.HIGH_64) +1;  //add max unsigned int +1
 				//this makes difference borrow
 				//the +1 is here for the same reason that when borrowing in base 10 you add 10 instead of 9
 			}
 
-			returnCursor.setData((int) difference);
+			resultCursor.setData((int) difference);
 			//assert((difference >>> 32) == 0);  //due to the borrowing above
 
-			difference = Integer.toUnsignedLong(highValue) + borrow;  //borrow subtracts more
+			difference = Integer.toUnsignedLong(highValue) + borrowCount;  //borrow subtracts more
 
-			if(returnCursor.getNext() != null) returnCursor = returnCursor.getNext();
-			//if returnCursor is at the end then the loop is done because this > value
+			if(resultCursor.getNext() != null) resultCursor = resultCursor.getNext();
+			//if resultCursor is at the end then the loop is done because this > value
 		}
-		if(returnCursor.getData().intValue() == 0){returnCursor = returnCursor.getPrev(); returnCursor.getNext().remove();}
+		if(resultCursor.getData().intValue() == 0){resultCursor = resultCursor.getPrev(); resultCursor.getNext().remove();}
 			//remove the last node since it is leading 0s
 			//assert(returnCursor != null)  //I already checked that this != value which is the only way for result == 0
-		if(returnCursor.getData().intValue() == 0) returnCursor.remove();  //there will be 2 if the last node was borrowed down to 0
+		if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //there will be 2 if the last node was borrowed down to 0
 
 		return result;
 	}
@@ -650,7 +650,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * Note that the formula used is designed for a long and is slightly more efficient
      * than calling multiply(InfiniteInteger.valueOf(value)) would be.
      *
-     * @param  value the value to be multiplied to this InfiniteInteger.
+     * @param  value the operand to be multiplied to this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
      * @see #multiply(InfiniteInteger)
      */
@@ -668,7 +668,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		int highValue = (int) (valueRemaining >>> 32);
 
 		InfiniteInteger result = thisMultiply(lowValue);
-		if(highValue != 0) result = result.add(thisMultiply(highValue).shiftLeft(32));
+		if(highValue != 0) result = result.add(thisMultiply(highValue).multiplyByPowerOf2(32));
     	result.isNegative = resultIsNegative;
 
 		return result;
@@ -714,7 +714,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     /**
      * Returns an InfiniteInteger whose value is {@code (this * value)}.
      *
-     * @param  value the value to be multiplied to this InfiniteInteger.
+     * @param  value the operand to be multiplied to this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
      * @see #multiply(long)
      */
@@ -760,9 +760,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		for (InfiniteInteger digit = ZERO; valueRemaining != ZERO; digit = digit.add(1))
 		{
 			InfiniteInteger product = thisMultiply(valueRemaining.magnitudeHead.getData().intValue());
-			product = product.shiftLeft(digit.multiply(32));
+			product = product.multiplyByPowerOf2(digit.multiply(32));
 			result = result.add(product);
-			valueRemaining.shiftRight(valueRemaining);
+			valueRemaining.divideByPowerOf2DropRemainder(valueRemaining);
 		}
     	result.isNegative = resultIsNegative;
     	//TODO: make it not suck by using a cursor instead of shifting
@@ -772,195 +772,204 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
     /**
 	 * This method delegates because the formula used is exactly the same.
-	 * Entire code: <blockquote>{@code return this.shiftLeft(InfiniteInteger.valueOf(n));}</blockquote>
+	 * Entire code: <blockquote>{@code return this.multiplyByPowerOf2(InfiniteInteger.valueOf(exponent));}</blockquote>
 	 *
-	 * @see #shiftLeft(InfiniteInteger)
+	 * @see #multiplyByPowerOf2(InfiniteInteger)
 	 * @see #valueOf(long)
 	 */
-	public InfiniteInteger shiftLeft(long n){return this.shiftLeft(InfiniteInteger.valueOf(n));}
+	public InfiniteInteger multiplyByPowerOf2(long exponent){return this.multiplyByPowerOf2(InfiniteInteger.valueOf(exponent));}
 
 	/**
-	 * Entire code: <blockquote>{@code return this.shiftLeft(InfiniteInteger.valueOf(n));}</blockquote>
-	 * @see #shiftLeft(InfiniteInteger)
+	 * Entire code: <blockquote>{@code return this.multiplyByPowerOf2(InfiniteInteger.valueOf(exponent));}</blockquote>
+	 * @see #multiplyByPowerOf2(InfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-	public InfiniteInteger shiftLeft(BigInteger n){return this.shiftLeft(InfiniteInteger.valueOf(n));}
-
-	//TODO: rename shifts, parameters, and some local variables
+	public InfiniteInteger multiplyByPowerOf2(BigInteger exponent){return this.multiplyByPowerOf2(InfiniteInteger.valueOf(exponent));}
 
 	/**
-	 * Returns an InfiniteInteger whose value is {@code (this << shiftDistance)}.
-	 * If the shift distance is negative then a right shift is performed instead.
-	 * Computes <tt>this * 2<sup>shiftDistance</sup></tt>.
+	 * <p>Returns an InfiniteInteger whose value is {@code (this << exponent)}.
+	 * If the exponent is negative then a right shift is performed instead.
+	 * Computes <tt>this * 2<sup>exponent</sup></tt>.
 	 * Note that the nodes are unsigned and this operation ignores sign.
-	 * Therefore the shift won't change the sign.
-	 * Examples: InfiniteInteger.valueOf(-10).shiftLeft(1) is -20 and InfiniteInteger.valueOf(100).shiftLeft(2) is 400.
+	 * Therefore this operation won't change the sign.</p>
 	 *
-	 * @param  shiftDistance in bits
+	 * <p>Examples:<br /><code>
+	 * InfiniteInteger.valueOf(-10).multiplyByPowerOf2(1) is -20<br />
+	 * InfiniteInteger.valueOf(100).multiplyByPowerOf2(2) is 400</code></p>
+	 *
+	 * <p>This method is not named shiftLeft because the direction left only makes sense for big endian numbers.</p>
+	 *
+	 * @param  exponent is also the shift distance in bits
 	 * @return the result including &plusmn;&infin; and NaN
-	 * @see #shiftRight(InfiniteInteger)
+	 * @see #divideByPowerOf2DropRemainder(InfiniteInteger)
 	 */
-	public InfiniteInteger shiftLeft(InfiniteInteger shiftDistance) {
-		if(shiftDistance == ZERO || !this.isFinite()) return this;
-		if(shiftDistance.isNegative) return this.shiftRight(shiftDistance.abs());
-	
+	public InfiniteInteger multiplyByPowerOf2(InfiniteInteger exponent) {
+		if(exponent == ZERO || !this.isFinite()) return this;
+		if(exponent.isNegative) return this.divideByPowerOf2DropRemainder(exponent.abs());
+
 		InfiniteInteger result = this.copy();
-		InfiniteInteger valueRemaining = shiftDistance;
-		while (isComparisonResult(valueRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
+		InfiniteInteger shiftDistanceRemaining = exponent;
+		while (isComparisonResult(shiftDistanceRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
 		{
 			result.magnitudeHead = DequeNode.Factory.createNodeBefore(0, result.magnitudeHead);
-			valueRemaining = valueRemaining.subtract(32);
+			shiftDistanceRemaining = shiftDistanceRemaining.subtract(32);
 		}
-	
-		final int smallValueRemaining = valueRemaining.intValue();
-		if (smallValueRemaining != 0)
+
+		final int smallShiftDistance = shiftDistanceRemaining.intValue();
+		if (smallShiftDistance != 0)
 		{
-			DequeNode<Integer> returnCursor = result.getMagnitudeTail();
-	
-			while (returnCursor != null)
+			DequeNode<Integer> resultCursor = result.getMagnitudeTail();
+			int overflow;
+
+			while (resultCursor != null)
 			{
-				int overflow = BitWiseUtil.getHighestNBits(returnCursor.getData().intValue(), smallValueRemaining);
+				overflow = BitWiseUtil.getHighestNBits(resultCursor.getData().intValue(), smallShiftDistance);
 					//overflow contains what would fall off when shifting left
-				overflow >>>= (32 - smallValueRemaining);
+				overflow >>>= (32 - smallShiftDistance);
 					//shift overflow right so that it appears in the least significant place of the following node
-				if(overflow != 0 && returnCursor.getNext() == null) DequeNode.Factory.createNodeAfter(returnCursor, overflow);
-				else if(overflow != 0) returnCursor.getNext().setData(returnCursor.getNext().getData().intValue() | overflow);
-	
-				returnCursor.setData(returnCursor.getData().intValue() << smallValueRemaining);
-				returnCursor = returnCursor.getPrev();
+				if(overflow != 0 && resultCursor.getNext() == null) DequeNode.Factory.createNodeAfter(resultCursor, overflow);
+				else if(overflow != 0) resultCursor.getNext().setData(resultCursor.getNext().getData().intValue() | overflow);
+
+				resultCursor.setData(resultCursor.getData().intValue() << smallShiftDistance);
+				resultCursor = resultCursor.getPrev();
 			}
 		}
-	
+
 		return result;
 	}
 
-	public IntegerQuotient<InfiniteInteger> divide(long val) {
-		return divide(InfiniteInteger.valueOf(val));
+	public IntegerQuotient<InfiniteInteger> divide(long value) {
+		return divide(InfiniteInteger.valueOf(value));
     }
 
 	/**
-	 * Entire code: <blockquote>{@code return this.divide(InfiniteInteger.valueOf(val));}</blockquote>
+	 * Entire code: <blockquote>{@code return this.divide(InfiniteInteger.valueOf(value));}</blockquote>
 	 * @see #divide(InfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-    public IntegerQuotient<InfiniteInteger> divide(BigInteger val){return this.divide(InfiniteInteger.valueOf(val));}
+    public IntegerQuotient<InfiniteInteger> divide(BigInteger value){return this.divide(InfiniteInteger.valueOf(value));}
 
-    public IntegerQuotient<InfiniteInteger> divide(InfiniteInteger val) {
+    public IntegerQuotient<InfiniteInteger> divide(InfiniteInteger value) {
 		// method stub
 		return null;
     }
 
     //aka divideReturnWhole
-    public InfiniteInteger divideDropRemainder(long val) {
+    public InfiniteInteger divideDropRemainder(long value) {
     	//getMagnitudeTail()...?
-		return divide(val).getWholeResult();
+		return divide(value).getWholeResult();
     }
 
 	/**
-	 * Entire code: <blockquote>{@code return this.divideDropRemainder(InfiniteInteger.valueOf(val));}</blockquote>
+	 * Entire code: <blockquote>{@code return this.divideDropRemainder(InfiniteInteger.valueOf(value));}</blockquote>
 	 * @see #divideDropRemainder(InfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-    public InfiniteInteger divideDropRemainder(BigInteger val){return this.divideDropRemainder(InfiniteInteger.valueOf(val));}
+    public InfiniteInteger divideDropRemainder(BigInteger value){return this.divideDropRemainder(InfiniteInteger.valueOf(value));}
 
-    public InfiniteInteger divideDropRemainder(InfiniteInteger val) {
-		return divide(val).getWholeResult();
+    public InfiniteInteger divideDropRemainder(InfiniteInteger value) {
+		return divide(value).getWholeResult();
     }
 
     /**
 	 * This method delegates because the formula used is exactly the same.
-	 * Entire code: <blockquote>{@code return this.shiftRight(InfiniteInteger.valueOf(n));}</blockquote>
+	 * Entire code: <blockquote>{@code return this.divideByPowerOf2DropRemainder(InfiniteInteger.valueOf(exponent));}</blockquote>
 	 *
-	 * @see #shiftRight(InfiniteInteger)
+	 * @see #divideByPowerOf2DropRemainder(InfiniteInteger)
 	 * @see #valueOf(long)
 	 */
-	public InfiniteInteger shiftRight(long n){return shiftRight(InfiniteInteger.valueOf(n));}
+	public InfiniteInteger divideByPowerOf2DropRemainder(long exponent){return divideByPowerOf2DropRemainder(InfiniteInteger.valueOf(exponent));}
 
 	/**
-	 * Entire code: <blockquote>{@code return this.shiftRight(InfiniteInteger.valueOf(n));}</blockquote>
-	 * @see #shiftRight(InfiniteInteger)
+	 * Entire code: <blockquote>{@code return this.divideByPowerOf2DropRemainder(InfiniteInteger.valueOf(exponent));}</blockquote>
+	 * @see #divideByPowerOf2DropRemainder(InfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-	public InfiniteInteger shiftRight(BigInteger n){return shiftRight(InfiniteInteger.valueOf(n));}
+	public InfiniteInteger divideByPowerOf2DropRemainder(BigInteger exponent){return divideByPowerOf2DropRemainder(InfiniteInteger.valueOf(exponent));}
 
 	/**
-	 * Returns an InfiniteInteger whose value is {@code (this >>> shiftDistance)}.
-	 * If the shift distance is negative then a left shift is performed instead.
-	 * Computes <tt>truncate(this / 2<sup>shiftDistance</sup>)</tt>.
+	 * <p>Returns an InfiniteInteger whose value is {@code (this >>> exponent)}.
+	 * If the exponent is negative then a left shift is performed instead.
+	 * Computes <tt>truncate(this / 2<sup>exponent</sup>)</tt>.
 	 * Note that the nodes are unsigned and this operation ignores sign.
 	 * Also note that truncation occurs which means the low numbers are thrown away not rounded.
-	 * Therefore the shift is always 0 filled and won't change the sign (unless the result is ZERO).
-	 * Examples: InfiniteInteger.valueOf(-10).shiftRight(1) is -5 and InfiniteInteger.valueOf(100).shiftRight(2) is 25.
-	 * And 3 >>> 1 == 1.
+	 * Therefore this operation always 0 fills and won't change the sign (unless the result is ZERO).</p>
+	 * <p>Examples:<br /><code>
+	 * InfiniteInteger.valueOf(-10).divideByPowerOf2DropRemainder(1) is -5<br />
+	 * InfiniteInteger.valueOf(100).divideByPowerOf2DropRemainder(2) is 25<br />
+	 * InfiniteInteger.valueOf(3).divideByPowerOf2DropRemainder(1) is 1</code></p>
 	 *
-	 * @param  shiftDistance in bits
+	 * <p>This method is not named shiftRight because the direction right only makes sense for big endian numbers.</p>
+	 *
+	 * @param  exponent is also the shift distance in bits
 	 * @return the result including &plusmn;&infin; and NaN
-	 * @see #shiftLeft(InfiniteInteger)
+	 * @see #multiplyByPowerOf2(InfiniteInteger)
 	 */
-	public InfiniteInteger shiftRight(InfiniteInteger shiftDistance) {
-		if(shiftDistance == ZERO || !this.isFinite()) return this;
-		if(shiftDistance.isNegative) return this.shiftLeft(shiftDistance.abs());
-	
+	public InfiniteInteger divideByPowerOf2DropRemainder(InfiniteInteger exponent) {
+		if(exponent == ZERO || !this.isFinite()) return this;
+		if(exponent.isNegative) return this.multiplyByPowerOf2(exponent.abs());
+
 		InfiniteInteger result = this.copy();
-		InfiniteInteger valueRemaining = shiftDistance;
-		while (isComparisonResult(valueRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
+		InfiniteInteger shiftDistanceRemaining = exponent;
+		while (isComparisonResult(shiftDistanceRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
 		{
 			result.magnitudeHead = result.magnitudeHead.getNext();
 			if(result.magnitudeHead == null) return ZERO;
 			result.magnitudeHead.getPrev().remove();
-			valueRemaining = valueRemaining.subtract(32);
+			shiftDistanceRemaining = shiftDistanceRemaining.subtract(32);
 		}
-	
-		final int smallValueRemaining = valueRemaining.intValue();
-		if (smallValueRemaining != 0)
+
+		final int smallShiftDistance = shiftDistanceRemaining.intValue();
+		if (smallShiftDistance != 0)
 		{
-			DequeNode<Integer> returnCursor = result.magnitudeHead;
-	
-			while (returnCursor.getNext() != null)
+			DequeNode<Integer> resultCursor = result.magnitudeHead;
+			int underflow;
+
+			while (resultCursor.getNext() != null)
 			{
-				returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
-				int underflow = (int) BitWiseUtil.getLowestNBits(returnCursor.getNext().getData().intValue(), smallValueRemaining);
+				resultCursor.setData(resultCursor.getData().intValue() >>> smallShiftDistance);
+				underflow = (int) BitWiseUtil.getLowestNBits(resultCursor.getNext().getData().intValue(), smallShiftDistance);
 					//underflow contains what would fall off when shifting right
-				underflow <<= (32 - smallValueRemaining);
+				underflow <<= (32 - smallShiftDistance);
 					//shift underflow left so that it appears in the most significant place of the previous node
-				if(underflow != 0) returnCursor.setData(returnCursor.getData().intValue() | underflow);
-				returnCursor = returnCursor.getNext();
+				if(underflow != 0) resultCursor.setData(resultCursor.getData().intValue() | underflow);
+				resultCursor = resultCursor.getNext();
 			}
 			//last node simply shifts
-			returnCursor.setData(returnCursor.getData().intValue() >>> smallValueRemaining);
+			resultCursor.setData(resultCursor.getData().intValue() >>> smallShiftDistance);
 		}
 		if(result.magnitudeHead.getNext() == null && result.magnitudeHead.getData().intValue() == 0) return ZERO;
-	
+
 		return result;
 	}
 
 	//aka remainder, divideDropWhole, divideReturnRemainder
-    public InfiniteInteger mod(long val) {
-    	//longVal % val
-		return divide(val).getRemainder();
+    public InfiniteInteger mod(long value) {
+    	//longVal % value
+		return divide(value).getRemainder();
     }
 
 	/**
-	 * Entire code: <blockquote>{@code return this.mod(InfiniteInteger.valueOf(val));}</blockquote>
+	 * Entire code: <blockquote>{@code return this.mod(InfiniteInteger.valueOf(value));}</blockquote>
 	 * @see #mod(InfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-    public InfiniteInteger mod(BigInteger val){return this.mod(InfiniteInteger.valueOf(val));}
+    public InfiniteInteger mod(BigInteger value){return this.mod(InfiniteInteger.valueOf(value));}
 
-    public InfiniteInteger mod(InfiniteInteger val) {
-		return divide(val).getRemainder();
+    public InfiniteInteger mod(InfiniteInteger value) {
+		return divide(value).getRemainder();
     }
 
-    public InfiniteInteger pow(long val) {
-		return pow(InfiniteInteger.valueOf(val));
+    public InfiniteInteger pow(long exponent) {
+		return pow(InfiniteInteger.valueOf(exponent));
     }
 
 	/**
-	 * Entire code: <blockquote>{@code return this.pow(InfiniteInteger.valueOf(val));}</blockquote>
+	 * Entire code: <blockquote>{@code return this.pow(InfiniteInteger.valueOf(exponent));}</blockquote>
 	 * @see #pow(InfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-    public InfiniteInteger pow(BigInteger val){return this.pow(InfiniteInteger.valueOf(val));}
+    public InfiniteInteger pow(BigInteger exponent){return this.pow(InfiniteInteger.valueOf(exponent));}
 
     /* (non-doc)
      * Returns an InfiniteInteger whose value is this<sup>exponent</sup>.
@@ -1004,11 +1013,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(this == ZERO || this.equals(1)) return InfiniteInteger.valueOf(1);
 
 		InfiniteInteger result = this.copy();
-		InfiniteInteger valueRemaining = result.subtract(1);
-    	while (valueRemaining != ZERO)
+		InfiniteInteger integerCursor = result.subtract(1);
+    	while (integerCursor != ZERO)
     	{
-    		result = result.multiply(valueRemaining);
-    		valueRemaining = valueRemaining.subtract(1);
+    		result = result.multiply(integerCursor);
+    		integerCursor = integerCursor.subtract(1);
     		//it's faster to let multiply(1) fast path then it is to compare valueRemaining to 1
     		//since multiply will always compare the parameter to 1 anyway
     	}
@@ -1084,17 +1093,17 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	/**
 	 * Compares this InfiniteInteger with the specified object for numeric equality.
-	 * Note that this equality is not symmetric as obj.equals(this) != this.equals(obj).
+	 * Note that this equality is not always symmetric as other.equals(this) != this.equals(other).
 	 *
-	 * @param obj the value to be compared to this
-	 * @return true if this InfiniteInteger has the same numeric value as the value parameter. false if obj is not a number
+	 * @param other the value to be compared to this
+	 * @return true if this InfiniteInteger has the same numeric value as other. false if other is not a number
 	 * @see #equals(InfiniteInteger)
 	 */
 	@Override
-	public boolean equals(Object obj) {
-		if(obj == null) return false;
-		if(obj instanceof InfiniteInteger) return this.equals((InfiniteInteger) obj);  //checks this == other
-		if(obj instanceof BigInteger) return this.equals(InfiniteInteger.valueOf((BigInteger) obj));
+	public boolean equals(Object other) {
+		if(other == null) return false;
+		if(other instanceof InfiniteInteger) return this.equals((InfiniteInteger) other);  //checks this == other
+		if(other instanceof BigInteger) return this.equals(InfiniteInteger.valueOf((BigInteger) other));
 		if(!this.isFinite()) return false;  //TODO: actually compare specials to floating point's
 		//TODO: floating point can be larger than long:
 		/*
@@ -1102,12 +1111,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		 * return this.equals(InfiniteInteger.valueOf(BigDecimal.valueOf(double).toBigIntegerExact()));
 		 * also use this for doubleValue and valueOf(double)
 		 */
-		if(obj instanceof Number) return this.equals(((Number) obj).longValue());  //TODO: should I use long or double value?
+		if(other instanceof Number) return this.equals(((Number) other).longValue());  //TODO: should I use long or double value?
 		return false;
 	}
 
 	/**
-	 * Compares this InfiniteInteger with the specified other for numeric equality.
+	 * Compares this InfiniteInteger with the specified object for numeric equality.
 	 *
 	 * @param other the value to be compared to this
 	 * @return true if this InfiniteInteger has the same numeric value as other
@@ -1165,7 +1174,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(this == other) return THIS_EQUAL;
 		if(this == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY) return THIS_GREATER;
 		if(this == NEGATIVE_INFINITITY || other == POSITIVE_INFINITITY) return THIS_LESSER;
-	
+
 		if (this == NaN)
 		{
 			if(other == ZERO || other.isNegative) return THIS_GREATER;
@@ -1176,14 +1185,14 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			if(this == ZERO || this.isNegative) return THIS_LESSER;
 			return THIS_GREATER;  //since this != NaN
 		}
-	
+
 		if(isNegative && !other.isNegative) return THIS_LESSER;
 		if(!isNegative && other.isNegative) return THIS_GREATER;  //also covers if this == ZERO
 		if(this == ZERO && !other.isNegative) return THIS_LESSER;  //since this != other
-	
+
 		//at this point: they are not the same object, they have the same sign, they are not special values.
 		//since the lengths can be any integer I first need to compare lengths
-	
+
 		DequeNode<Integer> otherCursor = other.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		//this loop will not execute if they both have 1 node
@@ -1198,7 +1207,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			else if(thisCursor.getNext() != null) return THIS_GREATER;
 			else return THIS_LESSER;
 		}
-	
+
 		//they have the same number of nodes and both cursors are pointing to the most significant (last) node
 		int thisData, otherData;
 		while (thisCursor != null)
@@ -1209,7 +1218,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			thisCursor = thisCursor.getPrev();
 			otherCursor = otherCursor.getPrev();
 		}
-	
+
 		//same length and all nodes have the same data
 		return THIS_EQUAL;
 	}
@@ -1264,8 +1273,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(this == NEGATIVE_INFINITITY) return "-Infinity";
 		if(this == NaN) return "NaN";
 		if(this == ZERO) return "0";
-		String returnValue = "+ ";
-		if(isNegative) returnValue = "- ";
+		String stringValue = "+ ";
+		if(isNegative) stringValue = "- ";
 		//method stub
 		//BigInteger > string max
 		//BigInteger.toString(any) doesn't check range and will just crash
@@ -1275,7 +1284,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//return "2^?";
 
 		//string for debugging:
-		StringBuilder stringBuilder = new StringBuilder(returnValue);
+		StringBuilder stringBuilder = new StringBuilder(stringValue);
 		for (DequeNode<Integer> cursor = magnitudeHead; cursor != null; cursor = cursor.getNext())
 		{
 			stringBuilder.append(Integer.toHexString(cursor.getData().intValue()).toUpperCase());
@@ -1303,7 +1312,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	public InfiniteInteger copy() {
 		if(!this.isFinite() || this == ZERO) return this;
 		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
-		returnValue.isNegative = isNegative;
+		returnValue.isNegative = this.isNegative;
 		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 

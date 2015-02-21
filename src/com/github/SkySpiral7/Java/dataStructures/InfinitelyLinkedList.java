@@ -265,7 +265,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
     public DequeNode<E> getNode(InfiniteInteger index) {
     	rangeCheckForGet(index);
 
-    	if (is(index, LESS_THAN_OR_EQUAL_TO, actualSize.shiftRight(1)))
+    	if (is(index, LESS_THAN_OR_EQUAL_TO, actualSize.divideByPowerOf2DropRemainder(1)))
     	{
     		DequeNode<E> currentNode = first;
             for(InfiniteInteger i = InfiniteInteger.ZERO; is(i, LESS_THAN, index); i=i.add(1))

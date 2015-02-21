@@ -93,6 +93,20 @@ public class UT_InfiniteInteger {
     }
 
     @Test
+	public void divideByPowerOf2DropRemainder() {
+    	//simple case
+    	assertEqualNodes(InfiniteInteger.valueOf(1024).divideByPowerOf2DropRemainder(3), 1, 128);
+
+    	//shift by x32
+    	infiniteInteger = InfiniteInteger.valueOf(1).multiplyByPowerOf2(64).add(Long.MAX_VALUE);
+    	assertEqualNodes(infiniteInteger.divideByPowerOf2DropRemainder(64), 1, 1);
+
+    	//shift more than 32
+    	infiniteInteger = InfiniteInteger.valueOf(1).multiplyByPowerOf2(32*3).subtract(1);  //3 nodes all high
+    	assertEqualNodes(infiniteInteger.divideByPowerOf2DropRemainder(35), 1, -1, 0x1FFF_FFFF);
+    }
+
+    @Test
     public void equals() {
     	assertEquals(InfiniteInteger.valueOf(10), InfiniteInteger.valueOf(10));
     	assertEquals(InfiniteInteger.valueOf(5).add(5), InfiniteInteger.valueOf(7).add(3));
@@ -212,32 +226,18 @@ public class UT_InfiniteInteger {
     }
 
     @Test
-	public void shiftLeft() {
+	public void multiplyByPowerOf2() {
     	//simple case
-    	assertEqualNodes(InfiniteInteger.valueOf(1).shiftLeft(3), 1, 8);
+    	assertEqualNodes(InfiniteInteger.valueOf(1).multiplyByPowerOf2(3), 1, 8);
 
     	//shift by x32
-    	assertEqualNodes(InfiniteInteger.valueOf(1).shiftLeft(64), 1, 0, 0, 1);
+    	assertEqualNodes(InfiniteInteger.valueOf(1).multiplyByPowerOf2(64), 1, 0, 0, 1);
 
     	//shift more than 32
-    	assertEqualNodes(InfiniteInteger.valueOf(1).shiftLeft(35), 1, 0, 8);
+    	assertEqualNodes(InfiniteInteger.valueOf(1).multiplyByPowerOf2(35), 1, 0, 8);
 
     	//multiple starting nodes (shift not x32)
-    	assertEqualNodes(InfiniteInteger.valueOf(Long.MAX_VALUE).shiftLeft(34), 1, 0, -4, -1, 1);
-    }
-
-    @Test
-	public void shiftRight() {
-    	//simple case
-    	assertEqualNodes(InfiniteInteger.valueOf(1024).shiftRight(3), 1, 128);
-
-    	//shift by x32
-    	infiniteInteger = InfiniteInteger.valueOf(1).shiftLeft(64).add(Long.MAX_VALUE);
-    	assertEqualNodes(infiniteInteger.shiftRight(64), 1, 1);
-
-    	//shift more than 32
-    	infiniteInteger = InfiniteInteger.valueOf(1).shiftLeft(32*3).subtract(1);  //3 nodes all high
-    	assertEqualNodes(infiniteInteger.shiftRight(35), 1, -1, 0x1FFF_FFFF);
+    	assertEqualNodes(InfiniteInteger.valueOf(Long.MAX_VALUE).multiplyByPowerOf2(34), 1, 0, -4, -1, 1);
     }
 
     @Test
