@@ -262,6 +262,41 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	/**
+	 * <p>This method returns an infinite stream all numbers in the Fibonacci Sequence.
+	 * The stream starts with 0 which is known as the zeroth element in the sequence.
+	 * The stream is logically truely infinite (will never loop around or overflow)
+	 * but hardware will eventually run out of memory.</p>
+	 *
+	 * <p>The Fibonacci Sequence aka golden sequence aka Lame's Sequence is defined by starting with
+	 * f(0)=0 and f(1)=1 and f(n)=f(n-2)+f(n-1).
+	 * Therefore the sequence starts out with: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34...</p>
+	 *
+	 * @return an infinite stream of the Fibonacci Sequence
+	 */
+    public static Stream<InfiniteInteger> streamFibonacciSequence() {
+        final Iterator<InfiniteInteger> iterator = new Iterator<InfiniteInteger>() {
+            private InfiniteInteger previous = null;
+            private InfiniteInteger back2 = null;
+
+            @Override public boolean hasNext(){return true;}
+
+            @Override
+            public InfiniteInteger next() {
+            	InfiniteInteger next;
+                if(previous == null) next = InfiniteInteger.ZERO;
+                else if(back2 == null) next = InfiniteInteger.valueOf(1);
+                else next = previous.add(back2);
+                back2 = previous;
+                previous = next;
+                return next;
+            }
+        };
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+                iterator,
+                Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
+    }
+
+    /**
 	 * Entire code: <blockquote>{@code return (float) longValue();}</blockquote>
 	 * @see #longValue()
 	 */

@@ -257,6 +257,23 @@ public class UT_InfiniteInteger {
 		assertTrue(integerIterator.hasNext());  //continues forever
 	}
 
+    @Test
+	public void streamFibonacciSequence() {
+		Iterator<InfiniteInteger> integerIterator = InfiniteInteger.streamFibonacciSequence().iterator();
+		assertSame(InfiniteInteger.ZERO, integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(1), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(1), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(2), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(3), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(5), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(8), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(13), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(21), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(34), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(55), integerIterator.next());
+		assertTrue(integerIterator.hasNext());  //continues forever
+	}
+
 	@Test
 	public void subtract_long() {
 		//simple case
