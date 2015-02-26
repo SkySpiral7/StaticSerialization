@@ -68,10 +68,13 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	/**Common abbreviation for "not a number". This constant is the result of invalid math such as 0/0.
 	 * Note that this is a normal object such that <code>(InfiniteInteger.NaN == InfiniteInteger.NaN)</code> is
 	 * always true. Therefore it is logically correct unlike the floating point unit's NaN.*/
+	//future results for NaN: x/0 (including 0), |inifn|/|inifn|, 0^0, 1^|inifn|, |inifn|^0
 	public static final InfiniteInteger NaN = new InfiniteInteger(false);
-	/**+&infin; is a concept rather than a number but will be returned by math such as 1/0.*/
+	/**+&infin; is a concept rather than a number and can't be the result of math involving finite numbers.
+	 * It is defined for completeness and behaves as expected with math resulting in &plusmn;&infin; or NaN.*/
 	public static final InfiniteInteger POSITIVE_INFINITITY = new InfiniteInteger(true);
-	/**-&infin; is a concept rather than a number but will be returned by math such as -1/0.*/
+	/**-&infin; is a concept rather than a number and can't be the result of math involving finite numbers.
+	 * It is defined for completeness and behaves as expected with math resulting in &plusmn;&infin; or NaN.*/
 	public static final InfiniteInteger NEGATIVE_INFINITITY = new InfiniteInteger(false);
 
 	/**
@@ -157,7 +160,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	/**
 	 * Converts an array of UNSIGNED longs into a new InfiniteInteger.
-	 * The elements must be in little endian order.
+	 * The elements must be in little endian order. This method delegates to littleEndian(Iterator, boolean).
+	 * An empty array is considered 0.
 	 *
 	 * @param valueArray the unsigned elements in little endian order
 	 * @param isNegative whether the resulting InfiniteInteger should be negative or not
@@ -174,7 +178,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	/**
 	 * Converts an array of UNSIGNED longs into a new InfiniteInteger.
-	 * The elements must be in big endian order.
+	 * The elements must be in big endian order. This method ultimately delegates to littleEndian(Iterator, boolean).
+	 * An empty array is considered 0.
 	 *
 	 * @param valueArray the unsigned elements in big endian order
 	 * @param isNegative whether the resulting InfiniteInteger should be negative or not
@@ -182,6 +187,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @return a new InfiniteInteger representing the indicated number
 	 * @see #bigEndian(Iterator, boolean)
 	 * @see #littleEndian(long[], boolean)
+	 * @see #littleEndian(Iterator, boolean)
 	 */
 	public static InfiniteInteger bigEndian(long[] valueArray, boolean isNegative) {
 		Long[] wrappedValues = new Long[valueArray.length];
@@ -194,7 +200,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * The elements must be in little endian order.</p>
 	 *
 	 * <p>The iterator must not return a null element, the meaning of which would be ambiguous.
-	 * The iterator can't be infinite since this method aggregates the values (it would also be meaningless).</p>
+	 * The iterator can't be infinite since this method aggregates the values (it would also be meaningless).
+	 * An empty iterator is considered 0.</p>
 	 *
 	 * @param valueIterator the unsigned elements in little endian order
 	 * @param isNegative whether the resulting InfiniteInteger should be negative or not
@@ -228,10 +235,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	/**
 	 * <p>Converts an iterator of UNSIGNED longs into a new InfiniteInteger.
 	 * The elements must be in big endian order. Note that the iterator
-	 * must be a list iterator because it must be read backwards.</p>
+	 * must be a list iterator because it must be read backwards.
+	 * This method delegates to littleEndian(Iterator, boolean).</p>
 	 *
 	 * <p>The iterator must not return a null element, the meaning of which would be ambiguous.
-	 * The iterator can't be infinite since this method aggregates the values (it would also be meaningless).</p>
+	 * The iterator can't be infinite since this method aggregates the values (it would also be meaningless).
+	 * An empty iterator is considered 0.</p>
 	 *
 	 * @param valueIterator the unsigned elements in big endian order
 	 * @param isNegative whether the resulting InfiniteInteger should be negative or not
@@ -441,6 +450,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	/**
 	 * Helper method to get the last (most significant) node of this InfiniteInteger.
+	 * @throws NullPointerException if magnitudeHead is null
 	 */
 	protected DequeNode<Integer> getMagnitudeTail() {
 		//TODO: make a variable for magnitudeTail?
@@ -622,14 +632,15 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
     /**
      * Returns an InfiniteInteger whose value is {@code (this - value)}.
+     * Note &infin; - &infin; results in NaN.
      *
      * @param  value the operand to be subtracted from this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
      * @see #subtract(long)
      */
 	public InfiniteInteger subtract(InfiniteInteger value) {
-		if(!this.isFinite() || value == ZERO) return this;
-		if(this == ZERO || !value.isFinite()) return value.negate();
+		if(this.isNaN() || value == ZERO) return this;
+		if(this == ZERO || value.isNaN()) return value;
 
 		//delegations based on the sign of each
 		if(!this.isNegative && value.isNegative) return this.add(value.abs());
@@ -637,6 +648,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(this.isNegative && value.isNegative) return value.abs().subtract(this.abs());
 
 		//the rest is for if both positive
+		if(this == POSITIVE_INFINITITY && value == POSITIVE_INFINITITY) return NaN;
+		if(this == POSITIVE_INFINITITY) return this;
+		if(value == POSITIVE_INFINITITY) return NEGATIVE_INFINITITY;
 		if(this.equals(value)) return ZERO;
 		if(is(this, LESS_THAN, value)) return value.subtract(this).negate();
 
@@ -684,6 +698,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * Returns an InfiniteInteger whose value is {@code (this * value)}.
      * Note that the formula used is designed for a long and is slightly more efficient
      * than calling multiply(InfiniteInteger.valueOf(value)) would be.
+     * Note &plusmn;&infin; * 0 results in NaN.
      *
      * @param  value the operand to be multiplied to this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
@@ -748,6 +763,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
     /**
      * Returns an InfiniteInteger whose value is {@code (this * value)}.
+     * Note &plusmn;&infin; * 0 results in NaN.
      *
      * @param  value the operand to be multiplied to this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
@@ -1041,7 +1057,6 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * @return the result including +&infin; and NaN
      * @see #pow(InfiniteInteger)
      */
-    //TODO: doc more special places for NaN to be returned
     public InfiniteInteger factorial() {
 		if(this.isNegative || this == NaN) return NaN;  //factorial is not defined for negative numbers
 		if(this == POSITIVE_INFINITITY) return this;  //-Infinity is covered above
