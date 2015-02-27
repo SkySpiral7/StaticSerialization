@@ -21,7 +21,7 @@ public class ReadOnlyIterator<E> implements Iterator<E> {
 	@Override public E next(){return underlyingIterator.next();}
 
 	@Override
-	public void remove() {
+	public final void remove() {
 		throw new UnsupportedOperationException("This iterator is read only.");
 	}
 

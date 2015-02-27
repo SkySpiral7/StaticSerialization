@@ -24,12 +24,12 @@ public class ReadOnlyListIterator<E> extends ReadOnlyIterator<E> implements List
 	@Override public int previousIndex(){return underlyingListIterator.previousIndex();}
 
 	@Override
-	public void set(E dummy) {
+	public final void set(E dummy) {
 		throw new UnsupportedOperationException("This iterator is read only.");
 	}
 
 	@Override
-	public void add(E dummy) {
+	public final void add(E dummy) {
 		throw new UnsupportedOperationException("This iterator is read only.");
 	}
 

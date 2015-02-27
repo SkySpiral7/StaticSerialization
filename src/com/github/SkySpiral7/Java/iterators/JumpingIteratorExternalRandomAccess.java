@@ -10,9 +10,17 @@ public class JumpingIteratorExternalRandomAccess<E> extends ListIteratorExternal
 	@Override
 	public void jumpToBeginning(){cursor = 0;}
 	@Override
-	public void jump(int jumpAmount)
+	public void jumpByIndex(int jumpAmount)
 	{
 		cursor += jumpAmount;
+		if(cursor < 0) cursor = 0;
+		if(cursor > underlyingList.size()) cursor = underlyingList.size();
+	}
+	@Override
+	public void jumpToIndex(int destination)
+	{
+		//overriding this method doesn't improve performance over the default
+		cursor = destination;
 		if(cursor < 0) cursor = 0;
 		if(cursor > underlyingList.size()) cursor = underlyingList.size();
 	}

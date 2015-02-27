@@ -34,6 +34,9 @@ public class UT_InfiniteInteger {
     	//simple case
     	assertEqualNodes(InfiniteInteger.valueOf(5).add(5), 1, 10);
 
+    	//simple negative case
+    	assertEqualNodes(InfiniteInteger.valueOf(-5).add(-5), -1, 10);
+
     	//more than max int
     	assertEqualNodes(InfiniteInteger.valueOf(8_589_934_592L).add(5), 1, 5, 2);
 
@@ -48,6 +51,9 @@ public class UT_InfiniteInteger {
     public void add_InfiniteInteger() {
     	//simple case
     	assertEqualNodes(InfiniteInteger.valueOf(5).add(InfiniteInteger.valueOf(5)), 1, 10);
+
+    	//simple negative case
+    	assertEqualNodes(InfiniteInteger.valueOf(-5).add(InfiniteInteger.valueOf(-5)), -1, 10);
 
     	//more than max int
     	assertEqualNodes(InfiniteInteger.valueOf(8_589_934_592L).add(InfiniteInteger.valueOf(5)), 1, 5, 2);

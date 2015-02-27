@@ -477,11 +477,10 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//delegations based on the sign of each
 		if(!isNegative && value < 0) return this.subtract(Math.abs(value));
 		if(isNegative && value > 0) return InfiniteInteger.valueOf(value).subtract(this.abs());
-		if(isNegative && value < 0) return this.abs().add(Math.abs(value)).negate();
-		//TODO: later consider making a mutable InfiniteInteger for speed (like above) that immutable would wrap
+		//TODO: later consider making a mutable InfiniteInteger for speed that immutable would wrap
 
-		//the rest is for if both positive
-		long sum, valueRemaining = value;
+		//the rest is for if both positive or both negative
+		long sum, valueRemaining = Math.abs(value);
 		InfiniteInteger result = new InfiniteInteger(0);  //can't use ZERO because result will be modified
 		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
@@ -511,6 +510,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		}
 		if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //remove the last node since it is leading 0s
 		//do not use else. this can occur either way
+		result.isNegative = this.isNegative;
 		return result;
 	}
 
@@ -535,9 +535,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		//delegations based on the sign of each
 		if(!isNegative && value.isNegative) return this.subtract(value.abs());
 		if(isNegative && !value.isNegative) return value.subtract(this.abs());
-		if(isNegative && value.isNegative) return this.abs().add(value.abs()).negate();
 
-		//the rest is for if both positive
+		//the rest is for if both positive or both negative
 		long sum = 0;
 		InfiniteInteger result = this.copy();
 		DequeNode<Integer> resultCursor = result.magnitudeHead;
@@ -560,6 +559,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			else resultCursor = resultCursor.getNext();
 		}
 		if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //remove the last node since it is leading 0s
+		result.isNegative = this.isNegative;
 		return result;
 	}
 
