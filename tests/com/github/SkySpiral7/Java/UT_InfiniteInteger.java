@@ -67,10 +67,32 @@ public class UT_InfiniteInteger {
     }
 
     @Test
-    @Ignore
+    @Ignore  //ignored because the code doesn't exist yet and is WAY too slow
+    public void bigIntegerValue() {
+    	final BigInteger bigIntMaxValueBig = InfiniteInteger.calculateMaxBigInteger();
+    	final InfiniteInteger bigIntMaxValueInf = InfiniteInteger.calculateMaxBigIntegerAsInfiniteInteger();
+    	final BigInteger negativeBigIntMaxValueBig = bigIntMaxValueBig.negate();
+    	final InfiniteInteger negativeBigIntMaxValueInf = bigIntMaxValueInf.negate();
+
+    	assertEquals(BigInteger.valueOf(5), InfiniteInteger.valueOf(5).bigIntegerValue());
+    	assertEquals(bigIntMaxValueBig, bigIntMaxValueInf.bigIntegerValue());
+    	infiniteInteger = bigIntMaxValueInf.multiplyByPowerOf2(2).add(3);
+    	assertEquals(bigIntMaxValueBig, infiniteInteger.bigIntegerValue());
+
+    	assertEquals(BigInteger.valueOf(-1), InfiniteInteger.valueOf(-1).bigIntegerValue());
+    	assertEquals(negativeBigIntMaxValueBig, negativeBigIntMaxValueInf.bigIntegerValue());
+    	infiniteInteger = negativeBigIntMaxValueInf.multiplyByPowerOf2(2).subtract(3);
+    	assertEquals(negativeBigIntMaxValueBig, infiniteInteger.bigIntegerValue());
+    }
+
+    @Test
+    @Ignore  //ignored because WAY too slow
     public void bigIntegerValueExact() {
-    	//TODO: not tested
-    	//it should not test the max size as that takes way too long. Although putting it in another ignored test is fine
+    	infiniteInteger = InfiniteInteger.calculateMaxBigIntegerAsInfiniteInteger();
+    	assertEquals(InfiniteInteger.calculateMaxBigInteger(), infiniteInteger.bigIntegerValueExact());  //let throw on test fail
+
+    	try{infiniteInteger.add(1).bigIntegerValueExact(); Assert.fail("Did not throw when > BigInteger.");}
+    	catch(ArithmeticException e){}
     }
 
     @Test
@@ -235,9 +257,7 @@ public class UT_InfiniteInteger {
     }
 
     @Test
-    @Ignore
     public void multiply_InfiniteInteger() {
-    	//TODO: why is multiply_InfiniteInteger freezing?
     	//simple case
     	assertEqualNodes(InfiniteInteger.valueOf(5).multiply(InfiniteInteger.valueOf(5)), 1, 25);
 

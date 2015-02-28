@@ -34,7 +34,7 @@ import com.github.SkySpiral7.Java.util.BitWiseUtil;
  * I understand that an array is faster than a linked list and that generating a security key is the only practical
  * way for a primitive long to max out but I wanted the option for infinite precision. And I had fun making it.</p>
  *
- * <p>BigInteger's maximum value (in 1.8) is 2^(2^31-1). Using long[] with each element being unsigned
+ * <p>BigInteger's maximum value (in 1.8) is 2^(2^31-1)-1. Using long[] with each element being unsigned
  * would max out at 2^(64 * (2^31-1))-1. The largest base 10 number a string can hold is
  * 10^(2^31-1) which is by far the smallest maximum listed here. InfiniteInteger on the other hand
  * uses {@code DequeNode<Integer>} internally (which has no limit) each node is unsigned and
@@ -426,9 +426,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	public BigInteger bigIntegerValue() {
-		//TODO: method stubs
-		//call the exact version. if overflow then return BigInteger.ONE.shiftLeft(Integer.MAX_VALUE);
-		return null;
+		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be even partially represented as a BigInteger.");
+		// TODO: method stubs
+		return null;  //after exact is done, copy and paste the code but return the previous result instead of throwing
 	}
 
 	/**
@@ -436,7 +436,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * Or will throw if this InfiniteInteger is greater than BigInteger will allow.
 	 *
 	 * @throws ArithmeticException if this is &plusmn;&infin; or NaN
-	 * @throws ArithmeticException if this is greater than the max of BigInteger: 2^(2^31-1)
+	 * @throws ArithmeticException if this is greater than the max of BigInteger: 2^(2^31-1)-1
 	 * @see #bigIntegerValue()
 	 * @see #longValue()
 	 */
@@ -463,6 +463,19 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			//result.or will not throw but result.shiftLeft might
 			throw new ArithmeticException("This InfiniteInteger is too large to be represented as a BigInteger.");
 		}
+	}
+
+	//takes more than 6 minutes
+	public static BigInteger calculateMaxBigInteger() {
+		BigInteger maxValue = BigInteger.ONE.shiftLeft(Integer.MAX_VALUE-1).subtract(BigInteger.ONE);
+		maxValue = maxValue.shiftLeft(1).add(BigInteger.ONE);
+		return maxValue;
+	}
+
+	//not sure if faster
+	public static InfiniteInteger calculateMaxBigIntegerAsInfiniteInteger() {
+		InfiniteInteger bigIntMaxValue = InfiniteInteger.valueOf(1).multiplyByPowerOf2(Integer.MAX_VALUE).subtract(1);
+		return bigIntMaxValue;
 	}
 
 	/**
@@ -854,7 +867,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     	 *
     	 */
 		boolean resultIsNegative = (isNegative != value.isNegative);  //!= acts as xor
-		InfiniteInteger valueRemaining = value.abs();
+		InfiniteInteger valueRemaining = value;  //.abs() is not needed since the nodes are unsigned
     	InfiniteInteger result = ZERO;
 
 		for (InfiniteInteger digit = ZERO; valueRemaining != ZERO; digit = digit.add(1))
@@ -862,7 +875,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			InfiniteInteger product = thisMultiply(valueRemaining.magnitudeHead.getData().intValue());
 			product = product.multiplyByPowerOf2(digit.multiply(32));
 			result = result.add(product);
-			valueRemaining.divideByPowerOf2DropRemainder(valueRemaining);
+			valueRemaining = valueRemaining.divideByPowerOf2DropRemainder(32);
 		}
     	result.isNegative = resultIsNegative;
     	//TODO: make it not suck by using a cursor instead of shifting
