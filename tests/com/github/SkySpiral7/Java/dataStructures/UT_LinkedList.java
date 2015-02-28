@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +40,13 @@ public class UT_LinkedList {
     	linkedList.add(0, "B");
     	linkedList.add(1, "C");
     	assertThat(linkedList, IsIterableContainingInOrder.contains("B", "C", "A"));
+    }
+
+    @Test
+    public void addAll() {
+    	assertTrue(linkedList.isEmpty());
+    	linkedList.addAll(Arrays.asList("A", "B", "C"));
+    	assertThat(linkedList, IsIterableContainingInOrder.contains("A", "B", "C"));
     }
 
     @Test

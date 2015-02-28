@@ -3,6 +3,7 @@ package com.github.SkySpiral7.Java.dataStructures;
 import java.util.AbstractSequentialList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -215,6 +216,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
 	@Override
 	public ListIterator<E> listIterator(int startingIndex) {
+		if(startingIndex == 0 && this.isEmpty()) return Collections.emptyListIterator();
 		rangeCheckForGet(startingIndex);
 		ListIterator<E> returnValue = new DequeNodeIterator.ValueIterator<E>(getNode(startingIndex), startingIndex);
 		return returnValue;
@@ -244,15 +246,15 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
     @Override
     public void add(int insertionIndex, E newElement) {
     	if(size == Integer.MAX_VALUE) return;
-        //if(insertionIndex == size){this.addLast(newElement); return;}
-        //if(insertionIndex == 0){this.addFirst(newElement); return;}
-    	//calling getNode is more efficient.
+        if(insertionIndex == size){this.addLast(newElement); return;}  //must be here since getNode will throw
+        //if(insertionIndex == 0){this.addFirst(newElement); return;}  //calling getNode is more efficient
     	insertNodeAfter(getNode(insertionIndex).getPrev(), newElement);
     }
 
     @Override
     public boolean addAll(int insertionIndex, Collection<? extends E> newElements) {
-    	if(size <= (Integer.MAX_VALUE - newElements.size())) return false;  //must use subtraction to prevent overflow
+    	if(newElements.size() > (Integer.MAX_VALUE - size)) return false;  //must use subtraction to prevent overflow
+    	if(insertionIndex == 0) return this.addAll(newElements);
     	rangeCheckForAdd(insertionIndex);
         boolean modified = false;
         Iterator<? extends E> newElementsIterator = newElements.iterator();
@@ -266,7 +268,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
     @Override
     public boolean addAll(Collection<? extends E> newElements) {
-    	if(size <= (Integer.MAX_VALUE - newElements.size())) return false;  //must use subtraction to prevent overflow
+    	if(newElements.size() > (Integer.MAX_VALUE - size)) return false;  //must use subtraction to prevent overflow
     	return super.addAll(newElements);
     }
 

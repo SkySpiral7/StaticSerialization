@@ -268,6 +268,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 				if(previous.isNegative) return previous.abs().add(1);
 				return previous.negate();
 			});
+		//TODO: make an iterateAllIntegers which starts at 0 and is infinite
 	}
 
 	/**

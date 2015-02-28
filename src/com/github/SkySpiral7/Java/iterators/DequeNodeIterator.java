@@ -18,7 +18,7 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>> {
 	protected boolean amAtEnd;
 
 	//not null. use Collections.emptyListIterator()
-	//maybe allow empty so that add can become entire list
+	//allow empty so that add can become entire list (as per doc)
 	public DequeNodeIterator(DequeNode<E> startingNode, int startingIndex) {
 		Objects.requireNonNull(startingNode);
 		nextNode = startingNode;
