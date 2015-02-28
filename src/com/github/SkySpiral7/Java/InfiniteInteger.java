@@ -255,7 +255,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	/**
 	 * This method returns an infinite stream of all integers.
-	 * NaN, +Infinity, and -Infinity will not be included in the stream.
+	 * NaN is not included in the stream and &plusmn;&infin; is unreachable.
 	 * The stream is logically truely infinite (will never loop around or overflow)
 	 * but hardware will eventually run out of memory.
 	 * The stream's order is: 0, 1, -1, 2, -2, 3, -3, 4, -4...
@@ -268,7 +268,55 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 				if(previous.isNegative) return previous.abs().add(1);
 				return previous.negate();
 			});
-		//TODO: make an iterateAllIntegers which starts at 0 and is infinite
+	}
+
+	/**
+	 * <p>This method returns an infinite iterator of all integers.
+	 * NaN is not included in the stream and &plusmn;&infin; is unreachable.
+	 * The stream is logically truely infinite (will never loop around or overflow)
+	 * but hardware will eventually run out of memory.</p>
+	 *
+	 * <p>The iterator starts after 0 such that calling next() will return 1 and previous() will return 0.
+	 * Calling next or previous index will return the intValue(). Set, add, and remove can't be called because
+	 * it is read only.</p>
+	 *
+	 * @return an infinite iterator of all integers
+	 * @see #intValue()
+	 * @see ReadOnlyListIterator
+	 */
+	public static ReadOnlyListIterator<InfiniteInteger> iterateAllIntegers() {
+        return new ReadOnlyListIterator<>(new ListIterator<InfiniteInteger>() {
+            private InfiniteInteger nextElement = InfiniteInteger.valueOf(1);
+
+            @Override public boolean hasNext(){return true;}
+            @Override public boolean hasPrevious(){return true;}
+
+            @Override
+            public InfiniteInteger next() {
+            	InfiniteInteger current = nextElement;
+            	nextElement = nextElement.add(1);
+                return current;
+            }
+            @Override
+            public InfiniteInteger previous() {
+            	nextElement = nextElement.subtract(1);
+                return nextElement;
+            }
+
+            @Override
+			public int nextIndex() {
+				return nextElement.intValue();
+			}
+			@Override
+			public int previousIndex() {
+				return nextElement.intValue()-1;
+			}
+
+			//will be replaced by ReadOnlyListIterator to throw:
+			@Override public void remove(){}
+			@Override public void set(InfiniteInteger e){}
+			@Override public void add(InfiniteInteger e){}
+        });
 	}
 
 	/**

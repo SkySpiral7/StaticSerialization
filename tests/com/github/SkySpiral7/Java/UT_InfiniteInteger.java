@@ -14,10 +14,13 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.ListIterator;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import com.github.SkySpiral7.Java.iterators.JumpingIterator;
 
 /**
  * Methods that simply delegate do not need a test.
@@ -159,6 +162,25 @@ public class UT_InfiniteInteger {
     	infiniteInteger = InfiniteInteger.valueOf(Integer.MAX_VALUE).add(Integer.MAX_VALUE).add(1).negate();
     	assertEquals(-Integer.MAX_VALUE, infiniteInteger.intValue());
     }
+
+    @Test
+	public void iterateAllIntegers() {
+		ListIterator<InfiniteInteger> integerIterator = InfiniteInteger.iterateAllIntegers();
+		assertSame(InfiniteInteger.ZERO, integerIterator.previous());
+		integerIterator.next();
+		assertEquals(InfiniteInteger.valueOf(1), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(2), integerIterator.next());
+		assertEquals(InfiniteInteger.valueOf(3), integerIterator.next());
+		assertTrue(integerIterator.hasNext());  //continues forever
+
+		assertEquals(4, integerIterator.nextIndex());
+		JumpingIterator.jumpByIndex(integerIterator, -4);
+		assertEquals(0, integerIterator.nextIndex());
+		assertEquals(-1, integerIterator.previous().intValue());
+		assertEquals(-2, integerIterator.previous().intValue());
+		assertEquals(-3, integerIterator.previous().intValue());
+		assertTrue(integerIterator.hasPrevious());  //continues forever
+	}
 
     @Test
     public void littleEndian() {
