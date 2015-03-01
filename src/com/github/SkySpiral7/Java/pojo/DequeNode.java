@@ -1,5 +1,6 @@
 package com.github.SkySpiral7.Java.pojo;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
@@ -12,8 +13,10 @@ import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
  * @see Factory
  * @see DequeNodeIterator
  */
-public class DequeNode<E> {
-    /**
+public class DequeNode<E> implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	/**
      * the data that this node holds
      */
 	protected E data;

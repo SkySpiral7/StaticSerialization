@@ -45,4 +45,16 @@ public class ComparableSugar {
 		}
 	}
 
+	public static <T extends Comparable<T>> T min(T left, T right)
+	{
+		if(is(left, LESS_THAN_OR_EQUAL_TO, right)) return left;
+		return right;
+	}
+
+	public static <T extends Comparable<T>> T max(T left, T right)
+	{
+		if(is(left, GREATER_THAN_OR_EQUAL_TO, right)) return left;
+		return right;
+	}
+
 }

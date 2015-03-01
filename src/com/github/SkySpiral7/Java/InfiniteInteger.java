@@ -149,7 +149,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 		while (is(valueRemaining, GREATER_THAN, bigIntegerMaxLong))
 		{
-			//TODO: performance: shift up me and add value's long then shift it down
+			//TODO: performance: shift up me and add value's most significant int then shift it down
+			//call byte array to get the most significant
 			result = result.add(Long.MAX_VALUE);
 			valueRemaining = valueRemaining.subtract(bigIntegerMaxLong);
 		}
@@ -866,6 +867,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     	 *  345
     	 *
     	 */
+    	//TODO: can copy BigInt's multiply and pow but div and gcd are complicated
 		boolean resultIsNegative = (isNegative != value.isNegative);  //!= acts as xor
 		InfiniteInteger valueRemaining = value;  //.abs() is not needed since the nodes are unsigned
     	InfiniteInteger result = ZERO;
@@ -917,7 +919,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see #divideByPowerOf2DropRemainder(InfiniteInteger)
 	 */
 	public InfiniteInteger multiplyByPowerOf2(InfiniteInteger exponent) {
-		if(exponent == ZERO || !this.isFinite()) return this;
+		if(this == ZERO || exponent == ZERO || !this.isFinite()) return this;
+		//TODO: can't compare this == ZERO because this could be a mutable copy of 0
 		if(exponent.isNegative) return this.divideByPowerOf2DropRemainder(exponent.abs());
 
 		InfiniteInteger result = this.copy();
@@ -947,6 +950,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 				resultCursor = resultCursor.getPrev();
 			}
 		}
+		//result doesn't have a leading 0 because this doesn't have a leading 0 (and this is not ZERO)
 
 		return result;
 	}
@@ -1019,7 +1023,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see #multiplyByPowerOf2(InfiniteInteger)
 	 */
 	public InfiniteInteger divideByPowerOf2DropRemainder(InfiniteInteger exponent) {
-		if(exponent == ZERO || !this.isFinite()) return this;
+		if(this == ZERO || exponent == ZERO || !this.isFinite()) return this;
 		if(exponent.isNegative) return this.multiplyByPowerOf2(exponent.abs());
 
 		InfiniteInteger result = this.copy();
@@ -1408,10 +1412,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	public void toFile(File writeToHere) {
 		// method stub it can always fit
 	}
-    //I previously implemented writeObject but there doesn't seem to be any way to implement readObject
-    //since I don't know how many nodes there are, therefore I deleted writeObject and trust the JVM to serialize
-	//TODO: possible to serialize by putting a long for count of following nodes that exist and repeat
-	//first test to see if default serialize works
+    //I could implement writeObject and readObject but the JVM default serialization works fine.
+	//readObject is possible by putting a long for count of following nodes that exist and repeat
+	//for example if there were Long.max+1 nodes then serialize: Long.max, all but last node, 1, last node
 
 	/**
 	 * In order to maintain the singleton constants they will not be copied.
