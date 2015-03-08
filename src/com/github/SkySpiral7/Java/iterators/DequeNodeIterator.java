@@ -101,7 +101,7 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>> {
 		   (newNode.getNext() != null && newNode.getNext() != nextNode.getNext()))
 			throw new UnsupportedOperationException("This iterator's add creates a new node given the data. But the node passed in had mismatching pointers.");
 			//this prevents the pointers from being mismatched
-		if(amAtEnd) nextNode = DequeNode.Factory.createNodeBefore(newNode.getData(), nextNode);
+		if(amAtEnd) nextNode = DequeNode.Factory.createNodeAfter(nextNode, newNode.getData());
 		else DequeNode.Factory.createNodeBefore(newNode.getData(), nextNode);
 		previouslyVistedNode = null;
 		nextIndex++;

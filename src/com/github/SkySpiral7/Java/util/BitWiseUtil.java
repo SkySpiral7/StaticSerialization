@@ -5,7 +5,7 @@ public class BitWiseUtil {
 
     public static final long HIGH_64 = -1;  //== 0xFFFF_FFFF__FFFF_FFFFL
 
-    public static boolean isPowerOf2(long x){return ((x & -x) == x);}  //also works for Long.MIN_VALUE but maybe not unsigned
+    public static boolean isPowerOf2(long x){return ((x & -x) == x);}  //also works for Long.MIN_VALUE and negative but maybe not unsigned
     public static boolean isEven(long x){return ((x & 1) == 0);}
     public static boolean isOdd(long x){return ((x & 1) == 1);}  //these work for negative and unsigned values
 
@@ -64,5 +64,17 @@ public class BitWiseUtil {
 
     public static long multiplyByPowerOf2(long value, int exponent){return (value << exponent);}
     public static long divideByPowerOf2(long value, int exponent){return (value >> exponent);}
+
+    public static int bigEndianBytesToInteger(byte a, byte b, byte c, byte d)
+    {
+    	int result = a;
+    	result >>>= 8;
+    	result |= b;
+    	result >>>= 8;
+    	result |= c;
+    	result >>>= 8;
+    	result |= d;
+    	return result;
+    }
 
 }

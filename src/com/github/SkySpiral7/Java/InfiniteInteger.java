@@ -48,7 +48,7 @@ import com.github.SkySpiral7.Java.util.BitWiseUtil;
  * but can't finish the calculation within the next thousand years but of course memory
  * will run out long before then. Since hardware can't be infinite, memory will run out eventually if the number gets too large.</p>
  *
- * <p>This class is immutable and thread-safe. There are constants singeltons for Zero, &plusmn;&infin;, and NaN.
+ * <p>This class is immutable and thread-safe. There are constants singletons for Zero, &plusmn;&infin;, and NaN.
  * Zero is a singleton (that object is the only way to reference the number 0) and is defined for convenience such
  * as if(var == ZERO). Positive and negative infinity represent exactly that and may be returned from math operations.
  * NaN is also as expected except that as an object it will have pointer equality NaN == NaN. Operations return NaN

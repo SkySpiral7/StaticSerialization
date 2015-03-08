@@ -13,6 +13,7 @@ import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
  * @see Factory
  * @see DequeNodeIterator
  */
+//TODO: note that although circles are possible mismatched pointers are not allowed (although not detected).
 public class DequeNode<E> implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -39,6 +40,7 @@ public class DequeNode<E> implements Serializable {
     /**
      * A short hand to set the fields. Linking can only be done in Factory because I can't use this in a constructor.
      */
+     //TODO: why can't DequeNode have more constructors?
     protected DequeNode(DequeNode<E> prev, E data, DequeNode<E> next) {
 		this.data = data;
         this.next = next;

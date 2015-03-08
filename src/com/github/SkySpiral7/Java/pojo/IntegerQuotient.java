@@ -9,9 +9,11 @@ import java.util.Objects;
  *
  * <code>a / n is defined as a = (n * wholeResult) + remainder</code><br /><br />
  *
+ * <ul>
  * <li>The wholeResult may be any integer but remainder must be >= 0 (it isn't possible to validate this).</li>
  * <li>If a = 0 then remainder = wholeResult = 0.</li>
  * <li>If n = 0 then remainder = a and wholeResult = 0 (although any number would be correct)</li>
+ * </ul>
  * <br /><br />
  *
  * @param <T> any child class of Number. Although only integers make sense.

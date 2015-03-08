@@ -10,14 +10,18 @@ import java.nio.file.Paths;
 import java.util.Objects;
 
 /**
- * This class is a very simple logger. It is useful for quick and dirty debugging.
+ * <p>This class is a very simple logger. It is useful for quick and dirty debugging.
  * For example if you need to debug a loop that will iterate 10,000 times but you
  * don't want to pollute the log file normally used then you can use this for a quick
  * temporary log. Or maybe in a loop if you want to track multiple things you can put
  * them each in their own log so you can see how they change over time without having
- * to parse which line belongs to which variable.
+ * to parse which line belongs to which variable.</p>
+ *
+ * <p>This class is final to make it perform faster. This class should not gain functionality
+ * and should not be a method parameter or class field. This is because this class is intended for quick debugging
+ * and should not be used in production (or other environments like QA) for that see a real logger like Log4J.</p>
  */
-public class SimpleLogger {
+public final class SimpleLogger {
     private final File log;
 
    /**

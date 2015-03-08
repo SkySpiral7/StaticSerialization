@@ -2,6 +2,7 @@ package com.github.SkySpiral7.Java.util;
 
 import java.util.Objects;
 
+//TODO: some of my utils are final and some are abstract. make them all abstract
 public final class JsonHelper {
 	private JsonHelper(){}
 

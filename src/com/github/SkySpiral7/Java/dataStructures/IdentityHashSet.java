@@ -8,7 +8,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * A very simple set wrapper for IdentityHashMap
+ * A very simple set wrapper for IdentityHashMap.
+ * The set uses pointer equality instead of .equals to determine if an object is redundant.
  * @see IdentityHashMap
  * @param <E> the data type to be stored
  */
