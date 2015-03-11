@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java;
+package com.github.SkySpiral7.Java.numbers;
 
 import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN;
 import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN_OR_EQUAL_TO;
@@ -21,6 +21,7 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.github.SkySpiral7.Java.Copyable;
 import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
 import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
 import com.github.SkySpiral7.Java.iterators.ReadOnlyListIterator;
@@ -29,53 +30,24 @@ import com.github.SkySpiral7.Java.pojo.IntegerQuotient;
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
 
 /**
- * <p>I don't have anything against BigInteger, it's fast and big, but it bugs me that there isn't another class that has no max size.
- * After searching the internet I found a few arbitrary-precision integers but all had a max size.
- * I understand that an array is faster than a linked list and that generating a security key is the only practical
- * way for a primitive long to max out but I wanted the option for infinite precision. And I had fun making it.</p>
- *
- * <p>BigInteger's maximum value (in 1.8) is 2^(2^31-1)-1. Using long[] with each element being unsigned
- * would max out at 2^(64 * (2^31-1))-1. The largest base 10 number a string can hold is
- * 10^(2^31-1) which is by far the smallest maximum listed here. InfiniteInteger on the other hand
- * uses {@code DequeNode<Integer>} internally (which has no limit) each node is unsigned and
- * the nodes are in little endian order.</p>
- *
- * <p>Someone suggested I should name the class InfinInt but as much as I love puns I would like this class to be
- * taken seriously. There is very little effort put to being efficient therefore expect it to be slow.
- * This class is more of a proof of concept to show that truely infinite precision can be done.
- * This class can logically support more than the hardware can provide. For example:
- * if this object takes 10 TB or memory and you call factorial the logic functions as normal
- * but can't finish the calculation within the next thousand years but of course memory
- * will run out long before then. Since hardware can't be infinite, memory will run out eventually if the number gets too large.</p>
- *
- * <p>This class is immutable and thread-safe. There are constants singletons for Zero, &plusmn;&infin;, and NaN.
- * Zero is a singleton (that object is the only way to reference the number 0) and is defined for convenience such
- * as if(var == ZERO). Positive and negative infinity represent exactly that and may be returned from math operations.
- * NaN is also as expected except that as an object it will have pointer equality NaN == NaN. Operations return NaN
- * instead of throwing whenever possible.</p>
- *
- * <p>But the most useful design is that every operation is overloaded to take either long, BigInteger, or InfiniteInteger
- * which makes var = var.add(1) possible. The methods that exist are based on the ones defined by BigInteger.</p>
- *
- * @see BigInteger
+ * @see InfiniteInteger
  */
-public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>, Comparable<InfiniteInteger> {
+//TODO: move all this class doc to the Abstract
+//TODO: change these methods to mutate by removing copy
+public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfiniteInteger> implements Copyable<MutableInfiniteInteger> {
 	private static final long serialVersionUID = 1L;
 
-	/**This constant represents 0 and it is the only InfiniteInteger that can be 0 (singleton).
-	 * Therefore it is safe to use pointer equality for comparison: <code>if(infiniteIntegerVar == InfiniteInteger.ZERO)</code>*/
-	public static final InfiniteInteger ZERO = new InfiniteInteger(0);
 	/**Common abbreviation for "not a number". This constant is the result of invalid math such as 0/0.
 	 * Note that this is a normal object such that <code>(InfiniteInteger.NaN == InfiniteInteger.NaN)</code> is
 	 * always true. Therefore it is logically correct unlike the floating point unit's NaN.*/
 	//future results for NaN: x/0 (including 0), |inifn|/|inifn|, 0^0, 1^|inifn|, |inifn|^0
-	public static final InfiniteInteger NaN = new InfiniteInteger(false);
+	public static final MutableInfiniteInteger NaN = new MutableInfiniteInteger(false);
 	/**+&infin; is a concept rather than a number and can't be the result of math involving finite numbers.
 	 * It is defined for completeness and behaves as expected with math resulting in &plusmn;&infin; or NaN.*/
-	public static final InfiniteInteger POSITIVE_INFINITITY = new InfiniteInteger(true);
+	public static final MutableInfiniteInteger POSITIVE_INFINITITY = new MutableInfiniteInteger(true);
 	/**-&infin; is a concept rather than a number and can't be the result of math involving finite numbers.
 	 * It is defined for completeness and behaves as expected with math resulting in &plusmn;&infin; or NaN.*/
-	public static final InfiniteInteger NEGATIVE_INFINITITY = new InfiniteInteger(false);
+	public static final MutableInfiniteInteger NEGATIVE_INFINITITY = new MutableInfiniteInteger(false);
 
 	/**
 	 * Little endian: the first node is the least significant.
@@ -85,20 +57,18 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	/**
 	 * This constructor is used to make special constants.
-	 * My making the head null is something that is otherwise not possible.
+	 * This makes the head null which is something that is otherwise not possible.
 	 * @param isNegative used for positive and negative infinity. Meaningless to NaN.
 	 */
-	protected InfiniteInteger(boolean isNegative){magnitudeHead = null; this.isNegative = isNegative;}
+	protected MutableInfiniteInteger(boolean isNegative){magnitudeHead = null; this.isNegative = isNegative;}
+
 	/**
 	 * This constructor is used to create an InfiniteInteger of a small size.
-	 * Use valueOf(long) over this constructor whenever possible.
-	 * This constructor is the only way to get a copy of 0 that can be safely modified.
-	 * This is not a public constructor in order to maintain the ZERO singleton.
 	 *
 	 * @param baseValue the desired numeric value
 	 * @see #valueOf(long)
 	 */
-	protected InfiniteInteger(long baseValue) {
+	public MutableInfiniteInteger(long baseValue) {
 		if (baseValue == Long.MIN_VALUE)  //Math.abs isn't possible for this
 		{
 			isNegative = true;
@@ -116,36 +86,34 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	/**
-	 * Converts a long value to an InfiniteInteger. As per the promise,
-	 * the constant ZERO will be returned if 0 is passed in.
+	 * Converts a long value to an InfiniteInteger. This is simply an alias for the constructor.
 	 *
 	 * @param value the desired numeric value
-	 * @return a new InfiniteInteger or ZERO
+	 * @return a new InfiniteInteger
+	 * @see #MutableInfiniteInteger(long)
 	 */
-	public static InfiniteInteger valueOf(long value) {
-		if(value == 0) return ZERO;
-		return new InfiniteInteger(value);
+	public static MutableInfiniteInteger valueOf(long value) {
+		return new MutableInfiniteInteger(value);
 	}
 	//TODO: make a valueOf(double) for Infinity and NaN. otherwise cast to long
 
 	/**
-	 * Converts a BigInteger value to an InfiniteInteger. As per the promise,
-	 * the constant InfiniteInteger.ZERO will be returned if BigInteger.ZERO is passed in.
+	 * Converts a BigInteger value to an InfiniteInteger.
 	 * Conversion is O(n) and may be slow for large values of the parameter.
 	 *
 	 * @param value the desired numeric value
-	 * @return a new InfiniteInteger or ZERO
+	 * @return a new InfiniteInteger
 	 */
-	public static InfiniteInteger valueOf(BigInteger value) {
-		if(value.equals(BigInteger.ZERO)) return InfiniteInteger.ZERO;
+	public static MutableInfiniteInteger valueOf(BigInteger value) {
+		if(value.equals(BigInteger.ZERO)) return new MutableInfiniteInteger(0);
 		boolean willBeNegative = (value.signum() == -1);  //don't need to use < 0 because of signum's promise
 		BigInteger valueRemaining = value.abs();
 
 		final BigInteger bigIntegerMaxLong = BigInteger.valueOf(Long.MAX_VALUE);
-		if(is(valueRemaining, LESS_THAN_OR_EQUAL_TO, bigIntegerMaxLong)) return InfiniteInteger.valueOf(value.longValue());
+		if(is(valueRemaining, LESS_THAN_OR_EQUAL_TO, bigIntegerMaxLong)) return MutableInfiniteInteger.valueOf(value.longValue());
 		//if abs fits in a signed long then delegate
 
-		InfiniteInteger result = InfiniteInteger.ZERO;
+		MutableInfiniteInteger result = new MutableInfiniteInteger(0);
 
 		while (is(valueRemaining, GREATER_THAN, bigIntegerMaxLong))
 		{
@@ -171,7 +139,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see #littleEndian(Iterator, boolean)
 	 * @see #bigEndian(long[], boolean)
 	 */
-	public static InfiniteInteger littleEndian(long[] valueArray, boolean isNegative) {
+	public static MutableInfiniteInteger littleEndian(long[] valueArray, boolean isNegative) {
 		Long[] wrappedValues = new Long[valueArray.length];
 		for(int i=0; i < valueArray.length; i++){wrappedValues[i] = Long.valueOf(valueArray[i]);}
 		return littleEndian(Arrays.asList(wrappedValues).listIterator(), isNegative);
@@ -190,7 +158,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see #littleEndian(long[], boolean)
 	 * @see #littleEndian(Iterator, boolean)
 	 */
-	public static InfiniteInteger bigEndian(long[] valueArray, boolean isNegative) {
+	public static MutableInfiniteInteger bigEndian(long[] valueArray, boolean isNegative) {
 		Long[] wrappedValues = new Long[valueArray.length];
 		for(int i=0; i < valueArray.length; i++){wrappedValues[i] = Long.valueOf(valueArray[i]);}
 		return bigEndian(Arrays.asList(wrappedValues).listIterator(), isNegative);
@@ -211,9 +179,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see #littleEndian(long[], boolean)
 	 * @see #bigEndian(Iterator, boolean)
 	 */
-	public static InfiniteInteger littleEndian(Iterator<Long> valueIterator, boolean isNegative) {
-		if(!valueIterator.hasNext()) return ZERO;
-		InfiniteInteger result = InfiniteInteger.valueOf(valueIterator.next());
+	public static MutableInfiniteInteger littleEndian(Iterator<Long> valueIterator, boolean isNegative) {
+		if(!valueIterator.hasNext()) return new MutableInfiniteInteger(0);
+		MutableInfiniteInteger result = MutableInfiniteInteger.valueOf(valueIterator.next());
 		result.isNegative = isNegative;
 		DequeNode<Integer> cursor = result.magnitudeHead;
 		if(cursor.getNext() == null) cursor = DequeNode.Factory.createNodeAfter(cursor, 0);
@@ -227,7 +195,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		while (cursor.getData().intValue() == 0)  //cursor is always at the last node
 		{
 			cursor = cursor.getPrev();
-			if(cursor == null) return ZERO;  //if the last and only node was 0
+			if(cursor == null) return new MutableInfiniteInteger(0);  //if the last and only node was 0
 			cursor.getNext().remove();
 		}
 		return result;
@@ -250,7 +218,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see #bigEndian(long[], boolean)
 	 * @see #littleEndian(Iterator, boolean)
 	 */
-	public static InfiniteInteger bigEndian(ListIterator<Long> valueIterator, boolean isNegative) {
+	public static MutableInfiniteInteger bigEndian(ListIterator<Long> valueIterator, boolean isNegative) {
 		return littleEndian(DescendingListIterator.iterateBackwardsFromEnd(valueIterator), isNegative);
 	}
 
@@ -263,9 +231,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 *
 	 * @return an infinite stream of all integers
 	 */
-	public static Stream<InfiniteInteger> streamAllIntegers() {
-		return Stream.iterate(ZERO, (InfiniteInteger previous) -> {
-				if(previous == ZERO) return InfiniteInteger.valueOf(1);
+	public static Stream<MutableInfiniteInteger> streamAllIntegers() {
+		return Stream.iterate(new MutableInfiniteInteger(0), (MutableInfiniteInteger previous) -> {
+				if(previous.equals(0)) return MutableInfiniteInteger.valueOf(1);
 				if(previous.isNegative) return previous.abs().add(1);
 				return previous.negate();
 			});
@@ -285,21 +253,21 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see #intValue()
 	 * @see ReadOnlyListIterator
 	 */
-	public static ReadOnlyListIterator<InfiniteInteger> iterateAllIntegers() {
-        return new ReadOnlyListIterator<>(new ListIterator<InfiniteInteger>() {
-            private InfiniteInteger nextElement = InfiniteInteger.valueOf(1);
+	public static ReadOnlyListIterator<MutableInfiniteInteger> iterateAllIntegers() {
+        return new ReadOnlyListIterator<>(new ListIterator<MutableInfiniteInteger>() {
+            private MutableInfiniteInteger nextElement = MutableInfiniteInteger.valueOf(1);
 
             @Override public boolean hasNext(){return true;}
             @Override public boolean hasPrevious(){return true;}
 
             @Override
-            public InfiniteInteger next() {
-            	InfiniteInteger current = nextElement;
+            public MutableInfiniteInteger next() {
+            	MutableInfiniteInteger current = nextElement;
             	nextElement = nextElement.add(1);
                 return current;
             }
             @Override
-            public InfiniteInteger previous() {
+            public MutableInfiniteInteger previous() {
             	nextElement = nextElement.subtract(1);
                 return nextElement;
             }
@@ -315,8 +283,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 			//will be replaced by ReadOnlyListIterator to throw:
 			@Override public void remove(){}
-			@Override public void set(InfiniteInteger e){}
-			@Override public void add(InfiniteInteger e){}
+			@Override public void set(MutableInfiniteInteger e){}
+			@Override public void add(MutableInfiniteInteger e){}
         });
 	}
 
@@ -332,18 +300,18 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 *
 	 * @return an infinite stream of the Fibonacci Sequence
 	 */
-    public static Stream<InfiniteInteger> streamFibonacciSequence() {
-        final Iterator<InfiniteInteger> iterator = new Iterator<InfiniteInteger>() {
-            private InfiniteInteger previous = null;
-            private InfiniteInteger back2 = null;
+    public static Stream<MutableInfiniteInteger> streamFibonacciSequence() {
+        final Iterator<MutableInfiniteInteger> iterator = new Iterator<MutableInfiniteInteger>() {
+            private MutableInfiniteInteger previous = null;
+            private MutableInfiniteInteger back2 = null;
 
             @Override public boolean hasNext(){return true;}
 
             @Override
-            public InfiniteInteger next() {
-            	InfiniteInteger next;
-                if(previous == null) next = InfiniteInteger.ZERO;
-                else if(back2 == null) next = InfiniteInteger.valueOf(1);
+            public MutableInfiniteInteger next() {
+            	MutableInfiniteInteger next;
+                if(previous == null) next = MutableInfiniteInteger.valueOf(0);
+                else if(back2 == null) next = MutableInfiniteInteger.valueOf(1);
                 else next = previous.add(back2);
                 back2 = previous;
                 previous = next;
@@ -395,7 +363,6 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	@Override
 	public long longValue() {
 		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be even partially represented as a long.");
-		if(this == ZERO) return 0;
 
 		long longValue = Integer.toUnsignedLong(magnitudeHead.getData().intValue());
 		if (magnitudeHead.getNext() != null)
@@ -415,6 +382,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see #longValue()
 	 * @see #bigIntegerValue()
 	 */
+	@Override
 	public long longValueExact() {
 		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be represented as a long.");
 		if(magnitudeHead.getNext() != null && magnitudeHead.getNext().getNext() != null)
@@ -426,6 +394,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return longValue();
 	}
 
+	@Override
 	public BigInteger bigIntegerValue() {
 		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be even partially represented as a BigInteger.");
 		// TODO: method stubs
@@ -441,9 +410,9 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see #bigIntegerValue()
 	 * @see #longValue()
 	 */
+	@Override
 	public BigInteger bigIntegerValueExact() {
 		if(!this.isFinite()) throw new ArithmeticException(this.toString()+" can't be represented as a BigInteger.");
-		if(this == ZERO) return BigInteger.ZERO;
 
 		try {
 			DequeNode<Integer> cursor = this.magnitudeHead;
@@ -474,8 +443,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	}
 
 	//not sure if faster
-	public static InfiniteInteger calculateMaxBigIntegerAsInfiniteInteger() {
-		InfiniteInteger bigIntMaxValue = InfiniteInteger.valueOf(1).multiplyByPowerOf2(Integer.MAX_VALUE).subtract(1);
+	public static MutableInfiniteInteger calculateMaxBigIntegerAsInfiniteInteger() {
+		MutableInfiniteInteger bigIntMaxValue = MutableInfiniteInteger.valueOf(1).multiplyByPowerOf2(Integer.MAX_VALUE).subtract(1);
 		return bigIntMaxValue;
 	}
 
@@ -490,6 +459,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see ReadOnlyListIterator
 	 * @see DequeNodeIterator.IndexAgnosticValueIterator
 	 */
+	@Override
 	public ReadOnlyListIterator<Integer> magnitudeIterator() {
 		if(!this.isFinite()) throw new UnsupportedOperationException(this.toString()+" does not have nodes.");
 		return new ReadOnlyListIterator<Integer>(new DequeNodeIterator.IndexAgnosticValueIterator<Integer>(magnitudeHead));
@@ -505,6 +475,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @throws UnsupportedOperationException if this is &plusmn;&infin; or NaN
 	 * @see #magnitudeIterator()
 	 */
+	@Override
 	public Stream<Integer> magnitudeStream() {
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
 				magnitudeIterator(),
@@ -515,6 +486,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * Helper method to get the last (most significant) node of this InfiniteInteger.
 	 * @throws NullPointerException if magnitudeHead is null
 	 */
+	@Override
 	protected DequeNode<Integer> getMagnitudeTail() {
 		//TODO: make a variable for magnitudeTail?
 		DequeNode<Integer> tail = magnitudeHead;
@@ -529,22 +501,23 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      *
      * @param  value the operand to be added to this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
-     * @see #add(InfiniteInteger)
+     * @see #add(MutableInfiniteInteger)
      */
-	public InfiniteInteger add(long value) {
+	@Override
+	public MutableInfiniteInteger add(long value) {
 		if(!this.isFinite() || value == 0) return this;
-		if(this == ZERO) return InfiniteInteger.valueOf(value);
-		if(value == Long.MIN_VALUE) return this.add(InfiniteInteger.valueOf(value));  //special case to avoid bug
+		if(this.equals(0)) return MutableInfiniteInteger.valueOf(value);
+		if(value == Long.MIN_VALUE) return this.add(MutableInfiniteInteger.valueOf(value));  //special case to avoid bug
 		//TODO: make a method for canFitIntoLong and have the math methods return InfiniteInteger.valueOf(this.longValue() + value.longValue())
 
 		//delegations based on the sign of each
 		if(!isNegative && value < 0) return this.subtract(Math.abs(value));
-		if(isNegative && value > 0) return InfiniteInteger.valueOf(value).subtract(this.abs());
+		if(isNegative && value > 0) return MutableInfiniteInteger.valueOf(value).subtract(this.abs());
 		//TODO: later consider making a mutable InfiniteInteger for speed that immutable would wrap
 
 		//the rest is for if both positive or both negative
 		long sum, valueRemaining = Math.abs(value);
-		InfiniteInteger result = new InfiniteInteger(0);  //can't use ZERO because result will be modified
+		MutableInfiniteInteger result = new MutableInfiniteInteger(0);
 		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
@@ -579,10 +552,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	/**
 	 * Entire code: <blockquote>{@code return this.add(InfiniteInteger.valueOf(value));}</blockquote>
-	 * @see #add(InfiniteInteger)
+	 * @see #add(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-	public InfiniteInteger add(BigInteger value){return this.add(InfiniteInteger.valueOf(value));}
+	@Override
+	public MutableInfiniteInteger add(BigInteger value){return this.add(MutableInfiniteInteger.valueOf(value));}
 
     /**
      * Returns an InfiniteInteger whose value is {@code (this + value)}.
@@ -591,9 +565,10 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * @return the result including &plusmn;&infin; and NaN
      * @see #add(long)
      */
-	public InfiniteInteger add(InfiniteInteger value) {
-		if(!this.isFinite() || value == ZERO) return this;
-		if(!value.isFinite() || this == ZERO) return value;
+	@Override
+	public MutableInfiniteInteger add(MutableInfiniteInteger value) {
+		if(!this.isFinite() || value.equals(0)) return this;
+		if(!value.isFinite() || this.equals(0)) return value;
 
 		//delegations based on the sign of each
 		if(!isNegative && value.isNegative) return this.subtract(value.abs());
@@ -601,7 +576,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 		//the rest is for if both positive or both negative
 		long sum = 0;
-		InfiniteInteger result = this.copy();
+		MutableInfiniteInteger result = this.copy();
 		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		ListIterator<Integer> valueMagIterator = value.magnitudeIterator();
 		int lowSum, highSum;
@@ -633,25 +608,26 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      *
      * @param  value the operand to be subtracted from this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
-     * @see #subtract(InfiniteInteger)
+     * @see #subtract(MutableInfiniteInteger)
      */
-	public InfiniteInteger subtract(long value) {
+	@Override
+	public MutableInfiniteInteger subtract(long value) {
 		if(!this.isFinite() || value == 0) return this;
-		if(value == Long.MIN_VALUE) return this.add(InfiniteInteger.valueOf(value).abs());  //special case to avoid bug
-		if(this == ZERO) return InfiniteInteger.valueOf(-value);
+		if(value == Long.MIN_VALUE) return this.add(MutableInfiniteInteger.valueOf(value).abs());  //special case to avoid bug
+		if(this.equals(0)) return MutableInfiniteInteger.valueOf(-value);
 
 		//delegations based on the sign of each
 		if(!isNegative && value < 0) return this.add(Math.abs(value));
 		if(isNegative && value > 0) return this.abs().add(value).negate();
-		if(isNegative && value < 0) return InfiniteInteger.valueOf(Math.abs(value)).subtract(this.abs());
+		if(isNegative && value < 0) return MutableInfiniteInteger.valueOf(Math.abs(value)).subtract(this.abs());
 
 		//the rest is for if both positive
-		if(this.equals(value)) return ZERO;
-		if(is(this, LESS_THAN, InfiniteInteger.valueOf(value))) return InfiniteInteger.valueOf(value).subtract(this).negate();
+		if(this.equals(value)) return new MutableInfiniteInteger(0);
+		if(is(this, LESS_THAN, MutableInfiniteInteger.valueOf(value))) return MutableInfiniteInteger.valueOf(value).subtract(this).negate();
 
 		//this is greater than value
 		long difference, valueRemaining = value;
-		InfiniteInteger result = new InfiniteInteger(0);  //can't use ZERO because result will be modified
+		MutableInfiniteInteger result = new MutableInfiniteInteger(0);
 		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
@@ -688,10 +664,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	/**
 	 * Entire code: <blockquote>{@code return this.subtract(InfiniteInteger.valueOf(value));}</blockquote>
-	 * @see #subtract(InfiniteInteger)
+	 * @see #subtract(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-	public InfiniteInteger subtract(BigInteger value){return this.subtract(InfiniteInteger.valueOf(value));}
+	@Override
+	public MutableInfiniteInteger subtract(BigInteger value){return this.subtract(MutableInfiniteInteger.valueOf(value));}
 
     /**
      * Returns an InfiniteInteger whose value is {@code (this - value)}.
@@ -701,9 +678,10 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * @return the result including &plusmn;&infin; and NaN
      * @see #subtract(long)
      */
-	public InfiniteInteger subtract(InfiniteInteger value) {
-		if(this.isNaN() || value == ZERO) return this;
-		if(this == ZERO || value.isNaN()) return value;
+	@Override
+	public MutableInfiniteInteger subtract(MutableInfiniteInteger value) {
+		if(this.isNaN() || value.equals(0)) return this;
+		if(this.equals(0) || value.isNaN()) return value;
 
 		//delegations based on the sign of each
 		if(!this.isNegative && value.isNegative) return this.add(value.abs());
@@ -714,12 +692,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(this == POSITIVE_INFINITITY && value == POSITIVE_INFINITITY) return NaN;
 		if(this == POSITIVE_INFINITITY) return this;
 		if(value == POSITIVE_INFINITITY) return NEGATIVE_INFINITITY;
-		if(this.equals(value)) return ZERO;
+		if(this.equals(value)) return new MutableInfiniteInteger(0);
 		if(is(this, LESS_THAN, value)) return value.subtract(this).negate();
 
 		//this is greater than value
 		long difference = 0;
-		InfiniteInteger result = this.copy();
+		MutableInfiniteInteger result = this.copy();
 		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		ListIterator<Integer> valueMagIterator = value.magnitudeIterator();
 		int lowValue, highValue;
@@ -765,14 +743,16 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      *
      * @param  value the operand to be multiplied to this InfiniteInteger.
      * @return the result including &plusmn;&infin; and NaN
-     * @see #multiply(InfiniteInteger)
+     * @see #multiply(MutableInfiniteInteger)
      */
-    public InfiniteInteger multiply(long value) {
+	@Override
+    public MutableInfiniteInteger multiply(long value) {
 		if(value == 0 && this.isInfinite()) return NaN;
     	if(!this.isFinite() || value == 1) return this;
-		if(this == ZERO || value == 0) return ZERO;
+		if(this.equals(0) || value == 0) return new MutableInfiniteInteger(0);
     	if(value == -1) return this.negate();
-    	if(this.equals(1)) return InfiniteInteger.valueOf(value);
+    	if(this.equals(1)) return MutableInfiniteInteger.valueOf(value);
+    	if(this.equals(-1)) return MutableInfiniteInteger.valueOf(value).negate();  //also works if value == Long.min
 
 		boolean resultIsNegative = (isNegative != value < 0);  //!= acts as xor
     	long valueRemaining = Math.abs(value);
@@ -780,16 +760,16 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		int lowValue = (int) valueRemaining;
 		int highValue = (int) (valueRemaining >>> 32);
 
-		InfiniteInteger result = thisMultiply(lowValue);
+		MutableInfiniteInteger result = thisMultiply(lowValue);
 		if(highValue != 0) result = result.add(thisMultiply(highValue).multiplyByPowerOf2(32));
     	result.isNegative = resultIsNegative;
 
 		return result;
     }
 
-    protected InfiniteInteger thisMultiply(int value) {
-    	if(value == 0) return ZERO;
-    	InfiniteInteger result = this.copy();
+    protected MutableInfiniteInteger thisMultiply(int value) {
+    	if(value == 0) return new MutableInfiniteInteger(0);
+    	MutableInfiniteInteger result = this.copy();
     	result.isNegative = false;  //faster than abs (which might not copy)
 		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		long product;
@@ -819,10 +799,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	/**
 	 * Entire code: <blockquote>{@code return this.multiply(InfiniteInteger.valueOf(value));}</blockquote>
-	 * @see #multiply(InfiniteInteger)
+	 * @see #multiply(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-    public InfiniteInteger multiply(BigInteger value){return this.multiply(InfiniteInteger.valueOf(value));}
+	@Override
+    public MutableInfiniteInteger multiply(BigInteger value){return this.multiply(MutableInfiniteInteger.valueOf(value));}
 
     /**
      * Returns an InfiniteInteger whose value is {@code (this * value)}.
@@ -832,12 +813,13 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * @return the result including &plusmn;&infin; and NaN
      * @see #multiply(long)
      */
-    public InfiniteInteger multiply(InfiniteInteger value) {
-		if(value == ZERO && this.isInfinite()) return NaN;
-		if(this == ZERO && value.isInfinite()) return NaN;
+	@Override
+    public MutableInfiniteInteger multiply(MutableInfiniteInteger value) {
+		if(value.equals(0) && this.isInfinite()) return NaN;
+		if(this.equals(0) && value.isInfinite()) return NaN;
     	if(!this.isFinite() || value.equals(1)) return this;
     	if(!value.isFinite() || this.equals(1)) return value;
-    	if(this == ZERO || value == ZERO) return ZERO;
+    	if(this.equals(0) || value.equals(0)) return new MutableInfiniteInteger(0);
     	if(value.equals(-1)) return this.negate();
     	if(this.equals(-1)) return value.negate();
 
@@ -869,12 +851,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
     	 */
     	//TODO: can copy BigInt's multiply and pow but div and gcd are complicated
 		boolean resultIsNegative = (isNegative != value.isNegative);  //!= acts as xor
-		InfiniteInteger valueRemaining = value;  //.abs() is not needed since the nodes are unsigned
-    	InfiniteInteger result = ZERO;
+		MutableInfiniteInteger valueRemaining = value;  //.abs() is not needed since the nodes are unsigned
+    	MutableInfiniteInteger result = new MutableInfiniteInteger(0);
 
-		for (InfiniteInteger digit = ZERO; valueRemaining != ZERO; digit = digit.add(1))
+		for (MutableInfiniteInteger digit = new MutableInfiniteInteger(0); !valueRemaining.equals(0); digit = digit.add(1))
 		{
-			InfiniteInteger product = thisMultiply(valueRemaining.magnitudeHead.getData().intValue());
+			MutableInfiniteInteger product = thisMultiply(valueRemaining.magnitudeHead.getData().intValue());
 			product = product.multiplyByPowerOf2(digit.multiply(32));
 			result = result.add(product);
 			valueRemaining = valueRemaining.divideByPowerOf2DropRemainder(32);
@@ -889,17 +871,19 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * This method delegates because the formula used is exactly the same.
 	 * Entire code: <blockquote>{@code return this.multiplyByPowerOf2(InfiniteInteger.valueOf(exponent));}</blockquote>
 	 *
-	 * @see #multiplyByPowerOf2(InfiniteInteger)
+	 * @see #multiplyByPowerOf2(MutableInfiniteInteger)
 	 * @see #valueOf(long)
 	 */
-	public InfiniteInteger multiplyByPowerOf2(long exponent){return this.multiplyByPowerOf2(InfiniteInteger.valueOf(exponent));}
+	@Override
+	public MutableInfiniteInteger multiplyByPowerOf2(long exponent){return this.multiplyByPowerOf2(MutableInfiniteInteger.valueOf(exponent));}
 
 	/**
 	 * Entire code: <blockquote>{@code return this.multiplyByPowerOf2(InfiniteInteger.valueOf(exponent));}</blockquote>
-	 * @see #multiplyByPowerOf2(InfiniteInteger)
+	 * @see #multiplyByPowerOf2(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-	public InfiniteInteger multiplyByPowerOf2(BigInteger exponent){return this.multiplyByPowerOf2(InfiniteInteger.valueOf(exponent));}
+	@Override
+	public MutableInfiniteInteger multiplyByPowerOf2(BigInteger exponent){return this.multiplyByPowerOf2(MutableInfiniteInteger.valueOf(exponent));}
 
 	/**
 	 * <p>Returns an InfiniteInteger whose value is {@code (this << exponent)}.
@@ -916,15 +900,15 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 *
 	 * @param  exponent is also the shift distance in bits
 	 * @return the result including &plusmn;&infin; and NaN
-	 * @see #divideByPowerOf2DropRemainder(InfiniteInteger)
+	 * @see #divideByPowerOf2DropRemainder(MutableInfiniteInteger)
 	 */
-	public InfiniteInteger multiplyByPowerOf2(InfiniteInteger exponent) {
-		if(this == ZERO || exponent == ZERO || !this.isFinite()) return this;
-		//TODO: can't compare this == ZERO because this could be a mutable copy of 0
+	@Override
+	public MutableInfiniteInteger multiplyByPowerOf2(MutableInfiniteInteger exponent) {
+		if(this.equals(0) || exponent.equals(0) || !this.isFinite()) return this;
 		if(exponent.isNegative) return this.divideByPowerOf2DropRemainder(exponent.abs());
 
-		InfiniteInteger result = this.copy();
-		InfiniteInteger shiftDistanceRemaining = exponent;
+		MutableInfiniteInteger result = this.copy();
+		MutableInfiniteInteger shiftDistanceRemaining = exponent;
 		while (isComparisonResult(shiftDistanceRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
 		{
 			result.magnitudeHead = DequeNode.Factory.createNodeBefore(0, result.magnitudeHead);
@@ -955,36 +939,42 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return result;
 	}
 
-	public IntegerQuotient<InfiniteInteger> divide(long value) {
-		return divide(InfiniteInteger.valueOf(value));
+	@Override
+	public IntegerQuotient<MutableInfiniteInteger> divide(long value) {
+		return divide(MutableInfiniteInteger.valueOf(value));
     }
 
 	/**
 	 * Entire code: <blockquote>{@code return this.divide(InfiniteInteger.valueOf(value));}</blockquote>
-	 * @see #divide(InfiniteInteger)
+	 * @see #divide(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-    public IntegerQuotient<InfiniteInteger> divide(BigInteger value){return this.divide(InfiniteInteger.valueOf(value));}
+	@Override
+    public IntegerQuotient<MutableInfiniteInteger> divide(BigInteger value){return this.divide(MutableInfiniteInteger.valueOf(value));}
 
-    public IntegerQuotient<InfiniteInteger> divide(InfiniteInteger value) {
+	@Override
+    public IntegerQuotient<MutableInfiniteInteger> divide(MutableInfiniteInteger value) {
 		// method stub
 		return null;
     }
 
     //aka divideReturnWhole
-    public InfiniteInteger divideDropRemainder(long value) {
+	@Override
+    public MutableInfiniteInteger divideDropRemainder(long value) {
     	//getMagnitudeTail()...?
 		return divide(value).getWholeResult();
     }
 
 	/**
 	 * Entire code: <blockquote>{@code return this.divideDropRemainder(InfiniteInteger.valueOf(value));}</blockquote>
-	 * @see #divideDropRemainder(InfiniteInteger)
+	 * @see #divideDropRemainder(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-    public InfiniteInteger divideDropRemainder(BigInteger value){return this.divideDropRemainder(InfiniteInteger.valueOf(value));}
+	@Override
+    public MutableInfiniteInteger divideDropRemainder(BigInteger value){return this.divideDropRemainder(MutableInfiniteInteger.valueOf(value));}
 
-    public InfiniteInteger divideDropRemainder(InfiniteInteger value) {
+	@Override
+    public MutableInfiniteInteger divideDropRemainder(MutableInfiniteInteger value) {
 		return divide(value).getWholeResult();
     }
 
@@ -992,17 +982,19 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * This method delegates because the formula used is exactly the same.
 	 * Entire code: <blockquote>{@code return this.divideByPowerOf2DropRemainder(InfiniteInteger.valueOf(exponent));}</blockquote>
 	 *
-	 * @see #divideByPowerOf2DropRemainder(InfiniteInteger)
+	 * @see #divideByPowerOf2DropRemainder(MutableInfiniteInteger)
 	 * @see #valueOf(long)
 	 */
-	public InfiniteInteger divideByPowerOf2DropRemainder(long exponent){return divideByPowerOf2DropRemainder(InfiniteInteger.valueOf(exponent));}
+	@Override
+	public MutableInfiniteInteger divideByPowerOf2DropRemainder(long exponent){return divideByPowerOf2DropRemainder(MutableInfiniteInteger.valueOf(exponent));}
 
 	/**
 	 * Entire code: <blockquote>{@code return this.divideByPowerOf2DropRemainder(InfiniteInteger.valueOf(exponent));}</blockquote>
-	 * @see #divideByPowerOf2DropRemainder(InfiniteInteger)
+	 * @see #divideByPowerOf2DropRemainder(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-	public InfiniteInteger divideByPowerOf2DropRemainder(BigInteger exponent){return divideByPowerOf2DropRemainder(InfiniteInteger.valueOf(exponent));}
+	@Override
+	public MutableInfiniteInteger divideByPowerOf2DropRemainder(BigInteger exponent){return divideByPowerOf2DropRemainder(MutableInfiniteInteger.valueOf(exponent));}
 
 	/**
 	 * <p>Returns an InfiniteInteger whose value is {@code (this >>> exponent)}.
@@ -1010,7 +1002,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * Computes <tt>truncate(this / 2<sup>exponent</sup>)</tt>.
 	 * Note that the nodes are unsigned and this operation ignores sign.
 	 * Also note that truncation occurs which means the low numbers are thrown away not rounded.
-	 * Therefore this operation always 0 fills and won't change the sign (unless the result is ZERO).</p>
+	 * Therefore this operation always 0 fills and won't change the sign (unless the result is 0).</p>
 	 * <p>Examples:<br /><code>
 	 * InfiniteInteger.valueOf(-10).divideByPowerOf2DropRemainder(1) is -5<br />
 	 * InfiniteInteger.valueOf(100).divideByPowerOf2DropRemainder(2) is 25<br />
@@ -1020,18 +1012,19 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 *
 	 * @param  exponent is also the shift distance in bits
 	 * @return the result including &plusmn;&infin; and NaN
-	 * @see #multiplyByPowerOf2(InfiniteInteger)
+	 * @see #multiplyByPowerOf2(MutableInfiniteInteger)
 	 */
-	public InfiniteInteger divideByPowerOf2DropRemainder(InfiniteInteger exponent) {
-		if(this == ZERO || exponent == ZERO || !this.isFinite()) return this;
+	@Override
+	public MutableInfiniteInteger divideByPowerOf2DropRemainder(MutableInfiniteInteger exponent) {
+		if(this.equals(0) || exponent.equals(0) || !this.isFinite()) return this;
 		if(exponent.isNegative) return this.multiplyByPowerOf2(exponent.abs());
 
-		InfiniteInteger result = this.copy();
-		InfiniteInteger shiftDistanceRemaining = exponent;
+		MutableInfiniteInteger result = this.copy();
+		MutableInfiniteInteger shiftDistanceRemaining = exponent;
 		while (isComparisonResult(shiftDistanceRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
 		{
 			result.magnitudeHead = result.magnitudeHead.getNext();
-			if(result.magnitudeHead == null) return ZERO;
+			if(result.magnitudeHead == null) return new MutableInfiniteInteger(0);
 			result.magnitudeHead.getPrev().remove();
 			shiftDistanceRemaining = shiftDistanceRemaining.subtract(32);
 		}
@@ -1055,38 +1048,43 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 			//last node simply shifts
 			resultCursor.setData(resultCursor.getData().intValue() >>> smallShiftDistance);
 		}
-		if(result.magnitudeHead.getNext() == null && result.magnitudeHead.getData().intValue() == 0) return ZERO;
+		if(result.magnitudeHead.getNext() == null && result.magnitudeHead.getData().intValue() == 0) return new MutableInfiniteInteger(0);
 
 		return result;
 	}
 
 	//aka remainder, divideDropWhole, divideReturnRemainder
-    public InfiniteInteger mod(long value) {
+	@Override
+    public MutableInfiniteInteger mod(long value) {
     	//longVal % value
 		return divide(value).getRemainder();
     }
 
 	/**
 	 * Entire code: <blockquote>{@code return this.mod(InfiniteInteger.valueOf(value));}</blockquote>
-	 * @see #mod(InfiniteInteger)
+	 * @see #mod(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-    public InfiniteInteger mod(BigInteger value){return this.mod(InfiniteInteger.valueOf(value));}
+	@Override
+    public MutableInfiniteInteger mod(BigInteger value){return this.mod(MutableInfiniteInteger.valueOf(value));}
 
-    public InfiniteInteger mod(InfiniteInteger value) {
+	@Override
+    public MutableInfiniteInteger mod(MutableInfiniteInteger value) {
 		return divide(value).getRemainder();
     }
 
-    public InfiniteInteger pow(long exponent) {
-		return pow(InfiniteInteger.valueOf(exponent));
+	@Override
+    public MutableInfiniteInteger pow(long exponent) {
+		return pow(MutableInfiniteInteger.valueOf(exponent));
     }
 
 	/**
 	 * Entire code: <blockquote>{@code return this.pow(InfiniteInteger.valueOf(exponent));}</blockquote>
-	 * @see #pow(InfiniteInteger)
+	 * @see #pow(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
-    public InfiniteInteger pow(BigInteger exponent){return this.pow(InfiniteInteger.valueOf(exponent));}
+	@Override
+    public MutableInfiniteInteger pow(BigInteger exponent){return this.pow(MutableInfiniteInteger.valueOf(exponent));}
 
     /* (non-doc)
      * Returns an InfiniteInteger whose value is this<sup>exponent</sup>.
@@ -1096,7 +1094,8 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * @throws ArithmeticException if {@code exponent} is negative. (This would
      *         cause the operation to yield a non-integer value.)
      */
-    public InfiniteInteger pow(InfiniteInteger exponent) {
+	@Override
+    public MutableInfiniteInteger pow(MutableInfiniteInteger exponent) {
 		// method stub
     	//call mutliply in a loop for now
 		return null;
@@ -1109,9 +1108,10 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * For example if this InfiniteInteger is 3 then 3<sup>3</sup> is 27.
      *
      * @return the result including +&infin; and NaN
-     * @see #pow(InfiniteInteger)
+     * @see #pow(MutableInfiniteInteger)
      */
-    public InfiniteInteger selfPower(){return this.pow(this);}
+	@Override
+    public MutableInfiniteInteger selfPower(){return this.pow(this);}
 
     /**
      * Returns an InfiniteInteger whose value is this!.
@@ -1121,16 +1121,17 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * negative numbers. If this InfiniteInteger is negative then NaN is returned.
      *
      * @return the result including +&infin; and NaN
-     * @see #pow(InfiniteInteger)
+     * @see #pow(MutableInfiniteInteger)
      */
-    public InfiniteInteger factorial() {
+	@Override
+    public MutableInfiniteInteger factorial() {
 		if(this.isNegative || this == NaN) return NaN;  //factorial is not defined for negative numbers
 		if(this == POSITIVE_INFINITITY) return this;  //-Infinity is covered above
-		if(this == ZERO || this.equals(1)) return InfiniteInteger.valueOf(1);
+		if(this.equals(0) || this.equals(1)) return MutableInfiniteInteger.valueOf(1);
 
-		InfiniteInteger result = this.copy();
-		InfiniteInteger integerCursor = result.subtract(1);
-    	while (integerCursor != ZERO)
+		MutableInfiniteInteger result = this.copy();
+		MutableInfiniteInteger integerCursor = result.subtract(1);
+    	while (!integerCursor.equals(0))
     	{
     		result = result.multiply(integerCursor);
     		integerCursor = integerCursor.subtract(1);
@@ -1146,10 +1147,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * @return itself or the positive version of this
      * @see Math#abs(double)
      */
-    public InfiniteInteger abs() {
+	@Override
+    public MutableInfiniteInteger abs() {
     	if(!isNegative || isNaN()) return this;  //includes this == 0 and +Infinity
     	if(this == NEGATIVE_INFINITITY) return POSITIVE_INFINITITY;
-    	InfiniteInteger result = copy();
+    	MutableInfiniteInteger result = copy();
     	result.isNegative = false;
     	return result;
     }
@@ -1159,11 +1161,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      *
      * @return {@code -this}
      */
-    public InfiniteInteger negate() {
-    	if(isNaN() || this == ZERO) return this;
+	@Override
+    public MutableInfiniteInteger negate() {
+    	if(isNaN() || this.equals(0)) return this;
     	if(this == NEGATIVE_INFINITITY) return POSITIVE_INFINITITY;
     	if(this == POSITIVE_INFINITITY) return NEGATIVE_INFINITITY;
-    	InfiniteInteger result = copy();
+    	MutableInfiniteInteger result = copy();
     	result.isNegative = !isNegative;
     	return result;
     }
@@ -1172,9 +1175,10 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * @return -1, 0 or 1 as the value of this number is negative, zero or
      *         positive respectively. NaN returns 0.
      */
+	@Override
     public byte signum() {
     	if(isNegative) return -1;
-    	if(this == ZERO || this == NaN) return 0;
+    	if(this.equals(0) || this == NaN) return 0;
         return 1;
     }
 
@@ -1186,6 +1190,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * @return true if this InfiniteInteger is the constant for NaN.
      * @see #NaN
      */
+	@Override
     public boolean isNaN(){return this == NaN;}
     /**
      * Compares this InfiniteInteger to both positive and negative infinity.
@@ -1193,6 +1198,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * @see #POSITIVE_INFINITITY
      * @see #NEGATIVE_INFINITITY
      */
+	@Override
 	public boolean isInfinite(){return (this == POSITIVE_INFINITITY || this == NEGATIVE_INFINITITY);}
     /**
      * Compares this InfiniteInteger to &plusmn;&infin; and NaN (returns false of this is any of them).
@@ -1201,10 +1207,12 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      * @see #POSITIVE_INFINITITY
      * @see #NEGATIVE_INFINITITY
      */
+	@Override
 	public boolean isFinite(){return (!this.isNaN() && !this.isInfinite());}
 	/**
 	 * @throws ArithmeticException if this == NaN
 	 */
+	@Override
 	public void signalNaN(){if(isNaN()) throw new ArithmeticException("Not a number.");}
 
 	/**
@@ -1213,13 +1221,13 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 *
 	 * @param other the value to be compared to this
 	 * @return true if this InfiniteInteger has the same numeric value as other. false if other is not a number
-	 * @see #equals(InfiniteInteger)
+	 * @see #equals(MutableInfiniteInteger)
 	 */
 	@Override
 	public boolean equals(Object other) {
 		if(other == null) return false;
-		if(other instanceof InfiniteInteger) return this.equals((InfiniteInteger) other);  //checks this == other
-		if(other instanceof BigInteger) return this.equals(InfiniteInteger.valueOf((BigInteger) other));
+		if(other instanceof MutableInfiniteInteger) return this.equals((MutableInfiniteInteger) other);  //checks this == other
+		if(other instanceof BigInteger) return this.equals(MutableInfiniteInteger.valueOf((BigInteger) other));
 		if(!this.isFinite()) return false;  //TODO: actually compare specials to floating point's
 		//TODO: floating point can be larger than long:
 		/*
@@ -1236,13 +1244,14 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 *
 	 * @param other the value to be compared to this
 	 * @return true if this InfiniteInteger has the same numeric value as other
-	 * @see #compareTo(InfiniteInteger)
+	 * @see #compareTo(MutableInfiniteInteger)
 	 */
-	public boolean equals(InfiniteInteger other) {
+	@Override
+	public boolean equals(MutableInfiniteInteger other) {
 		if(other == null) return false;
 		if(this == other) return true;
 		//these are singletons. if not the same object then it's not equal
-		if(this == ZERO || !this.isFinite() || other == ZERO || !other.isFinite()) return false;
+		if(this.equals(0) || !this.isFinite() || other.equals(0) || !other.isFinite()) return false;
 		if(isNegative != other.isNegative) return false;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		DequeNode<Integer> otherCursor = other.magnitudeHead;
@@ -1265,6 +1274,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * @see #longValueExact()
 	 * @see #compareTo(long)
 	 */
+	@Override
 	public boolean equals(long value) {
 		if(!this.isFinite()) return false;
 
@@ -1286,25 +1296,25 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 *         to, or greater than other.
 	 */
 	@Override
-	public int compareTo(InfiniteInteger other) {
+	public int compareTo(MutableInfiniteInteger other) {
 		if(this == other) return THIS_EQUAL;
 		if(this == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY) return THIS_GREATER;
 		if(this == NEGATIVE_INFINITITY || other == POSITIVE_INFINITITY) return THIS_LESSER;
 
 		if (this == NaN)
 		{
-			if(other == ZERO || other.isNegative) return THIS_GREATER;
+			if(other.equals(0) || other.isNegative) return THIS_GREATER;
 			return THIS_LESSER;  //since other != NaN
 		}
 		if (other == NaN)
 		{
-			if(this == ZERO || this.isNegative) return THIS_LESSER;
+			if(this.equals(0) || this.isNegative) return THIS_LESSER;
 			return THIS_GREATER;  //since this != NaN
 		}
 
 		if(isNegative && !other.isNegative) return THIS_LESSER;
-		if(!isNegative && other.isNegative) return THIS_GREATER;  //also covers if this == ZERO
-		if(this == ZERO && !other.isNegative) return THIS_LESSER;  //since this != other
+		if(!isNegative && other.isNegative) return THIS_GREATER;  //also covers if this.equals(0)
+		if(this.equals(0) && !other.isNegative) return THIS_LESSER;  //since this != other
 
 		//at this point: they are not the same object, they have the same sign, they are not special values.
 		//since the lengths can be any integer I first need to compare lengths
@@ -1345,10 +1355,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * Entire code: <blockquote>{@code return this.compareTo(InfiniteInteger.valueOf(other));}</blockquote>
 	 *
 	 * @param other the value to be compared to this
-	 * @see #compareTo(InfiniteInteger)
+	 * @see #compareTo(MutableInfiniteInteger)
 	 * @see Comparable#compareTo(Object)
 	 */
-	public int compareTo(BigInteger other){return this.compareTo(InfiniteInteger.valueOf(other));}
+	@Override
+	public int compareTo(BigInteger other){return this.compareTo(MutableInfiniteInteger.valueOf(other));}
 
 	/**
 	 * Compares this InfiniteInteger with the specified other for numeric equality.
@@ -1356,10 +1367,11 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 	 * Entire code: <blockquote>{@code return this.compareTo(InfiniteInteger.valueOf(other));}</blockquote>
 	 *
 	 * @param other the value to be compared to this
-	 * @see #compareTo(InfiniteInteger)
+	 * @see #compareTo(MutableInfiniteInteger)
 	 * @see Comparable#compareTo(Object)
 	 */
-	public int compareTo(long other){return this.compareTo(InfiniteInteger.valueOf(other));}
+	@Override
+	public int compareTo(long other){return this.compareTo(MutableInfiniteInteger.valueOf(other));}
 
 	/**
      * Returns the hash code for this InfiniteInteger.
@@ -1370,8 +1382,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
      */
 	@Override
 	public int hashCode() {
-		if(this == ZERO) return 0;
-		if(this == NaN) return Integer.MIN_VALUE;  //so that ZERO and NaN will not have a collision
+		if(this == NaN) return Integer.MIN_VALUE;  //so that 0 and NaN will not have a collision
 		if(this.isInfinite()) return (Integer.MAX_VALUE*this.signum());  //to prevent collision with +/-1
 		DequeNode<Integer> cursor = magnitudeHead;
 		int hash = Boolean.hashCode(isNegative);
@@ -1388,7 +1399,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		if(this == POSITIVE_INFINITITY) return "+Infinity";  //it doesn't seem like \u221E works
 		if(this == NEGATIVE_INFINITITY) return "-Infinity";
 		if(this == NaN) return "NaN";
-		if(this == ZERO) return "0";
+		if(this.equals(0)) return "0";
 		String stringValue = "+ ";
 		if(isNegative) stringValue = "- ";
 		//method stub
@@ -1409,6 +1420,7 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 		return stringBuilder.toString();
 	}
 
+	@Override
 	public void toFile(File writeToHere) {
 		// method stub it can always fit
 	}
@@ -1418,15 +1430,13 @@ public class InfiniteInteger extends Number implements Copyable<InfiniteInteger>
 
 	/**
 	 * In order to maintain the singleton constants they will not be copied.
-	 * So &plusmn;&infin;, NaN, and ZERO will return themselves but all others will be copied as expected.
-	 * However since this class is immutable the method is useless to the public.
-	 * Although it has an internal application which is to make and change the copy for the return value of methods.
-	 * @return a copy or itself (if a defined constant)
+	 * So &plusmn;&infin; and NaN will return themselves but all others will be copied as expected.
+	 * @return a copy or a defined singleton
 	 */
 	@Override
-	public InfiniteInteger copy() {
-		if(!this.isFinite() || this == ZERO) return this;
-		InfiniteInteger returnValue = new InfiniteInteger(0);  //can't use ZERO because returnValue will be modified
+	public MutableInfiniteInteger copy() {
+		if(!this.isFinite()) return this;
+		MutableInfiniteInteger returnValue = new MutableInfiniteInteger(0);
 		returnValue.isNegative = this.isNegative;
 		DequeNode<Integer> returnCursor = returnValue.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;

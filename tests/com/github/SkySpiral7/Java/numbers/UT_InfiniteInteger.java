@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java;
+package com.github.SkySpiral7.Java.numbers;
 
 import static com.github.SkySpiral7.Java.pojo.Comparison.EQUAL_TO;
 import static com.github.SkySpiral7.Java.util.ComparableSugar.is;
@@ -100,7 +100,8 @@ public class UT_InfiniteInteger {
     	//don't use hamcrest for these because they would use .equals
     	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
     	assertTrue(is(infiniteInteger, EQUAL_TO, infiniteInteger));  //same object
-    	assertTrue(is(infiniteInteger.copy(), EQUAL_TO, infiniteInteger));  //different object same value
+    	MutableInfiniteInteger mutableInfiniteInteger = MutableInfiniteInteger.valueOf(123);
+    	assertTrue(is(mutableInfiniteInteger.copy(), EQUAL_TO, mutableInfiniteInteger));  //different object same value
 
     	//use hamcrest for rest to get a more meaningful failure message
     	assertThat(InfiniteInteger.valueOf(-5), lessThan(InfiniteInteger.valueOf(5)));
@@ -143,7 +144,8 @@ public class UT_InfiniteInteger {
     	assertEquals(InfiniteInteger.valueOf(5).add(5), InfiniteInteger.valueOf(7).add(3));
     	infiniteInteger = InfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
     	assertEquals(infiniteInteger, infiniteInteger);
-    	assertEquals(infiniteInteger.copy(), infiniteInteger);
+    	MutableInfiniteInteger mutableInfiniteInteger = MutableInfiniteInteger.valueOf(123);
+    	assertEquals(mutableInfiniteInteger.copy(), mutableInfiniteInteger);
     	assertNotEquals(infiniteInteger.add(1), infiniteInteger);
     }
 
@@ -160,9 +162,9 @@ public class UT_InfiniteInteger {
     	assertSame(InfiniteInteger.NaN, InfiniteInteger.NaN.add(BigInteger.TEN));
     	assertSame(InfiniteInteger.ZERO, InfiniteInteger.valueOf(BigInteger.ZERO));
 
-    	infiniteInteger = InfiniteInteger.valueOf(12);
-    	assertSame(infiniteInteger, infiniteInteger.add(0));
-    	assertSame(infiniteInteger, infiniteInteger.add(InfiniteInteger.ZERO));
+    	MutableInfiniteInteger mutableInfiniteInteger = MutableInfiniteInteger.valueOf(12);
+    	assertSame(mutableInfiniteInteger, mutableInfiniteInteger.add(0));
+    	assertSame(mutableInfiniteInteger, mutableInfiniteInteger.add(MutableInfiniteInteger.valueOf(0)));
 
     	//must use debugger to see if the fast path was used for these
     	//these ones should not be moved since they are not visible
