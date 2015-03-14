@@ -114,7 +114,6 @@ public class DequeNode<E> implements Serializable {
 	    this.prev = this.next = null;
 	    return this;
     }
-    //TODO: add a swap method
 
     /**
      * Note that this simply calls data.toString(). Next and previous nodes are not included to prevent the entire list

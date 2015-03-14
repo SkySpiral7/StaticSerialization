@@ -295,6 +295,20 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
     }
 
     @Override
+    public void swap(int indexA, int indexB) {
+    	swap(InfiniteInteger.valueOf(indexA), InfiniteInteger.valueOf(indexB));
+    }
+
+    public void swap(InfiniteInteger indexA, InfiniteInteger indexB) {
+        DequeNode<E> nodeA = getNode(indexA);
+        DequeNode<E> nodeB = getNode(indexB);
+        E temp = nodeA.getData();
+        nodeA.setData(nodeB.getData());
+        nodeB.setData(temp);
+        //doesn't increment modCount because there was no structural change
+    }
+
+    @Override
     public boolean isEmpty() {
     	return first == null;  //this is faster then checking size
     }

@@ -334,6 +334,15 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
         return oldValue;
     }
 
+    public void swap(int indexA, int indexB) {
+        DequeNode<E> nodeA = getNode(indexA);
+        DequeNode<E> nodeB = getNode(indexB);
+        E temp = nodeA.getData();
+        nodeA.setData(nodeB.getData());
+        nodeB.setData(temp);
+        //doesn't increment modCount because there was no structural change
+    }
+
     @Override
     public Object[] toArray() {
         Object[] result = new Object[size];
