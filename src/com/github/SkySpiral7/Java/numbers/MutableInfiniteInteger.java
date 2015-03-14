@@ -1080,32 +1080,44 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
     }
 
 	@Override
-    public MutableInfiniteInteger pow(long exponent) {
-		return pow(MutableInfiniteInteger.valueOf(exponent));
+    public MutableInfiniteInteger power(long exponent) {
+		return power(MutableInfiniteInteger.valueOf(exponent));
     }
 
 	/**
 	 * Entire code: <blockquote>{@code return this.pow(InfiniteInteger.valueOf(exponent));}</blockquote>
-	 * @see #pow(MutableInfiniteInteger)
+	 * @see #power(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
 	@Override
-    public MutableInfiniteInteger pow(BigInteger exponent){return this.pow(MutableInfiniteInteger.valueOf(exponent));}
+    public MutableInfiniteInteger power(BigInteger exponent){return this.power(MutableInfiniteInteger.valueOf(exponent));}
 
-    /* (non-doc)
+	/**
      * Returns an InfiniteInteger whose value is this<sup>exponent</sup>.
+     * There are many special cases, for a full table see {@link InfiniteInteger#powerSpecialLookUp(InfiniteInteger, InfiniteInteger) this table}
+     * except the pow method will return the result instead of null.
      *
-     * @param  exponent exponent to which this InfiniteInteger is to be raised.
-     * @return the result including +&infin; and NaN
-     * @throws ArithmeticException if {@code exponent} is negative. (This would
-     *         cause the operation to yield a non-integer value.)
+     * @param  exponent to which this InfiniteInteger is to be raised.
+     * @return the result including &plusmn;&infin; and NaN
+     * @throws ArithmeticException if the result would be a fraction (only possible if exponent is negative)
      */
 	@Override
-    public MutableInfiniteInteger pow(MutableInfiniteInteger exponent) {
-    	//TODO: can copy BigInt's pow but div and gcd are too complicated
-		// method stub
-    	//call mutliply in a loop for now
-		return null;
+    public MutableInfiniteInteger power(MutableInfiniteInteger exponent) {
+		InfiniteInteger tableValue = InfiniteInteger.powerSpecialLookUp(InfiniteInteger.valueOf(this), InfiniteInteger.valueOf(exponent));
+		if(tableValue != null) return tableValue.toMutableInfiniteInteger();
+
+		if(exponent.isNegative) throw new ArithmeticException("A negative exponent would result in a non-integer answer. The exponent was: "+exponent);
+
+    	//TODO: study BigInt's pow and copy it
+    	//but BigInt's div and gcd are too complicated
+		MutableInfiniteInteger result = this.copy();
+		MutableInfiniteInteger exponentRemaining = exponent.copy().subtract(1);  //already have the first time
+    	while (!exponentRemaining.equals(0))
+    	{
+    		result = result.multiply(this);
+    		exponentRemaining = exponentRemaining.subtract(1);
+    	}
+		return set(result);
     }
 
     /**
@@ -1115,10 +1127,10 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
      * For example if this InfiniteInteger is 3 then 3<sup>3</sup> is 27.
      *
      * @return the result including +&infin; and NaN
-     * @see #pow(MutableInfiniteInteger)
+     * @see #power(MutableInfiniteInteger)
      */
 	@Override
-    public MutableInfiniteInteger selfPower(){return this.pow(this.copy());}  //param must copy so that it doesn't change during calc
+    public MutableInfiniteInteger selfPower(){return this.power(this.copy());}  //param must copy so that it doesn't change during calc
 
     /**
      * Returns an InfiniteInteger whose value is this!.
@@ -1128,7 +1140,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
      * negative numbers. If this InfiniteInteger is negative then NaN is returned.
      *
      * @return the result including +&infin; and NaN
-     * @see #pow(MutableInfiniteInteger)
+     * @see #power(MutableInfiniteInteger)
      */
 	@Override
     public MutableInfiniteInteger factorial() {

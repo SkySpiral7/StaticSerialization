@@ -13,6 +13,7 @@ import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
 import com.github.SkySpiral7.Java.iterators.ReadOnlyListIterator;
 import com.github.SkySpiral7.Java.pojo.DequeNode;
 import com.github.SkySpiral7.Java.pojo.IntegerQuotient;
+import com.github.SkySpiral7.Java.util.BitWiseUtil;
 
 /**
  * <p>I don't have anything against BigInteger, it's fast and big, but it bugs me that there isn't another class that has no max size.
@@ -682,31 +683,115 @@ public class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteger> {
     }
 
 	@Override
-    public InfiniteInteger pow(long exponent) {
-		return valueOf(baseNumber.copy().pow(exponent));
+    public InfiniteInteger power(long exponent) {
+		return valueOf(baseNumber.copy().power(exponent));
     }
 
 	/**
 	 * Entire code: <blockquote>{@code return this.pow(InfiniteInteger.valueOf(exponent));}</blockquote>
-	 * @see #pow(InfiniteInteger)
+	 * @see #power(InfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
 	@Override
-    public InfiniteInteger pow(BigInteger exponent) {
-		return valueOf(baseNumber.copy().pow(exponent));
+    public InfiniteInteger power(BigInteger exponent) {
+		return valueOf(baseNumber.copy().power(exponent));
 	}
 
-    /* (non-doc)
+	//BigInt is wrong: 0^0 is NaN but it returns 1. And 1^(-2) is 1 but it throws
+	//TODO: make this table into a class that can't be modified
+	/**
+	 * Used by powerSpecialLookUp. Private to prevent modification.
+	 * @see #powerSpecialLookUp(InfiniteInteger, InfiniteInteger)
+	 */
+	private final static InfiniteInteger[][] powerSpecialCaseTable = {
+		//the elements are in order: 0, 1, Infinity, -Infinity, -X (other), X (other)
+		{NaN, ZERO, NaN, NaN, NaN, ZERO}, //0
+		{ONE, ONE, NaN, NaN, ONE, ONE},  //1
+		{NaN, POSITIVE_INFINITITY, POSITIVE_INFINITITY, ZERO, ZERO, POSITIVE_INFINITITY},  //Infinity
+		{NaN, NEGATIVE_INFINITITY, NaN, NaN, ZERO, null},  //-Infinity
+		{ONE, null, NaN, ZERO, null, null},  //-X (other)
+		{ONE, null, POSITIVE_INFINITITY, ZERO, null, null}  //X (other)
+	};
+
+/**
+ *<table border="1">
+ * <caption><b>Special cases for Base<sup>Exponent</sup></b></caption>
+ * <tr><th></th><th colspan="6">Exponent</th></tr>
+ * <tr valign="top">
+ *                    <th>Base</th>     <th width="30px">0</th>
+ *                                                   <th width="30px">1</th>
+ *                                                                     <th width="30px">&infin;</th>
+ *                                                                                      <th width="30px">-&infin;</th>
+ *                                                                                                   <th width="30px">-X</th>
+ *                                                                                                                <th width="30px">X</th></tr>
+ *
+ * <tr align="center"><td>0</td>        <td>NaN</td> <td>0</td>        <td>NaN</td>     <td>NaN</td> <td>NaN</td> <td>0</td></tr>
+ * <tr align="center"><td>1</td>        <td>1</td>   <td>1</td>        <td>NaN</td>     <td>NaN</td> <td>1</td>   <td>1</td></tr>
+ * <tr align="center"><td>&infin;</td>  <td>NaN</td> <td>&infin;</td>  <td>&infin;</td> <td>0</td>   <td>0</td>   <td>&infin;</td></tr>
+ * <tr align="center"><td>-&infin;</td> <td>NaN</td> <td>-&infin;</td> <td>NaN</td>     <td>NaN</td> <td>0</td>   <td>&plusmn;&infin;</td></tr>
+ * <tr align="center"><td>-X</td>       <td>1</td>   <td>-X</td>       <td>NaN</td>     <td>0</td>   <td>1/?</td> <td>?</td></tr>
+ * <tr align="center"><td>X</td>        <td>1</td>   <td>X</td>        <td>&infin;</td> <td>0</td>   <td>1/?</td> <td>?</td></tr>
+ *</table>
+ *
+ * <p>In the table above X is an integer greater than one. 1/? means the result is a
+ * fraction instead of an integer. And ? means that the answer is an integer but this method doesn't know the exact value.
+ * In the cases of 1/? and ? null is returned. In all other cases the answer is returned.</p>
+ *
+ * @param base
+ * @param exponent
+ * @return the answer or null
+ */
+	protected static InfiniteInteger powerSpecialLookUp(InfiniteInteger base, InfiniteInteger exponent) {
+		if(base.isNaN() || exponent.isNaN()) return NaN;
+		if(exponent.equals(1)) return base;  //always true
+		//TODO: test all these special cases of pow
+
+		byte baseIndex = powerSpecialIndex(base);
+		byte exponentIndex = powerSpecialIndex(exponent);  //is never 1 due to above if check
+		InfiniteInteger tableValue = powerSpecialCaseTable[baseIndex][exponentIndex];
+
+		if(tableValue != null) return tableValue;
+
+		if (base == NEGATIVE_INFINITITY)
+		{
+			//exponent.isFinite by this point (exponentIndex == 5 for X)
+			if(BitWiseUtil.isEven(exponent.intValue())) return POSITIVE_INFINITITY;
+			return NEGATIVE_INFINITITY;
+		}
+
+		//baseIndex == 4 or 5 and exponentIndex == 4 or 5 for -X or X. in all 4 cases return null
+		return null;
+	}
+
+	/**
+	 * Used by powerSpecialLookUp to find the table index to use for a given value.
+	 *
+	 * @param value
+	 * @return the table index which matches the powerSpecialCaseTable
+	 * @see #powerSpecialLookUp(InfiniteInteger, InfiniteInteger)
+	 * @see #powerSpecialCaseTable
+	 */
+	protected static byte powerSpecialIndex(InfiniteInteger value) {
+		if(value == ZERO) return 0;
+		if(value == ONE) return 1;
+		if(value == POSITIVE_INFINITITY) return 2;
+		if(value == NEGATIVE_INFINITITY) return 3;
+		if(value.baseNumber.isNegative) return 4;
+		return 5;
+	}
+
+	/**
      * Returns an InfiniteInteger whose value is this<sup>exponent</sup>.
+     * There are many special cases, for a full table see {@link InfiniteInteger#powerSpecialLookUp(InfiniteInteger, InfiniteInteger) this table}
+     * except the pow method will return the result instead of null.
      *
-     * @param  exponent exponent to which this InfiniteInteger is to be raised.
-     * @return the result including +&infin; and NaN
-     * @throws ArithmeticException if {@code exponent} is negative. (This would
-     *         cause the operation to yield a non-integer value.)
+     * @param  exponent to which this InfiniteInteger is to be raised.
+     * @return the result including &plusmn;&infin; and NaN
+     * @throws ArithmeticException if the result would be a fraction (only possible if exponent is negative)
      */
 	@Override
-    public InfiniteInteger pow(InfiniteInteger exponent) {
-		return valueOf(baseNumber.copy().pow(exponent.baseNumber));
+    public InfiniteInteger power(InfiniteInteger exponent) {
+		return valueOf(baseNumber.copy().power(exponent.baseNumber));
     }
 
     /**
@@ -716,7 +801,7 @@ public class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteger> {
      * For example if this InfiniteInteger is 3 then 3<sup>3</sup> is 27.
      *
      * @return the result including +&infin; and NaN
-     * @see #pow(InfiniteInteger)
+     * @see #power(InfiniteInteger)
      */
 	@Override
     public InfiniteInteger selfPower() {
@@ -731,7 +816,7 @@ public class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteger> {
      * negative numbers. If this InfiniteInteger is negative then NaN is returned.
      *
      * @return the result including +&infin; and NaN
-     * @see #pow(InfiniteInteger)
+     * @see #power(InfiniteInteger)
      */
 	@Override
     public InfiniteInteger factorial() {

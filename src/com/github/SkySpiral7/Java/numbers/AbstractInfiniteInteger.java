@@ -42,9 +42,9 @@ public abstract class AbstractInfiniteInteger<T extends AbstractInfiniteInteger<
     public abstract T mod(long value);
     public abstract T mod(BigInteger value);
     public abstract T mod(T value);
-    public abstract T pow(long exponent);
-    public abstract T pow(BigInteger exponent);
-    public abstract T pow(T exponent);
+    public abstract T power(long exponent);
+    public abstract T power(BigInteger exponent);
+    public abstract T power(T exponent);
     public abstract T selfPower();
     public abstract T factorial();
     public abstract T abs();

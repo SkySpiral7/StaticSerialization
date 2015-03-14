@@ -283,6 +283,18 @@ public class UT_MutableInfiniteInteger {
     }
 
     @Test
+	public void power() {
+    	//simple case
+    	assertEqualNodes(MutableInfiniteInteger.valueOf(3).power(3), 1, 27);
+
+    	//multiple ending nodes
+    	assertEqualNodes(MutableInfiniteInteger.valueOf(0x800).power(3), 1, 0, 2);
+
+    	//multiple starting nodes
+    	assertEqualNodes(MutableInfiniteInteger.valueOf(Long.MIN_VALUE).power(3), -1, 0, 0, 0, 0, 0, 0x2000_0000);
+    }
+
+    @Test
 	public void streamAllIntegers() {
 		Iterator<MutableInfiniteInteger> integerIterator = MutableInfiniteInteger.streamAllIntegers().iterator();
 		assertEquals(MutableInfiniteInteger.valueOf(0), integerIterator.next());
