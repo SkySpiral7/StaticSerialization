@@ -33,7 +33,7 @@ import com.github.SkySpiral7.Java.util.BitWiseUtil;
  * @see InfiniteInteger
  */
 //TODO: move all this class doc to the Abstract
-//TODO: change these methods to mutate by removing copy
+//TODO: create and use a set() method so that this will always be mutated
 public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfiniteInteger> implements Copyable<MutableInfiniteInteger> {
 	private static final long serialVersionUID = 1L;
 
@@ -234,8 +234,8 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	public static Stream<MutableInfiniteInteger> streamAllIntegers() {
 		return Stream.iterate(new MutableInfiniteInteger(0), (MutableInfiniteInteger previous) -> {
 				if(previous.equals(0)) return MutableInfiniteInteger.valueOf(1);
-				if(previous.isNegative) return previous.abs().add(1);
-				return previous.negate();
+				if(previous.isNegative) return previous.copy().abs().add(1);
+				return previous.copy().negate();
 			});
 	}
 
@@ -262,14 +262,13 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 
             @Override
             public MutableInfiniteInteger next() {
-            	MutableInfiniteInteger current = nextElement;
+            	MutableInfiniteInteger current = nextElement.copy();
             	nextElement = nextElement.add(1);
                 return current;
             }
             @Override
             public MutableInfiniteInteger previous() {
-            	nextElement = nextElement.subtract(1);
-                return nextElement;
+                return nextElement = nextElement.subtract(1);
             }
 
             @Override
@@ -312,7 +311,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
             	MutableInfiniteInteger next;
                 if(previous == null) next = MutableInfiniteInteger.valueOf(0);
                 else if(back2 == null) next = MutableInfiniteInteger.valueOf(1);
-                else next = previous.add(back2);
+                else next = previous.copy().add(back2);
                 back2 = previous;
                 previous = next;
                 return next;
@@ -513,41 +512,47 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		//delegations based on the sign of each
 		if(!isNegative && value < 0) return this.subtract(Math.abs(value));
 		if(isNegative && value > 0) return MutableInfiniteInteger.valueOf(value).subtract(this.abs());
-		//TODO: later consider making a mutable InfiniteInteger for speed that immutable would wrap
 
 		//the rest is for if both positive or both negative
 		long sum, valueRemaining = Math.abs(value);
-		MutableInfiniteInteger result = new MutableInfiniteInteger(0);
-		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
-		while (thisCursor != null)
+		while (thisCursor.getNext() != null)
 		{
 			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
 			lowValue = (int) valueRemaining;
 			highValue = (int) (valueRemaining >>> 32);
 			sum = Integer.toUnsignedLong(thisCursor.getData().intValue()) + Integer.toUnsignedLong(lowValue);
 
-			resultCursor.setData((int) sum);
+			thisCursor.setData((int) sum);
 			sum >>>= 32;
 
 			valueRemaining = sum + Integer.toUnsignedLong(highValue);  //TODO: make a test that proves I need to use unsigned
 
-			resultCursor = DequeNode.Factory.createNodeAfter(resultCursor, 0);
 			thisCursor = thisCursor.getNext();
 		}
+		//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
+		lowValue = (int) valueRemaining;
+		highValue = (int) (valueRemaining >>> 32);
+		sum = Integer.toUnsignedLong(thisCursor.getData().intValue()) + Integer.toUnsignedLong(lowValue);
+
+		thisCursor.setData((int) sum);
+		sum >>>= 32;
+
+		valueRemaining = sum + Integer.toUnsignedLong(highValue);  //TODO: make this DRY
+
+		thisCursor = DequeNode.Factory.createNodeAfter(thisCursor, 0);
 		if (valueRemaining != 0)
 		{
 			//the addition's carry causes the return value to have more nodes
 			lowValue = (int) valueRemaining;
 			highValue = (int) (valueRemaining >>> 32);
-			resultCursor.setData(lowValue);
-			resultCursor = DequeNode.Factory.createNodeAfter(resultCursor, highValue);
+			thisCursor.setData(lowValue);
+			thisCursor = DequeNode.Factory.createNodeAfter(thisCursor, highValue);
 		}
-		if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //remove the last node since it is leading 0s
+		if(thisCursor.getData().intValue() == 0) thisCursor.remove();  //remove the last node since it is leading 0s
 		//do not use else. this can occur either way
-		result.isNegative = this.isNegative;
-		return result;
+		return this;
 	}
 
 	/**
@@ -568,16 +573,15 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	@Override
 	public MutableInfiniteInteger add(MutableInfiniteInteger value) {
 		if(!this.isFinite() || value.equals(0)) return this;
-		if(!value.isFinite() || this.equals(0)) return value;
+		if(!value.isFinite() || this.equals(0)) return value.copy();
 
 		//delegations based on the sign of each
-		if(!isNegative && value.isNegative) return this.subtract(value.abs());
-		if(isNegative && !value.isNegative) return value.subtract(this.abs());
+		if(!isNegative && value.isNegative) return this.subtract(value.copy().abs());
+		if(isNegative && !value.isNegative) return value.copy().subtract(this.abs());
 
 		//the rest is for if both positive or both negative
 		long sum = 0;
-		MutableInfiniteInteger result = this.copy();
-		DequeNode<Integer> resultCursor = result.magnitudeHead;
+		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		ListIterator<Integer> valueMagIterator = value.magnitudeIterator();
 		int lowSum, highSum;
 		while (valueMagIterator.hasNext() || sum != 0)
@@ -585,20 +589,19 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
 			lowSum = (int) sum;
 			highSum = (int) (sum >>> 32);
-			sum = Integer.toUnsignedLong(resultCursor.getData().intValue());
+			sum = Integer.toUnsignedLong(thisCursor.getData().intValue());
 			if(valueMagIterator.hasNext()) sum += Integer.toUnsignedLong(valueMagIterator.next().intValue());
 			sum += Integer.toUnsignedLong(lowSum);
 
-			resultCursor.setData((int) sum);
+			thisCursor.setData((int) sum);
 			sum >>>= 32;
 			sum += Integer.toUnsignedLong(highSum);
 
-			if(resultCursor.getNext() == null) resultCursor = DequeNode.Factory.createNodeAfter(resultCursor, 0);
-			else resultCursor = resultCursor.getNext();
+			if(thisCursor.getNext() == null) thisCursor = DequeNode.Factory.createNodeAfter(thisCursor, 0);
+			else thisCursor = thisCursor.getNext();
 		}
-		if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //remove the last node since it is leading 0s
-		result.isNegative = this.isNegative;
-		return result;
+		if(thisCursor.getData().intValue() == 0) thisCursor.remove();  //remove the last node since it is leading 0s
+		return this;
 	}
 
     /**
@@ -627,12 +630,10 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 
 		//this is greater than value
 		long difference, valueRemaining = value;
-		MutableInfiniteInteger result = new MutableInfiniteInteger(0);
-		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		int lowValue, highValue;
 		boolean borrow = false;
-		while (thisCursor != null)
+		while (thisCursor.getNext() != null)
 		{
 			lowValue = (int) valueRemaining;
 			highValue = (int) (valueRemaining >>> 32);
@@ -643,23 +644,39 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 				//this makes difference borrow
 				//the +1 is here for the same reason that when borrowing in base 10 you add 10 instead of 9
 
-			resultCursor.setData((int) difference);
+			thisCursor.setData((int) difference);
 			//assert((difference >>> 32) == 0);  //due to the borrowing above
 
 			valueRemaining = Integer.toUnsignedLong(highValue);
 			if(borrow) valueRemaining++;  //subtract 1 more
 
-			resultCursor = DequeNode.Factory.createNodeAfter(resultCursor, 0);
 			thisCursor = thisCursor.getNext();
 		}
+		lowValue = (int) valueRemaining;
+		highValue = (int) (valueRemaining >>> 32);
+		difference = Integer.toUnsignedLong(thisCursor.getData().intValue()) - Integer.toUnsignedLong(lowValue);
+			//Long.min is not possible so there's no bug to check
+		borrow = (difference < 0);
+		if(borrow) difference += Integer.toUnsignedLong((int) BitWiseUtil.HIGH_64) +1;  //add max unsigned int +1
+			//this makes difference borrow
+			//the +1 is here for the same reason that when borrowing in base 10 you add 10 instead of 9
+
+		thisCursor.setData((int) difference);
+		//assert((difference >>> 32) == 0);  //due to the borrowing above
+
+		valueRemaining = Integer.toUnsignedLong(highValue);
+		//TODO: make this DRY
+		if(borrow) valueRemaining++;  //subtract 1 more
+
+		thisCursor = DequeNode.Factory.createNodeAfter(thisCursor, 0);
 		//assert(valueRemaining == 0);  //because this > value
 		//TODO: isn't there always a leading 0?
-		if(resultCursor.getData().intValue() == 0){resultCursor = resultCursor.getPrev(); resultCursor.getNext().remove();}
+		if(thisCursor.getData().intValue() == 0){thisCursor = thisCursor.getPrev(); thisCursor.getNext().remove();}
 			//remove the last node since it is leading 0s
 			//assert(returnCursor != null)  //I already checked that this != value which is the only way for result == 0
-		if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //there will be 2 if the last node was borrowed down to 0
+		if(thisCursor.getData().intValue() == 0) thisCursor.remove();  //there will be 2 if the last node was borrowed down to 0
 
-		return result;
+		return this;
 	}
 
 	/**
@@ -681,24 +698,23 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	@Override
 	public MutableInfiniteInteger subtract(MutableInfiniteInteger value) {
 		if(this.isNaN() || value.equals(0)) return this;
-		if(this.equals(0) || value.isNaN()) return value;
+		if(this.equals(0) || value.isNaN()) return value.copy();
 
 		//delegations based on the sign of each
-		if(!this.isNegative && value.isNegative) return this.add(value.abs());
+		if(!this.isNegative && value.isNegative) return this.add(value.copy().abs());
 		if(this.isNegative && !value.isNegative) return this.abs().add(value).negate();
-		if(this.isNegative && value.isNegative) return value.abs().subtract(this.abs());
+		if(this.isNegative && value.isNegative) return value.copy().abs().subtract(this.abs());
 
 		//the rest is for if both positive
 		if(this == POSITIVE_INFINITITY && value == POSITIVE_INFINITITY) return NaN;
 		if(this == POSITIVE_INFINITITY) return this;
 		if(value == POSITIVE_INFINITITY) return NEGATIVE_INFINITITY;
 		if(this.equals(value)) return new MutableInfiniteInteger(0);
-		if(is(this, LESS_THAN, value)) return value.subtract(this).negate();
+		if(is(this, LESS_THAN, value)) return value.copy().subtract(this).negate();
 
 		//this is greater than value
 		long difference = 0;
-		MutableInfiniteInteger result = this.copy();
-		DequeNode<Integer> resultCursor = result.magnitudeHead;
+		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		ListIterator<Integer> valueMagIterator = value.magnitudeIterator();
 		int lowValue, highValue;
 		byte borrowCount;
@@ -706,7 +722,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		{
 			lowValue = (int) difference;
 			highValue = (int) (difference >>> 32);
-			difference = Integer.toUnsignedLong(resultCursor.getData().intValue());
+			difference = Integer.toUnsignedLong(thisCursor.getData().intValue());
 			if(valueMagIterator.hasNext()) difference -= Integer.toUnsignedLong(valueMagIterator.next().intValue());
 			difference -= Integer.toUnsignedLong(lowValue);
 				//difference == Long.min won't cause a bug due to how borrow is programmed
@@ -719,20 +735,20 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 				//the +1 is here for the same reason that when borrowing in base 10 you add 10 instead of 9
 			}
 
-			resultCursor.setData((int) difference);
+			thisCursor.setData((int) difference);
 			//assert((difference >>> 32) == 0);  //due to the borrowing above
 
 			difference = Integer.toUnsignedLong(highValue) + borrowCount;  //borrow subtracts more
 
-			if(resultCursor.getNext() != null) resultCursor = resultCursor.getNext();
-			//if resultCursor is at the end then the loop is done because this > value
+			if(thisCursor.getNext() != null) thisCursor = thisCursor.getNext();
+			//if thisCursor is at the end then the loop is done because this > value
 		}
-		if(resultCursor.getData().intValue() == 0){resultCursor = resultCursor.getPrev(); resultCursor.getNext().remove();}
+		if(thisCursor.getData().intValue() == 0){thisCursor = thisCursor.getPrev(); thisCursor.getNext().remove();}
 			//remove the last node since it is leading 0s
 			//assert(returnCursor != null)  //I already checked that this != value which is the only way for result == 0
-		if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //there will be 2 if the last node was borrowed down to 0
+		if(thisCursor.getData().intValue() == 0) thisCursor.remove();  //there will be 2 if the last node was borrowed down to 0
 
-		return result;
+		return this;
 	}
 
     /**
@@ -760,6 +776,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		int lowValue = (int) valueRemaining;
 		int highValue = (int) (valueRemaining >>> 32);
 
+		//TODO: make this mutate
 		MutableInfiniteInteger result = thisMultiply(lowValue);
 		if(highValue != 0) result = result.add(thisMultiply(highValue).multiplyByPowerOf2(32));
     	result.isNegative = resultIsNegative;
@@ -768,9 +785,8 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
     }
 
     protected MutableInfiniteInteger thisMultiply(int value) {
-    	if(value == 0) return new MutableInfiniteInteger(0);
-    	MutableInfiniteInteger result = this.copy();
-    	result.isNegative = false;  //faster than abs (which might not copy)
+    	if(value == 0) return new MutableInfiniteInteger(0);  //this has already been compared to the singletons
+    	MutableInfiniteInteger result = this.copy().abs();
 		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		long product;
 		int carry = 0;
@@ -780,7 +796,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 			//max unsigned int * max unsigned int < max unsigned long but will end up being negative which makes adding carry impossible
     		product = Integer.toUnsignedLong(resultCursor.getData().intValue());
     		product *= Integer.toUnsignedLong(value);
-    		isHuge = product < 0;
+    		isHuge = (product < 0);
     		product &= Long.MAX_VALUE;  //TODO: is Long.min possible?
     		product += Integer.toUnsignedLong(carry);
     		if(isHuge) product |= Long.MIN_VALUE;
@@ -818,10 +834,10 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		if(value.equals(0) && this.isInfinite()) return NaN;
 		if(this.equals(0) && value.isInfinite()) return NaN;
     	if(!this.isFinite() || value.equals(1)) return this;
-    	if(!value.isFinite() || this.equals(1)) return value;
+    	if(!value.isFinite() || this.equals(1)) return value.copy();
     	if(this.equals(0) || value.equals(0)) return new MutableInfiniteInteger(0);
     	if(value.equals(-1)) return this.negate();
-    	if(this.equals(-1)) return value.negate();
+    	if(this.equals(-1)) return value.copy().negate();
 
     	/*
     	 * psudo code that BigInteger uses to multiply:
@@ -851,7 +867,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
     	 */
     	//TODO: can copy BigInt's multiply and pow but div and gcd are complicated
 		boolean resultIsNegative = (isNegative != value.isNegative);  //!= acts as xor
-		MutableInfiniteInteger valueRemaining = value;  //.abs() is not needed since the nodes are unsigned
+		MutableInfiniteInteger valueRemaining = value.copy();  //.abs() is not needed since the nodes are unsigned
     	MutableInfiniteInteger result = new MutableInfiniteInteger(0);
 
 		for (MutableInfiniteInteger digit = new MutableInfiniteInteger(0); !valueRemaining.equals(0); digit = digit.add(1))
@@ -862,7 +878,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 			valueRemaining = valueRemaining.divideByPowerOf2DropRemainder(32);
 		}
     	result.isNegative = resultIsNegative;
-    	//TODO: make it not suck by using a cursor instead of shifting
+    	//TODO: make it not suck by mutating and using a cursor instead of shifting
 
 		return result;
     }
@@ -905,38 +921,37 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	@Override
 	public MutableInfiniteInteger multiplyByPowerOf2(MutableInfiniteInteger exponent) {
 		if(this.equals(0) || exponent.equals(0) || !this.isFinite()) return this;
-		if(exponent.isNegative) return this.divideByPowerOf2DropRemainder(exponent.abs());
+		if(exponent.isNegative) return this.divideByPowerOf2DropRemainder(exponent.copy().abs());
 
-		MutableInfiniteInteger result = this.copy();
-		MutableInfiniteInteger shiftDistanceRemaining = exponent;
+		MutableInfiniteInteger shiftDistanceRemaining = exponent.copy();
 		while (isComparisonResult(shiftDistanceRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
 		{
-			result.magnitudeHead = DequeNode.Factory.createNodeBefore(0, result.magnitudeHead);
+			this.magnitudeHead = DequeNode.Factory.createNodeBefore(0, this.magnitudeHead);
 			shiftDistanceRemaining = shiftDistanceRemaining.subtract(32);
 		}
 
 		final int smallShiftDistance = shiftDistanceRemaining.intValue();
 		if (smallShiftDistance != 0)
 		{
-			DequeNode<Integer> resultCursor = result.getMagnitudeTail();
+			DequeNode<Integer> thisCursor = this.getMagnitudeTail();
 			int overflow;
 
-			while (resultCursor != null)
+			while (thisCursor != null)
 			{
-				overflow = BitWiseUtil.getHighestNBits(resultCursor.getData().intValue(), smallShiftDistance);
+				overflow = BitWiseUtil.getHighestNBits(thisCursor.getData().intValue(), smallShiftDistance);
 					//overflow contains what would fall off when shifting left
 				overflow >>>= (32 - smallShiftDistance);
 					//shift overflow right so that it appears in the least significant place of the following node
-				if(overflow != 0 && resultCursor.getNext() == null) DequeNode.Factory.createNodeAfter(resultCursor, overflow);
-				else if(overflow != 0) resultCursor.getNext().setData(resultCursor.getNext().getData().intValue() | overflow);
+				if(overflow != 0 && thisCursor.getNext() == null) DequeNode.Factory.createNodeAfter(thisCursor, overflow);
+				else if(overflow != 0) thisCursor.getNext().setData(thisCursor.getNext().getData().intValue() | overflow);
 
-				resultCursor.setData(resultCursor.getData().intValue() << smallShiftDistance);
-				resultCursor = resultCursor.getPrev();
+				thisCursor.setData(thisCursor.getData().intValue() << smallShiftDistance);
+				thisCursor = thisCursor.getPrev();
 			}
 		}
-		//result doesn't have a leading 0 because this doesn't have a leading 0 (and this is not ZERO)
+		//this doesn't have a leading 0 because this doesn't have a leading 0 (and this is not ZERO)
 
-		return result;
+		return this;
 	}
 
 	@Override
@@ -1017,40 +1032,38 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	@Override
 	public MutableInfiniteInteger divideByPowerOf2DropRemainder(MutableInfiniteInteger exponent) {
 		if(this.equals(0) || exponent.equals(0) || !this.isFinite()) return this;
-		if(exponent.isNegative) return this.multiplyByPowerOf2(exponent.abs());
+		if(exponent.isNegative) return this.multiplyByPowerOf2(exponent.copy().abs());
 
-		MutableInfiniteInteger result = this.copy();
-		MutableInfiniteInteger shiftDistanceRemaining = exponent;
+		MutableInfiniteInteger shiftDistanceRemaining = exponent.copy();
 		while (isComparisonResult(shiftDistanceRemaining.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
 		{
-			result.magnitudeHead = result.magnitudeHead.getNext();
-			if(result.magnitudeHead == null) return new MutableInfiniteInteger(0);
-			result.magnitudeHead.getPrev().remove();
+			this.magnitudeHead = this.magnitudeHead.getNext();
+			if(this.magnitudeHead == null) return new MutableInfiniteInteger(0);
+			this.magnitudeHead.getPrev().remove();
 			shiftDistanceRemaining = shiftDistanceRemaining.subtract(32);
 		}
 
 		final int smallShiftDistance = shiftDistanceRemaining.intValue();
 		if (smallShiftDistance != 0)
 		{
-			DequeNode<Integer> resultCursor = result.magnitudeHead;
+			DequeNode<Integer> thisCursor = this.magnitudeHead;
 			int underflow;
 
-			while (resultCursor.getNext() != null)
+			while (thisCursor.getNext() != null)
 			{
-				resultCursor.setData(resultCursor.getData().intValue() >>> smallShiftDistance);
-				underflow = (int) BitWiseUtil.getLowestNBits(resultCursor.getNext().getData().intValue(), smallShiftDistance);
+				thisCursor.setData(thisCursor.getData().intValue() >>> smallShiftDistance);
+				underflow = (int) BitWiseUtil.getLowestNBits(thisCursor.getNext().getData().intValue(), smallShiftDistance);
 					//underflow contains what would fall off when shifting right
 				underflow <<= (32 - smallShiftDistance);
 					//shift underflow left so that it appears in the most significant place of the previous node
-				if(underflow != 0) resultCursor.setData(resultCursor.getData().intValue() | underflow);
-				resultCursor = resultCursor.getNext();
+				if(underflow != 0) thisCursor.setData(thisCursor.getData().intValue() | underflow);
+				thisCursor = thisCursor.getNext();
 			}
 			//last node simply shifts
-			resultCursor.setData(resultCursor.getData().intValue() >>> smallShiftDistance);
+			thisCursor.setData(thisCursor.getData().intValue() >>> smallShiftDistance);
 		}
-		if(result.magnitudeHead.getNext() == null && result.magnitudeHead.getData().intValue() == 0) return new MutableInfiniteInteger(0);
 
-		return result;
+		return this;
 	}
 
 	//aka remainder, divideDropWhole, divideReturnRemainder
@@ -1129,14 +1142,12 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		if(this == POSITIVE_INFINITITY) return this;  //-Infinity is covered above
 		if(this.equals(0) || this.equals(1)) return MutableInfiniteInteger.valueOf(1);
 
-		MutableInfiniteInteger result = this.copy();
-		MutableInfiniteInteger integerCursor = result.subtract(1);
-    	while (!integerCursor.equals(0))
+		MutableInfiniteInteger result = this;
+		MutableInfiniteInteger integerCursor = this.copy().subtract(1);
+    	while (!integerCursor.equals(1))  //don't bother multiplying by 1
     	{
     		result = result.multiply(integerCursor);
     		integerCursor = integerCursor.subtract(1);
-    		//it's faster to let multiply(1) fast path then it is to compare valueRemaining to 1
-    		//since multiply will always compare the parameter to 1 anyway
     	}
 		return result;
     }
@@ -1151,9 +1162,8 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
     public MutableInfiniteInteger abs() {
     	if(!isNegative || isNaN()) return this;  //includes this == 0 and +Infinity
     	if(this == NEGATIVE_INFINITITY) return POSITIVE_INFINITITY;
-    	MutableInfiniteInteger result = copy();
-    	result.isNegative = false;
-    	return result;
+    	isNegative = false;
+    	return this;
     }
 
     /**
@@ -1163,12 +1173,11 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
      */
 	@Override
     public MutableInfiniteInteger negate() {
-    	if(isNaN() || this.equals(0)) return this;
+    	if(isNaN() || this.equals(0)) return this;  //0 is a special case because -0 == 0
     	if(this == NEGATIVE_INFINITITY) return POSITIVE_INFINITITY;
     	if(this == POSITIVE_INFINITITY) return NEGATIVE_INFINITITY;
-    	MutableInfiniteInteger result = copy();
-    	result.isNegative = !isNegative;
-    	return result;
+    	isNegative = !isNegative;
+    	return this;
     }
 
     /**
@@ -1251,7 +1260,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		if(other == null) return false;
 		if(this == other) return true;
 		//these are singletons. if not the same object then it's not equal
-		if(this.equals(0) || !this.isFinite() || other.equals(0) || !other.isFinite()) return false;
+		if(!this.isFinite() || !other.isFinite()) return false;
 		if(isNegative != other.isNegative) return false;
 		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		DequeNode<Integer> otherCursor = other.magnitudeHead;
