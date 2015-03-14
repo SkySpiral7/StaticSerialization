@@ -30,6 +30,8 @@ import com.github.SkySpiral7.Java.pojo.IntegerQuotient;
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
 
 /**
+ * A Mutable version of InfiniteInteger for the sake of speed.
+ *
  * @see InfiniteInteger
  */
 //TODO: move all this class doc to the Abstract
@@ -527,10 +529,12 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 
 		//the rest is for if both positive or both negative
 		long sum, valueRemaining = Math.abs(value);
-		DequeNode<Integer> thisCursor = this.magnitudeHead;
+		ListIterator<DequeNode<Integer>> thisIterator = new DequeNodeIterator.IndexAgnosticDequeIterator<Integer>(this.magnitudeHead);
+		DequeNode<Integer> thisCursor = null;
 		int lowValue, highValue;
-		while (thisCursor.getNext() != null)
+		while (thisIterator.hasNext())
 		{
+			thisCursor = thisIterator.next();
 			//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
 			lowValue = (int) valueRemaining;
 			highValue = (int) (valueRemaining >>> 32);
@@ -540,27 +544,13 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 			sum >>>= 32;
 
 			valueRemaining = sum + Integer.toUnsignedLong(highValue);  //TODO: make a test that proves I need to use unsigned
-
-			thisCursor = thisCursor.getNext();
 		}
-		//turns out (true for signed and unsigned) max long > max int * max int. (2^64-1) > ((2^32-1)*(2^32-1))
-		lowValue = (int) valueRemaining;
-		highValue = (int) (valueRemaining >>> 32);
-		sum = Integer.toUnsignedLong(thisCursor.getData().intValue()) + Integer.toUnsignedLong(lowValue);
-
-		thisCursor.setData((int) sum);
-		sum >>>= 32;
-
-		valueRemaining = sum + Integer.toUnsignedLong(highValue);  //TODO: make this DRY
-		//use iterator instead of cursor to make this dry
-
-		thisCursor = DequeNode.Factory.createNodeAfter(thisCursor, 0);
 		if (valueRemaining != 0)
 		{
 			//the addition's carry causes the return value to have more nodes
 			lowValue = (int) valueRemaining;
 			highValue = (int) (valueRemaining >>> 32);
-			thisCursor.setData(lowValue);
+			thisCursor = DequeNode.Factory.createNodeAfter(thisCursor, lowValue);
 			thisCursor = DequeNode.Factory.createNodeAfter(thisCursor, highValue);
 		}
 		if(thisCursor.getData().intValue() == 0) thisCursor.remove();  //remove the last node since it is leading 0s
@@ -643,11 +633,13 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 
 		//this is greater than value
 		long difference, valueRemaining = value;
-		DequeNode<Integer> thisCursor = this.magnitudeHead;
+		ListIterator<DequeNode<Integer>> thisIterator = new DequeNodeIterator.IndexAgnosticDequeIterator<Integer>(this.magnitudeHead);
+		DequeNode<Integer> thisCursor = null;
 		int lowValue, highValue;
 		boolean borrow = false;
-		while (thisCursor.getNext() != null)
+		while (thisIterator.hasNext())
 		{
+			thisCursor = thisIterator.next();
 			lowValue = (int) valueRemaining;
 			highValue = (int) (valueRemaining >>> 32);
 			difference = Integer.toUnsignedLong(thisCursor.getData().intValue()) - Integer.toUnsignedLong(lowValue);
@@ -662,26 +654,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 
 			valueRemaining = Integer.toUnsignedLong(highValue);
 			if(borrow) valueRemaining++;  //subtract 1 more
-
-			thisCursor = thisCursor.getNext();
 		}
-		lowValue = (int) valueRemaining;
-		highValue = (int) (valueRemaining >>> 32);
-		difference = Integer.toUnsignedLong(thisCursor.getData().intValue()) - Integer.toUnsignedLong(lowValue);
-			//Long.min is not possible so there's no bug to check
-		borrow = (difference < 0);
-		if(borrow) difference += Integer.toUnsignedLong((int) BitWiseUtil.HIGH_64) +1;  //add max unsigned int +1
-			//this makes difference borrow
-			//the +1 is here for the same reason that when borrowing in base 10 you add 10 instead of 9
-
-		thisCursor.setData((int) difference);
-		//assert((difference >>> 32) == 0);  //due to the borrowing above
-
-		valueRemaining = Integer.toUnsignedLong(highValue);
-		//TODO: make this DRY
-		if(borrow) valueRemaining++;  //subtract 1 more
-
-		thisCursor = DequeNode.Factory.createNodeAfter(thisCursor, 0);
 		//assert(valueRemaining == 0);  //because this > value
 		//TODO: isn't there always a leading 0?
 		if(thisCursor.getData().intValue() == 0){thisCursor = thisCursor.getPrev(); thisCursor.getNext().remove();}
@@ -1501,11 +1474,10 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		if(!this.isFinite()) return this;
 		this.isNegative = newValue.isNegative;
 		DequeNode<Integer> valueCursor = newValue.magnitudeHead;
-		DequeNode<Integer> thisCursor = this.magnitudeHead;
 
 		this.magnitudeHead = DequeNode.Factory.createStandAloneNode(valueCursor.getData());  //drop all other nodes of this
+		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		valueCursor = valueCursor.getNext();  //must be outside the loop since the first node already exists
-		thisCursor = thisCursor.getNext();
 		while (valueCursor != null)
 		{
 			thisCursor = DequeNode.Factory.createNodeAfter(thisCursor, valueCursor.getData());
