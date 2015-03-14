@@ -552,6 +552,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		sum >>>= 32;
 
 		valueRemaining = sum + Integer.toUnsignedLong(highValue);  //TODO: make this DRY
+		//use iterator instead of cursor to make this dry
 
 		thisCursor = DequeNode.Factory.createNodeAfter(thisCursor, 0);
 		if (valueRemaining != 0)
