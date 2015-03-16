@@ -591,8 +591,8 @@ public class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteger> {
 
 	@Override
     public IntegerQuotient<InfiniteInteger> divide(InfiniteInteger value) {
-		// method stub
-		return null;
+		IntegerQuotient<MutableInfiniteInteger> mutableAnswer = baseNumber.copy().divide(value.baseNumber);
+		return new IntegerQuotient<InfiniteInteger>(valueOf(mutableAnswer.getWholeResult()), valueOf(mutableAnswer.getRemainder()));
     }
 
     //aka divideReturnWhole
@@ -663,23 +663,23 @@ public class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteger> {
 
 	//aka remainder, divideDropWhole, divideReturnRemainder
 	@Override
-    public InfiniteInteger mod(long value) {
-		return valueOf(baseNumber.copy().mod(value));
+    public InfiniteInteger divideReturnRemainder(long value) {
+		return valueOf(baseNumber.copy().divideReturnRemainder(value));
     }
 
 	/**
 	 * Entire code: <blockquote>{@code return this.mod(InfiniteInteger.valueOf(value));}</blockquote>
-	 * @see #mod(InfiniteInteger)
+	 * @see #divideReturnRemainder(InfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
 	@Override
-    public InfiniteInteger mod(BigInteger value) {
-		return valueOf(baseNumber.copy().mod(value));
+    public InfiniteInteger divideReturnRemainder(BigInteger value) {
+		return valueOf(baseNumber.copy().divideReturnRemainder(value));
 	}
 
 	@Override
-    public InfiniteInteger mod(InfiniteInteger value) {
-		return valueOf(baseNumber.copy().mod(value.baseNumber));
+    public InfiniteInteger divideReturnRemainder(InfiniteInteger value) {
+		return valueOf(baseNumber.copy().divideReturnRemainder(value.baseNumber));
     }
 
 	@Override

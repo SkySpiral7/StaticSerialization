@@ -822,7 +822,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		}
     	resultCursor = result.getMagnitudeTail();
     	if(carry != 0) DequeNode.Factory.createNodeAfter(resultCursor, carry);
-    	else if(resultCursor.getData().intValue() == 0) resultCursor.remove();
+    	else if(resultCursor.getData().intValue() == 0) resultCursor.remove();  //remove leading 0
     	return result;
     }
 
@@ -947,6 +947,13 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		return this;
 	}
 
+    /**
+	 * This method delegates because the formula used is exactly the same.
+	 * Entire code: <blockquote>{@code return divide(MutableInfiniteInteger.valueOf(value));}</blockquote>
+	 *
+	 * @see #divide(MutableInfiniteInteger)
+	 * @see #valueOf(long)
+	 */
 	@Override
 	public IntegerQuotient<MutableInfiniteInteger> divide(long value) {
 		return divide(MutableInfiniteInteger.valueOf(value));
@@ -960,20 +967,61 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	@Override
     public IntegerQuotient<MutableInfiniteInteger> divide(BigInteger value){return this.divide(MutableInfiniteInteger.valueOf(value));}
 
+    /**
+     * Returns an IntegerQuotient with fields of the whole and remainder of {@code (this / value)}.
+     * Note that &plusmn;&infin; / &plusmn;&infin; results in IntegerQuotient(NaN, NaN).
+     * X / 0 results in IntegerQuotient(NaN, NaN). &plusmn;&infin; / X == IntegerQuotient(&plusmn;&infin;, NaN);
+     * X / &plusmn;&infin; == IntegerQuotient(0, NaN).
+     *
+     * @param  value the operand to divide this InfiniteInteger by.
+     * @return the whole result including &plusmn;&infin; and NaN and the remainder (which can be NaN but can't be &plusmn;&infin;)
+     * @see IntegerQuotient
+     */
 	@Override
     public IntegerQuotient<MutableInfiniteInteger> divide(MutableInfiniteInteger value) {
-		// method stub
-		return null;
+		if(this.isNaN() || value.isNaN() || value.equals(0)) return new IntegerQuotient<MutableInfiniteInteger>(NaN, NaN);
+		if(!this.isFinite() && !value.isFinite()) return new IntegerQuotient<MutableInfiniteInteger>(NaN, NaN);
+		if(!this.isFinite()) return new IntegerQuotient<MutableInfiniteInteger>(this, NaN);
+		if(!value.isFinite()) return new IntegerQuotient<MutableInfiniteInteger>(new MutableInfiniteInteger(0), NaN);
+
+		if(value.equals(1)) return new IntegerQuotient<MutableInfiniteInteger>(this.copy(), new MutableInfiniteInteger(0));
+		if(value.equals(-1)) return new IntegerQuotient<MutableInfiniteInteger>(this.copy().negate(), new MutableInfiniteInteger(0));
+		if(this.equals(value)) return new IntegerQuotient<MutableInfiniteInteger>(new MutableInfiniteInteger(1), new MutableInfiniteInteger(0));
+
+		MutableInfiniteInteger thisAbs = this.copy().abs(), valueAbs = value.copy().abs();
+		if(thisAbs.equals(valueAbs)) return new IntegerQuotient<MutableInfiniteInteger>(new MutableInfiniteInteger(-1), new MutableInfiniteInteger(0));
+		if(is(thisAbs, LESS_THAN, valueAbs) || this.equals(0)) return new IntegerQuotient<MutableInfiniteInteger>(new MutableInfiniteInteger(0), thisAbs);
+
+		//TODO: faster: whole+=this by squaring the number until above then -- until below
+		//faster: define isPowerOf2 and use downShift if possible
+		//faster (harder): use this method as a basis for the grade school long division
+		MutableInfiniteInteger whole = new MutableInfiniteInteger(1);  //above already covered the possible ways whole could be 0
+		while (is(whole.copy().multiply(valueAbs), LESS_THAN_OR_EQUAL_TO, thisAbs))
+		{
+			whole = whole.add(1);
+		}
+		whole = whole.subtract(1);  //the above loop includes equal to so that I don't need to check if equal afterward.
+			//This way remainder 0 or otherwise is handled the same
+
+		MutableInfiniteInteger remainder = thisAbs.copy().subtract(whole.copy().multiply(valueAbs));
+
+		if(this.isNegative != value.isNegative) whole = whole.negate();
+		return new IntegerQuotient<MutableInfiniteInteger>(whole, remainder);
     }
 
-    //aka divideReturnWhole
+	/**
+	 * Aka divideReturnWhole.
+	 * Entire code: <blockquote>{@code return set(divide(value).getWholeResult());}</blockquote>
+	 * @see #divide(MutableInfiniteInteger)
+	 * @see #valueOf(long)
+	 */
 	@Override
     public MutableInfiniteInteger divideDropRemainder(long value) {
-    	//getMagnitudeTail()...?
 		return set(divide(value).getWholeResult());
     }
 
 	/**
+	 * Aka divideReturnWhole.
 	 * Entire code: <blockquote>{@code return this.divideDropRemainder(InfiniteInteger.valueOf(value));}</blockquote>
 	 * @see #divideDropRemainder(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
@@ -981,6 +1029,11 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	@Override
     public MutableInfiniteInteger divideDropRemainder(BigInteger value){return this.divideDropRemainder(MutableInfiniteInteger.valueOf(value));}
 
+	/**
+	 * Aka divideReturnWhole.
+	 * Entire code: <blockquote>{@code return set(divide(value).getWholeResult());}</blockquote>
+	 * @see #divide(MutableInfiniteInteger)
+	 */
 	@Override
     public MutableInfiniteInteger divideDropRemainder(MutableInfiniteInteger value) {
 		return set(divide(value).getWholeResult());
@@ -1059,26 +1112,42 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		return this;
 	}
 
-	//aka remainder, divideDropWhole, divideReturnRemainder
+	/**
+	 * <p>Similar to {@code this % value} except the result is always positive. Aka: modulo, modulus, divideDropWhole, remainder.</p>
+	 * <p>Entire code: <blockquote>{@code return set(divide(value).getRemainder());}</blockquote></p>
+	 * @see #divide(long)
+	 */
 	@Override
-    public MutableInfiniteInteger mod(long value) {
-    	//longVal % value
+    public MutableInfiniteInteger divideReturnRemainder(long value) {
 		return set(divide(value).getRemainder());
     }
 
 	/**
-	 * Entire code: <blockquote>{@code return this.mod(InfiniteInteger.valueOf(value));}</blockquote>
-	 * @see #mod(MutableInfiniteInteger)
+	 * <p>Similar to {@code this % value} except the result is always positive. Aka: modulo, modulus, divideDropWhole, remainder.</p>
+	 * <p>Entire code: <blockquote>{@code return this.divideReturnRemainder(MutableInfiniteInteger.valueOf(value));}</blockquote></p>
+	 * @see #divideReturnRemainder(MutableInfiniteInteger)
 	 * @see #valueOf(BigInteger)
 	 */
 	@Override
-    public MutableInfiniteInteger mod(BigInteger value){return this.mod(MutableInfiniteInteger.valueOf(value));}
+    public MutableInfiniteInteger divideReturnRemainder(BigInteger value){return this.divideReturnRemainder(MutableInfiniteInteger.valueOf(value));}
 
+	/**
+	 * <p>Similar to {@code this % value} except the result is always positive. Aka: modulo, modulus, divideDropWhole, remainder.</p>
+	 * <p>Entire code: <blockquote>{@code return set(divide(value).getRemainder());}</blockquote></p>
+	 * @see #divide(MutableInfiniteInteger)
+	 */
 	@Override
-    public MutableInfiniteInteger mod(MutableInfiniteInteger value) {
+    public MutableInfiniteInteger divideReturnRemainder(MutableInfiniteInteger value) {
 		return set(divide(value).getRemainder());
     }
 
+    /**
+	 * This method delegates because the formula used is exactly the same.
+	 * Entire code: <blockquote>{@code return power(MutableInfiniteInteger.valueOf(exponent));}</blockquote>
+	 *
+	 * @see #power(MutableInfiniteInteger)
+	 * @see #valueOf(long)
+	 */
 	@Override
     public MutableInfiniteInteger power(long exponent) {
 		return power(MutableInfiniteInteger.valueOf(exponent));
@@ -1104,7 +1173,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	@Override
     public MutableInfiniteInteger power(MutableInfiniteInteger exponent) {
 		InfiniteInteger tableValue = InfiniteInteger.powerSpecialLookUp(InfiniteInteger.valueOf(this), InfiniteInteger.valueOf(exponent));
-		if(tableValue != null) return tableValue.toMutableInfiniteInteger();
+		if(tableValue != null) return set(tableValue.toMutableInfiniteInteger());
 
 		if(exponent.isNegative) throw new ArithmeticException("A negative exponent would result in a non-integer answer. The exponent was: "+exponent);
 

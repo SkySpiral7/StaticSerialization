@@ -21,6 +21,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.SkySpiral7.Java.iterators.JumpingIterator;
+import com.github.SkySpiral7.Java.pojo.IntegerQuotient;
 
 /**
  * Methods that simply delegate do not need a test.
@@ -117,6 +118,18 @@ public class UT_MutableInfiniteInteger {
     @Test
     public void compareTo_special() {
     	//TODO: make test
+    }
+
+    @Test
+	public void divide() {
+    	//simple case
+    	assertDivision(MutableInfiniteInteger.valueOf(10).divide(5), 1, new int[]{2}, new int[]{0});
+
+    	//simple negative remainder
+    	assertDivision(MutableInfiniteInteger.valueOf(-11).divide(5), -1, new int[]{2}, new int[]{1});
+
+    	//this is too large for now
+    	//assertDivision(MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).divide(2), 1, new int[]{0, Integer.MIN_VALUE}, new int[]{0});
     }
 
     @Test
@@ -390,6 +403,12 @@ public class UT_MutableInfiniteInteger {
     	//special case: can't use Math.abs
     	assertEqualNodes(MutableInfiniteInteger.valueOf(Long.MIN_VALUE), -1, 0, Integer.MIN_VALUE);
     }
+
+	private void assertDivision(IntegerQuotient<MutableInfiniteInteger> divisionResult, int wholeSign, int[] wholeNodes, int[] remainderNodes) {
+		assertEqualNodes(divisionResult.getWholeResult(), wholeSign, wholeNodes);
+		if(remainderNodes.length == 1 && remainderNodes[0] == 0) assertEqualNodes(divisionResult.getRemainder(), 0, 0);
+		else assertEqualNodes(divisionResult.getRemainder(), 1, remainderNodes);
+	}
 
 	private void assertEqualNodes(MutableInfiniteInteger infiniteIntegerParam, int expectedSignum, int... expectedNodes) {
 		assertEquals(generateInfiniteIntegerString(expectedSignum, expectedNodes), infiniteIntegerParam.toString());

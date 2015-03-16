@@ -39,9 +39,9 @@ public abstract class AbstractInfiniteInteger<T extends AbstractInfiniteInteger<
 	public abstract T divideByPowerOf2DropRemainder(long exponent);
 	public abstract T divideByPowerOf2DropRemainder(BigInteger exponent);
 	public abstract T divideByPowerOf2DropRemainder(T exponent);
-    public abstract T mod(long value);
-    public abstract T mod(BigInteger value);
-    public abstract T mod(T value);
+    public abstract T divideReturnRemainder(long value);
+    public abstract T divideReturnRemainder(BigInteger value);
+    public abstract T divideReturnRemainder(T value);
     public abstract T power(long exponent);
     public abstract T power(BigInteger exponent);
     public abstract T power(T exponent);
