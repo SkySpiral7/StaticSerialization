@@ -128,8 +128,12 @@ public class UT_MutableInfiniteInteger {
     	//simple negative remainder
     	assertDivision(MutableInfiniteInteger.valueOf(-11).divide(5), -1, new int[]{2}, new int[]{1});
 
-    	//this is too large for now
-    	//assertDivision(MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).divide(2), 1, new int[]{0, Integer.MIN_VALUE}, new int[]{0});
+    	//multiple starting nodes that fit into long after shifting
+    	infiniteInteger = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).multiplyByPowerOf2(32);
+    	assertDivision(infiniteInteger.divide(-2L << 32), -1, new int[]{0, Integer.MIN_VALUE >>> 1}, new int[]{0});
+
+    	//multiple nodes for both that can't fit into long
+    	//assertDivision(MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).divide(3), 1, new int[]{?}, new int[]{?});
     }
 
     @Test

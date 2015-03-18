@@ -449,6 +449,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	}
 
 	//takes more than 6 minutes
+	//TODO: make a function for calculateGoogolplex() it won't fit into BigInt. is defined as 10^(10^100)
 	public static BigInteger calculateMaxBigInteger() {
 		BigInteger maxValue = BigInteger.ONE.shiftLeft(Integer.MAX_VALUE-1).subtract(BigInteger.ONE);
 		maxValue = maxValue.shiftLeft(1).add(BigInteger.ONE);
@@ -521,7 +522,6 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		if(!this.isFinite() || value == 0) return this;
 		if(this.equals(0)) return set(MutableInfiniteInteger.valueOf(value));
 		if(value == Long.MIN_VALUE) return this.add(MutableInfiniteInteger.valueOf(value));  //special case to avoid bug
-		//TODO: make a method for canFitIntoLong and have the math methods return InfiniteInteger.valueOf(this.longValue() + value.longValue())
 
 		//delegations based on the sign of each
 		if(!isNegative && value < 0) return this.subtract(Math.abs(value));
@@ -989,11 +989,37 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		if(this.equals(value)) return new IntegerQuotient<MutableInfiniteInteger>(new MutableInfiniteInteger(1), new MutableInfiniteInteger(0));
 
 		MutableInfiniteInteger thisAbs = this.copy().abs(), valueAbs = value.copy().abs();
+		//if not equal but abs is equal then answer is -1,0
 		if(thisAbs.equals(valueAbs)) return new IntegerQuotient<MutableInfiniteInteger>(new MutableInfiniteInteger(-1), new MutableInfiniteInteger(0));
 		if(is(thisAbs, LESS_THAN, valueAbs) || this.equals(0)) return new IntegerQuotient<MutableInfiniteInteger>(new MutableInfiniteInteger(0), thisAbs);
 
-		//TODO: faster: whole+=this by squaring the number until above then -- until below
-		//faster: define isPowerOf2 and use downShift if possible
+		//shift them down as much as possible
+		//I can't use thisAbs.intValue because I need all 32 bits
+		while (thisAbs.magnitudeHead.getData().intValue() == 0 && valueAbs.magnitudeHead.getData().intValue() == 0)
+		{
+			//dropping a node is fast and greatly shrinks the numbers
+			thisAbs = thisAbs.divideByPowerOf2DropRemainder(32);
+			valueAbs = valueAbs.divideByPowerOf2DropRemainder(32);
+		}
+		int lastShift = Math.min(Integer.numberOfTrailingZeros(thisAbs.intValue()), Integer.numberOfTrailingZeros(valueAbs.intValue()));
+		if (lastShift != 0)
+		{
+			//passing in 0 would do nothing anyway
+			thisAbs = thisAbs.divideByPowerOf2DropRemainder(lastShift);
+			valueAbs = valueAbs.divideByPowerOf2DropRemainder(lastShift);
+		}
+
+		boolean resultIsNegative = (isNegative != value.isNegative);  //!= acts as xor
+		//if the remaining division can be done by the floating point unit then delegate
+		if (thisAbs.equals(thisAbs.longValue()) && valueAbs.equals(valueAbs.longValue()))
+		{
+			long whole = (long) (thisAbs.longValue()/valueAbs.longValue());
+			long remainder = thisAbs.longValue() % valueAbs.longValue();
+			if(resultIsNegative) whole*=-1;
+			return new IntegerQuotient<MutableInfiniteInteger>(new MutableInfiniteInteger(whole), new MutableInfiniteInteger(remainder));
+		}
+
+		//TODO: faster: perform a bilateral search on the number of nodes
 		//faster (harder): use this method as a basis for the grade school long division
 		MutableInfiniteInteger whole = new MutableInfiniteInteger(1);  //above already covered the possible ways whole could be 0
 		while (is(whole.copy().multiply(valueAbs), LESS_THAN_OR_EQUAL_TO, thisAbs))
@@ -1005,7 +1031,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 
 		MutableInfiniteInteger remainder = thisAbs.copy().subtract(whole.copy().multiply(valueAbs));
 
-		if(this.isNegative != value.isNegative) whole = whole.negate();
+		if(resultIsNegative) whole = whole.negate();
 		return new IntegerQuotient<MutableInfiniteInteger>(whole, remainder);
     }
 
@@ -1506,7 +1532,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 
 	@Override
 	public void toFile(File writeToHere) {
-		// method stub it can always fit
+		// method stub it can always fit (assuming the JVM and OS had no max file size which they do)
 	}
     //I could implement writeObject and readObject but the JVM default serialization works fine.
 	//readObject is possible by putting a long for count of following nodes that exist and repeat
