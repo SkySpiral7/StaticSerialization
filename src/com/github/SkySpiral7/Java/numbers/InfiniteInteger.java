@@ -371,16 +371,6 @@ public class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteger> {
 		return baseNumber.bigIntegerValueExact();
 	}
 
-	//takes more than 6 minutes
-	public static BigInteger calculateMaxBigInteger() {
-		return MutableInfiniteInteger.calculateMaxBigInteger();
-	}
-
-	//not sure if faster
-	public static InfiniteInteger calculateMaxBigIntegerAsInfiniteInteger() {
-		return valueOf(MutableInfiniteInteger.calculateMaxBigIntegerAsInfiniteInteger());
-	}
-
 	/**
 	 * This method returns a read only list iterator of unknown size that iterates over the data of each of the nodes
 	 * of this InfiniteInteger. Each node is unsigned and they are in little endian order.

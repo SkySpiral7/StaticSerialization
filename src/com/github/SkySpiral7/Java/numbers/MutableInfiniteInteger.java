@@ -449,7 +449,6 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	}
 
 	//takes more than 6 minutes
-	//TODO: make a function for calculateGoogolplex() it won't fit into BigInt. is defined as 10^(10^100)
 	public static BigInteger calculateMaxBigInteger() {
 		BigInteger maxValue = BigInteger.ONE.shiftLeft(Integer.MAX_VALUE-1).subtract(BigInteger.ONE);
 		maxValue = maxValue.shiftLeft(1).add(BigInteger.ONE);
@@ -460,6 +459,21 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	public static MutableInfiniteInteger calculateMaxBigIntegerAsInfiniteInteger() {
 		MutableInfiniteInteger bigIntMaxValue = MutableInfiniteInteger.valueOf(1).multiplyByPowerOf2(Integer.MAX_VALUE).subtract(1);
 		return bigIntMaxValue;
+	}
+
+	/**
+	 * A Googolplex is a huge number that is easy to define. It is equal to 10<sup>10<sup>100</sup></sup>.
+	 * This number will not fit into a BigInteger, the reason this method is defined is to show that this class
+	 * does allow such a number (even if the hardware does not). This calculation is correct but will not finish
+	 * within a thousand years.
+	 *
+	 * @return 10^(10^100)
+	 * @deprecated Seriously. Don't call this method.
+	 */
+	@Deprecated
+	public static MutableInfiniteInteger calculateGoogolplex() {
+		MutableInfiniteInteger googol = MutableInfiniteInteger.valueOf(10).power(100);
+		return MutableInfiniteInteger.valueOf(10).power(googol);
 	}
 
 	/**
@@ -995,7 +1009,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 
 		//shift them down as much as possible
 		//I can't use thisAbs.intValue because I need all 32 bits
-		while (thisAbs.magnitudeHead.getData().intValue() == 0 && valueAbs.magnitudeHead.getData().intValue() == 0)
+		while (((int) thisAbs.longValue()) == 0 && ((int) valueAbs.longValue()) == 0)
 		{
 			//dropping a node is fast and greatly shrinks the numbers
 			thisAbs = thisAbs.divideByPowerOf2DropRemainder(32);

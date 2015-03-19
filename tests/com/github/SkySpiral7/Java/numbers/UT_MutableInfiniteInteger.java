@@ -28,7 +28,8 @@ import com.github.SkySpiral7.Java.pojo.IntegerQuotient;
  * Additionally the following do not need a test:
  * the other versions of littleEndian and bigEndian, magnitude Iterator and Stream,
  * getMagnitudeTail, selfPower, factorial, abs, negate, signum, isNaN, isInfinite, isFinite, signalNaN,
- * the other versions of equals, hashCode, copy, toFile (but toString should be tested when finished)
+ * the other versions of equals, hashCode, copy, toFile (but toString should be tested when finished),
+ * calculateMaxBigInteger (too slow), calculateGoogolplex (lol slow and nothing to test)
  */
 public class UT_MutableInfiniteInteger {
     private MutableInfiniteInteger infiniteInteger;
@@ -125,15 +126,19 @@ public class UT_MutableInfiniteInteger {
     	//simple case
     	assertDivision(MutableInfiniteInteger.valueOf(10).divide(5), 1, new int[]{2}, new int[]{0});
 
-    	//simple negative remainder
+    	//simple negative with remainder
     	assertDivision(MutableInfiniteInteger.valueOf(-11).divide(5), -1, new int[]{2}, new int[]{1});
 
     	//multiple starting nodes that fit into long after shifting
     	infiniteInteger = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).multiplyByPowerOf2(32);
+    	//(2^95) / -(2^32) == -(2^63). That's what I'm testing
     	assertDivision(infiniteInteger.divide(-2L << 32), -1, new int[]{0, Integer.MIN_VALUE >>> 1}, new int[]{0});
 
     	//multiple nodes for both that can't fit into long
-    	//assertDivision(MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).divide(3), 1, new int[]{?}, new int[]{?});
+    	//(2^95)/(2^63-1) == 0x1_0000__0000 r ?
+    	//as of now this is too slow to run
+    	//infiniteInteger = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).multiplyByPowerOf2(32);
+    	//assertDivision(infiniteInteger.divide(Long.MAX_VALUE), 1, new int[]{0, 1}, new int[]{0});
     }
 
     @Test
