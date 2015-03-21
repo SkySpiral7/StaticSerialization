@@ -476,6 +476,40 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		return MutableInfiniteInteger.valueOf(10).power(googol);
 	}
 
+	//http://googology.wikia.com/wiki/Arrow_notation
+	//http://mathworld.wolfram.com/KnuthUp-ArrowNotation.html
+	//private: use power instead of this method
+	private static MutableInfiniteInteger arrowNotation(MutableInfiniteInteger a, MutableInfiniteInteger n, MutableInfiniteInteger b) {
+		if(n.equals(1)) return a.copy().power(b);
+		if(b.equals(1)) return a.copy();
+		return arrowNotation(a.copy(), n.copy().subtract(1), arrowNotation(a.copy(), n.copy(), b.copy().subtract(1)));
+	}
+
+	//http://googology.wikia.com/wiki/Graham's_number
+	//this function doesn't have an official name
+	//private: has no legitimate use case
+	private static MutableInfiniteInteger grahamFunction(MutableInfiniteInteger k) {
+		if(k.equals(0)) return new MutableInfiniteInteger(4);
+		return arrowNotation(new MutableInfiniteInteger(3), grahamFunction(k.copy().subtract(1)), new MutableInfiniteInteger(3));
+	}
+
+	/**
+	 * Graham's Number is comically large but <a href="http://waitbutwhy.com/2014/11/1000000-grahams-number.html">hard</a>
+	 * <a href="http://en.wikipedia.org/wiki/Graham's_number#Definition">to</a>
+	 * <a href="http://googology.wikia.com/wiki/Graham's_number">define</a>.
+	 * This number will not fit into a BigInteger, the reason this method is defined is to show that this class
+	 * does allow such a number (even if the hardware does not). This calculation is correct but will not finish
+	 * within billions of years nor is there enough matter on Earth to store such a number.
+	 *
+	 * @return Graham's Number which is g(64)
+	 * @deprecated Do you have a solid state hard drive the size of the Death Star? If not then stop
+	 * pretending you can even store this number.
+	 */
+	@Deprecated  //maybe not enough matter in the universe to store this number but I'll estimate downward
+	public static MutableInfiniteInteger calculateGrahamsnumber() {
+		return grahamFunction(new MutableInfiniteInteger(64));
+	}
+
 	/**
 	 * This method returns a read only list iterator of unknown size that iterates over the data of each of the nodes
 	 * of this InfiniteInteger. Each node is unsigned and they are in little endian order.
