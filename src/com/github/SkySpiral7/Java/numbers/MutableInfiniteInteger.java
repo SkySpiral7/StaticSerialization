@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
@@ -234,6 +235,50 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	 */
 	public static MutableInfiniteInteger bigEndian(ListIterator<Long> valueIterator, boolean isNegative) {
 		return littleEndian(DescendingListIterator.iterateBackwardsFromEnd(valueIterator), isNegative);
+	}
+
+    /**
+     * Constructs a randomly generated InfiniteInteger, uniformly distributed over
+     * the range 0 to 2^(32 * {@code nodeCount}), inclusive.
+     * The uniformity of the distribution assumes the Random class is a fair source of random
+     * bits. Note that the result may be positive or negative.
+     *
+     * @param  nodeCount
+     * @see Random
+     * @return NaN if {@code nodeCount} < 1 otherwise a new random number is returned.
+     */
+	public static MutableInfiniteInteger random(MutableInfiniteInteger nodeCount) {
+		return random(nodeCount, new Random());
+	}
+
+    /**
+     * Constructs a randomly generated InfiniteInteger, uniformly distributed over
+     * the range 0 to 2^(32 * {@code nodeCount}), inclusive.
+     * The uniformity of the distribution assumes that a fair source of random
+     * bits is provided in {@code random}. Note that the result
+     * may be positive or negative.
+     *
+     * @param  nodeCount
+     * @param  random source of randomness to be used in computing the new
+     *         InfiniteInteger.
+     * @return NaN if {@code nodeCount} < 1 otherwise a new random number is returned.
+     */
+	public static MutableInfiniteInteger random(MutableInfiniteInteger nodeCount, Random random) {
+		if(!nodeCount.isFinite()) return NaN;
+		if(is(nodeCount, LESS_THAN, MutableInfiniteInteger.valueOf(1))) return NaN;
+
+		MutableInfiniteInteger remainingNodes = nodeCount.copy();
+		MutableInfiniteInteger result = new MutableInfiniteInteger(0);
+		while (!remainingNodes.equals(0))
+		{
+			//next int covers all possible unsigned 2^32
+			result.magnitudeHead.setData(random.nextInt());
+			result = result.multiplyByPowerOf2(32);
+			remainingNodes = remainingNodes.subtract(1);
+		}
+		result = result.divideByPowerOf2DropRemainder(32);  //remove trailing 0 node
+		result.isNegative = random.nextBoolean();
+		return result;
 	}
 
 	/**
@@ -825,7 +870,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		int lowValue = (int) valueRemaining;
 		int highValue = (int) (valueRemaining >>> 32);
 
-		//TODO: make this mutate as it goes
+		//TODO: make this mutate as it goes. also use shifting for speed
 		MutableInfiniteInteger result = internalMultiply(this, lowValue);
 		if (highValue != 0)
 		{
@@ -919,7 +964,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 			resultCursor = resultCursor.getPrev();  //prev is never null because the result is not 0
 			resultCursor.getNext().remove();
 		}
-    	//TODO: make it suck less by mutating as it goes
+    	//TODO: make it suck less by mutating as it goes. also use shifting for speed
 
 		return set(result);
     }
