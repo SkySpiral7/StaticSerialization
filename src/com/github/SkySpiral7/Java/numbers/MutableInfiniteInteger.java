@@ -884,7 +884,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 
     /**
      * Used internally by the multiply methods. This method multiplies thisValue by value.
-     * This method does not mutate and should be removed in the future.
+     * This method does not mutate (the returned value will be a copy) and should be removed in the future.
      *
      * @param thisValue can't be a constant, 0, or null
      * @param value must be positive or 0
@@ -1346,6 +1346,62 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		return set(result);
     }
 
+	/**
+	 * This method is a fast high estimation of the square root of thisValue.
+	 * The number returned will a number that is greater than or equal to the actual square root.
+	 * Worst case senerio the estimation returned will be one less than twice the actual square root
+	 * (ie {@code worst_estimation == sqrt *2 -1}). If thisValue is greater than max long then the number returned will be a power of 2.
+	 * This method does not mutate and the returned value will be a copy.
+	 *
+	 * @param thisValue can't be null
+	 * @return an upper bound for the square root. NaN is returned if thisValue is negative or not finite.
+	 */
+	protected static MutableInfiniteInteger estimateSqrt(MutableInfiniteInteger thisValue) {
+		//TODO: use estimateSqrt for gcd
+		if(!thisValue.isFinite() || thisValue.isNegative) return NaN;
+		if(thisValue.equals(0) || thisValue.equals(1)) return thisValue.copy();
+		if(is(thisValue, LESS_THAN_OR_EQUAL_TO, MutableInfiniteInteger.valueOf(4))) return MutableInfiniteInteger.valueOf(2);
+
+		//if fits into signed long then delegate
+		if (thisValue.equals(thisValue.longValue()))
+		{
+			return MutableInfiniteInteger.valueOf(((long) Math.ceil(Math.sqrt(thisValue.longValue()))));
+		}
+
+		//cutting the number of digits in half works for any number base (except base 1) but base 2 has the closest estimation
+		//worst case is off by 1 digit therefore base 2 has the smallest error (being off by *2)
+		//base 1 would always return thisValue/2 which isn't a good estimation
+		MutableInfiniteInteger binaryDigits = MutableInfiniteInteger.valueOf(0);
+		DequeNode<Integer> thisCursor = thisValue.magnitudeHead;
+		while (thisCursor.getNext() != null)
+		{
+			binaryDigits = binaryDigits.add(32);
+			thisCursor = thisCursor.getNext();
+		}
+		binaryDigits = binaryDigits.add(32);  //for the last node
+		//counting leading 0s functions as expected for unsigned numbers
+		binaryDigits = binaryDigits.subtract(Integer.numberOfLeadingZeros(thisCursor.getData().intValue()));
+		//subtract the unused bits
+
+		//I can't use binaryDigits.intValue because I need all 32 bits
+		boolean isExact = BitWiseUtil.isOdd(((int) binaryDigits.longValue()));
+		if(isExact) binaryDigits = binaryDigits.add(1);  //make it even by rounding up
+		binaryDigits = binaryDigits.divideByPowerOf2DropRemainder(1);
+
+		MutableInfiniteInteger estimation = MutableInfiniteInteger.valueOf(1);
+		while (isComparisonResult(binaryDigits.compareTo(32), GREATER_THAN_OR_EQUAL_TO))
+		{
+			binaryDigits = binaryDigits.subtract(32);
+			estimation = estimation.multiplyByPowerOf2(32);
+		}
+		estimation = estimation.multiplyByPowerOf2(binaryDigits);
+
+		if(isExact && thisValue.isPowerOf2()) estimation = estimation.divideByPowerOf2DropRemainder(1);
+		//the estimation will be the actual square root in this case
+
+		return estimation;
+	}
+
     /**
      * Returns the absolute value of this InfiniteInteger.
      *
@@ -1417,6 +1473,23 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	 */
 	@Override
 	public void signalNaN(){if(isNaN()) throw new ArithmeticException("Not a number.");}
+
+    /**
+     * Returns {@code true} if <code>this.abs() == 2<sup>n</sup></code> where {@code n} is any finite non-negative integer.
+     * The exception is that 0 ({@code n} is -&infin;) returns {@code true}.
+     *
+     * @return {@code true} if this is a power of 2
+     * @see #abs()
+     */
+	//this method exists because I need it for estimateSqrt(MutableInfiniteInteger)
+	public boolean isPowerOf2() {
+		if(!this.isFinite()) return false;
+		for (DequeNode<Integer> thisCursor = this.magnitudeHead; thisCursor != null; thisCursor = thisCursor.getNext())
+		{
+			if(!BitWiseUtil.isPowerOf2(thisCursor.getData().intValue())) return false;
+		}
+		return true;
+	}
 
 	/**
 	 * Compares this InfiniteInteger with the specified object for numeric equality.
