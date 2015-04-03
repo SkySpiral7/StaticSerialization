@@ -1346,6 +1346,113 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		return set(result);
     }
 
+    /**
+	 * This method delegates because the formula used is exactly the same.
+	 * Entire code: <blockquote>{@code return greatestCommonDivisor(MutableInfiniteInteger.valueOf(otherValue));}</blockquote>
+	 *
+	 * @see #greatestCommonDivisor(MutableInfiniteInteger)
+	 * @see #valueOf(long)
+	 */
+	public MutableInfiniteInteger greatestCommonDivisor(long otherValue){return greatestCommonDivisor(MutableInfiniteInteger.valueOf(otherValue));}
+
+    /**
+	 * Entire code: <blockquote>{@code return greatestCommonDivisor(MutableInfiniteInteger.valueOf(otherValue));}</blockquote>
+	 *
+	 * @see #greatestCommonDivisor(MutableInfiniteInteger)
+	 * @see #valueOf(BigInteger)
+	 */
+	public MutableInfiniteInteger greatestCommonDivisor(BigInteger otherValue){return greatestCommonDivisor(MutableInfiniteInteger.valueOf(otherValue));}
+
+    /**
+     * Returns an InfiniteInteger whose value is the <a href="http://en.wikipedia.org/wiki/Greatest_common_divisor">greatest common divisor</a> of
+     * {@code this.abs()} and {@code otherValue.abs()}. Returns +&infin; if
+     * {@code this == 0 && otherValue == 0}. Returns NaN if either is not finite.
+     *
+     * @param  otherValue value with which the GCD is to be computed.
+     * @return {@code GCD(abs(this), abs(otherValue))}
+     */
+	public MutableInfiniteInteger greatestCommonDivisor(MutableInfiniteInteger otherValue) {
+		MutableInfiniteInteger thisRemaining = this.copy().abs(), otherRemaining = otherValue.copy().abs();
+
+		if(!this.isFinite() || !otherValue.isFinite()) return NaN;
+		if(thisRemaining.equals(otherRemaining)) return thisRemaining.copy();
+		if(thisRemaining.equals(1) || otherRemaining.equals(1)) return MutableInfiniteInteger.valueOf(1);
+		if(thisRemaining.equals(0) && otherRemaining.equals(0)) return POSITIVE_INFINITITY;
+		if(thisRemaining.equals(0)) return otherRemaining.copy();
+		if(otherRemaining.equals(0)) return thisRemaining.copy();
+
+		MutableInfiniteInteger lower = thisRemaining, greater = otherRemaining;
+		if(is(this.copy().abs(), GREATER_THAN, otherRemaining.copy().abs())){lower = otherRemaining; greater = thisRemaining;}
+		//if the lower is a factor of the greater
+		if (greater.copy().divideReturnRemainder(lower).equals(0)) return lower.copy();
+
+		MutableInfiniteInteger thisSqrt = highSqrt(thisRemaining.copy()), otherSqrt = highSqrt(otherRemaining.copy());
+		MutableInfiniteInteger divisor = new MutableInfiniteInteger(1);
+
+		//I can't use intValue because I need all 32 bits
+		//while each have a trailing 0 digit
+		while (((int) thisRemaining.longValue()) == 0 && ((int) otherRemaining.longValue()) == 0)
+		{
+			thisRemaining = thisRemaining.divideByPowerOf2DropRemainder(32);
+			otherRemaining = otherRemaining.divideByPowerOf2DropRemainder(32);
+			divisor = divisor.multiplyByPowerOf2(32);
+		}
+		//I can use intValue because I only need 31 bits (really I only need 1 bit)
+		while (BitWiseUtil.isEven(thisRemaining.intValue()) && BitWiseUtil.isEven(otherRemaining.intValue()))
+		{
+			thisRemaining = thisRemaining.divideByPowerOf2DropRemainder(1);
+			otherRemaining = otherRemaining.divideByPowerOf2DropRemainder(1);
+			divisor = divisor.multiplyByPowerOf2(1);
+		}
+		//that covers the fast cases
+
+		MutableInfiniteInteger possibleDivisor = new MutableInfiniteInteger(3);
+		while (true)
+		{
+			//there are no divisors that are > sqrt. likewise for > remaining
+			//the sqrt is of the originals and not recalculated for the remaining ones which is why I need to check both
+			//it might not be valid to recalculate the sqrt each time which is why I don't
+			if(is(possibleDivisor, GREATER_THAN, thisSqrt) || is(possibleDivisor, GREATER_THAN, thisRemaining)) break;
+			if(is(possibleDivisor, GREATER_THAN, otherSqrt) || is(possibleDivisor, GREATER_THAN, otherRemaining)) break;
+
+			//if they both can divide without remainder
+			if (thisRemaining.copy().divideReturnRemainder(possibleDivisor).equals(0) &&
+				otherRemaining.copy().divideReturnRemainder(possibleDivisor).equals(0))
+			{
+				thisRemaining = thisRemaining.divideDropRemainder(possibleDivisor);
+				otherRemaining = otherRemaining.divideDropRemainder(possibleDivisor);
+				divisor = divisor.multiply(possibleDivisor);
+			}
+			possibleDivisor = possibleDivisor.add(2);  //every odd since I know they are no even factors left
+		}
+
+		return divisor;
+	}
+
+	protected static MutableInfiniteInteger highSqrt(MutableInfiniteInteger thisValue) {
+		//TODO: do a bilateral search to find the sqrt
+		return estimateSqrt(thisValue);
+		/* plan:
+    use fast high sqrt estimation
+    if exact then done
+    divide by 2 and save as vars lower and higher
+    loop:
+    {
+       diff = higher-lower
+       if(diff < 4) break;
+       diff/=2 (truncate)
+       compare (lower+diff) save results as vars lower and higher
+       unless exact in which case return (lower+diff)
+    }
+    loop:
+    {
+       if(lower^2 >= num) return lower
+       lower++
+    }
+    unreachable
+		 */
+	}
+
 	/**
 	 * This method is a fast high estimation of the square root of thisValue.
 	 * The number returned will a number that is greater than or equal to the actual square root.
@@ -1383,8 +1490,8 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		binaryDigits = binaryDigits.subtract(Integer.numberOfLeadingZeros(thisCursor.getData().intValue()));
 		//subtract the unused bits
 
-		//I can't use binaryDigits.intValue because I need all 32 bits
-		boolean isExact = BitWiseUtil.isOdd(((int) binaryDigits.longValue()));
+		//I can use binaryDigits.intValue because I only need 31 bits (really I only need 1 bit)
+		boolean isExact = BitWiseUtil.isOdd((binaryDigits.intValue()));
 		if(isExact) binaryDigits = binaryDigits.add(1);  //make it even by rounding up
 		binaryDigits = binaryDigits.divideByPowerOf2DropRemainder(1);
 

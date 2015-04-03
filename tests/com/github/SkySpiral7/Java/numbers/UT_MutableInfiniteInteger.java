@@ -189,6 +189,29 @@ public class UT_MutableInfiniteInteger {
     }
 
     @Test
+	public void greatestCommonDivisor() {
+    	//list of low primes: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37
+
+    	//simple case
+    	assertEqualNodes(MutableInfiniteInteger.valueOf(12).greatestCommonDivisor(10), 1, 2);
+
+    	//the answer is the lower one. also negatives
+    	assertEqualNodes(MutableInfiniteInteger.valueOf(-15).greatestCommonDivisor(5), 1, 5);
+    	assertEqualNodes(MutableInfiniteInteger.valueOf(-5).greatestCommonDivisor(15), 1, 5);
+
+    	//both prime
+    	assertEqualNodes(MutableInfiniteInteger.valueOf(7).greatestCommonDivisor(5), 1, 1);
+
+    	//with 0
+    	assertEqualNodes(MutableInfiniteInteger.valueOf(0).greatestCommonDivisor(5), 1, 5);
+
+    	//more than max long
+    	infiniteInteger = MutableInfiniteInteger.valueOf(7).multiplyByPowerOf2(64);
+    	MutableInfiniteInteger infiniteInteger2 = MutableInfiniteInteger.valueOf(11).multiplyByPowerOf2(64);
+    	assertEqualNodes(infiniteInteger.greatestCommonDivisor(infiniteInteger2), 1, 0, 0, 1);
+	}
+
+	@Test
     public void intValue() {
     	assertEquals(5, MutableInfiniteInteger.valueOf(5).intValue());
     	assertEquals(Integer.MAX_VALUE, MutableInfiniteInteger.valueOf(Integer.MAX_VALUE).intValue());
