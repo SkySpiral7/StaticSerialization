@@ -481,7 +481,6 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 			{
 				result = result.shiftLeft(32);  //TODO: unsure of math since I am unsigned
 				result = result.add(BigInteger.valueOf(Integer.toUnsignedLong(cursor.getData().intValue())));
-				//TODO: create helper for Integer.toUnsignedLong(cursor.getData().intValue())
 				cursor = cursor.getNext();
 			}
 			if(this.isNegative) return result.negate();
@@ -522,18 +521,23 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		return MutableInfiniteInteger.valueOf(10).power(googol);
 	}
 
-	//http://googology.wikia.com/wiki/Arrow_notation
-	//http://mathworld.wolfram.com/KnuthUp-ArrowNotation.html
-	//private: use power instead of this method
+	/**
+	 * http://googology.wikia.com/wiki/Arrow_notation
+	 * http://mathworld.wolfram.com/KnuthUp-ArrowNotation.html
+	 * http://mathworld.wolfram.com/KnuthUp-ArrowNotation.html
+	 * private: use power instead of this method
+	 */
 	private static MutableInfiniteInteger arrowNotation(MutableInfiniteInteger a, MutableInfiniteInteger n, MutableInfiniteInteger b) {
 		if(n.equals(1)) return a.copy().power(b);
 		if(b.equals(1)) return a.copy();
 		return arrowNotation(a.copy(), n.copy().subtract(1), arrowNotation(a.copy(), n.copy(), b.copy().subtract(1)));
 	}
 
-	//http://googology.wikia.com/wiki/Graham's_number
-	//this function doesn't have an official name
-	//private: has no legitimate use case
+	/**
+	 * http://googology.wikia.com/wiki/Graham's_number
+	 * this function doesn't have an official name
+	 * private: has no legitimate use case
+	 */
 	private static MutableInfiniteInteger grahamFunction(MutableInfiniteInteger k) {
 		if(k.equals(0)) return new MutableInfiniteInteger(4);
 		return arrowNotation(new MutableInfiniteInteger(3), grahamFunction(k.copy().subtract(1)), new MutableInfiniteInteger(3));
@@ -872,11 +876,11 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		int highValue = (int) (valueRemaining >>> 32);
 
 		//TODO: make this mutate as it goes. also use shifting for speed
-		MutableInfiniteInteger result = internalMultiply(this, lowValue);
+		MutableInfiniteInteger result = this.internalMultiply(lowValue);
 		if (highValue != 0)
 		{
 			if(result.magnitudeHead.getNext() == null) DequeNode.Factory.createNodeAfter(result.magnitudeHead, 0);  //TODO: will this ever happen?
-			addAbove(result.magnitudeHead.getNext(), internalMultiply(this, highValue));
+			addAbove(result.magnitudeHead.getNext(), this.internalMultiply(highValue));
 		}
     	result.isNegative = resultIsNegative;
 
@@ -884,16 +888,16 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
     }
 
     /**
-     * Used internally by the multiply methods. This method multiplies thisValue by value.
+     * Used internally by the multiply methods. This method multiplies this InfiniteInteger by value.
      * This method does not mutate (the returned value will be a copy) and should be removed in the future.
+     * This InfiniteInteger can't be a constant or 0.
      *
-     * @param thisValue can't be a constant, 0, or null
      * @param value must be positive or 0
      * @return the result
      */
-	protected static MutableInfiniteInteger internalMultiply(MutableInfiniteInteger thisValue, int value) {
+	protected MutableInfiniteInteger internalMultiply(int value) {
     	if(value == 0) return new MutableInfiniteInteger(0);  //this has already been compared to the singletons
-    	MutableInfiniteInteger result = thisValue.copy().abs();
+    	MutableInfiniteInteger result = this.copy().abs();
 		DequeNode<Integer> resultCursor = result.magnitudeHead;
 		long product;
 		int carry = 0;
@@ -953,7 +957,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 
 		while(!valueRemaining.equals(0))
 		{
-			addAbove(resultCursor, internalMultiply(this, valueRemaining.magnitudeHead.getData().intValue()));
+			addAbove(resultCursor, this.internalMultiply(valueRemaining.magnitudeHead.getData().intValue()));
 			valueRemaining = valueRemaining.divideByPowerOf2DropRemainder(32);
 			if(resultCursor.getNext() == null) resultCursor = DequeNode.Factory.createNodeAfter(resultCursor, 0);
 			else resultCursor = resultCursor.getNext();
@@ -1375,7 +1379,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 	public MutableInfiniteInteger greatestCommonDivisor(MutableInfiniteInteger otherValue) {
 		MutableInfiniteInteger thisRemaining = this.copy().abs(), otherRemaining = otherValue.copy().abs();
 
-		if(!this.isFinite() || !otherValue.isFinite()) return NaN;
+		if(!thisRemaining.isFinite() || !otherRemaining.isFinite()) return NaN;
 		if(thisRemaining.equals(otherRemaining)) return thisRemaining.copy();
 		if(thisRemaining.equals(1) || otherRemaining.equals(1)) return MutableInfiniteInteger.valueOf(1);
 		if(thisRemaining.equals(0) && otherRemaining.equals(0)) return POSITIVE_INFINITITY;

@@ -5,6 +5,7 @@ import static com.github.SkySpiral7.Java.util.ComparableSugar.is;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
@@ -239,6 +240,21 @@ public class UT_MutableInfiniteInteger {
     	assertEquals(-Integer.MAX_VALUE, MutableInfiniteInteger.valueOf(-Integer.MAX_VALUE).intValue());
     	infiniteInteger = MutableInfiniteInteger.valueOf(Integer.MAX_VALUE).add(Integer.MAX_VALUE).add(1).negate();
     	assertEquals(-Integer.MAX_VALUE, infiniteInteger.intValue());
+    }
+
+	@Test
+    public void isPowerOf2() {
+    	assertTrue(MutableInfiniteInteger.valueOf(0).isPowerOf2());
+    	assertTrue(MutableInfiniteInteger.valueOf(1).isPowerOf2());
+    	assertTrue(MutableInfiniteInteger.valueOf(2).isPowerOf2());
+    	assertTrue(MutableInfiniteInteger.valueOf(4).isPowerOf2());
+    	assertTrue(MutableInfiniteInteger.valueOf(8).isPowerOf2());
+    	assertTrue(MutableInfiniteInteger.valueOf(-8).isPowerOf2());
+
+    	assertFalse(MutableInfiniteInteger.valueOf(3).isPowerOf2());
+    	assertFalse(MutableInfiniteInteger.valueOf(5).isPowerOf2());
+    	assertFalse(MutableInfiniteInteger.valueOf(10).isPowerOf2());
+    	assertFalse(MutableInfiniteInteger.valueOf(-10).isPowerOf2());
     }
 
     @Test
