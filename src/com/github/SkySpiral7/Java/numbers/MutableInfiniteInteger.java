@@ -1,5 +1,6 @@
 package com.github.SkySpiral7.Java.numbers;
 
+import static com.github.SkySpiral7.Java.pojo.Comparison.EQUAL_TO;
 import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN;
 import static com.github.SkySpiral7.Java.pojo.Comparison.GREATER_THAN_OR_EQUAL_TO;
 import static com.github.SkySpiral7.Java.pojo.Comparison.LESS_THAN;
@@ -1386,7 +1387,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		//if the lower is a factor of the greater
 		if (greater.copy().divideReturnRemainder(lower).equals(0)) return lower.copy();
 
-		MutableInfiniteInteger thisSqrt = highSqrt(thisRemaining.copy()), otherSqrt = highSqrt(otherRemaining.copy());
+		MutableInfiniteInteger thisSqrt = thisRemaining.sqrtCeil(), otherSqrt = otherRemaining.sqrtCeil();
 		MutableInfiniteInteger divisor = new MutableInfiniteInteger(1);
 
 		//I can't use intValue because I need all 32 bits
@@ -1429,57 +1430,72 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		return divisor;
 	}
 
-	protected static MutableInfiniteInteger highSqrt(MutableInfiniteInteger thisValue) {
-		//TODO: do a bilateral search to find the sqrt
-		return estimateSqrt(thisValue);
-		/* plan:
-    use fast high sqrt estimation
-    if exact then done
-    divide by 2 and save as vars lower and higher
-    loop:
-    {
-       diff = higher-lower
-       if(diff < 4) break;
-       diff/=2 (truncate)
-       compare (lower+diff) save results as vars lower and higher
-       unless exact in which case return (lower+diff)
-    }
-    loop:
-    {
-       if(lower^2 >= num) return lower
-       lower++
-    }
-    unreachable
-		 */
+	/**
+	 * This method finds the ceiling of the square root of this InfiniteInteger.
+	 * For example if the actual square root is 4.1 the returned value will be 5,
+	 * if the number is 25 then 5 is returned etc.
+	 * If +&infin; is passed in then +&infin; is returned.
+	 * This method does not mutate and the returned value will be a copy.
+	 *
+	 * @return an upper bound for the square root. NaN is returned if this is negative or NaN.
+	 * @see Math#ceil(double)
+	 */
+	protected MutableInfiniteInteger sqrtCeil() {
+		if(this.isNaN() || this.isNegative) return NaN;
+		if(this == POSITIVE_INFINITITY) return this;
+
+		//if fits into signed long then delegate
+		if (this.equals(this.longValue()))
+		{
+			return MutableInfiniteInteger.valueOf(((long) Math.ceil(Math.sqrt(this.longValue()))));
+		}
+
+		MutableInfiniteInteger higher = this.estimateSqrt();
+		if(higher.copy().power(2).equals(this)) return higher;  //if already the exact answer
+		MutableInfiniteInteger lower = higher.copy().divideByPowerOf2DropRemainder(1);
+		MutableInfiniteInteger difference, midway;
+
+		while (true)
+		{
+			difference = higher.copy().subtract(lower);
+			//avoid cutting small numbers in half:
+			if(is(difference, LESS_THAN, MutableInfiniteInteger.valueOf(4))) break;
+			difference = difference.divideByPowerOf2DropRemainder(1);
+			midway = difference.add(lower);  //diff not copied because I no longer need it
+			int compareResult = midway.copy().power(2).compareTo(this);
+			if(isComparisonResult(compareResult, EQUAL_TO)) return midway;
+			//if midway^2 > this then midway is an upper bound for the sqrt
+			if(isComparisonResult(compareResult, GREATER_THAN)) higher = midway;
+			else lower = midway;
+		}
+		//if difference < 4 then just have lower count up (max of 3 times)
+		while (true)
+		{
+			if(is(lower.copy().power(2), GREATER_THAN_OR_EQUAL_TO, this)) return lower;
+			lower = lower.add(1);
+		}
+		//unreachable
 	}
 
 	/**
-	 * This method is a fast high estimation of the square root of thisValue.
-	 * The number returned will a number that is greater than or equal to the actual square root.
-	 * Worst case senerio the estimation returned will be one less than twice the actual square root
-	 * (ie {@code worst_estimation == sqrt *2 -1}). If thisValue is greater than max long then the number returned will be a power of 2.
+	 * This method is a fast high estimation of the square root of this InfiniteInteger.
+	 * The number returned will a power of 2 greater than or equal to the actual square root.
+	 * Therefore worst case senerio the estimation returned will be one less than twice the actual square root
+	 * (ie {@code worst_estimation == sqrt *2 -1}).
+	 * The value of this InfiniteInteger can't be negative and must be finite.
 	 * This method does not mutate and the returned value will be a copy.
 	 *
-	 * @param thisValue can't be null
-	 * @return an upper bound for the square root. NaN is returned if thisValue is negative or not finite.
+	 * @return an upper bound for the square root
 	 */
-	protected static MutableInfiniteInteger estimateSqrt(MutableInfiniteInteger thisValue) {
-		//TODO: use estimateSqrt for gcd
-		if(!thisValue.isFinite() || thisValue.isNegative) return NaN;
-		if(thisValue.equals(0) || thisValue.equals(1)) return thisValue.copy();
-		if(is(thisValue, LESS_THAN_OR_EQUAL_TO, MutableInfiniteInteger.valueOf(4))) return MutableInfiniteInteger.valueOf(2);
-
-		//if fits into signed long then delegate
-		if (thisValue.equals(thisValue.longValue()))
-		{
-			return MutableInfiniteInteger.valueOf(((long) Math.ceil(Math.sqrt(thisValue.longValue()))));
-		}
+	protected MutableInfiniteInteger estimateSqrt() {
+		if(this.equals(0) || this.equals(1)) return this.copy();
+		if(is(this, LESS_THAN_OR_EQUAL_TO, MutableInfiniteInteger.valueOf(4))) return MutableInfiniteInteger.valueOf(2);
 
 		//cutting the number of digits in half works for any number base (except base 1) but base 2 has the closest estimation
 		//worst case is off by 1 digit therefore base 2 has the smallest error (being off by *2)
 		//base 1 would always return thisValue/2 which isn't a good estimation
 		MutableInfiniteInteger binaryDigits = MutableInfiniteInteger.valueOf(0);
-		DequeNode<Integer> thisCursor = thisValue.magnitudeHead;
+		DequeNode<Integer> thisCursor = this.magnitudeHead;
 		while (thisCursor.getNext() != null)
 		{
 			binaryDigits = binaryDigits.add(32);
@@ -1503,7 +1519,7 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 		}
 		estimation = estimation.multiplyByPowerOf2(binaryDigits);
 
-		if(isExact && thisValue.isPowerOf2()) estimation = estimation.divideByPowerOf2DropRemainder(1);
+		if(isExact && this.isPowerOf2()) estimation = estimation.divideByPowerOf2DropRemainder(1);
 		//the estimation will be the actual square root in this case
 
 		return estimation;

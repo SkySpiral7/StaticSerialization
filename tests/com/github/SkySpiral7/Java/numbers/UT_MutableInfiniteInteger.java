@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -164,6 +165,22 @@ public class UT_MutableInfiniteInteger {
     	MutableInfiniteInteger mutableInfiniteInteger = MutableInfiniteInteger.valueOf(123);
     	assertEquals(mutableInfiniteInteger.copy(), mutableInfiniteInteger);
     	assertNotEquals(infiniteInteger.copy().add(1), infiniteInteger);
+    }
+
+    //@Test
+	//this only compiles if estimateSqrt is made public (see below)
+	public void estimateSqrt() {
+		//infiniteInteger = MutableInfiniteInteger.valueOf(0).estimateSqrt();
+		assertEquals(infiniteInteger.intValue(), 0);
+
+    	for (int i=1; i < 10_000_000; i++)
+    	{
+    		//infiniteInteger = MutableInfiniteInteger.valueOf(i).estimateSqrt();
+    		int actualLow = (int) Math.floor((Math.sqrt(i)));
+    		int actualHigh = (int) Math.ceil((Math.sqrt(i)*2));
+    		assertThat(infiniteInteger.intValue(), Matchers.greaterThanOrEqualTo(actualLow));
+    		assertThat(infiniteInteger.intValue(), Matchers.lessThan(actualHigh));
+    	}
     }
 
     @Test
@@ -337,6 +354,18 @@ public class UT_MutableInfiniteInteger {
 
     	//multiple starting nodes
     	assertEqualNodes(MutableInfiniteInteger.valueOf(Long.MIN_VALUE).power(3), -1, 0, 0, 0, 0, 0, 0x2000_0000);
+    }
+
+    //@Test
+	//this only compiles if sqrtCeil is made public (see below)
+    //this test is only meaningful if the Math.sqrt delegation is commented out
+	public void sqrtCeil() {
+    	for (int i=0; i <= 1_200_000; i++)
+    	{
+    		//infiniteInteger = MutableInfiniteInteger.valueOf(i).sqrtCeil();
+    		int actualHigh = (int) Math.ceil((Math.sqrt(i)));
+    		assertEquals(infiniteInteger.intValue(), actualHigh);
+    	}
     }
 
     @Test
