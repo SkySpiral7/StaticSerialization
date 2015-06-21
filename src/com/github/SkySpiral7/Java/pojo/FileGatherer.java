@@ -1,13 +1,18 @@
 package com.github.SkySpiral7.Java.pojo;
 
 import java.io.File;
+import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.regex.Pattern;
 
 public class FileGatherer {
 	private File rootFolder;
+	//TODO: use java.io.FileFilter instead of Pattern. Also see: javax.swing.filechooser.FileNameExtensionFilter
 	private Pattern fileCriteria, subFolderCriteria, folderCriteria;
 	private int maxDepth, maxFinds;
 	private boolean findFolders, findFiles;
@@ -54,6 +59,7 @@ maxFinds=maxDepth=-1;</pre></code>
     * @param findFolders true if you want to check folder's names or false if you do not
     * @param findFiles whether or not you want non-directory (ie normal) files
     */
+   //TODO: use builder pattern
    public FileGatherer(File rootFolder, Pattern fileCriteria, Pattern subFolderCriteria, Pattern folderCriteria, int maxDepth, int maxFinds, boolean findFolders, boolean findFiles)
    {
 	   //resetAll();  //doesn't need since it defines everything
@@ -93,48 +99,32 @@ maxFinds=maxDepth=-1;</pre></code>
 	   return temp.performSearch();
    }
    public List<File> search(){return performSearch();};  //alias
-   public List<File> performSearch()
-   {
-	   List<File> myFilePathsFound = new ArrayList<File>();
-       List<File> unexploreredDirectories = new ArrayList<File>();
-       if((!findFiles && !findFolders) || maxFinds==0) return myFilePathsFound;
-       if(maxDepth!=-1) maxDepth+=countCharOccurrencesInString(rootFolder.getAbsolutePath(), File.separatorChar)+1;
-  			//this math is done to convert maxDepth from relative depth to absolute depth
-       		//if(maxDepth!=-1) is not necessary but is more clear
-       unexploreredDirectories.add(rootFolder);
-      while (!unexploreredDirectories.isEmpty())
-      {
-          File [] anUnorganizedArray = unexploreredDirectories.get(0).listFiles();
-          File thisFile;
-          int currentDepth;
-         for (int anUnorganizedArrayIndex=0; anUnorganizedArrayIndex < anUnorganizedArray.length; anUnorganizedArrayIndex++)
-         {
-             thisFile=anUnorganizedArray[anUnorganizedArrayIndex];
-             currentDepth=countCharOccurrencesInString(thisFile.getAbsolutePath(), File.separatorChar);
-             if(thisFile.isDirectory() && currentDepth!=maxDepth && subFolderCriteria.matcher(thisFile.getName()).find()) unexploreredDirectories.add(thisFile);
-             if(!thisFile.isDirectory() && findFiles && fileCriteria.matcher(thisFile.getName()).find()) myFilePathsFound.add(thisFile);
-             else if(thisFile.isDirectory() && findFolders && folderCriteria.matcher(thisFile.getName()).find()) myFilePathsFound.add(thisFile);
-             if(maxFinds==myFilePathsFound.size()) return myFilePathsFound;
-         }
-          unexploreredDirectories.remove(0);
-      }
-       Collections.sort(myFilePathsFound);  //so that the folders will have some kind of order (in this case full path alphabetical ascending)
-       return myFilePathsFound;
-   }
-   //copied from MyTools. It is simple and I want this file to stand alone
-   private static int countCharOccurrencesInString(String stringToSearch, char characterToFind)
-   {
-     int returnValue=0;
-     for(int i=0; i < stringToSearch.length(); i++)
-     {
-        if(stringToSearch.charAt(i)==characterToFind) returnValue++;
-     }
-     return returnValue;
-     //same as: return stringToSearch.split(Pattern.quote(""+characterToFind)).length-1;
-     //same as: return stringToSearch.split("\\Q"+characterToFind+"\\E")).length-1;
-     //this should be faster though since it doesn't need to create a substring with each match
-   }
+   public List<File> performSearch() {
+       List<File> result = new ArrayList<File>();
+       Deque<File> remaining = new ArrayDeque<File>();
 
+       if((!findFiles && !findFolders) || maxFinds == 0) return result;
+       //TODO: use more nio (after builder)
+       if(maxDepth != -1) maxDepth += Paths.get(rootFolder.getAbsolutePath()).getNameCount() +1;
+  			//this math is done to convert maxDepth from relative depth to absolute depth
+       		//+1 make it rootFolder's children not rootFolder itself
+
+       remaining.add(rootFolder);
+       while (!remaining.isEmpty())
+       {
+             File thisFile = remaining.pollLast();
+             if(maxDepth != -1 && maxDepth < Paths.get(thisFile.getAbsolutePath()).getNameCount()) continue;
+             if(thisFile.isDirectory() && subFolderCriteria.matcher(thisFile.getName()).find()) remaining.addAll(Arrays.asList(thisFile.listFiles()));
+
+             if(!thisFile.isDirectory() && findFiles && fileCriteria.matcher(thisFile.getName()).find()) result.add(thisFile);
+             else if(thisFile.isDirectory() && findFolders && folderCriteria.matcher(thisFile.getName()).find()) result.add(thisFile);
+
+             if(maxFinds == result.size()) break;
+       }
+
+       Collections.sort(result);  //so that the folders will have some kind of order (in this case full path alphabetical ascending)
+       return result;
+ }
    //**************************************************************************
    //Generated getters and setters
    //**************************************************************************
