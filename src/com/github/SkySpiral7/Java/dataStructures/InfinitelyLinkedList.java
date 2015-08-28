@@ -16,7 +16,9 @@ import com.github.SkySpiral7.Java.ListIndexOutOfBoundsException;
 import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
 import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
 import com.github.SkySpiral7.Java.numbers.InfiniteInteger;
+import com.github.SkySpiral7.Java.pojo.Comparison;
 import com.github.SkySpiral7.Java.pojo.DequeNode;
+import com.github.SkySpiral7.Java.util.ComparableSugar;
 
 public class InfinitelyLinkedList<E> extends LinkedList<E> {
 	protected InfiniteInteger actualSize;
@@ -310,5 +312,55 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
     public boolean isEmpty() {
     	return first == null;  //this is faster then checking size
     }
+
+    @Override
+    public Object[] toArray() {
+   	 if(ComparableSugar.isComparisonResult(actualSize.compareTo(Integer.MAX_VALUE), Comparison.GREATER_THAN))
+   		 throw new IllegalStateException("This list is larger than max array size");
+        Object[] result = new Object[actualSize.intValue()];
+        int i = 0;
+        for (DequeNode<E> cursor = first; cursor != null; cursor = cursor.getNext())
+    		{result[i] = cursor.getData(); i++;}
+        return result;
+    }
+
+    @Override
+    public E[] toArray(Class<E> elementType) {
+   	 if(ComparableSugar.isComparisonResult(actualSize.compareTo(Integer.MAX_VALUE), Comparison.GREATER_THAN))
+   		 throw new IllegalStateException("This list is larger than max array size");
+       @SuppressWarnings("unchecked")
+       E[] destination = (E[])java.lang.reflect.Array.newInstance(elementType, actualSize.intValue());
+       int i = 0;
+       for (DequeNode<E> cursor = first; cursor != null; cursor = cursor.getNext())
+   		{destination[i] = cursor.getData(); i++;}
+       return destination;
+   }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T[] toArray(T[] destination) {
+   	 if(ComparableSugar.isComparisonResult(actualSize.compareTo(Integer.MAX_VALUE), Comparison.GREATER_THAN))
+   		 throw new IllegalStateException("This list is larger than max array size");
+   	 size = actualSize.intValue();
+    	if (destination.length < size)
+            destination = (T[])java.lang.reflect.Array.newInstance(
+                                destination.getClass().getComponentType(), size);
+        int i = 0;
+        //result exists in order to cause an ArrayStoreException instead of a ClassCastException
+        Object[] result = destination;
+        for (DequeNode<E> cursor = first; cursor != null; cursor = cursor.getNext())
+        	{result[i] = cursor.getData(); i++;}
+
+        if (destination.length > size)
+            destination[size] = null;
+
+        size=-1;
+        return destination;
+    }
+
+ 	@Override
+ 	public LinkedList<E> copy() {
+ 		return new InfinitelyLinkedList<E>(this);  //acts as a copy constructor
+ 	}
 
 }
