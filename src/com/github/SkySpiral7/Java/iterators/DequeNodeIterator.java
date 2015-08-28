@@ -28,7 +28,7 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>> {
 
 	@Override
 	public boolean hasNext() {
-		return (nextNode != null && !amAtEnd);
+		return !amAtEnd;
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>> {
 
 	@Override
 	public boolean hasPrevious() {
-		return (amAtEnd || (nextNode != null && nextNode.getPrev() != null));
+		return (amAtEnd || nextNode.getPrev() != null);
 	}
 
 	@Override
@@ -53,6 +53,7 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>> {
 		else amAtEnd = false;
 		nextIndex--;
 		previouslyVistedNode = nextNode;
+		//TODO: if(was amAtEnd) then should previous node be the last one?
 		return nextNode;
 	}
 

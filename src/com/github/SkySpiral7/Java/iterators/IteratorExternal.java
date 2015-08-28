@@ -4,7 +4,6 @@ import java.util.AbstractList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.RandomAccess;
 
 import com.github.SkySpiral7.Java.dataStructures.ModCountList;
 
@@ -14,7 +13,7 @@ import com.github.SkySpiral7.Java.dataStructures.ModCountList;
  * @param <E> the data type of the list
  * @see AbstractList
  */
-public class IteratorExternal<E> implements Iterator<E>, RandomAccess {
+public class IteratorExternal<E> implements Iterator<E> {
     /**
      * Index of element to be returned by subsequent call to next.
      */

@@ -50,7 +50,7 @@ import com.github.SkySpiral7.Java.util.BitWiseUtil;
  *
  * @see BigInteger
  */
-public class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteger> {
+public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteger> {
 	private static final long serialVersionUID = 1L;
 
 	/**Common abbreviation for "not a number". This constant is the result of invalid math such as 0/0.
@@ -979,8 +979,11 @@ public class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteger> {
 	public void toFile(File writeToHere) {
 		// method stub it can always fit
 	}
-    //I could implement writeObject and readObject but the JVM default serialization works fine.
-	//readObject is possible by putting a long for count of following nodes that exist and repeat
-	//for example if there were Long.max+1 nodes then serialize: Long.max, all but last node, 1, last node
+    /*I could implement writeObject and readObject but the JVM default serialization works fine.
+	readObject is possible by putting a long for count of following nodes that exist and repeat
+	for example if there were Long.max+1 nodes then serialize: Long.max, all but last node, 1, last node
+	although there is the Evlis stealer... I could use Externalizable write them in a block and catch EOF
+	but there's the singletons...
+	*/
 
 }

@@ -37,7 +37,7 @@ import com.github.SkySpiral7.Java.util.BitWiseUtil;
  * @see InfiniteInteger
  */
 //TODO: move all this class doc to the Abstract
-public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfiniteInteger> implements Copyable<MutableInfiniteInteger> {
+public final class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfiniteInteger> implements Copyable<MutableInfiniteInteger> {
 	private static final long serialVersionUID = 1L;
 
 	/**Common abbreviation for "not a number". This constant is the result of invalid math such as 0/0.
@@ -1427,8 +1427,9 @@ public class MutableInfiniteInteger extends AbstractInfiniteInteger<MutableInfin
 				thisRemaining = thisRemaining.divideDropRemainder(possibleDivisor);
 				otherRemaining = otherRemaining.divideDropRemainder(possibleDivisor);
 				divisor = divisor.multiply(possibleDivisor);
+				//do not increase possibleDivisor because it might divide multiple times
 			}
-			possibleDivisor = possibleDivisor.add(2);  //every odd since I know they are no even factors left
+			else possibleDivisor = possibleDivisor.add(2);  //every odd since I know they are no even factors left
 		}
 
 		return divisor;

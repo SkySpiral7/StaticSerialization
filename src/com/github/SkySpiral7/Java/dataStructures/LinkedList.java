@@ -245,10 +245,10 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
     @Override
     public void add(int insertionIndex, E newElement) {
-    	if(size == Integer.MAX_VALUE) return;
+        if(size == Integer.MAX_VALUE) return;
         if(insertionIndex == size){this.addLast(newElement); return;}  //must be here since getNode will throw
-        //if(insertionIndex == 0){this.addFirst(newElement); return;}  //calling getNode is more efficient
-    	insertNodeAfter(getNode(insertionIndex).getPrev(), newElement);
+        if(insertionIndex == 0){this.addFirst(newElement); return;}  //faster than calling getNode
+        insertNodeAfter(getNode(insertionIndex).getPrev(), newElement);
     }
 
     @Override
@@ -351,6 +351,15 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
     		{result[i] = cursor.getData(); i++;}
         return result;
     }
+
+    public E[] toArray(Class<E> elementType) {
+       @SuppressWarnings("unchecked")
+       E[] destination = (E[])java.lang.reflect.Array.newInstance(elementType, size);
+       int i = 0;
+       for (DequeNode<E> cursor = first; cursor != null; cursor = cursor.getNext())
+   		{destination[i] = cursor.getData(); i++;}
+       return destination;
+   }
 
     @Override
     @SuppressWarnings("unchecked")

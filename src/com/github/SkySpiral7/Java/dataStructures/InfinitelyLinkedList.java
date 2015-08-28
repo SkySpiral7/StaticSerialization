@@ -19,11 +19,9 @@ import com.github.SkySpiral7.Java.numbers.InfiniteInteger;
 import com.github.SkySpiral7.Java.pojo.DequeNode;
 
 public class InfinitelyLinkedList<E> extends LinkedList<E> {
-	public static final int INVALID_SIZE = -1;
-
 	protected InfiniteInteger actualSize;
 
-	public InfinitelyLinkedList(){size = INVALID_SIZE; actualSize = InfiniteInteger.ZERO;}
+	public InfinitelyLinkedList(){size = -1; actualSize = InfiniteInteger.ZERO;}
     public InfinitelyLinkedList(Collection<? extends E> initialElements){this(); addAll(initialElements);}
     public InfinitelyLinkedList(E[] initialElements){this(Arrays.asList(initialElements));}
 
@@ -66,7 +64,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E> {
 
 	@Override
 	public int size() {
-		if(isComparisonResult(actualSize.compareTo(Integer.MAX_VALUE), GREATER_THAN)) return INVALID_SIZE;
+		if(isComparisonResult(actualSize.compareTo(Integer.MAX_VALUE), GREATER_THAN)) return Integer.MAX_VALUE;
 		return actualSize.intValue();
 	}
 
