@@ -30,6 +30,7 @@ import com.github.SkySpiral7.Java.iterators.ReadOnlyListIterator;
 import com.github.SkySpiral7.Java.pojo.DequeNode;
 import com.github.SkySpiral7.Java.pojo.IntegerQuotient;
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
+import com.github.SkySpiral7.Java.util.ComparableSugar;
 
 /**
  * A Mutable version of InfiniteInteger for the sake of speed.
@@ -1098,8 +1099,9 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 			//dropping a node is fast and greatly shrinks the numbers
 			thisAbs = thisAbs.divideByPowerOf2DropRemainder(32);
 			valueAbs = valueAbs.divideByPowerOf2DropRemainder(32);
+			//reducing doesn't affect the whole answer
 		}
-		int lastShift = Math.min(Integer.numberOfTrailingZeros(thisAbs.intValue()), Integer.numberOfTrailingZeros(valueAbs.intValue()));
+		final int lastShift = Math.min(Integer.numberOfTrailingZeros(((int) thisAbs.longValue())), Integer.numberOfTrailingZeros(((int) valueAbs.longValue())));
 		if (lastShift != 0)
 		{
 			//passing in 0 would do nothing anyway
@@ -1107,25 +1109,44 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 			valueAbs = valueAbs.divideByPowerOf2DropRemainder(lastShift);
 		}
 
-		boolean resultIsNegative = (isNegative != value.isNegative);  //!= acts as xor
+		final boolean resultIsNegative = (isNegative != value.isNegative);  //!= acts as xor
 		//if the remaining division can be done by the floating point unit then delegate
 		if (thisAbs.equals(thisAbs.longValue()) && valueAbs.equals(valueAbs.longValue()))
 		{
 			long whole = (long) (thisAbs.longValue()/valueAbs.longValue());
-			long remainder = thisAbs.longValue() % valueAbs.longValue();
+			final long remainder = thisAbs.longValue() % valueAbs.longValue();
 			if(resultIsNegative) whole*=-1;
 			return new IntegerQuotient<MutableInfiniteInteger>(new MutableInfiniteInteger(whole), new MutableInfiniteInteger(remainder));
 		}
 
-		//TODO: faster: perform a bilateral search on the number of nodes
-		//faster (harder): use this method as a basis for the grade school long division
-		MutableInfiniteInteger whole = new MutableInfiniteInteger(1);  //above already covered the possible ways whole could be 0
-		while (is(whole.copy().multiply(valueAbs), LESS_THAN_OR_EQUAL_TO, thisAbs))
+		//TODO: faster? (harder): use this method as a basis for the grade school long division
+		MutableInfiniteInteger lower = new MutableInfiniteInteger(2);  //above already covered the possible ways whole could be 0 and 1
+		MutableInfiniteInteger difference, midway, higher, whole = null;
+		higher = ComparableSugar.max(thisAbs, valueAbs);
+		higher = higher.copy().divideByPowerOf2DropRemainder(1);
+
+		if(valueAbs.equals(1)) whole = thisAbs;  //this can only occur if valueAbs was shifted down to 1 and thisAbs > Long.Max
+		while (whole == null)
 		{
-			whole = whole.add(1);
+			difference = higher.copy().subtract(lower);
+			//avoid cutting small numbers in half:
+			if(is(difference, LESS_THAN, MutableInfiniteInteger.valueOf(4))) break;  //jump to small loop
+			difference = difference.divideByPowerOf2DropRemainder(1);
+			midway = difference.add(lower);  //diff not copied because I no longer need it
+			final int compareResult = midway.copy().multiply(valueAbs).compareTo(thisAbs);
+			if(isComparisonResult(compareResult, EQUAL_TO)) whole = midway;
+			//if midway*valueAbs > thisAbs then midway is an upper bound
+			else if(isComparisonResult(compareResult, GREATER_THAN)) higher = midway;
+			else lower = midway;  //if less than
 		}
-		whole = whole.subtract(1);  //the above loop includes equal to so that I don't need to check if equal afterward.
-			//This way remainder 0 or otherwise is handled the same
+		//if difference < 4 then just have lower count up (max of 3 times)
+		while (whole == null)
+		{
+			final int compareResult = lower.copy().multiply(valueAbs).compareTo(thisAbs);
+			if(isComparisonResult(compareResult, EQUAL_TO)) whole = lower;
+			else if(isComparisonResult(compareResult, GREATER_THAN)) whole = lower.subtract(1);
+			else lower = lower.add(1);
+		}
 
 		MutableInfiniteInteger remainder = thisAbs.copy().subtract(whole.copy().multiply(valueAbs));
 

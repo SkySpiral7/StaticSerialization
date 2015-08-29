@@ -128,19 +128,27 @@ public class UT_MutableInfiniteInteger {
     	//simple case
     	assertDivision(MutableInfiniteInteger.valueOf(10).divide(5), 1, new int[]{2}, new int[]{0});
 
+    	//not so clean numbers: (2^32) / (2^5-1) = (2^32) / 31 = 0x842_1084 r 4
+    	assertDivision(MutableInfiniteInteger.valueOf(1L << 32).divide(31), 1, new int[]{0x842_1084}, new int[]{4});
+
     	//simple negative with remainder
     	assertDivision(MutableInfiniteInteger.valueOf(-11).divide(5), -1, new int[]{2}, new int[]{1});
 
     	//multiple starting nodes that fit into long after shifting
     	infiniteInteger = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).multiplyByPowerOf2(32);
     	//(2^95) / -(2^32) == -(2^63). That's what I'm testing
-    	assertDivision(infiniteInteger.divide(-2L << 32), -1, new int[]{0, Integer.MIN_VALUE >>> 1}, new int[]{0});
+    	assertDivision(infiniteInteger.divide(-1L << 32), -1, new int[]{0, Integer.MIN_VALUE}, new int[]{0});
 
     	//multiple nodes for both that can't fit into long
-    	//(2^95)/(2^63-1) == 0x1_0000__0000 r ?
-    	//as of now this is too slow to run
-    	//infiniteInteger = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).multiplyByPowerOf2(32);
-    	//assertDivision(infiniteInteger.divide(Long.MAX_VALUE), 1, new int[]{0, 1}, new int[]{0});
+    	//(2^95)/(2^63) == (2^32)
+    	final MutableInfiniteInteger twoPower63 = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1);
+    	infiniteInteger = twoPower63.copy().multiplyByPowerOf2(32);
+    	assertDivision(infiniteInteger.copy().divide(twoPower63), 1, new int[]{0, 1}, new int[]{0});
+
+    	//again but with remainder
+    	//(2^95)/(2^63-1) == (2^32) r (2^32). Weird but true
+    	//same infiniteInteger
+    	assertDivision(infiniteInteger.divide(Long.MAX_VALUE), 1, new int[]{0, 1}, new int[]{0, 1});
     }
 
     @Test
@@ -303,11 +311,11 @@ public class UT_MutableInfiniteInteger {
     	infiniteInteger = MutableInfiniteInteger.valueOf(Long.MAX_VALUE);
     	assertEquals(Long.MAX_VALUE, infiniteInteger.longValueExact());  //let throw on test fail
 
-    	infiniteInteger = infiniteInteger.add(2);
+    	infiniteInteger = infiniteInteger.add(1);
     	try{infiniteInteger.longValueExact(); Assert.fail("Did not throw when > signed long.");}
     	catch(ArithmeticException e){}
 
-    	try{infiniteInteger.add(Long.MAX_VALUE).longValueExact(); Assert.fail("Did not throw when > unsigned long.");}
+    	try{infiniteInteger.add(Long.MAX_VALUE).add(1).longValueExact(); Assert.fail("Did not throw when > unsigned long.");}
     	catch(ArithmeticException e){}
     }
 
