@@ -1,21 +1,17 @@
 package com.github.SkySpiral7.Java;
 
+/**
+ * The list version of ArrayIndexOutOfBoundsException.
+ * @see ArrayIndexOutOfBoundsException
+ */
 public class ListIndexOutOfBoundsException extends IndexOutOfBoundsException {
 	private static final long serialVersionUID = 1L;
-
-	/**
-     * Constructs an <code>ListIndexOutOfBoundsException</code> with no
-     * detail message.
-     */
-    public ListIndexOutOfBoundsException() {
-        super();
-    }
 
     /**
      * Constructs a new <code>ListIndexOutOfBoundsException</code>
      * class with an argument indicating the illegal index.
      */
-    public ListIndexOutOfBoundsException(int illegalIndex) {
+    public ListIndexOutOfBoundsException(final int illegalIndex) {
         super("Index: "+illegalIndex);
     }
 
@@ -23,7 +19,7 @@ public class ListIndexOutOfBoundsException extends IndexOutOfBoundsException {
      * Constructs a new <code>ListIndexOutOfBoundsException</code>
      * class with an argument indicating the illegal index and one indicating the size.
      */
-    public ListIndexOutOfBoundsException(int illegalIndex, int size) {
+    public ListIndexOutOfBoundsException(final int illegalIndex, final int size) {
         super("Index: "+illegalIndex+", Size: "+size);
     }
 
@@ -31,7 +27,7 @@ public class ListIndexOutOfBoundsException extends IndexOutOfBoundsException {
      * Constructs an <code>ListIndexOutOfBoundsException</code> class
      * with the specified detail message.
      */
-    public ListIndexOutOfBoundsException(String detailMessage) {
+    public ListIndexOutOfBoundsException(final String detailMessage) {
         super(detailMessage);
     }
 }
