@@ -874,7 +874,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
     	long valueRemaining = Math.abs(value);
 
 		int lowValue = (int) valueRemaining;
-		int highValue = (int) (valueRemaining >>> 32);
+		int highValue = (int) (valueRemaining >>> 32);  //this is what makes Math.abs handle Long.Min safely
 
 		//TODO: make this mutate as it goes. also use shifting for speed
 		MutableInfiniteInteger result = this.internalMultiply(lowValue);
@@ -1041,7 +1041,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 				thisCursor = thisCursor.getPrev();
 			}
 		}
-		//this doesn't have a leading 0 because this doesn't have a leading 0 (and this is not ZERO)
+		//no need to check leading 0s since it couldn't have gained any
 
 		return this;
 	}
@@ -1321,6 +1321,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 		if(tableValue != null) return set(tableValue.toMutableInfiniteInteger());
 
 		if(exponent.isNegative) throw new ArithmeticException("A negative exponent would result in a non-integer answer. The exponent was: "+exponent);
+		if(this.equals(2)) return set(MutableInfiniteInteger.valueOf(1).multiplyByPowerOf2(exponent));
 
     	//TODO: study BigInt's pow and copy it
     	//but BigInt's div and gcd are too complicated
@@ -1372,7 +1373,28 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 		return set(result);
     }
 
-    /**
+	/**
+	 * @return true if this InfiniteInteger is prime, false if it is composite
+	 * @throws ArithmeticException if this is neither prime nor composite
+	 */
+	public boolean isPrime()
+	{
+		if(this.isNegative || !this.isFinite()) throw new ArithmeticException("Prime is only defined for integers > 1 and 0");
+		if(this.equals(0)) return false;
+		if(this.equals(1)) throw new ArithmeticException("1 is neither prime nor composite (primality is not defined for 1)");
+		if(this.equals(2)) return true;
+		if(BitWiseUtil.isEven(this.intValue())) return false;
+
+		//for everything else use an alternate version of Fermat's little theorem
+		//pros: simple, never wrong, requires only 1 trial division, the power of 2 is easy for computers,
+			//and requires much less memory than a sieve
+		//con: testValue is huge and takes forever to divide
+		final MutableInfiniteInteger less = this.copy().subtract(1);
+		final MutableInfiniteInteger testValue = MutableInfiniteInteger.valueOf(1).multiplyByPowerOf2(less).subtract(1);
+		return testValue.divideReturnRemainder(this).equals(0);
+	}
+
+	/**
 	 * This method delegates because the formula used is exactly the same.
 	 * Entire code: <blockquote>{@code return greatestCommonDivisor(MutableInfiniteInteger.valueOf(otherValue));}</blockquote>
 	 *
@@ -1633,11 +1655,16 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 	//this method exists because I need it for estimateSqrt(MutableInfiniteInteger)
 	public boolean isPowerOf2() {
 		if(!this.isFinite()) return false;
-		for (DequeNode<Integer> thisCursor = this.magnitudeHead; thisCursor != null; thisCursor = thisCursor.getNext())
+
+		DequeNode<Integer> thisCursor;
+		for (thisCursor = this.magnitudeHead; thisCursor.getNext() != null; thisCursor = thisCursor.getNext())
 		{
-			if(!BitWiseUtil.isPowerOf2(thisCursor.getData().intValue())) return false;
+			//all nodes that aren't the most significant must be 0
+			if(0 != thisCursor.getData().intValue()) return false;
 		}
-		return true;
+
+		//and check the most significant node
+		return BitWiseUtil.isPowerOf2(thisCursor.getData().intValue());
 	}
 
 	/**
@@ -1739,7 +1766,6 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 
 		if(isNegative && !other.isNegative) return THIS_LESSER;
 		if(!isNegative && other.isNegative) return THIS_GREATER;  //also covers if this.equals(0)
-		if(this.equals(0) && !other.isNegative) return THIS_LESSER;  //since this != other
 
 		//at this point: they are not the same object, they have the same sign, they are not special values.
 		//since the lengths can be any integer I first need to compare lengths

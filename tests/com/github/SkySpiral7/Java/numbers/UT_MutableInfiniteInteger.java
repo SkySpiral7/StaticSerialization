@@ -103,17 +103,20 @@ public class UT_MutableInfiniteInteger {
     @Test
     public void compareTo() {
     	//don't use hamcrest for these because they would use .equals
-    	infiniteInteger = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
-    	assertTrue(is(infiniteInteger, EQUAL_TO, infiniteInteger));  //same object
-    	MutableInfiniteInteger mutableInfiniteInteger = MutableInfiniteInteger.valueOf(123);
-    	assertTrue(is(mutableInfiniteInteger.copy(), EQUAL_TO, mutableInfiniteInteger));  //different object same value
+   	final MutableInfiniteInteger multiNode = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2);
+    	assertTrue(is(multiNode, EQUAL_TO, multiNode));  //same object
+    	infiniteInteger = MutableInfiniteInteger.valueOf(123);
+    	assertTrue(is(infiniteInteger.copy(), EQUAL_TO, infiniteInteger));  //different object same value
+    	infiniteInteger = MutableInfiniteInteger.valueOf(0);
+    	assertTrue(is(infiniteInteger.copy(), EQUAL_TO, infiniteInteger));  //different object same value
 
     	//use hamcrest for rest to get a more meaningful failure message
     	assertThat(MutableInfiniteInteger.valueOf(-5), lessThan(MutableInfiniteInteger.valueOf(5)));
     	assertThat(MutableInfiniteInteger.valueOf(5), greaterThan(MutableInfiniteInteger.valueOf(-5)));
     	assertThat(MutableInfiniteInteger.valueOf(10), greaterThan(MutableInfiniteInteger.valueOf(5)));
-    	assertThat(infiniteInteger, greaterThan(MutableInfiniteInteger.valueOf(10)));  //left has more nodes
-    	assertThat(infiniteInteger.copy().add(1), greaterThan(infiniteInteger));  //same node count but different value
+    	assertThat(multiNode, greaterThan(MutableInfiniteInteger.valueOf(10)));  //left has more nodes
+    	assertThat(multiNode.copy().add(1), greaterThan(multiNode));  //same node count but different value
+
     	infiniteInteger = MutableInfiniteInteger.valueOf(Integer.MAX_VALUE).add(1);
     	assertThat(infiniteInteger.copy().add(1), greaterThan(infiniteInteger));  //make sure nodes are compared unsigned
     }
@@ -258,12 +261,31 @@ public class UT_MutableInfiniteInteger {
     	assertTrue(MutableInfiniteInteger.valueOf(4).isPowerOf2());
     	assertTrue(MutableInfiniteInteger.valueOf(8).isPowerOf2());
     	assertTrue(MutableInfiniteInteger.valueOf(-8).isPowerOf2());
+    	assertTrue(MutableInfiniteInteger.valueOf(0x800000000L).isPowerOf2());
 
     	assertFalse(MutableInfiniteInteger.valueOf(3).isPowerOf2());
     	assertFalse(MutableInfiniteInteger.valueOf(5).isPowerOf2());
     	assertFalse(MutableInfiniteInteger.valueOf(10).isPowerOf2());
     	assertFalse(MutableInfiniteInteger.valueOf(-10).isPowerOf2());
+    	assertFalse(MutableInfiniteInteger.valueOf(0x800000020L).isPowerOf2());
     }
+
+	@Test
+   public void isPrime() {
+   	assertFalse(MutableInfiniteInteger.valueOf(0).isPrime());
+   	assertFalse(MutableInfiniteInteger.valueOf(15).isPrime());
+   	assertFalse(MutableInfiniteInteger.valueOf(95).isPrime());
+   	assertFalse(MutableInfiniteInteger.valueOf(99).isPrime());
+   	assertFalse(MutableInfiniteInteger.valueOf(1024).isPrime());
+   	assertFalse(MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).isPrime());
+   	//assertFalse for 105 and 195 take too long
+
+   	assertTrue(MutableInfiniteInteger.valueOf(2).isPrime());
+   	assertTrue(MutableInfiniteInteger.valueOf(3).isPrime());
+   	assertTrue(MutableInfiniteInteger.valueOf(5).isPrime());
+   	assertTrue(MutableInfiniteInteger.valueOf(199).isPrime());
+   	//for some arcane reason 199 doesn't take too long
+	}
 
     @Test
 	public void iterateAllIntegers() {

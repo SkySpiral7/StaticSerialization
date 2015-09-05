@@ -93,7 +93,7 @@ public final class BloomFilter
 		 * <p>The implementation should not simply return Object.hashCode because
 		 * most implementations of hashCode use prime numbers for multiplies (to reduce collision).
 		 * However this also causes many bits to be set which is toxic to a Bloom filter.
-		 * Additionally Object.hashCode returns an int, however 32 bits is too small of a range for an effective
+		 * Additionally Object.hashCode returns an int however 32 bits is too small of a range for an effective
 		 * Bloom filter: the crowded range will cause many false positives.</p>
 		 *
 		 * @param element the object that was requested to be added to the Bloom filter.
