@@ -275,16 +275,15 @@ public class UT_MutableInfiniteInteger {
    	assertFalse(MutableInfiniteInteger.valueOf(0).isPrime());
    	assertFalse(MutableInfiniteInteger.valueOf(15).isPrime());
    	assertFalse(MutableInfiniteInteger.valueOf(95).isPrime());
-   	assertFalse(MutableInfiniteInteger.valueOf(99).isPrime());
+   	assertFalse(MutableInfiniteInteger.valueOf(1005).isPrime());
    	assertFalse(MutableInfiniteInteger.valueOf(1024).isPrime());
+   	//10,005 takes a little long (600 ms)
    	assertFalse(MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).isPrime());
-   	//assertFalse for 105 and 195 take too long
 
    	assertTrue(MutableInfiniteInteger.valueOf(2).isPrime());
    	assertTrue(MutableInfiniteInteger.valueOf(3).isPrime());
    	assertTrue(MutableInfiniteInteger.valueOf(5).isPrime());
    	assertTrue(MutableInfiniteInteger.valueOf(199).isPrime());
-   	//for some arcane reason 199 doesn't take too long
 	}
 
     @Test

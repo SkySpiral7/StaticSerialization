@@ -773,7 +773,6 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 		//TODO: isn't there always a leading 0?
 		if(thisCursor.getData().intValue() == 0){thisCursor = thisCursor.getPrev(); thisCursor.getNext().remove();}
 			//remove the last node since it is a leading 0
-			//assert(returnCursor != null)  //I already checked that this != value which is the only way for result == 0
 		if(thisCursor.getData().intValue() == 0) thisCursor.remove();  //there will be 2 leading 0s if the last node was borrowed down to 0
 
 		return this;
@@ -843,10 +842,8 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 			if(thisCursor.getNext() != null) thisCursor = thisCursor.getNext();
 			//if thisCursor is at the end then the loop is done because this > value
 		}
-		if(thisCursor.getData().intValue() == 0){thisCursor = thisCursor.getPrev(); thisCursor.getNext().remove();}
-			//remove the last node since it is a leading 0
-			//assert(returnCursor != null)  //I already checked that this != value which is the only way for result == 0
-		if(thisCursor.getData().intValue() == 0) thisCursor.remove();  //there will be 2 leading 0s if the last node was borrowed down to 0
+		while(thisCursor.getData().intValue() == 0){thisCursor = thisCursor.getPrev(); thisCursor.getNext().remove();}
+			//there can be any number of leading 0s
 
 		return this;
 	}

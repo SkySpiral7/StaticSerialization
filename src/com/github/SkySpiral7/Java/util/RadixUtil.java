@@ -83,9 +83,10 @@ public final class RadixUtil {
       	value = -value;
       }
 
+      //value is negative in order to handle max and min values alike (since negative can hold 1 more than positive)
       while (value <= -radix) {
           buf[charPos--] = base62Digits[(int)(-(value % radix))];
-          value = value / radix;
+          value /= radix;
       }
       buf[charPos] = base62Digits[(int)(-value)];
 
