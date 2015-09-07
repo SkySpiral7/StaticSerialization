@@ -488,6 +488,7 @@ public class UT_MutableInfiniteInteger {
 	@Test
     public void valueOf_BigInteger() {
     	assertEquals(MutableInfiniteInteger.valueOf(5), MutableInfiniteInteger.valueOf(BigInteger.valueOf(5)));
+    	assertEquals(MutableInfiniteInteger.valueOf(-5), MutableInfiniteInteger.valueOf(BigInteger.valueOf(-5)));
     	assertEquals(MutableInfiniteInteger.valueOf(Long.MAX_VALUE -5), MutableInfiniteInteger.valueOf(BigInteger.valueOf(Long.MAX_VALUE -5)));
 
     	infiniteInteger = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2).negate();

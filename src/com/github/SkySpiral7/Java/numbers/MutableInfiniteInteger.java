@@ -111,12 +111,12 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 	 */
 	public static MutableInfiniteInteger valueOf(BigInteger value) {
 		if(value.equals(BigInteger.ZERO)) return new MutableInfiniteInteger(0);
-		boolean willBeNegative = (value.signum() == -1);  //don't need to use < 0 because of signum's promise
+		final boolean willBeNegative = (value.signum() == -1);  //don't need to use < 0 because of signum's promise
 		BigInteger valueRemaining = value.abs();
 
 		final BigInteger bigIntegerMaxLong = BigInteger.valueOf(Long.MAX_VALUE);
 		if(is(valueRemaining, LESS_THAN_OR_EQUAL_TO, bigIntegerMaxLong)) return MutableInfiniteInteger.valueOf(value.longValue());
-		//if abs fits in a signed long then delegate
+		//if abs fits in a signed long then delegate (original value)
 
 		MutableInfiniteInteger result = new MutableInfiniteInteger(0);
 
@@ -508,13 +508,24 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 	}
 
 	/**
-	 * A Googolplex is a huge number that is easy to define. It is equal to 10<sup>10<sup>100</sup></sup>.
+	 * <p>A Googolplex is a huge number that is easy to define. It is equal to 10<sup>10<sup>100</sup></sup>.
 	 * This number will not fit into a BigInteger, the reason this method is defined is to show that this class
-	 * does allow such a number (even if the hardware does not). This calculation is correct but will not finish
-	 * within a thousand years.
+	 * does allow such a number (even if the hardware does not). This calculation is correct but is guarantee to never finish
+	 * due to hardware limits (see below).</p>
+	 *
+	 * <p>In order to store a googolplex you would need
+	 * <a href="http://www.wolframalpha.com/input/?i=log2%28googolplex%29">3e100</a> bits.
+	 * Assuming each bit was
+	 * <a href="http://www.cio.com/article/2400538/data-management/ibm-smashes-moore-s-law--cuts-bit-size-to-12-atoms.html">12 atoms</a>
+	 * then the entire observable universe wouldn't have enough bits
+	 * (<a href="http://www.wolframalpha.com/input/?i=%28atoms+in+the+observable+universe%29%2F12">8e78</a>).
+	 * So even though this class allows such a number the universe doesn't: but it's the thought that counts.
+	 * </p>
+	 *
+	 * <p>A googol on the other hand would only take 42 bytes (336 bits).</p>
 	 *
 	 * @return 10^(10^100)
-	 * @deprecated Seriously. Don't call this method.
+	 * @deprecated Seriously. Don't call this method. See description.
 	 */
 	@Deprecated
 	public static MutableInfiniteInteger calculateGoogolplex() {
@@ -549,14 +560,15 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 	 * <a href="http://en.wikipedia.org/wiki/Graham's_number#Definition">to</a>
 	 * <a href="http://googology.wikia.com/wiki/Graham's_number">define</a>.
 	 * This number will not fit into a BigInteger, the reason this method is defined is to show that this class
-	 * does allow such a number (even if the hardware does not). This calculation is correct but will not finish
-	 * within billions of years nor is there enough matter on Earth to store such a number.
+	 * does allow such a number (even if the hardware does not). This calculation is correct but is guarantee to never finish
+	 * due to hardware limits (see Googolplex).
 	 *
 	 * @return Graham's Number which is g(64)
-	 * @deprecated Do you have a solid state hard drive the size of the Death Star? If not then stop
-	 * pretending you can even store this number.
+	 * @see #calculateGoogolplex()
+	 * @deprecated The observable universe can't store a googolplex. How many universe's worth of atoms would
+	 * you need for Graham's Number?
 	 */
-	@Deprecated  //maybe not enough matter in the universe to store this number but I'll estimate downward
+	@Deprecated
 	public static MutableInfiniteInteger calculateGrahamsnumber() {
 		return grahamFunction(new MutableInfiniteInteger(64));
 	}
@@ -1136,7 +1148,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 			else if(isComparisonResult(compareResult, GREATER_THAN)) higher = midway;
 			else lower = midway;  //if less than
 		}
-		//if difference < 4 then just have lower count up (max of 3 times)
+		//if difference < 4 then just have lower count up (max of 4 times)
 		while (whole == null)
 		{
 			final int compareResult = lower.copy().multiply(valueAbs).compareTo(thisAbs);
