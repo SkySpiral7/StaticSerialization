@@ -16,13 +16,24 @@ public class Range
 	//TODO: use <T extends Number & Comparable> instead
 	public boolean contains(Number testNum){return false;}
 
-	public Object createArray(Object typeOf){return createArray(typeOf, lower.getIncrementAmonut());}
-	public Object createArray(Object typeOf, Number stepBy){return null;}
+	public Object createArray(){return createArray(lower.getValue().getClass(), lower.getIncrementAmonut());}
+	public Object createArray(Number stepBy){return createArray(lower.getValue().getClass(), stepBy);}
+	public Object createArray(Class<?> typeOf){return createArray(typeOf, lower.getIncrementAmonut());}
+	public Object createArray(Class<?> typeOf, Number stepBy){return null;}
+
+	public List<?> createList(){return createList(lower.getValue().getClass(), lower.getIncrementAmonut());}
+	public List<?> createList(Number stepBy){return createList(lower.getValue().getClass(), stepBy);}
 	public List<?> createList(Class<?> typeOf){return createList(typeOf, lower.getIncrementAmonut());}
 	public List<?> createList(Class<?> typeOf, Number stepBy){return null;}
 
+	@Override
+	public String toString()
+	{
+		return super.toString();
+	}
+
 	//TODO: make different Boundary classes for long, double, and Number
-	private static class Boundary
+	public static class Boundary
 	{
 		private final Number value;
 		public Boundary(Number value){this.value = value;}
