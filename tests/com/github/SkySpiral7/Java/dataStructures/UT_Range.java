@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -21,8 +22,13 @@ public class UT_Range
 		assertArrayEquals(new int[]{1, 2, 3}, range.createArray(int[].class));
 		assertArrayEquals(new byte[]{1, 2, 3}, range.createArray(byte[].class));
 		assertArrayEquals(new long[]{1, 3}, range.createArray(long[].class, 2));
+	}
 
+	@Test
+   public void createArray_otherTypes() {
 		assertArrayEquals(new Double[]{1d, 1.5d, 2d, 2.5d, 3d}, new Range<Double>(1d, "..", 3d).createArray(Double[].class, 0.5d));
+		final Range<BigInteger> bigIntegerRange = new Range<BigInteger>(BigInteger.ZERO, "..>", BigInteger.valueOf(2));
+		assertArrayEquals(new BigInteger[]{BigInteger.ZERO, BigInteger.ONE}, bigIntegerRange.createArray());
 	}
 
 	@Test
