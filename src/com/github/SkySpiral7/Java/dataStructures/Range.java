@@ -36,7 +36,7 @@ public final class Range<T extends Number & Comparable<T>>
 	}
 
 	public static <T3 extends Number & Comparable<T3>> Boundary<T3> exclusive(final T3 num){return new Boundary<T3>(num, false);}
-	public static <T4 extends Number & Comparable<T4>> Boundary<T4> inclusive(final T4 num){return new Boundary<T4>(num, true);}
+	public static <T3 extends Number & Comparable<T3>> Boundary<T3> inclusive(final T3 num){return new Boundary<T3>(num, true);}
 
 	public boolean contains(final T testNum)
 	{
@@ -54,44 +54,60 @@ public final class Range<T extends Number & Comparable<T>>
 
 	private static Class<?> toArrayClass(final Class<?> typeOf){return Array.newInstance(typeOf, 0).getClass();}
 
-	public Object createArray(){return createArray(toArrayClass(lower.getValue().getClass()), lower.getIncrementAmonut());}
-	public Object createArray(final T stepBy){return createArray(toArrayClass(lower.getValue().getClass()), stepBy);}
-	public Object createArray(final Class<?> typeOf){return createArray(typeOf, lower.getIncrementAmonut());}
-	public Object createArray(final Class<?> typeOf, final T stepBy)
+	@SuppressWarnings("unchecked")
+	public T[] createArray(){return (T[]) createArray(toArrayClass(lower.getValue().getClass()), lower.getIncrementAmonut());}
+	@SuppressWarnings("unchecked")
+	public T[] createArray(final T stepBy){return (T[]) createArray(toArrayClass(lower.getValue().getClass()), stepBy);}
+	public <T3> T3 createArray(final Class<T3> typeOf){return createArray(typeOf, lower.getIncrementAmonut());}
+	public <T3> T3 createArray(final Class<T3> typeOf, final T stepBy)
 	{
 		Objects.requireNonNull(typeOf, "typeOf");
 		Objects.requireNonNull(stepBy, "stepBy");
-		if(false){if(!typeOf.isArray()) throw new IllegalArgumentException();
+		if(!typeOf.isArray()) throw new IllegalArgumentException();
 
-		final Number distance = upper.getValue().longValue() - lower.getValue().longValue();
-		final Number size = distance.longValue() / stepBy.longValue();
-		if(size.longValue() > Integer.MAX_VALUE) throw new IllegalArgumentException();
-
-		final List<Number> result = new ArrayList<>();
+		final List<Number> numberList = new ArrayList<>();
 		T index = lower.getValue();
 		if(!lower.isInclusive()) index = lower.add(index, stepBy);
-		for(index = lower.getValue(); index.longValue() < upper.getValue().longValue(); index = lower.add(index, stepBy))
+		while(ComparableSugar.is(index, Comparison.LESS_THAN, upper.getValue()))
 		{
-			result.add(index);
+			numberList.add(index);
+			index = lower.add(index, stepBy);
 		}
-		if(upper.isInclusive()) result.add(index);
+		if(upper.isInclusive()) numberList.add(index);
+		final Number[] numberArray = numberList.toArray(new Number[numberList.size()]);
 
-		//if(typeOf == byte[].class){}
-		//if(typeOf == short[].class){}
-		//if(typeOf == int[].class){}
-		if(typeOf == long[].class){}
+		final Class<?> componentType = typeOf.getComponentType();
+		@SuppressWarnings("unchecked")
+		final T3 result = (T3) Array.newInstance(componentType, numberArray.length);
 
-		return result.toArray();}
-		return null;
+		for (int i = 0; i < numberArray.length; i++)
+		{
+			Array.set(result, i, convertTo(numberArray[i], componentType));
+		}
+		return result;
 	}
-	//TODO: method stub
 
-	public List<?> createList(){return createList(lower.getValue().getClass(), lower.getIncrementAmonut());}
-	public List<?> createList(final T stepBy){return createList(lower.getValue().getClass(), stepBy);}
-	public List<?> createList(final Class<?> typeOf){return createList(typeOf, lower.getIncrementAmonut());}
-	public List<?> createList(final Class<?> typeOf, final T stepBy)
+	@SuppressWarnings("unchecked")
+	private static <T3> T3 convertTo(final Number original, final Class<T3> dest)
 	{
-		final List<?> fixedSizeList = Arrays.asList(createArray(toArrayClass(typeOf), stepBy));
+		if(dest == byte.class || dest == Byte.class) return (T3) Byte.valueOf(original.byteValue());
+		if(dest == short.class || dest == Short.class) return (T3) Short.valueOf(original.shortValue());
+		if(dest == int.class || dest == Integer.class) return (T3) Integer.valueOf(original.intValue());
+		if(dest == long.class || dest == Long.class) return (T3) Long.valueOf(original.longValue());
+		if(dest == float.class || dest == Float.class) return (T3) Float.valueOf(original.floatValue());
+		if(dest == double.class || dest == Double.class) return (T3) Double.valueOf(original.doubleValue());
+		return dest.cast(original);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<T> createList(){return (List<T>) createList(lower.getValue().getClass(), lower.getIncrementAmonut());}
+	@SuppressWarnings("unchecked")
+	public List<T> createList(final T stepBy){return (List<T>) createList(lower.getValue().getClass(), stepBy);}
+	public <T3> List<T3> createList(final Class<T3> typeOf){return createList(typeOf, lower.getIncrementAmonut());}
+	public <T3> List<T3> createList(final Class<T3> typeOf, final T stepBy)
+	{
+		@SuppressWarnings("unchecked")
+		final List<T3> fixedSizeList = Arrays.asList((T3[]) createArray(toArrayClass(typeOf), stepBy));
 		return new ArrayList<>(fixedSizeList);
 	}
 
@@ -125,10 +141,11 @@ public final class Range<T extends Number & Comparable<T>>
 		public boolean isInclusive(){return inclusive;}
 		public T2 getValue(){return value;}
 
+		//TODO: these can all be moved to a BoundaryType class
 		//TODO: method stub
 		public T2 getIncrementAmonut(){return (T2) Integer.valueOf(1);}
 		//TODO: method stub
-		public T2 add(final T2 starting, final T2 stepBy){return (T2) Long.valueOf(starting.longValue() + stepBy.longValue());}
+		public T2 add(final T2 starting, final T2 stepBy){return (T2) Integer.valueOf(starting.intValue() + stepBy.intValue());}
 	}
 
 }

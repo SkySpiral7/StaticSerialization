@@ -15,12 +15,14 @@ public class UT_Range
    public void createArray() {
 		final Range<Integer> range = new Range<Integer>(1, "..", 3);
 
-		assertArrayEquals(new int[]{1, 2, 3}, (int[]) range.createArray());
-		assertArrayEquals(new int[]{1, 3}, (int[]) range.createArray(2));
+		assertArrayEquals(new Integer[]{1, 2, 3}, range.createArray());
+		assertArrayEquals(new Integer[]{1, 3}, range.createArray(2));
 
-		assertArrayEquals(new int[]{1, 2, 3}, (int[]) range.createArray(int[].class));
-		assertArrayEquals(new byte[]{1, 2, 3}, (byte[]) range.createArray(byte[].class));
-		assertArrayEquals(new long[]{1, 3}, (long[]) range.createArray(long[].class, 2));
+		assertArrayEquals(new int[]{1, 2, 3}, range.createArray(int[].class));
+		assertArrayEquals(new byte[]{1, 2, 3}, range.createArray(byte[].class));
+		assertArrayEquals(new long[]{1, 3}, range.createArray(long[].class, 2));
+
+		assertArrayEquals(new Double[]{1d, 1.5d, 2d, 2.5d, 3d}, new Range<Double>(1d, "..", 3d).createArray(Double[].class, 0.5d));
 	}
 
 	@Test
