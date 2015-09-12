@@ -13,7 +13,7 @@ public class UT_Range
 {
 	@Test
    public void createArray() {
-		final Range range = new Range(1, "..", 3);
+		final Range<Integer> range = new Range<Integer>(1, "..", 3);
 
 		assertArrayEquals(new int[]{1, 2, 3}, (int[]) range.createArray());
 		assertArrayEquals(new int[]{1, 3}, (int[]) range.createArray(2));
@@ -25,7 +25,7 @@ public class UT_Range
 
 	@Test
    public void createList() {
-		final Range range = new Range(1, "..", 3);
+		final Range<Integer> range = new Range<Integer>(1, "..", 3);
 
 		assertEquals(Arrays.asList(new Integer[]{1, 2, 3}), range.createList());
 		assertEquals(Arrays.asList(new Integer[]{1, 3}), range.createList(2));
@@ -37,8 +37,8 @@ public class UT_Range
 
 	@Test
 	public void contains() {
-		final Range range = new Range(Range.inclusive(0), Range.exclusive(10));
-	
+		final Range<Integer> range = new Range<Integer>(Range.inclusive(0), Range.exclusive(10));
+
 		assertTrue(range.contains(0));
 		assertTrue(range.contains(1));
 		assertFalse(range.contains(-1));
@@ -48,9 +48,9 @@ public class UT_Range
 
 	@Test
 	public void test_toString() {
-		assertEquals("0 ..> 10", new Range(Range.inclusive(0), Range.exclusive(10)).toString());
-		assertEquals("0 <.. 10", new Range(Range.exclusive(0), Range.inclusive(10)).toString());
-		assertEquals("-5 .. 5", new Range(Range.inclusive(-5), Range.inclusive(5)).toString());
+		assertEquals("0 ..> 10", new Range<Integer>(Range.inclusive(0), Range.exclusive(10)).toString());
+		assertEquals("0 <.. 10", new Range<Integer>(Range.exclusive(0), Range.inclusive(10)).toString());
+		assertEquals("-5 .. 5", new Range<Integer>(Range.inclusive(-5), Range.inclusive(5)).toString());
 	}
 
 }
