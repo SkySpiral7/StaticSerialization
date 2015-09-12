@@ -14,7 +14,9 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.github.SkySpiral7.Java.numbers.AbstractInfiniteInteger;
 import com.github.SkySpiral7.Java.numbers.InfiniteInteger;
+import com.github.SkySpiral7.Java.numbers.MutableInfiniteInteger;
 import com.github.SkySpiral7.Java.pojo.Comparison;
 import com.github.SkySpiral7.Java.util.ComparableSugar;
 
@@ -48,7 +50,9 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 	 * @param lower the lower bound for the number range
 	 * @param upper the upper bound for the number range
 	 *
-	 * @throws IllegalArgumentException if lower &gt;= upper
+	 * @throws IllegalArgumentException if lower &gt;= upper,
+	 * if lower or upper are NaN,
+	 * or if T_Range is mutable.
 	 *
 	 * @see #inclusive(Number)
 	 * @see #exclusive(Number)
@@ -58,13 +62,13 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 	{
 		Objects.requireNonNull(lower, "lower");
 		Objects.requireNonNull(upper, "upper");
-		if(ComparableSugar.is(lower.getValue(), Comparison.GREATER_THAN_OR_EQUAL_TO, upper.getValue()))
-			throw new IllegalArgumentException("lower >= upper (" + lower.getValue() + " >= " + upper.getValue() + ")");
 		this.lower = lower;
 		this.upper = upper;
 		@SuppressWarnings("unchecked")
 		final Class<T_Range> temp = (Class<T_Range>) lower.getValue().getClass();
 		boundaryInfo = new BoundaryInfo<T_Range>(temp);
+
+		checkInvariants();
 	}
 	/**
 	 * <p>Create a new Range with the bounds given.
@@ -85,19 +89,18 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 	 * @param rangePattern one of the four strings as listed above
 	 * @param upper the upper bound for the number range
 	 *
-	 * @throws IllegalArgumentException if lower &gt;= upper
-	 * or if rangePattern has an invalid value
+	 * @throws IllegalArgumentException if lower &gt;= upper,
+	 * if rangePattern has an invalid value,
+	 * if lower or upper are NaN,
+	 * or if T_Range is mutable.
 	 *
 	 * @see #Range(Boundary, Boundary)
 	 */
 	public Range(final T_Range lower, String rangePattern, final T_Range upper)
 	{
-		//TODO: add a check to prevent using NaN
 		Objects.requireNonNull(lower, "lower");
 		Objects.requireNonNull(rangePattern, "rangePattern");
 		Objects.requireNonNull(upper, "upper");
-		if(ComparableSugar.is(lower, Comparison.GREATER_THAN_OR_EQUAL_TO, upper))
-			throw new IllegalArgumentException("lower >= upper (" + lower + " >= " + upper + ")");
 		if(!rangePattern.matches("\\s*<?\\.\\.>?\\s*")) throw new IllegalArgumentException("Bad format for rangePattern: " + rangePattern);
 		rangePattern = rangePattern.trim();
 
@@ -106,6 +109,58 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 		@SuppressWarnings("unchecked")
 		final Class<T_Range> temp = (Class<T_Range>) lower.getClass();
 		boundaryInfo = new BoundaryInfo<T_Range>(temp);
+
+		checkInvariants();
+	}
+
+	/**
+	 * @throws IllegalArgumentException if lower &gt;= upper,
+	 * if lower or upper are NaN,
+	 * or if T_Range is mutable.
+	 */
+	private void checkInvariants()
+	{
+		checkForNanOfKnownClasses(lower.getValue());
+		checkForNanOfKnownClasses(upper.getValue());
+		checkKnownMutableClasses(boundaryInfo.type);
+
+		//checked last so that illegal class will throw first (or NaN)
+		if(ComparableSugar.is(lower.getValue(), Comparison.GREATER_THAN_OR_EQUAL_TO, upper.getValue()))
+			throw new IllegalArgumentException("lower >= upper (" + lower.getValue() + " >= " + upper.getValue() + ")");
+	}
+
+	/**
+	 * @throws IllegalArgumentException if num is NaN
+	 */
+	private void checkForNanOfKnownClasses(final T_Range num)
+	{
+		boolean isLegal = true;
+
+		if (boundaryInfo.type == Float.class)
+		{
+			if(Float.isNaN((Float) num)) isLegal = false;
+		}
+		else if (boundaryInfo.type == Double.class)
+		{
+			if(Double.isNaN((Double) num)) isLegal = false;
+		}
+		else if (boundaryInfo.type == InfiniteInteger.class)
+		{
+			if(((InfiniteInteger) num).isNaN()) isLegal = false;
+		}
+
+		if(!isLegal) throw new IllegalArgumentException("NaN can't be a boundary");
+	}
+	/**
+	 * @throws IllegalArgumentException if class1 is mutable
+	 */
+	private static void checkKnownMutableClasses(final Class<?> class1)
+	{
+		boolean isLegal = true;
+		isLegal &= (class1 != MutableInfiniteInteger.class);  //mutable
+		isLegal &= (class1 != AbstractInfiniteInteger.class);  //could be mutable
+
+		if(!isLegal) throw new IllegalArgumentException(class1 + " is mutable");
 	}
 
 	/**
@@ -448,6 +503,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 
 			if(type == InfiniteInteger.class) return (T_BoundaryInfo) InfiniteInteger.ONE;
 			//MutableInfiniteInteger shouldn't be used because it can violate invariants
+			//likewise for AbstractInfiniteInteger which could be mutable
 
 			throw new IllegalArgumentException("stepBy is required for " + type);
 		}
@@ -478,6 +534,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 
 			if(type == InfiniteInteger.class) return (T_BoundaryInfo) ((InfiniteInteger)starting).add((InfiniteInteger)stepBy);
 			//MutableInfiniteInteger shouldn't be used because it can violate invariants
+			//likewise for AbstractInfiniteInteger which could be mutable
 
 			throw new IllegalArgumentException("Can't create an array for " + type);
 		}
