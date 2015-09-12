@@ -58,7 +58,8 @@ public class UT_Range
 	public void test_toString() {
 		assertEquals("0 ..> 10", new Range<Integer>(Range.inclusive(0), Range.exclusive(10)).toString());
 		assertEquals("0 <.. 10", new Range<Integer>(Range.exclusive(0), Range.inclusive(10)).toString());
-		assertEquals("-5 .. 5", new Range<Integer>(Range.inclusive(-5), Range.inclusive(5)).toString());
+		assertEquals("-5 .. 5", new Range<Integer>(-5, "  \t .. \n", 5).toString());
+		assertEquals("0.0 <..> Infinity", new Range<Float>(0f, "<..>", Float.POSITIVE_INFINITY).toString());
 	}
 
 }

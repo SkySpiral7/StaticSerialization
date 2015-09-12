@@ -387,12 +387,12 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 	 * Entire code: <blockquote>{@code return (float) longValue();}</blockquote>
 	 * @see #longValue()
 	 */
-	@Override public float floatValue(){return (float) longValue();}
+	@Override public float floatValue(){return longValue();}
 	/**
 	 * Entire code: <blockquote>{@code return (double) longValue();}</blockquote>
 	 * @see #longValue()
 	 */
-	@Override public double doubleValue(){return (double) longValue();}
+	@Override public double doubleValue(){return longValue();}
 	//TODO: I can have the floating points return Infinity or NaN
 
 	/**
@@ -1122,7 +1122,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 		//if the remaining division can be done by the floating point unit then delegate
 		if (thisAbs.equals(thisAbs.longValue()) && valueAbs.equals(valueAbs.longValue()))
 		{
-			long whole = (long) (thisAbs.longValue()/valueAbs.longValue());
+			long whole = (thisAbs.longValue() / valueAbs.longValue());
 			final long remainder = thisAbs.longValue() % valueAbs.longValue();
 			if(resultIsNegative) whole*=-1;
 			return new IntegerQuotient<MutableInfiniteInteger>(new MutableInfiniteInteger(whole), new MutableInfiniteInteger(remainder));
