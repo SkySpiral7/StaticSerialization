@@ -1750,7 +1750,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 	/**
 	 * Compares this InfiniteInteger with the specified other for numeric equality.
 	 * The natural order is as expected with &plusmn;&infin; being at either end.
-	 * However for the sake of sorting 0 < NaN < 1.
+	 * With the exception that &infin; &lt; NaN (this is consistent with Float/Double.compareTo).
 	 *
 	 * @param other the value to be compared to this
 	 * @return -1, 0 or 1 if this InfiniteInteger is numerically less than, equal
@@ -1758,20 +1758,12 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
 	 */
 	@Override
 	public int compareTo(MutableInfiniteInteger other) {
-		if(this == other) return THIS_EQUAL;
-		if(this == POSITIVE_INFINITITY || other == NEGATIVE_INFINITITY) return THIS_GREATER;
-		if(this == NEGATIVE_INFINITITY || other == POSITIVE_INFINITITY) return THIS_LESSER;
-
-		if (this == NaN)
-		{
-			if(other.equals(0) || other.isNegative) return THIS_GREATER;
-			return THIS_LESSER;  //since other != NaN
-		}
-		if (other == NaN)
-		{
-			if(this.equals(0) || this.isNegative) return THIS_LESSER;
-			return THIS_GREATER;  //since this != NaN
-		}
+		if(this == other) return THIS_EQUAL;  //recall that special values are singletons
+		if(this == NaN || other == NEGATIVE_INFINITITY) return THIS_GREATER;
+		if(this == NEGATIVE_INFINITITY || other == NaN) return THIS_LESSER;
+		//+Infinity is only greater if NaN isn't involved
+		if(this == POSITIVE_INFINITITY) return THIS_GREATER;
+		if(other == POSITIVE_INFINITITY) return THIS_LESSER;
 
 		if(isNegative && !other.isNegative) return THIS_LESSER;
 		if(!isNegative && other.isNegative) return THIS_GREATER;  //also covers if this.equals(0)
