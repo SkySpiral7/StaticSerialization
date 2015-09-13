@@ -4,13 +4,13 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -262,18 +262,8 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 		Objects.requireNonNull(stepBy, "stepBy");
 		if(!typeOf.isArray()) throw new IllegalArgumentException(typeOf + " isn't an array class");
 
-		final List<Number> numberList = new ArrayList<>();
-		T_Range index = lower.getValue();
-		if(!lower.isInclusive()) index = boundaryInfo.add(index, stepBy);
-		while(ComparableSugar.is(index, Comparison.LESS_THAN, upper.getValue()))
-		{
-			numberList.add(index);
-			index = boundaryInfo.add(index, stepBy);
-		}
-		//if stepBy > 1 then index could be > upper. other possible ways for boundaryInfo.type of float etc
-		if(upper.isInclusive() && index.equals(upper.getValue())) numberList.add(index);
-		//although I could use numberList, calling toArray is fast, numberArray is smaller, and numberArray has faster iterations below
-		final Number[] numberArray = numberList.toArray(new Number[numberList.size()]);
+		final Number[] numberArray = createStream(stepBy).toArray(Number[]::new);
+		//I can't have the stream convert to primitive so I do that myself below
 
 		final Class<?> componentType = typeOf.getComponentType();
 		@SuppressWarnings("unchecked")
@@ -293,6 +283,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 	private static <T_Custom> T_Custom convertTo(final Number original, final Class<T_Custom> dest)
 	{
 		//need to check for both primitive and box classes so that either array type can be used
+		//although it is only possible to return boxes they'll be auto-unboxed later if needed
 		if(dest == byte.class || dest == Byte.class) return (T_Custom) Byte.valueOf(original.byteValue());
 		if(dest == short.class || dest == Short.class) return (T_Custom) Short.valueOf(original.shortValue());
 		if(dest == int.class || dest == Integer.class) return (T_Custom) Integer.valueOf(original.intValue());
@@ -334,29 +325,37 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 	 * since arrays can't be that large (the list is backed by an array). Likewise there is no check to see if
 	 * stepBy &lt;= 0 (or NaN) which would also be endless.</p>
 	 *
-	 * <p>For example: {@code new Range<Integer>(256, "..", 257).createList(Byte.class, 1)} returns a list of 2 elements
-	 * however both of them will have been truncated due to being cast from int to byte.</p>
+	 * <p>For example: {@code new Range<Integer>(256, "..", 258).createList(Byte.class, 1)} returns a list of 3 elements
+	 * however each of them will have been truncated when cast from int to byte.</p>
 	 *
-	 * @param typeOf the class of the elements of the returned list
+	 * @param typeOf the class of the elements of the returned list (primitives will be auto-boxed)
 	 * @param stepBy the amount to add between each number
 	 *
 	 * @return a list of all numbers (counting by stepBy) included in this range
 	 *
-	 * @throws IllegalArgumentException if typeOf is a primitive class or is not a supported class
+	 * @throws IllegalArgumentException if typeOf is not a supported class
 	 *
 	 * @see #createArray(Class, Number)
 	 */
 	public <T_Custom> List<T_Custom> createList(final Class<T_Custom> typeOf, final T_Range stepBy)
 	{
-		if(typeOf.isPrimitive()) throw new IllegalArgumentException("Can't create a list of primitive " + typeOf);
-		final List<T_Custom> fixedSizeList = Arrays.asList(createArray(toArrayClass(typeOf), stepBy));
-		return new ArrayList<>(fixedSizeList);
+		return createStream(typeOf, stepBy).collect(Collectors.toCollection(ArrayList::new));
 	}
 
-	//TODO: more and test
-	//TODO: have createArray use this
-	private Stream<T_Range> createStream(final T_Range stepBy)
+	/**
+	 * Same as createStream(T_Range.class, 1).
+	 * @return a stream of all numbers (counting by 1) included in this range
+	 * @see #createStream(Class, Number)
+	 */
+	public Stream<T_Range> createStream(){return createStream(boundaryInfo.getOne());}
+	/**
+	 * Same as createStream(T_Range.class, stepBy).
+	 * @return a stream of all numbers (counting by stepBy) included in this range
+	 * @see #createStream(Class, Number)
+	 */
+	public Stream<T_Range> createStream(final T_Range stepBy)
 	{
+		Objects.requireNonNull(stepBy, "stepBy");
 		T_Range index = lower.getValue();
 		if(!lower.isInclusive()) index = boundaryInfo.add(index, stepBy);
 
@@ -364,38 +363,62 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
              new IterateByStep(index, stepBy),
              Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
 	}
+	/**
+	 * Simply calls createStream(typeOf, 1).
+	 * @return a stream of all numbers (counting by 1) included in this range
+	 * @see #createStream(Class, Number)
+	 */
+	public <T_Custom> Stream<T_Custom> createStream(final Class<T_Custom> typeOf){return createStream(typeOf, boundaryInfo.getOne());}
+	/**
+	 * <p>Creates a stream of type {@code typeOf} of all numbers included in this range counting by {@code stepBy}.
+	 * The numbers start with the lower bound (if it is included) and keep adding stepBy until the number is greater than
+	 * the upper bound (that last number is never included).</p>
+	 *
+	 * <p>All numbers included in the stream (if
+	 * not empty) will be cast from T_Range to {@code typeOf} therefore a class cast exception
+	 * may occur or the numbers may be truncated.</p>
+	 *
+	 * <p>If this Range's lower bound is -&infin; and/or upper bound is +&infin; then the stream
+	 * will not end. Likewise there is no check to see if
+	 * stepBy &lt;= 0 (or NaN) which would also be endless.</p>
+	 *
+	 * @param typeOf the class of the elements in the returned list (primitives will be auto-boxed)
+	 * @param stepBy the amount to add between each number
+	 *
+	 * @return a stream of all numbers (counting by stepBy) included in this range
+	 *
+	 * @throws IllegalArgumentException if typeOf is not a supported class
+	 *
+	 * @see #createList(Class, Number)
+	 */
+	public <T_Custom> Stream<T_Custom> createStream(final Class<T_Custom> typeOf, final T_Range stepBy)
+	{
+		Objects.requireNonNull(typeOf, "typeOf");
+		Objects.requireNonNull(stepBy, "stepBy");  //redundant but easier to understand stack trace
+     return createStream(stepBy).map((T_Range input) -> {return convertTo(input, typeOf);});
+	}
+
 	private final class IterateByStep implements Iterator<T_Range>
 	{
       private T_Range index;
       private final T_Range stepBy;
-      public IterateByStep(T_Range index, T_Range stepBy)
+      public IterateByStep(final T_Range index, final T_Range stepBy)
       {
       	this.index = index;
       	this.stepBy = stepBy;
-
-      	//check to see if index is allowed (if not then this iterator is empty)
-      	checkIndex();
       }
 
-      @Override public boolean hasNext(){return (null != index);}
+      @Override public boolean hasNext(){return Range.this.contains(index);}
 
       @Override
       public T_Range next() {
       	if(!hasNext()) throw new NoSuchElementException();
-      	final T_Range temp = index;
+      	final T_Range returnValue = index;
+
       	index = boundaryInfo.add(index, stepBy);
 
-      	checkIndex();
-
-   		return temp;
+   		return returnValue;
       }
-
-		private void checkIndex()
-		{
-			if(ComparableSugar.is(index, Comparison.LESS_THAN, upper.getValue())){}  //allow index value
-      	else if(upper.isInclusive() && index.equals(upper.getValue())){}
-      	else index = null;  //no more values
-		}
   };
 
   /**

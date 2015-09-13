@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -26,9 +27,10 @@ public class UT_Range
 
 	@Test
    public void createArray_otherTypes() {
-		assertArrayEquals(new Double[]{1d, 1.5d, 2d, 2.5d, 3d}, new Range<Double>(1d, "..", 3d).createArray(Double[].class, 0.5d));
+		assertArrayEquals(new Double[]{1d, 1.75d, 2.5d}, new Range<Double>(1d, "..", 3d).createArray(Double[].class, 0.75d));
 		final Range<BigInteger> bigIntegerRange = new Range<BigInteger>(BigInteger.ZERO, "..>", BigInteger.valueOf(2));
 		assertArrayEquals(new BigInteger[]{BigInteger.ZERO, BigInteger.ONE}, bigIntegerRange.createArray());
+		assertArrayEquals(new int[0], new Range<Integer>(1, "<..", 3).createArray(int[].class, 5));
 	}
 
 	@Test
@@ -41,6 +43,18 @@ public class UT_Range
 		assertEquals(Arrays.asList(new Integer[]{1, 2, 3}), range.createList(Integer.class));
 		assertEquals(Arrays.asList(new Byte[]{1, 2, 3}), range.createList(Byte.class));
 		assertEquals(Arrays.asList(new Long[]{1L, 3L}), range.createList(Long.class, 2));
+	}
+
+	@Test
+   public void createStream() {
+		final Range<Double> range = new Range<Double>(1.0, "..", Double.POSITIVE_INFINITY);
+
+		final Iterator<Float> iterator = range.createStream(float.class).iterator();
+		assertEquals(Float.valueOf(1f), iterator.next());
+		assertEquals(Float.valueOf(2f), iterator.next());
+		assertEquals(Float.valueOf(3f), iterator.next());
+		assertEquals(Float.valueOf(4f), iterator.next());
+		assertTrue(iterator.hasNext());
 	}
 
 	@Test
