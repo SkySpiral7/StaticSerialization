@@ -91,7 +91,7 @@ public final class BloomFilter
 		 * This ideal is impossible (except for enums which is exactly what EnumSet does).</p>
 		 *
 		 * <p>The implementation should not simply return Object.hashCode because
-		 * most implementations of hashCode use prime numbers for multiplies (to reduce collision).
+		 * most implementations of hashCode use prime numbers for multipliers (to reduce collision).
 		 * However this also causes many bits to be set which is toxic to a Bloom filter.
 		 * Additionally Object.hashCode returns an int however 32 bits is too small of a range for an effective
 		 * Bloom filter: the crowded range will cause many false positives.</p>
