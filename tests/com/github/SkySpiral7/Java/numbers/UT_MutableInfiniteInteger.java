@@ -123,7 +123,25 @@ public class UT_MutableInfiniteInteger {
 
     @Test
     public void compareTo_special() {
-    	//TODO: make test
+    	//same object (non-special value) is covered by the other compareTo test
+
+   	//don't use hamcrest for these because they would use .equals
+      assertTrue(is(MutableInfiniteInteger.POSITIVE_INFINITITY, EQUAL_TO, MutableInfiniteInteger.POSITIVE_INFINITITY));
+      assertTrue(is(MutableInfiniteInteger.NaN, EQUAL_TO, MutableInfiniteInteger.NaN));  //this is logical
+
+      infiniteInteger = MutableInfiniteInteger.valueOf(5);
+
+      //assert in both directions to test that the code correctly checks itself and the other
+    	assertThat(MutableInfiniteInteger.NaN, greaterThan(MutableInfiniteInteger.POSITIVE_INFINITITY));  //odd but that's the ordering
+    	assertThat(MutableInfiniteInteger.POSITIVE_INFINITITY, lessThan(MutableInfiniteInteger.NaN));
+    	assertThat(MutableInfiniteInteger.NaN, greaterThan(infiniteInteger));
+    	assertThat(infiniteInteger, lessThan(MutableInfiniteInteger.NaN));
+
+    	assertThat(MutableInfiniteInteger.NEGATIVE_INFINITITY, lessThan(infiniteInteger));
+    	assertThat(infiniteInteger, greaterThan(MutableInfiniteInteger.NEGATIVE_INFINITITY));
+
+    	assertThat(MutableInfiniteInteger.POSITIVE_INFINITITY, greaterThan(infiniteInteger));
+    	assertThat(infiniteInteger, lessThan(MutableInfiniteInteger.POSITIVE_INFINITITY));
     }
 
     @Test
