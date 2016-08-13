@@ -1,11 +1,16 @@
 package com.github.SkySpiral7.Java.util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -18,7 +23,7 @@ import java.util.Objects;
  * Simple to use but none are efficient.
  * 
  * @see #writeToFile(File, String, Charset, boolean)
- * @see #readFromFileAsString(File, Charset)
+ * @see #readTextFile(File, Charset)
  */
 public enum FileIoUtil
 //I tested this class by hand since a UT would have to duplicate the code
@@ -55,7 +60,7 @@ public enum FileIoUtil
 
 	/**
 	 * This method opens the file, writes (which may create it), then closes the file.
-	 * Therefore it is inefficient to call this more than once.
+	 * Therefore it is inefficient to call this more than once when appending.
 	 * 
 	 * @param targetFile
 	 *           writes to this file
@@ -73,15 +78,41 @@ public enum FileIoUtil
 	{
 		if (targetFile.isDirectory()) throw new IllegalArgumentException("It is not possible to write to a directory");
 		Objects.requireNonNull(newContents);
-		try
+
+		try (final Writer writer = new BufferedWriter(new OutputStreamWriter(
+				new FileOutputStream(targetFile, willAppend), encoding));)
 		{
 			// might create the file
-			final Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetFile, willAppend),
-					encoding));
 			writer.write(newContents);
-			writer.close();
 		}
-		catch (final Exception e)
+		catch (final IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * This method opens the file, writes (which may create it), then closes the file.
+	 * Therefore it is inefficient to call this more than once when appending.
+	 * 
+	 * @param targetFile
+	 *           writes to this file
+	 * @param newContents
+	 *           the binary contents to be written
+	 * @throws RuntimeException
+	 *            of FileNotFoundException or IOException
+	 */
+	public static void writeToFile(final File targetFile, final byte[] newContents, final boolean willAppend)
+	{
+		if (targetFile.isDirectory()) throw new IllegalArgumentException("It is not possible to write to a directory");
+		Objects.requireNonNull(newContents);
+
+		try (final OutputStream writer = new BufferedOutputStream(new FileOutputStream(targetFile, willAppend));)
+		{
+			// might create the file
+			writer.write(newContents);
+		}
+		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -95,11 +126,11 @@ public enum FileIoUtil
 	 *            of FileNotFoundException or IOException
 	 * @throws IllegalArgumentException
 	 *            if the file is larger than a string can hold
-	 * @see #readFromFileAsString(File, Charset)
+	 * @see #readTextFile(File, Charset)
 	 */
-	public static String readFromFileAsString(final File targetFile)
+	public static String readTextFile(final File targetFile)
 	{
-		return readFromFileAsString(targetFile, StandardCharsets.UTF_8);
+		return readTextFile(targetFile, StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -119,7 +150,7 @@ public enum FileIoUtil
 	 *            if the file is larger than a string can hold. The size is estimated however this method shouldn't be
 	 *            used for files anywhere near the limit.
 	 */
-	public static String readFromFileAsString(final File targetFile, final Charset encoding)
+	public static String readTextFile(final File targetFile, final Charset encoding)
 	{
 		if (targetFile.isDirectory()) throw new IllegalArgumentException(
 				"It is not possible to read file contents of a directory");
@@ -131,17 +162,15 @@ public enum FileIoUtil
 		//for completeness I could count the number of characters read and throw but it's better to have this hedge
 
 		final StringBuilder returnValue = new StringBuilder();
-		Reader reader;
-		try
+		try (final Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(
+				targetFile.getAbsolutePath()), encoding));)
 		{
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(targetFile.getAbsolutePath()), encoding));
 			while (true)
 			{
 				final int charRead = reader.read();
 				if (-1 == charRead) break;  // if end of file
 				returnValue.append((char) charRead);
 			}
-			reader.close();
 		}
 		catch (final Exception e)
 		{
@@ -151,23 +180,21 @@ public enum FileIoUtil
 	}
 
 	/**
-	 * This method reads the entire file and loads it into a string.
-	 * This is obviously bad for performance.
+	 * This method reads the entire file and loads it into a byte array.
 	 * 
 	 * @param targetFile
 	 *           the file to be read
-	 * @param encoding
-	 *           the character encoding to read the file with
 	 * @return the entire file contents
 	 * @throws RuntimeException
 	 *            of FileNotFoundException or IOException
 	 * @throws IllegalArgumentException
-	 *            if the file is a directory or if the file doesn't exist
-	 * @throws IllegalArgumentException
-	 *            if the file is larger than a string can hold. The size is estimated however this method shouldn't be
-	 *            used for files anywhere near the limit.
+	 *            if the file is a directory, if the file doesn't exist, or if the file is larger than a byte array can
+	 *            hold
+	 * @throws IllegalStateException
+	 *            if the file has fewer bytes than the length indicated. This is possible if another thread is changing
+	 *            the file
 	 */
-	public static byte[] readFromFileAsBinary(final File targetFile)
+	public static byte[] readBinaryFile(final File targetFile)
 	{
 		if (targetFile.isDirectory()) throw new IllegalArgumentException(
 				"It is not possible to read file contents of a directory");
@@ -176,25 +203,27 @@ public enum FileIoUtil
 		if (targetFile.length() > Integer.MAX_VALUE) throw new IllegalArgumentException(
 				"File too large to fit into a byte[]");
 
-		final byte[] returnValue = new byte[(int) targetFile.length()];
-		Reader reader;
+		final byte[] result = new byte[(int) targetFile.length()];
 		try
 		{
-			//ISO_8859_1 is a fixed-width 8-bit format. Therefore all possible bytes are valid
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(targetFile.getAbsolutePath()),
-					StandardCharsets.ISO_8859_1));
-			for (int i = 0; true; ++i)
+			try (final InputStream input = new BufferedInputStream(new FileInputStream(targetFile));)
 			{
-				final int charRead = reader.read();
-				if (-1 == charRead) break;  // if end of file
-				returnValue[i] = (byte) (0xFF & charRead);  //the higher half is always 0
+				int totalBytesRead = 0;
+				while (totalBytesRead < result.length)
+				{
+					final int bytesRemaining = result.length - totalBytesRead;
+					final int bytesRead = input.read(result, totalBytesRead, bytesRemaining);
+					if (bytesRead == -1) throw new IllegalStateException(
+							"file contains fewer bytes then its length indicated");
+					totalBytesRead += bytesRead;
+					//this loop usually has a single iteration
+				}
 			}
-			reader.close();
 		}
-		catch (final Exception e)
+		catch (final IOException ex)
 		{
-			throw new RuntimeException(e);
+			throw new RuntimeException(ex);
 		}
-		return returnValue;
+		return result;
 	}
 }

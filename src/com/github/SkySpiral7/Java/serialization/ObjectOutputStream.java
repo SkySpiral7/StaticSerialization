@@ -1,17 +1,14 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.Flushable;
 import java.io.Serializable;
-import java.io.Writer;
+import java.util.Objects;
 
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
-public class ObjectOutputStream extends OutputStream
+public class ObjectOutputStream implements Closeable, Flushable
 {
 	private final File destination;
 	private final ObjectRegistry registry = new ObjectRegistry();
@@ -24,45 +21,104 @@ public class ObjectOutputStream extends OutputStream
 		FileIoUtil.writeToFile(destination, "");
 	}
 
+	/**
+	 * Currently does nothing. Placeholder for later.
+	 */
 	@Override
-	public void write(final int dataByte)
+   public void flush(){}
+	/**
+	 * Currently does nothing. Placeholder for later.
+	 */
+	@Override
+   public void close(){}
+
+	private void writeBytes(long data, final int byteCount)
 	{
-		try
+		final byte[] writeMe = new byte[byteCount];
+		for (int i = (byteCount - 1); i >= 0; --i)
 		{
-			final Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destination, true)));
-			out.write(dataByte & 0xFF);
-			out.close();
+			//the array is reversed so that it is in big endian
+			writeMe[i] = (byte) (data & 0xFF);
+			data >>>= 8;
 		}
-		catch (final Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		FileIoUtil.writeToFile(destination, writeMe, true);
 	}
 
-	@Override
-	public void write(final byte data[])
+	//for now ignore overloading for all primitives and array stuff
+	public void writeObject(final Object data)
 	{
-		write(data, 0, data.length);  //I call mine instead of super to avoid try/catch wrapping
-	}
-
-	@Override
-	public void write(final byte data[], final int startIndex, final int numberOfBytesToWrite)
-	{
-		try
+		Objects.requireNonNull(data);  //for now
+		//for now it also doesn't allow arrays
+		if (StaticSerializable.generateClassNameOverhead)
 		{
-			super.write(data, startIndex, numberOfBytesToWrite);
+			//TODO: create overhead
+			//can't use recursion because that's endless
+			//writeByte(data.getClass().getName());
 		}
-		catch (final IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	@Override
-   public void flush(){}  //overwritten so that there's no throws clause
-	@Override
-   public void close(){}  //and to remind me to use them later
 
-	public void writeObject(final Object data){}  //for now ignore overloading for all primitives and array stuff
+		if (data instanceof Byte)
+		{
+			writeBytes((byte) data, 1);
+			return;
+		}
+		if (data instanceof Short)
+		{
+			writeBytes((short) data, 2);
+			return;
+		}
+		if (data instanceof Integer)
+		{
+			writeBytes((int) data, 4);
+			return;
+		}
+		if (data instanceof Long)
+		{
+			writeBytes((long) data, 8);
+			return;
+		}
+		if (data instanceof Float)
+		{
+			final int castedData = Float.floatToIntBits((float) data);
+			//intentionally normalizes NaN
+			writeBytes(castedData, 4);
+			return;
+		}
+		if (data instanceof Double)
+		{
+			long castedData = Double.doubleToLongBits((double) data);
+			//intentionally normalizes NaN
+			writeBytes(castedData, 8);
+			return;
+		}
+		if (data instanceof Boolean)
+		{
+			if((boolean) data) writeBytes(1, 1);  //write true
+			else writeBytes(0, 1);
+			return;
+		}
+		if (data instanceof Character)
+		{
+			writeBytes((char) data, 2);
+			return;
+		}
+		/*if (data instanceof String)
+		{
+			final String castedData = (String) data;
+			final byte[] writeMe = castedData.getBytes(StandardCharsets.UTF_8);
+			//TODO: must also write the length so that it can be read
+			writeBytes(writeMe);
+			return;
+		}*/
+
+		if (data instanceof StaticSerializable)
+		{
+			final StaticSerializable<?> castedData = (StaticSerializable<?>) data;
+			castedData.writeToStream(this);
+			return;
+		}
+
+		throw new IllegalArgumentException("Couldn't serialize object of class " + data.getClass().getName());
+	}
 	public void writeSerializable(final Serializable data){}  //unchecked/unsafe and difficult to implement
 	public void writeFieldsReflectively(final Object data){}
 

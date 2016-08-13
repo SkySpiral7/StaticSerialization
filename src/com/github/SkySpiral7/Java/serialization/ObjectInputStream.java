@@ -1,14 +1,22 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import java.io.InputStream;
+import java.io.Closeable;
+import java.io.Flushable;
 
-public class ObjectInputStream extends InputStream
+public class ObjectInputStream implements Closeable, Flushable
 {
 	private final ObjectRegistry registry = new ObjectRegistry();
 
+	/**
+	 * Currently does nothing. Placeholder for later.
+	 */
 	@Override
-	public int read(){return -1;}
-	//@Override them all
+   public void flush(){}
+	/**
+	 * Currently does nothing. Placeholder for later.
+	 */
+	@Override
+   public void close(){}
 
 	public boolean hasData(){return false;}  //can't call hasData(byte.class) because of overhead mismatch
 	public boolean hasData(final Class<?> expectedClass){return false;}
