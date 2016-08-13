@@ -1,13 +1,12 @@
 package com.github.SkySpiral7.Java.pojo;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
+
+import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 /**
  * <p>This class is a very simple logger. It is useful for quick and dirty debugging.
@@ -47,14 +46,7 @@ public final class SimpleLogger {
     */
    public void append(String text)
    {
-       Objects.requireNonNull(text);
-      try
-      {
-          BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(log, true)));
-          out.write(text);
-          out.close();
-      }
-       catch(Exception e){throw new RuntimeException(e);}
+       FileIoUtil.appendToFile(log, text);
    }
 
    /**
@@ -75,13 +67,7 @@ public final class SimpleLogger {
     */
    public void clear()
    {
-      try
-      {
-          BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(log)));
-          out.write("");
-          out.close();
-      }
-       catch(Exception e){throw new RuntimeException(e);}
+   	FileIoUtil.writeToFile(log, "");
    }
 
    /**

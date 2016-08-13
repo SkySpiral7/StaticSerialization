@@ -11,6 +11,8 @@ import java.net.URI;
 import java.util.Locale;
 import java.util.Scanner;
 
+import com.github.SkySpiral7.Java.util.FileIoUtil;
+
 /**
  * <p>This class is a wrapper around File. It extends File and has a method for many of the String methods. The String based methods
  * perform the action over the file contents (even files larger than Integer.MAX_VALUE). These methods include getting a substring
@@ -509,8 +511,7 @@ public class FileToStringAdapter extends File {
     public void concat(String newContents) throws IOException {
     	if(!this.exists()) this.createNewFile();
     	requireFileContents();
-        try(BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this, true)));)
-        {out.write(newContents);}
+      FileIoUtil.appendToFile(this, newContents);
     }
 
     /**
@@ -523,8 +524,7 @@ public class FileToStringAdapter extends File {
     	if(!this.exists()) this.createNewFile();
     	requireFileContents();
     	//TODO: if enough places add file creation to requireFileContents(true)
-        try(BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this)));)
-        {out.write(newContents);}
+    	FileIoUtil.writeToFile(this, newContents);
     }
 
     /**
