@@ -149,4 +149,52 @@ public enum FileIoUtil
 		}
 		return returnValue.toString();
 	}
+
+	/**
+	 * This method reads the entire file and loads it into a string.
+	 * This is obviously bad for performance.
+	 * 
+	 * @param targetFile
+	 *           the file to be read
+	 * @param encoding
+	 *           the character encoding to read the file with
+	 * @return the entire file contents
+	 * @throws RuntimeException
+	 *            of FileNotFoundException or IOException
+	 * @throws IllegalArgumentException
+	 *            if the file is a directory or if the file doesn't exist
+	 * @throws IllegalArgumentException
+	 *            if the file is larger than a string can hold. The size is estimated however this method shouldn't be
+	 *            used for files anywhere near the limit.
+	 */
+	public static byte[] readFromFileAsBinary(final File targetFile)
+	{
+		if (targetFile.isDirectory()) throw new IllegalArgumentException(
+				"It is not possible to read file contents of a directory");
+		if (!targetFile.exists()) throw new IllegalArgumentException("File doesn't exist");
+
+		if (targetFile.length() > Integer.MAX_VALUE) throw new IllegalArgumentException(
+				"File too large to fit into a byte[]");
+
+		final byte[] returnValue = new byte[(int) targetFile.length()];
+		Reader reader;
+		try
+		{
+			//ISO_8859_1 is a fixed-width 8-bit format. Therefore all possible bytes are valid
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(targetFile.getAbsolutePath()),
+					StandardCharsets.ISO_8859_1));
+			for (int i = 0; true; ++i)
+			{
+				final int charRead = reader.read();
+				if (-1 == charRead) break;  // if end of file
+				returnValue[i] = (byte) (0xFF & charRead);  //the higher half is always 0
+			}
+			reader.close();
+		}
+		catch (final Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+		return returnValue;
+	}
 }
