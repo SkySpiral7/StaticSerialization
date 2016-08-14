@@ -81,7 +81,9 @@ public class ObjectInputStream implements Closeable, Flushable
 			return (T) new String(data, StandardCharsets.UTF_8);
 		}
 
-		return null;
+		//if (expectedClass.isAssignableFrom(StaticSerializable.class)) { return readCustomClass(expectedClass); }
+
+		throw new IllegalArgumentException("Don't know how to deserialize class " + expectedClass.getName());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -130,6 +132,11 @@ public class ObjectInputStream implements Closeable, Flushable
 			return (T) (Character) (char) (short) intData;
 		}
 
+		return null;
+	}
+
+	private <T> T readCustomClass(final Class<T> expectedClass)
+	{
 		return null;
 	}
 

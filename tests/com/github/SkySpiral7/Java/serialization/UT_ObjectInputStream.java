@@ -57,9 +57,30 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_throw_noData() throws IOException
+	public void readObject_throw_nullInput() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_throw_noData.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_throw_nullInput.", ".txt");
+		tempFile.deleteOnExit();
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		boolean didCatch = false;
+		try
+		{
+			testObject.readObject(null);
+		}
+		catch (final NullPointerException actual)
+		{
+			didCatch = true;
+		}
+		assertTrue(didCatch);
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_throw_noData() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_throw_noData.", ".txt");
 		tempFile.deleteOnExit();
 		FileIoUtil.writeToFile(tempFile, new byte[0], false);
 
@@ -78,9 +99,30 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_byte() throws IOException
+	public void readObject_throw_unknownClass() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_byte.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_throw_unknownClass.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 2 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		try
+		{
+			testObject.readObject(Object.class);
+		}
+		catch (final IllegalArgumentException actual)
+		{
+			assertEquals("Don't know how to deserialize class java.lang.Object", actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_byte() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_byte.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 2 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -94,9 +136,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_Byte() throws IOException
+	public void readObject_Byte() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Byte.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_Byte.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 2 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -110,9 +152,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_short() throws IOException
+	public void readObject_short() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_short.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_short.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -126,9 +168,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_Short() throws IOException
+	public void readObject_Short() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Short.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_Short.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -142,9 +184,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_int() throws IOException
+	public void readObject_int() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_int.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_int.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -158,9 +200,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_Integer() throws IOException
+	public void readObject_Integer() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Integer.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_Integer.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -174,9 +216,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_long() throws IOException
+	public void readObject_long() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_long.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_long.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
 				(byte) 0x07, (byte) 0x08 };
@@ -191,9 +233,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_Long() throws IOException
+	public void readObject_Long() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Long.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_Long.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
 				(byte) 0x07, (byte) 0x08 };
@@ -208,9 +250,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_float() throws IOException
+	public void readObject_float() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_float.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_float.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -225,9 +267,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_Float() throws IOException
+	public void readObject_Float() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Float.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_Float.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -242,9 +284,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_double() throws IOException
+	public void readObject_double() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_double.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_double.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
 				(byte) 0x07, (byte) 0x08 };
@@ -260,9 +302,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_Double() throws IOException
+	public void readObject_Double() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Double.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_Double.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
 				(byte) 0x07, (byte) 0x08 };
@@ -278,9 +320,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_boolean() throws IOException
+	public void readObject_boolean() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_boolean.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_boolean.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x00, (byte) 0x01 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -295,9 +337,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_Boolean() throws IOException
+	public void readObject_Boolean() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Boolean.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_Boolean.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x00, (byte) 0x01 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -312,9 +354,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_char() throws IOException
+	public void readObject_char() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_char.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_char.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -329,9 +371,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_Character() throws IOException
+	public void readObject_Character() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Character.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_Character.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -346,9 +388,9 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
-	public void writeObject_String() throws IOException
+	public void readObject_String() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_String.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_String.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
 				(byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e };
