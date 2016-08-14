@@ -1,18 +1,25 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class UT_ObjectOutputStream
 {
+	@Before
+	public void setUp()
+	{
+		StaticSerializableConfig.generateClassNameOverhead = false;
+	}
+
 	@Test
 	public void constructor_throws()
 	{
@@ -34,6 +41,73 @@ public class UT_ObjectOutputStream
 		FileIoUtil.writeToFile(tempFile, "test");
 		new ObjectOutputStream(tempFile).close();
 		assertEquals("", FileIoUtil.readTextFile(tempFile));
+	}
+
+	@Test
+	public void writeObject_overHead() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_overHead.", ".txt");
+		tempFile.deleteOnExit();
+		StaticSerializableConfig.generateClassNameOverhead = true;
+		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+
+		testObject.writeObject((byte) 0xab);
+		//@formatter:off
+		final byte[] expected = new byte[] {
+				(byte)0, (byte)106, (byte)0, (byte)97, (byte)0, (byte)118, (byte)0, (byte)97, (byte)0, (byte)46,  //"java."
+				(byte)0, (byte)108, (byte)0, (byte)97, (byte)0, (byte)110, (byte)0, (byte)103, (byte)0, (byte)46,  //"lang."
+				(byte)0, (byte)66, (byte)0, (byte)121, (byte)0, (byte)116, (byte)0, (byte)101,  //"Byte"
+				(byte)0, (byte)124,  //"|"
+				(byte)1,  //hasData=true
+				(byte)0xab  //the data
+		};
+		//@formatter:on
+		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_overHead_null() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_overHead_null.", ".txt");
+		tempFile.deleteOnExit();
+		StaticSerializableConfig.generateClassNameOverhead = true;
+		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+
+		testObject.writeObject(null);
+		//@formatter:off
+		final byte[] expected = new byte[] {
+				(byte)0, (byte)106, (byte)0, (byte)97, (byte)0, (byte)118, (byte)0, (byte)97, (byte)0, (byte)46,  //"java."
+				(byte)0, (byte)108, (byte)0, (byte)97, (byte)0, (byte)110, (byte)0, (byte)103, (byte)0, (byte)46,  //"lang."
+				(byte)0, (byte)79, (byte)0, (byte)98, (byte)0, (byte)106, (byte)0, (byte)101, (byte)0, (byte)99, (byte)0, (byte)116,  //"Object"
+				(byte)0, (byte)124,  //"|"
+				(byte)0  //hasData=false
+		};
+		//@formatter:on
+		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_overHead_nullThrows() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_overHead_nullThrows.",
+				".txt");
+		tempFile.deleteOnExit();
+		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+
+		try
+		{
+			testObject.writeObject(null);
+		}
+		catch (final IllegalArgumentException actual)
+		{
+			assertEquals("Can't write null without overhead because it would be impossible to read", actual.getMessage());
+		}
+
+		testObject.close();
 	}
 
 	@Test
@@ -60,7 +134,7 @@ public class UT_ObjectOutputStream
 		final byte[] expected = { (byte) 0xca, (byte) 0xfe };
 
 		testObject.writeObject(data);
-		assertArrayEquals(expected, FileIoUtil.readBinaryFile(tempFile));
+		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();
 	}
@@ -75,7 +149,7 @@ public class UT_ObjectOutputStream
 		final byte[] expected = { (byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad };
 
 		testObject.writeObject(data);
-		assertArrayEquals(expected, FileIoUtil.readBinaryFile(tempFile));
+		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();
 	}
@@ -91,7 +165,7 @@ public class UT_ObjectOutputStream
 				(byte) 0xd1, (byte) 0x23 };
 
 		testObject.writeObject(data);
-		assertArrayEquals(expected, FileIoUtil.readBinaryFile(tempFile));
+		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();
 	}
@@ -106,7 +180,7 @@ public class UT_ObjectOutputStream
 		final byte[] expected = { (byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad };
 
 		testObject.writeObject(data);
-		assertArrayEquals(expected, FileIoUtil.readBinaryFile(tempFile));
+		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();
 	}
@@ -122,7 +196,7 @@ public class UT_ObjectOutputStream
 				(byte) 0xd1, (byte) 0x23 };
 
 		testObject.writeObject(data);
-		assertArrayEquals(expected, FileIoUtil.readBinaryFile(tempFile));
+		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();
 	}
@@ -136,7 +210,7 @@ public class UT_ObjectOutputStream
 
 		testObject.writeObject(true);
 		testObject.writeObject(false);
-		assertArrayEquals(new byte[] { (byte) 1, 0 }, FileIoUtil.readBinaryFile(tempFile));
+		assertEquals("[1, 0]", Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();
 	}
@@ -149,12 +223,24 @@ public class UT_ObjectOutputStream
 		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
 
 		testObject.writeObject('f');
-		assertArrayEquals(new byte[] { (byte) 0x00, (byte) 0x66 }, FileIoUtil.readBinaryFile(tempFile));
-		FileIoUtil.writeToFile(tempFile, "");
-		//TODO: appending seems to fail for some reason
-
 		testObject.writeObject('\u221E');  //infinity sign is BMP non-private
-		assertArrayEquals(new byte[] { (byte) 0x22, (byte) 0x1e }, FileIoUtil.readBinaryFile(tempFile));
+		final byte[] expected = new byte[] { (byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
+		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_String() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_String.", ".txt");
+		tempFile.deleteOnExit();
+		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+
+		testObject.writeObject("f\u221E");  //infinity sign is BMP non-private
+		final byte[] expected = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //UTF-16BE length (int)
+				(byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
+		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();
 	}
