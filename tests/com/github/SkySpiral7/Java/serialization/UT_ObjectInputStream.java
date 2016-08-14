@@ -350,13 +350,13 @@ public class UT_ObjectInputStream
 	{
 		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_String.", ".txt");
 		tempFile.deleteOnExit();
-		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //UTF-16BE length (int)
-				(byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
+				(byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
 
 		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
 		assertTrue(testObject.hasData());
-		assertEquals("f\u221E", testObject.readObject(String.class));  //infinity sign is BMP non-private
+		assertEquals("f\u221E", testObject.readObject(String.class));  //infinity sign is BMP (3 UTF-8 bytes) non-private
 		assertFalse(testObject.hasData());
 
 		testObject.close();

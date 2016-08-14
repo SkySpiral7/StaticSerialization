@@ -76,9 +76,9 @@ public class ObjectInputStream implements Closeable, Flushable
 
 		if (String.class.equals(expectedClass))
 		{
-			final int stringLength = BitWiseUtil.bigEndianBytesToInteger(readBytes(4));
-			final byte[] data = readBytes(stringLength * 2);  //in UTF_16BE each character is 2 bytes
-			return (T) new String(data, StandardCharsets.UTF_16BE);
+			final int stringByteLength = BitWiseUtil.bigEndianBytesToInteger(readBytes(4));
+			final byte[] data = readBytes(stringByteLength);
+			return (T) new String(data, StandardCharsets.UTF_8);
 		}
 
 		return null;

@@ -69,10 +69,10 @@ public class UT_ObjectOutputStream
 		testObject.writeObject((byte) 0xab);
 		//@formatter:off
 		final byte[] expected = new byte[] {
-				(byte)0, (byte)106, (byte)0, (byte)97, (byte)0, (byte)118, (byte)0, (byte)97, (byte)0, (byte)46,  //"java."
-				(byte)0, (byte)108, (byte)0, (byte)97, (byte)0, (byte)110, (byte)0, (byte)103, (byte)0, (byte)46,  //"lang."
-				(byte)0, (byte)66, (byte)0, (byte)121, (byte)0, (byte)116, (byte)0, (byte)101,  //"Byte"
-				(byte)0, (byte)124,  //"|"
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
+				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
+				(byte)124,  //"|"
 				(byte)1,  //hasData=true
 				(byte)0xab  //the data
 		};
@@ -93,10 +93,10 @@ public class UT_ObjectOutputStream
 		testObject.writeObject(null);
 		//@formatter:off
 		final byte[] expected = new byte[] {
-				(byte)0, (byte)106, (byte)0, (byte)97, (byte)0, (byte)118, (byte)0, (byte)97, (byte)0, (byte)46,  //"java."
-				(byte)0, (byte)108, (byte)0, (byte)97, (byte)0, (byte)110, (byte)0, (byte)103, (byte)0, (byte)46,  //"lang."
-				(byte)0, (byte)79, (byte)0, (byte)98, (byte)0, (byte)106, (byte)0, (byte)101, (byte)0, (byte)99, (byte)0, (byte)116,  //"Object"
-				(byte)0, (byte)124,  //"|"
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
+				(byte)79, (byte)98, (byte)106, (byte)101, (byte)99, (byte)116,  //"Object"
+				(byte)124,  //"|"
 				(byte)0  //hasData=false
 		};
 		//@formatter:on
@@ -252,9 +252,9 @@ public class UT_ObjectOutputStream
 		tempFile.deleteOnExit();
 		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
 
-		testObject.writeObject("f\u221E");  //infinity sign is BMP non-private
-		final byte[] expected = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //UTF-16BE length (int)
-				(byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
+		testObject.writeObject("f\u221E");  //infinity sign is BMP (3 UTF-8 bytes) non-private
+		final byte[] expected = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
+				(byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e };
 		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();

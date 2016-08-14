@@ -58,9 +58,8 @@ public class ObjectOutputStream implements Closeable, Flushable
 		if (data instanceof String)
 		{
 			final String castedData = (String) data;
-			final byte[] writeMe = castedData.getBytes(StandardCharsets.UTF_16BE);
-			//TODO: if possible for reading, use UTF-8 writeMe.length
-			writeBytes(castedData.length(), 4);
+			final byte[] writeMe = castedData.getBytes(StandardCharsets.UTF_8);
+			writeBytes(writeMe.length, 4);
 			FileIoUtil.writeToFile(destination, writeMe, true);
 			return;
 		}
@@ -136,10 +135,10 @@ public class ObjectOutputStream implements Closeable, Flushable
 			String className = Object.class.getName();
 			if(data != null) className = data.getClass().getName();
 
-			final byte[] writeMe = className.getBytes(StandardCharsets.UTF_16BE);
+			final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
 			FileIoUtil.writeToFile(destination, writeMe, true);
-			writeBytes('|', 2);
-			//instead of size then string have the string terminated by | since this saves 2 bytes and class names can't contain |
+			writeBytes('|', 1);
+			//instead of size then string have the string terminated by | since this saves 3 bytes and class names can't contain |
 
 			//then write the "hasData" boolean
 			if (data == null) writeBytes(0, 1);
