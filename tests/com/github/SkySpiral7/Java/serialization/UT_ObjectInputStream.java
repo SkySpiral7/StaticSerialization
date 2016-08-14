@@ -50,6 +50,7 @@ public class UT_ObjectInputStream
 		catch (final IllegalStateException actual)
 		{
 			assertEquals("expeceted 2 bytes, found 1 bytes", actual.getMessage());
+			//this indirectly tests hasData(int) and remainingBytes(). hasData() is tested everywhere
 		}
 
 		testObject.close();
@@ -344,4 +345,20 @@ public class UT_ObjectInputStream
 		testObject.close();
 	}
 
+	@Test
+	public void writeObject_String() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_String.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //UTF-16BE length (int)
+				(byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals("f\u221E", testObject.readObject(String.class));  //infinity sign is BMP non-private
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
 }

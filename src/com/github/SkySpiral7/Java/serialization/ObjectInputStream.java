@@ -3,6 +3,7 @@ package com.github.SkySpiral7.Java.serialization;
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
@@ -25,12 +26,12 @@ public class ObjectInputStream implements Closeable, Flushable
 	}
 
 	/**
-	 * Currently does nothing. Placeholder for later.
+	 * TODO: Currently does nothing. Placeholder for later.
 	 */
 	@Override
    public void flush(){}
 	/**
-	 * Currently does nothing. Placeholder for later.
+	 * TODO: Currently does nothing. Placeholder for later.
 	 */
 	@Override
    public void close(){}
@@ -38,9 +39,8 @@ public class ObjectInputStream implements Closeable, Flushable
 	private byte[] readBytes(final int byteCount)
 	{
 		final byte[] result = new byte[byteCount];
-		final int remainingBytes = (source.length - sourceIndex);
-		if (byteCount > remainingBytes) throw new IllegalStateException("expeceted " + byteCount + " bytes, found "
-				+ remainingBytes + " bytes");
+		if (!hasData(byteCount)) throw new IllegalStateException("expeceted " + byteCount + " bytes, found "
+				+ remainingBytes() + " bytes");
 		for (int i = 0; i < byteCount; ++i)
 		{
 			result[i] = source[sourceIndex];
@@ -51,22 +51,37 @@ public class ObjectInputStream implements Closeable, Flushable
 
 	public boolean hasData()
 	{
-		//can't call hasData(byte.class) because of overhead mismatch
 		return (sourceIndex < source.length);
 	}
-
-	public boolean hasData(final Class<?> expectedClass){return false;}
-	public int remainingBytes(){return 0;}
+	public boolean hasData(final int byteCount)
+	{
+		return (byteCount <= remainingBytes());
+	}
+	public int remainingBytes()
+	{
+		return (source.length - sourceIndex);
+	}
 
 	public Object readObject(){return readObject(Object.class);}
+	@SuppressWarnings("unchecked")
 	public <T> T readObject(final Class<T> expectedClass)
 	{
 		Objects.requireNonNull(expectedClass);
 		if (!hasData()) throw new IllegalStateException("stream is empty");
-		//for now it doesn't allow array, string, custom, or overhead
+		//TODO: for now it doesn't allow array, custom, or overhead
 		T result = null;
+
 		result = readPrimitive(expectedClass);
-		return result;
+		if(result != null) return result;
+
+		if (String.class.equals(expectedClass))
+		{
+			final int stringLength = BitWiseUtil.bigEndianBytesToInteger(readBytes(4));
+			final byte[] data = readBytes(stringLength * 2);  //in UTF_16BE each character is 2 bytes
+			return (T) new String(data, StandardCharsets.UTF_16BE);
+		}
+
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -118,8 +133,8 @@ public class ObjectInputStream implements Closeable, Flushable
 		return null;
 	}
 
-	public Object readSerializable(){return null;}  //unchecked/unsafe and difficult to implement
-	public void readFieldsReflectively(final Object instance){}
+	public Object readSerializable(){return null;}  //TODO: unchecked/unsafe and difficult to implement
+	public void readFieldsReflectively(final Object instance){}  //TODO: stub
 
 	public ObjectRegistry getObjectRegistry(){return registry;}
 }

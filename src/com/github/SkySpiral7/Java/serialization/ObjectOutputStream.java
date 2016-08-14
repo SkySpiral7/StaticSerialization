@@ -25,12 +25,12 @@ public class ObjectOutputStream implements Closeable, Flushable
 	}
 
 	/**
-	 * Currently does nothing. Placeholder for later.
+	 * TODO: Currently does nothing. Placeholder for later.
 	 */
 	@Override
    public void flush(){}
 	/**
-	 * Currently does nothing. Placeholder for later.
+	 * TODO: Currently does nothing. Placeholder for later.
 	 */
 	@Override
    public void close(){}
@@ -50,7 +50,7 @@ public class ObjectOutputStream implements Closeable, Flushable
 	//for now ignore overloading for all primitives and array stuff
 	public void writeObject(final Object data)
 	{
-		//for now it doesn't allow arrays
+		//TODO: for now it doesn't allow arrays
 		writeOverhead(data);
 		if (data == null) return;
 		if(tryWritePrimitive(data)) return;
@@ -149,8 +149,8 @@ public class ObjectOutputStream implements Closeable, Flushable
 				"Can't write null without overhead because it would be impossible to read");
 	}
 
-	public void writeSerializable(final Serializable data){}  //unchecked/unsafe and difficult to implement
-	public void writeFieldsReflectively(final Object data){}
+	public void writeSerializable(final Serializable data){}  //TODO: unchecked/unsafe and difficult to implement
+	public void writeFieldsReflectively(final Object data){}  //TODO: stub
 
 	public ObjectRegistry getObjectRegistry(){return registry;}
 }
