@@ -12,10 +12,13 @@ public class ObjectOutputStream implements Closeable, Flushable
 {
 	private final File destination;
 	private final ObjectRegistry registry = new ObjectRegistry();
+	/**This is cached so that the value can't change for this stream.*/
+	private final boolean generateClassNameOverhead;
 
 	public ObjectOutputStream(final File destination)
 	{
 		this.destination = destination;
+		generateClassNameOverhead = StaticSerializableConfig.generateClassNameOverhead;
 
 		//start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)
 		FileIoUtil.writeToFile(destination, "");
@@ -50,52 +53,8 @@ public class ObjectOutputStream implements Closeable, Flushable
 		//for now it doesn't allow arrays
 		writeOverhead(data);
 		if (data == null) return;
+		if(tryWritePrimitive(data)) return;
 
-		if (data instanceof Byte)
-		{
-			writeBytes((byte) data, 1);
-			return;
-		}
-		if (data instanceof Short)
-		{
-			writeBytes((short) data, 2);
-			return;
-		}
-		if (data instanceof Integer)
-		{
-			writeBytes((int) data, 4);
-			return;
-		}
-		if (data instanceof Long)
-		{
-			writeBytes((long) data, 8);
-			return;
-		}
-		if (data instanceof Float)
-		{
-			final int castedData = Float.floatToIntBits((float) data);
-			//intentionally normalizes NaN
-			writeBytes(castedData, 4);
-			return;
-		}
-		if (data instanceof Double)
-		{
-			long castedData = Double.doubleToLongBits((double) data);
-			//intentionally normalizes NaN
-			writeBytes(castedData, 8);
-			return;
-		}
-		if (data instanceof Boolean)
-		{
-			if((boolean) data) writeBytes(1, 1);  //write true
-			else writeBytes(0, 1);
-			return;
-		}
-		if (data instanceof Character)
-		{
-			writeBytes((char) data, 2);
-			return;
-		}
 		if (data instanceof String)
 		{
 			final String castedData = (String) data;
@@ -115,9 +74,62 @@ public class ObjectOutputStream implements Closeable, Flushable
 
 		throw new IllegalArgumentException("Couldn't serialize object of class " + data.getClass().getName());
 	}
+	/**
+	 * @return true if data was written (which means data was primitive)
+	 */
+	private boolean tryWritePrimitive(final Object data)
+	{
+		if (data instanceof Byte)
+		{
+			writeBytes((byte) data, 1);
+			return true;
+		}
+		if (data instanceof Short)
+		{
+			writeBytes((short) data, 2);
+			return true;
+		}
+		if (data instanceof Integer)
+		{
+			writeBytes((int) data, 4);
+			return true;
+		}
+		if (data instanceof Long)
+		{
+			writeBytes((long) data, 8);
+			return true;
+		}
+		if (data instanceof Float)
+		{
+			final int castedData = Float.floatToIntBits((float) data);
+			//intentionally normalizes NaN
+			writeBytes(castedData, 4);
+			return true;
+		}
+		if (data instanceof Double)
+		{
+			long castedData = Double.doubleToLongBits((double) data);
+			//intentionally normalizes NaN
+			writeBytes(castedData, 8);
+			return true;
+		}
+		if (data instanceof Boolean)
+		{
+			if((boolean) data) writeBytes(1, 1);  //write true
+			else writeBytes(0, 1);
+			return true;
+		}
+		if (data instanceof Character)
+		{
+			writeBytes((char) data, 2);
+			return true;
+		}
+
+		return false;
+	}
 	private void writeOverhead(final Object data)
 	{
-		if (StaticSerializableConfig.generateClassNameOverhead)
+		if (generateClassNameOverhead)
 		{
 			//can't use recursion to write the string because that's endless and needs different format
 			String className = Object.class.getName();

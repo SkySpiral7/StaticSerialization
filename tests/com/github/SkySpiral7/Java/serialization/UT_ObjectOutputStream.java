@@ -44,6 +44,21 @@ public class UT_ObjectOutputStream
 	}
 
 	@Test
+	public void constructor_cachesConfig() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.constructor_cachesConfig.", ".txt");
+		tempFile.deleteOnExit();
+		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		StaticSerializableConfig.generateClassNameOverhead = true;
+
+		testObject.writeObject((byte) 2);
+		assertEquals("[2]", Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+		//same as the writeObject_byte test. can only pass if there's no overhead
+
+		testObject.close();
+	}
+
+	@Test
 	public void writeObject_overHead() throws IOException
 	{
 		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_overHead.", ".txt");
@@ -119,7 +134,7 @@ public class UT_ObjectOutputStream
 		final Byte data = (byte) 2;
 
 		testObject.writeObject(data);
-		assertEquals(2, FileIoUtil.readBinaryFile(tempFile)[0]);
+		assertEquals("[2]", Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();
 	}
