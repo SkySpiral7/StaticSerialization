@@ -34,6 +34,49 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
+	public void readBytes_throw() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readBytes_throw.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 0x0a };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
+		try
+		{
+			testObject.readObject(Short.class);
+		}
+		catch (final IllegalStateException actual)
+		{
+			assertEquals("expeceted 2 bytes, found 1 bytes", actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_throw_noData() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_throw_noData.", ".txt");
+		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, new byte[0], false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertFalse(testObject.hasData());
+		try
+		{
+			testObject.readObject(Byte.class);
+		}
+		catch (final IllegalStateException actual)
+		{
+			assertEquals("stream is empty", actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	@Test
 	public void writeObject_byte() throws IOException
 	{
 		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_byte.", ".txt");

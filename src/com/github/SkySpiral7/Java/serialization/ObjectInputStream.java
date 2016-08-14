@@ -38,7 +38,10 @@ public class ObjectInputStream implements Closeable, Flushable
 	private byte[] readBytes(final int byteCount)
 	{
 		final byte[] result = new byte[byteCount];
-		for (int i = 0; hasData() && i < byteCount; ++i)
+		final int remainingBytes = (source.length - sourceIndex);
+		if (byteCount > remainingBytes) throw new IllegalStateException("expeceted " + byteCount + " bytes, found "
+				+ remainingBytes + " bytes");
+		for (int i = 0; i < byteCount; ++i)
 		{
 			result[i] = source[sourceIndex];
 			++sourceIndex;
@@ -51,10 +54,6 @@ public class ObjectInputStream implements Closeable, Flushable
 		//can't call hasData(byte.class) because of overhead mismatch
 		return (sourceIndex < source.length);
 	}
-	private boolean hasData(final int byteCount)
-	{
-		return ((sourceIndex + byteCount) <= source.length);
-	}
 
 	public boolean hasData(final Class<?> expectedClass){return false;}
 	public int remainingBytes(){return 0;}
@@ -63,8 +62,8 @@ public class ObjectInputStream implements Closeable, Flushable
 	public <T> T readObject(final Class<T> expectedClass)
 	{
 		Objects.requireNonNull(expectedClass);
+		if (!hasData()) throw new IllegalStateException("stream is empty");
 		//for now it doesn't allow array, string, custom, or overhead
-		//also for now ignore remaining data length
 		T result = null;
 		result = readPrimitive(expectedClass);
 		return result;
