@@ -74,42 +74,42 @@ public class ObjectInputStream implements Closeable, Flushable
 	private <T> T readPrimitive(final Class<T> expectedClass)
 	{
 		//expectedClass.isPrimitive() is useless because this method also checks boxes
-		if (expectedClass.isAssignableFrom(Byte.class)) { return (T) (Byte) readBytes(1)[0]; }
-		if (expectedClass.isAssignableFrom(Short.class))
+		if (Byte.class.equals(expectedClass) || byte.class.equals(expectedClass)) { return (T) (Byte) readBytes(1)[0]; }
+		if (Short.class.equals(expectedClass) || short.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(2);
 			final int result = ((data[0] & 0xff) << 8) | (data[1] & 0xff);
 			return (T) (Short) (short) result;
 		}
-		if (expectedClass.isAssignableFrom(Integer.class))
+		if (Integer.class.equals(expectedClass) || int.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(4);
 			return (T) (Integer) BitWiseUtil.bigEndianBytesToInteger(data);
 		}
-		if (expectedClass.isAssignableFrom(Long.class))
+		if (Long.class.equals(expectedClass) || long.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(8);
 			return (T) (Long) BitWiseUtil.bigEndianBytesToLong(data);
 		}
-		if (expectedClass.isAssignableFrom(Float.class))
+		if (Float.class.equals(expectedClass) || float.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(4);
 			final int intData = BitWiseUtil.bigEndianBytesToInteger(data);
 			return (T) (Float) Float.intBitsToFloat(intData);
 		}
-		if (expectedClass.isAssignableFrom(Double.class))
+		if (Double.class.equals(expectedClass) || double.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(8);
 			final long longData = BitWiseUtil.bigEndianBytesToLong(data);
 			return (T) (Double) Double.longBitsToDouble(longData);
 		}
-		if (expectedClass.isAssignableFrom(Boolean.class))
+		if (Boolean.class.equals(expectedClass) || boolean.class.equals(expectedClass))
 		{
 			final byte data = readBytes(1)[0];
 			if (data == 1) return (T) Boolean.TRUE;
 			return (T) Boolean.FALSE;
 		}
-		if (expectedClass.isAssignableFrom(Character.class))
+		if (Character.class.equals(expectedClass) || char.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(2);
 			final int intData = ((data[0] & 0xff) << 8) | (data[1] & 0xff);

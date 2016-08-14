@@ -43,6 +43,22 @@ public class UT_ObjectInputStream
 
 		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
 		assertTrue(testObject.hasData());
+		assertEquals(2L, testObject.readObject(byte.class).longValue());
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_Byte() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Byte.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 2 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
 		assertEquals(2L, testObject.readObject(Byte.class).longValue());
 		assertFalse(testObject.hasData());
 
@@ -59,6 +75,22 @@ public class UT_ObjectInputStream
 
 		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
 		assertTrue(testObject.hasData());
+		assertEquals(0x0afeL, testObject.readObject(short.class).longValue());
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_Short() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Short.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
 		assertEquals(0x0afeL, testObject.readObject(Short.class).longValue());
 		assertFalse(testObject.hasData());
 
@@ -69,6 +101,22 @@ public class UT_ObjectInputStream
 	public void writeObject_int() throws IOException
 	{
 		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_int.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals(0x0afe_babeL, testObject.readObject(int.class).longValue());
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_Integer() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Integer.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -92,6 +140,23 @@ public class UT_ObjectInputStream
 
 		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
 		assertTrue(testObject.hasData());
+		assertEquals(0x01020304_05060708L, testObject.readObject(long.class).longValue());
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_Long() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Long.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
+				(byte) 0x07, (byte) 0x08 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
 		assertEquals(0x01020304_05060708L, testObject.readObject(Long.class).longValue());
 		assertFalse(testObject.hasData());
 
@@ -102,6 +167,23 @@ public class UT_ObjectInputStream
 	public void writeObject_float() throws IOException
 	{
 		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_float.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final Float expected = Float.intBitsToFloat(0x01020304);
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals(expected, testObject.readObject(float.class));
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_Float() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Float.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -127,6 +209,24 @@ public class UT_ObjectInputStream
 		final Double expected = Double.longBitsToDouble(0x01020304_05060708L);
 		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
 		assertTrue(testObject.hasData());
+		assertEquals(expected, testObject.readObject(double.class));
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_Double() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Double.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
+				(byte) 0x07, (byte) 0x08 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final Double expected = Double.longBitsToDouble(0x01020304_05060708L);
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
 		assertEquals(expected, testObject.readObject(Double.class));
 		assertFalse(testObject.hasData());
 
@@ -137,6 +237,23 @@ public class UT_ObjectInputStream
 	public void writeObject_boolean() throws IOException
 	{
 		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_boolean.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 0x00, (byte) 0x01 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
+		assertFalse(testObject.readObject(boolean.class));
+		assertTrue(testObject.readObject(boolean.class));
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_Boolean() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Boolean.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x00, (byte) 0x01 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -154,6 +271,23 @@ public class UT_ObjectInputStream
 	public void writeObject_char() throws IOException
 	{
 		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_char.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals('f', testObject.readObject(char.class).charValue());
+		assertEquals('\u221E', testObject.readObject(char.class).charValue());  //infinity sign is BMP non-private
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_Character() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_Character.", ".txt");
 		tempFile.deleteOnExit();
 		final byte[] fileContents = { (byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
