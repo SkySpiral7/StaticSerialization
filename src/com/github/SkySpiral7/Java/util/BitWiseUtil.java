@@ -65,16 +65,28 @@ public class BitWiseUtil {
     public static long multiplyByPowerOf2(long value, int exponent){return (value << exponent);}
     public static long divideByPowerOf2(long value, int exponent){return (value >> exponent);}
 
-    public static int bigEndianBytesToInteger(byte a, byte b, byte c, byte d)
-    {
-    	int result = a;
-    	result >>>= 8;
-    	result |= b;
-    	result >>>= 8;
-    	result |= c;
-    	result >>>= 8;
-    	result |= d;
-    	return result;
-    }
+	public static int bigEndianBytesToInteger(byte[] input)
+	{
+		if (input.length != 4) throw new IllegalArgumentException("expected length 4, got: " + input.length);
+		int result = (input[0] & 0xff);
+		for (int i = 1; i < input.length; ++i)
+		{
+			result <<= 8;
+			result |= (input[i] & 0xff);
+		}
+		return result;
+	}
+
+	public static long bigEndianBytesToLong(byte[] input)
+	{
+		if (input.length != 8) throw new IllegalArgumentException("expected length 8, got: " + input.length);
+		long result = (input[0] & 0xff);
+		for (int i = 1; i < input.length; ++i)
+		{
+			result <<= 8;
+			result |= (input[i] & 0xff);
+		}
+		return result;
+	}
 
 }

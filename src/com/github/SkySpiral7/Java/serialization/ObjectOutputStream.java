@@ -10,15 +10,15 @@ import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class ObjectOutputStream implements Closeable, Flushable
 {
-	private final File destination;
-	private final ObjectRegistry registry = new ObjectRegistry();
 	/**This is cached so that the value can't change for this stream.*/
 	private final boolean generateClassNameOverhead;
+	private final ObjectRegistry registry = new ObjectRegistry();
+	private final File destination;
 
 	public ObjectOutputStream(final File destination)
 	{
-		this.destination = destination;
 		generateClassNameOverhead = StaticSerializableConfig.generateClassNameOverhead;
+		this.destination = destination;
 
 		//start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)
 		FileIoUtil.writeToFile(destination, "");
@@ -79,6 +79,7 @@ public class ObjectOutputStream implements Closeable, Flushable
 	 */
 	private boolean tryWritePrimitive(final Object data)
 	{
+		//data.getClass().isPrimitive() is useless because data can only be a box
 		if (data instanceof Byte)
 		{
 			writeBytes((byte) data, 1);
