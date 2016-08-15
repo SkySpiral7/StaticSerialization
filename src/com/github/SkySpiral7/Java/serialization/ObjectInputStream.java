@@ -3,6 +3,9 @@ package com.github.SkySpiral7.Java.serialization;
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -68,11 +71,12 @@ public class ObjectInputStream implements Closeable, Flushable
 	{
 		Objects.requireNonNull(expectedClass);
 		if (!hasData()) throw new IllegalStateException("stream is empty");
-		//TODO: for now it doesn't allow array, custom, or overhead
-		T result = null;
+		//TODO: for now it doesn't allow array or overhead
 
-		result = readPrimitive(expectedClass);
-		if(result != null) return result;
+		{
+			final T result = readPrimitive(expectedClass);
+			if (result != null) return result;
+		}
 
 		if (String.class.equals(expectedClass))
 		{
@@ -81,7 +85,7 @@ public class ObjectInputStream implements Closeable, Flushable
 			return (T) new String(data, StandardCharsets.UTF_8);
 		}
 
-		//if (expectedClass.isAssignableFrom(StaticSerializable.class)) { return readCustomClass(expectedClass); }
+		if (StaticSerializable.class.isAssignableFrom(expectedClass)) { return readCustomClass(expectedClass); }
 
 		throw new IllegalArgumentException("Don't know how to deserialize class " + expectedClass.getName());
 	}
@@ -137,7 +141,40 @@ public class ObjectInputStream implements Closeable, Flushable
 
 	private <T> T readCustomClass(final Class<T> expectedClass)
 	{
-		return null;
+		Method method = null;
+		try
+		{
+			//TODO: wait. what's the point of T? overhead related?
+			//public static T readFromStream(ObjectInputStream in)
+			method = expectedClass.getDeclaredMethod("readFromStream", ObjectInputStream.class);
+		}
+		catch (final NoSuchMethodException e)
+		{
+			throw new IllegalStateException(expectedClass.getName()
+					+ " implements StaticSerializable but doesn't define readFromStream", e);
+		}
+		catch (final SecurityException e)
+		{
+			throw new RuntimeException("Couldn't deserialize", e);  //it's too specific to test
+		}
+
+		if (!Modifier.isPublic(method.getModifiers()) || !Modifier.isStatic(method.getModifiers())) { throw new IllegalStateException(
+				expectedClass.getName() + ".readFromStream must be public static"); }
+
+		try
+		{
+			@SuppressWarnings("unchecked")
+			final T result = (T) method.invoke(null, this);
+			return result;
+		}
+		catch (final IllegalAccessException | IllegalArgumentException e)
+		{
+			throw new RuntimeException("This can't be thrown", e);  //since I already know it is public static
+		}
+		catch (final InvocationTargetException e)
+		{
+			throw new RuntimeException("Couldn't deserialize", e);
+		}
 	}
 
 	public Object readSerializable(){return null;}  //TODO: unchecked/unsafe and difficult to implement

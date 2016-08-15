@@ -6,10 +6,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.github.SkySpiral7.Java.serialization.testClasses.SimpleHappy;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class UT_ObjectInputStream
@@ -400,6 +402,143 @@ public class UT_ObjectInputStream
 		assertTrue(testObject.hasData());
 		assertEquals("f\u221E", testObject.readObject(String.class));  //infinity sign is BMP (3 UTF-8 bytes) non-private
 		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_custom_happy() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_custom_happy.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		final SimpleHappy readData = testObject.readObject(SimpleHappy.class);
+		assertEquals(4, readData.smilyStickersCount);
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_custom_throw_noReader() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_custom_throw_noReader.",
+				".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		abstract class NoReader implements StaticSerializable<NoReader>
+		{}  //abstract and no writer doesn't matter
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		try
+		{
+			testObject.readObject(NoReader.class);
+		}
+		catch (final IllegalStateException actual)
+		{
+			assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectInputStream$1NoReader"
+					+ " implements StaticSerializable but doesn't define readFromStream", actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	private abstract static class NonPublicReader implements StaticSerializable<NonPublicReader>
+	{
+		protected static NonPublicReader readFromStream(final ObjectInputStream in)
+		{
+			return null;
+		}
+	}
+
+	@Test
+	public void readObject_custom_throw_nonPublic() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_custom_throw_nonPublic.",
+				".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		try
+		{
+			testObject.readObject(NonPublicReader.class);
+		}
+		catch (final IllegalStateException actual)
+		{
+			assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectInputStream$NonPublicReader.readFromStream"
+					+ " must be public static", actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_custom_throw_nonStatic() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_custom_throw_nonStatic.",
+				".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		abstract class LocalNonStaticReader implements StaticSerializable<LocalNonStaticReader>
+		{
+			public LocalNonStaticReader readFromStream(final ObjectInputStream in)
+			{
+				return null;
+			}
+		}
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		try
+		{
+			testObject.readObject(LocalNonStaticReader.class);
+		}
+		catch (final IllegalStateException actual)
+		{
+			assertEquals(
+					"com.github.SkySpiral7.Java.serialization.UT_ObjectInputStream$1LocalNonStaticReader.readFromStream"
+							+ " must be public static", actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	private abstract static class ThrowingReader implements StaticSerializable<ThrowingReader>
+	{
+		public static ThrowingReader readFromStream(final ObjectInputStream in)
+		{
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	@Test
+	public void readObject_custom_throw_throwingReader() throws IOException
+	{
+		final File tempFile = File.createTempFile(
+				"UT_ObjectInputStream.TempFile.readObject_custom_throw_throwingReader.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		try
+		{
+			testObject.readObject(ThrowingReader.class);
+		}
+		catch (final RuntimeException actual)
+		{
+			assertEquals("Couldn't deserialize", actual.getMessage());
+			assertEquals(InvocationTargetException.class, actual.getCause().getClass());
+			assertEquals(UnsupportedOperationException.class, actual.getCause().getCause().getClass());
+		}
 
 		testObject.close();
 	}
