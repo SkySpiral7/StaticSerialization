@@ -144,7 +144,6 @@ public class ObjectInputStream implements Closeable, Flushable
 		Method method = null;
 		try
 		{
-			//TODO: wait. what's the point of T? overhead related?
 			//public static T readFromStream(ObjectInputStream in)
 			method = expectedClass.getDeclaredMethod("readFromStream", ObjectInputStream.class);
 		}

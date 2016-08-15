@@ -263,9 +263,11 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_custom() throws IOException
 	{
-		final class Local implements StaticSerializable<Object>
+		final class Local implements StaticSerializable
 		{
 			boolean wasCalled = false;
+
+			//no reader doesn't matter
 
 			@Override
 			public void writeToStream(ObjectOutputStream out)

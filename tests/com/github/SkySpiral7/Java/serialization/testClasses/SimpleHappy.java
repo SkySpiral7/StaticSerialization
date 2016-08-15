@@ -4,7 +4,7 @@ import com.github.SkySpiral7.Java.serialization.ObjectInputStream;
 import com.github.SkySpiral7.Java.serialization.ObjectOutputStream;
 import com.github.SkySpiral7.Java.serialization.StaticSerializable;
 
-public class SimpleHappy implements StaticSerializable<SimpleHappy>
+public class SimpleHappy implements StaticSerializable
 {
 	public final int smilyStickersCount;
 

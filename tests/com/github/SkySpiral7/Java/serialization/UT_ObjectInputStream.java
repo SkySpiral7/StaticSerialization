@@ -431,7 +431,7 @@ public class UT_ObjectInputStream
 		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
 
-		abstract class NoReader implements StaticSerializable<NoReader>
+		abstract class NoReader implements StaticSerializable
 		{}  //abstract and no writer doesn't matter
 
 		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
@@ -448,7 +448,7 @@ public class UT_ObjectInputStream
 		testObject.close();
 	}
 
-	private abstract static class NonPublicReader implements StaticSerializable<NonPublicReader>
+	private abstract static class NonPublicReader implements StaticSerializable
 	{
 		protected static NonPublicReader readFromStream(final ObjectInputStream in)
 		{
@@ -488,7 +488,7 @@ public class UT_ObjectInputStream
 		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
 
-		abstract class LocalNonStaticReader implements StaticSerializable<LocalNonStaticReader>
+		abstract class LocalNonStaticReader implements StaticSerializable
 		{
 			public LocalNonStaticReader readFromStream(final ObjectInputStream in)
 			{
@@ -511,7 +511,7 @@ public class UT_ObjectInputStream
 		testObject.close();
 	}
 
-	private abstract static class ThrowingReader implements StaticSerializable<ThrowingReader>
+	private abstract static class ThrowingReader implements StaticSerializable
 	{
 		public static ThrowingReader readFromStream(final ObjectInputStream in)
 		{

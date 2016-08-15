@@ -66,7 +66,7 @@ public class ObjectOutputStream implements Closeable, Flushable
 
 		if (data instanceof StaticSerializable)
 		{
-			final StaticSerializable<?> castedData = (StaticSerializable<?>) data;
+			final StaticSerializable castedData = (StaticSerializable) data;
 			castedData.writeToStream(this);
 			return;
 		}

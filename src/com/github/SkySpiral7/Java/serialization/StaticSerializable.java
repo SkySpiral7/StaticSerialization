@@ -1,7 +1,7 @@
 package com.github.SkySpiral7.Java.serialization;
 
-public interface StaticSerializable<T>
+public interface StaticSerializable
 {
-	//public static T readFromStream(ObjectInputStream in)
+	//public static T<this> readFromStream(ObjectInputStream in)
 	public void writeToStream(ObjectOutputStream out);
 }
