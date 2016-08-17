@@ -1,5 +1,6 @@
 package com.github.SkySpiral7.Java.serialization;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
@@ -66,12 +67,21 @@ public class ObjectInputStream implements Closeable, Flushable
 	}
 
 	public Object readObject(){return readObject(Object.class);}
+
 	@SuppressWarnings("unchecked")
-	public <T> T readObject(final Class<T> expectedClass)
+	public <T> T readObject(Class<T> expectedClass)
 	{
 		Objects.requireNonNull(expectedClass);
 		if (!hasData()) throw new IllegalStateException("stream is empty");
-		//TODO: for now it doesn't allow array or overhead
+
+		expectedClass = (Class<T>) autoBox(expectedClass);
+		if (generateClassNameOverhead)
+		{
+			final byte firstByte = readBytes(1)[0];
+			if(firstByte == '|') return null;
+			expectedClass = (Class<T>) readOverhead(expectedClass, firstByte);
+		}
+		//TODO: for now it doesn't allow array
 
 		{
 			final T result = readPrimitive(expectedClass);
@@ -90,46 +100,85 @@ public class ObjectInputStream implements Closeable, Flushable
 		throw new IllegalArgumentException("Don't know how to deserialize class " + expectedClass.getName());
 	}
 
+	private Class<?> readOverhead(final Class<?> expectedClass, final byte firstByte)
+	{
+		final ByteArrayOutputStream data = new ByteArrayOutputStream();
+		data.write(firstByte);
+		while (true)
+		{
+			if(!hasData()) throw new IllegalStateException("Header not found");
+			final byte thisByte = readBytes(1)[0];
+			if (thisByte == '|') break;
+			data.write(thisByte);
+		}
+		final String actualClassName = new String(data.toByteArray(), StandardCharsets.UTF_8);
+
+		try
+		{
+			final Class<?> actualClass = Class.forName(actualClassName);
+			if (!expectedClass.isAssignableFrom(actualClass)) throw new ClassCastException(actualClass.getName()
+					+ " can't be cast into " + expectedClass.getName());
+			return actualClass;
+		}
+		catch (final ClassNotFoundException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Class<?> autoBox(final Class<?> expectedClass)
+	{
+		//expectedClass.isPrimitive() is pointless: just let it fall through
+		if (byte.class.equals(expectedClass)) { return Byte.class; }
+		if (short.class.equals(expectedClass)) { return Short.class; }
+		if (int.class.equals(expectedClass)) { return Integer.class; }
+		if (long.class.equals(expectedClass)) { return Long.class; }
+		if (float.class.equals(expectedClass)) { return Float.class; }
+		if (double.class.equals(expectedClass)) { return Double.class; }
+		if (boolean.class.equals(expectedClass)) { return Boolean.class; }
+		if (char.class.equals(expectedClass)) { return Character.class; }
+		return expectedClass;
+	}
 	@SuppressWarnings("unchecked")
 	private <T> T readPrimitive(final Class<T> expectedClass)
 	{
 		//expectedClass.isPrimitive() is useless because this method also checks boxes
-		if (Byte.class.equals(expectedClass) || byte.class.equals(expectedClass)) { return (T) (Byte) readBytes(1)[0]; }
-		if (Short.class.equals(expectedClass) || short.class.equals(expectedClass))
+		if (Byte.class.equals(expectedClass)) { return (T) (Byte) readBytes(1)[0]; }
+		if (Short.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(2);
 			final int result = ((data[0] & 0xff) << 8) | (data[1] & 0xff);
 			return (T) (Short) (short) result;
 		}
-		if (Integer.class.equals(expectedClass) || int.class.equals(expectedClass))
+		if (Integer.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(4);
 			return (T) (Integer) BitWiseUtil.bigEndianBytesToInteger(data);
 		}
-		if (Long.class.equals(expectedClass) || long.class.equals(expectedClass))
+		if (Long.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(8);
 			return (T) (Long) BitWiseUtil.bigEndianBytesToLong(data);
 		}
-		if (Float.class.equals(expectedClass) || float.class.equals(expectedClass))
+		if (Float.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(4);
 			final int intData = BitWiseUtil.bigEndianBytesToInteger(data);
 			return (T) (Float) Float.intBitsToFloat(intData);
 		}
-		if (Double.class.equals(expectedClass) || double.class.equals(expectedClass))
+		if (Double.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(8);
 			final long longData = BitWiseUtil.bigEndianBytesToLong(data);
 			return (T) (Double) Double.longBitsToDouble(longData);
 		}
-		if (Boolean.class.equals(expectedClass) || boolean.class.equals(expectedClass))
+		if (Boolean.class.equals(expectedClass))
 		{
 			final byte data = readBytes(1)[0];
 			if (data == 1) return (T) Boolean.TRUE;
 			return (T) Boolean.FALSE;
 		}
-		if (Character.class.equals(expectedClass) || char.class.equals(expectedClass))
+		if (Character.class.equals(expectedClass))
 		{
 			final byte[] data = readBytes(2);
 			final int intData = ((data[0] & 0xff) << 8) | (data[1] & 0xff);

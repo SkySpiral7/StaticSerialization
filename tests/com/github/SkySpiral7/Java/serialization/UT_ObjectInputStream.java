@@ -2,6 +2,7 @@ package com.github.SkySpiral7.Java.serialization;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -23,6 +24,23 @@ public class UT_ObjectInputStream
 	}
 
 	@Test
+	public void constructor_cachesConfig() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.constructor_cachesConfig.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 2 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		StaticSerializableConfig.generateClassNameOverhead = true;
+
+		assertEquals(2L, testObject.readObject(byte.class).longValue());
+		//same as the readObject_byte test. can only pass if there's no overhead
+
+		testObject.close();
+	}
+
+	@Test
 	public void constructor_throws()
 	{
 		try
@@ -33,6 +51,186 @@ public class UT_ObjectInputStream
 		{
 			assertEquals("It is not possible to read file contents of a directory", actual.getMessage());
 		}
+	}
+
+	@Test
+	public void readObject_overHead_happy() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_overHead_happy.", ".txt");
+		tempFile.deleteOnExit();
+		StaticSerializableConfig.generateClassNameOverhead = true;
+
+		//@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
+				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
+				(byte)124,  //"|"
+				(byte)2  //the data
+		};
+		//@formatter:on
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals(2L, testObject.readObject(Byte.class).longValue());
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_overHead_upCast() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_overHead_upCast.", ".txt");
+		tempFile.deleteOnExit();
+		StaticSerializableConfig.generateClassNameOverhead = true;
+
+		//@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
+				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
+				(byte)124,  //"|"
+				(byte)2  //the data
+		};
+		//@formatter:on
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertEquals(Byte.valueOf((byte) 2), testObject.readObject(Number.class));
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_overHead_boxing() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_overHead_boxing.", ".txt");
+		tempFile.deleteOnExit();
+		StaticSerializableConfig.generateClassNameOverhead = true;
+
+		//@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
+				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
+				(byte)124,  //"|"
+				(byte)2  //the data
+		};
+		//@formatter:on
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertEquals(Byte.valueOf((byte) 2), testObject.readObject(byte.class));
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_overHead_null() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.readObject_overHead_null.", ".txt");
+		tempFile.deleteOnExit();
+		StaticSerializableConfig.generateClassNameOverhead = true;
+
+		final byte[] fileContents = new byte[] { (byte) '|' };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		assertTrue(testObject.hasData());
+		assertNull(testObject.readObject(Byte.class));
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_overHead_noClassThrows() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_overHead_noClassThrows.",
+				".txt");
+		tempFile.deleteOnExit();
+		StaticSerializableConfig.generateClassNameOverhead = true;
+
+		//@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)124,  //"|"
+				(byte)2  //the data
+		};
+		//@formatter:on
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+
+		try
+		{
+			testObject.readObject(Object.class);
+		}
+		catch (final RuntimeException actual)
+		{
+			assertEquals(ClassNotFoundException.class, actual.getCause().getClass());
+		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_overHead_noCastThrows() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_overHead_noCastThrows.",
+				".txt");
+		tempFile.deleteOnExit();
+		StaticSerializableConfig.generateClassNameOverhead = true;
+
+		//@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
+				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
+				(byte)124,  //"|"
+				(byte)2  //the data
+		};
+		//@formatter:on
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+		try
+		{
+			testObject.readObject(void.class);
+			//also covers a possible edge case: void.class.isPrimitive() is true
+		}
+		catch (final ClassCastException actual)
+		{
+			assertEquals("java.lang.Byte can't be cast into void", actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_overHead_noHeaderThrows() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectInputStream.TempFile.writeObject_overHead_noHeaderThrows.",
+				".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 2 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		StaticSerializableConfig.generateClassNameOverhead = true;
+		final ObjectInputStream testObject = new ObjectInputStream(tempFile);
+
+		try
+		{
+			testObject.readObject(Byte.class);
+		}
+		catch (final IllegalStateException actual)
+		{
+			assertEquals("Header not found", actual.getMessage());
+		}
+
+		testObject.close();
 	}
 
 	@Test

@@ -73,7 +73,6 @@ public class UT_ObjectOutputStream
 				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
 				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
 				(byte)124,  //"|"
-				(byte)1,  //hasData=true
 				(byte)0xab  //the data
 		};
 		//@formatter:on
@@ -91,15 +90,7 @@ public class UT_ObjectOutputStream
 		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
 
 		testObject.writeObject(null);
-		//@formatter:off
-		final byte[] expected = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
-				(byte)79, (byte)98, (byte)106, (byte)101, (byte)99, (byte)116,  //"Object"
-				(byte)124,  //"|"
-				(byte)0  //hasData=false
-		};
-		//@formatter:on
+		final byte[] expected = new byte[] { (byte) '|' };
 		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();

@@ -131,18 +131,16 @@ public class ObjectOutputStream implements Closeable, Flushable
 	{
 		if (generateClassNameOverhead)
 		{
-			//can't use recursion to write the string because that's endless and needs different format
-			String className = Object.class.getName();
-			if(data != null) className = data.getClass().getName();
-
-			final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
-			FileIoUtil.writeToFile(destination, writeMe, true);
+			if (data != null)
+			{
+				final String className = data.getClass().getName();
+				//can't use recursion to write the string because that's endless and needs different format
+				final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
+				FileIoUtil.writeToFile(destination, writeMe, true);
+			}
 			writeBytes('|', 1);
 			//instead of size then string have the string terminated by | since this saves 3 bytes and class names can't contain |
-
-			//then write the "hasData" boolean
-			if (data == null) writeBytes(0, 1);
-			else writeBytes(1, 1);
+			//if data is null then class name will be the empty string
 		}
 		else if (data == null) throw new IllegalArgumentException(
 				"Can't write null without overhead because it would be impossible to read");
