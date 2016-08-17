@@ -1,7 +1,7 @@
 package com.github.SkySpiral7.Java.serialization.testClasses;
 
-import com.github.SkySpiral7.Java.serialization.ObjectInputStream;
-import com.github.SkySpiral7.Java.serialization.ObjectOutputStream;
+import com.github.SkySpiral7.Java.serialization.ObjectReader;
+import com.github.SkySpiral7.Java.serialization.ObjectWriter;
 import com.github.SkySpiral7.Java.serialization.StaticSerializable;
 
 public class SimpleHappy implements StaticSerializable
@@ -13,13 +13,13 @@ public class SimpleHappy implements StaticSerializable
 		this.smilyStickersCount = smilyStickersCount;
 	}
 
-	public static SimpleHappy readFromStream(final ObjectInputStream in)
+	public static SimpleHappy readFromStream(final ObjectReader in)
 	{
 		return new SimpleHappy(in.readObject(int.class));
 	}
 
 	@Override
-	public void writeToStream(final ObjectOutputStream out)
+	public void writeToStream(final ObjectWriter out)
 	{
 		out.writeObject(smilyStickersCount);
 	}

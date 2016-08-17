@@ -13,7 +13,7 @@ import java.util.Objects;
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
-public class ObjectInputStream implements Closeable, Flushable
+public class ObjectReader implements Closeable, Flushable
 {
 	/**This is cached so that the value can't change for this stream.*/
 	private final boolean generateClassNameOverhead;
@@ -23,7 +23,7 @@ public class ObjectInputStream implements Closeable, Flushable
 	/**This is the index of the next byte to be read from source*/
 	private int sourceIndex = 0;
 
-	public ObjectInputStream(final File sourceFile)
+	public ObjectReader(final File sourceFile)
 	{
 		generateClassNameOverhead = StaticSerializableConfig.generateClassNameOverhead;
 		source = FileIoUtil.readBinaryFile(sourceFile);
@@ -193,8 +193,8 @@ public class ObjectInputStream implements Closeable, Flushable
 		Method method = null;
 		try
 		{
-			//public static T readFromStream(ObjectInputStream in)
-			method = expectedClass.getDeclaredMethod("readFromStream", ObjectInputStream.class);
+			//public static T readFromStream(ObjectReader reader)
+			method = expectedClass.getDeclaredMethod("readFromStream", ObjectReader.class);
 		}
 		catch (final NoSuchMethodException e)
 		{

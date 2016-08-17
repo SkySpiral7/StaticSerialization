@@ -8,14 +8,14 @@ import java.nio.charset.StandardCharsets;
 
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
-public class ObjectOutputStream implements Closeable, Flushable
+public class ObjectWriter implements Closeable, Flushable
 {
 	/**This is cached so that the value can't change for this stream.*/
 	private final boolean generateClassNameOverhead;
 	private final ObjectRegistry registry = new ObjectRegistry();
 	private final File destination;
 
-	public ObjectOutputStream(final File destination)
+	public ObjectWriter(final File destination)
 	{
 		generateClassNameOverhead = StaticSerializableConfig.generateClassNameOverhead;
 		this.destination = destination;

@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
-public class UT_ObjectOutputStream
+public class UT_ObjectWriter
 {
 	@Before
 	public void setUp()
@@ -25,7 +25,7 @@ public class UT_ObjectOutputStream
 	{
 		try
 		{
-			new ObjectOutputStream(new File(".")).close();
+			new ObjectWriter(new File(".")).close();
 		}
 		catch (final IllegalArgumentException actual)
 		{
@@ -36,19 +36,19 @@ public class UT_ObjectOutputStream
 	@Test
 	public void constructor_clears() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.constructor_clears.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.constructor_clears.", ".txt");
 		tempFile.deleteOnExit();
 		FileIoUtil.writeToFile(tempFile, "test");
-		new ObjectOutputStream(tempFile).close();
+		new ObjectWriter(tempFile).close();
 		assertEquals("", FileIoUtil.readTextFile(tempFile));
 	}
 
 	@Test
 	public void constructor_cachesConfig() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.constructor_cachesConfig.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.constructor_cachesConfig.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 		StaticSerializableConfig.generateClassNameOverhead = true;
 
 		testObject.writeObject((byte) 2);
@@ -61,10 +61,10 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_overHead() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_overHead.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_overHead.", ".txt");
 		tempFile.deleteOnExit();
 		StaticSerializableConfig.generateClassNameOverhead = true;
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		testObject.writeObject((byte) 0xab);
 		//@formatter:off
@@ -84,10 +84,10 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_overHead_null() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_overHead_null.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_overHead_null.", ".txt");
 		tempFile.deleteOnExit();
 		StaticSerializableConfig.generateClassNameOverhead = true;
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		testObject.writeObject(null);
 		final byte[] expected = new byte[] { (byte) '|' };
@@ -99,10 +99,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_overHead_nullThrows() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_overHead_nullThrows.",
-				".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_overHead_nullThrows.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		try
 		{
@@ -119,9 +118,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_byte() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_byte.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_byte.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 		final Byte data = (byte) 2;
 
 		testObject.writeObject(data);
@@ -133,9 +132,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_short() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_short.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_short.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 		final Short data = (short) 0xcafe;
 		final byte[] expected = { (byte) 0xca, (byte) 0xfe };
 
@@ -148,9 +147,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_int() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_int.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_int.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 		final Integer data = 0xcafe_bead;
 		final byte[] expected = { (byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad };
 
@@ -163,9 +162,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_long() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_long.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_long.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 		final Long data = 0xdead_beef__b100_d123L;
 		final byte[] expected = { (byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, (byte) 0x00,
 				(byte) 0xd1, (byte) 0x23 };
@@ -179,9 +178,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_float() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_float.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_float.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 		final Float data = Float.intBitsToFloat(0xcafe_bead);
 		final byte[] expected = { (byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad };
 
@@ -194,9 +193,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_double() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_double.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_double.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 		final Double data = Double.longBitsToDouble(0xdead_beef__b100_d123L);
 		final byte[] expected = { (byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, (byte) 0x00,
 				(byte) 0xd1, (byte) 0x23 };
@@ -210,9 +209,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_boolean() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_boolean.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_boolean.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		testObject.writeObject(true);
 		testObject.writeObject(false);
@@ -224,9 +223,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_char() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_char.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_char.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		testObject.writeObject('f');
 		testObject.writeObject('\u221E');  //infinity sign is BMP non-private
@@ -239,9 +238,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_String() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_String.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_String.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		testObject.writeObject("f\u221E");  //infinity sign is BMP (3 UTF-8 bytes) non-private
 		final byte[] expected = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
@@ -261,15 +260,15 @@ public class UT_ObjectOutputStream
 			//no reader doesn't matter
 
 			@Override
-			public void writeToStream(ObjectOutputStream out)
+			public void writeToStream(ObjectWriter out)
 			{
 				wasCalled = true;
 			}
 		}
 
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_custom.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_custom.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 		final Local data = new Local();
 
 		testObject.writeObject(data);
@@ -281,9 +280,9 @@ public class UT_ObjectOutputStream
 	@Test
 	public void writeObject_throws() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectOutputStream.TempFile.writeObject_throws.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_throws.", ".txt");
 		tempFile.deleteOnExit();
-		final ObjectOutputStream testObject = new ObjectOutputStream(tempFile);
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		try
 		{
