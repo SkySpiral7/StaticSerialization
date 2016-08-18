@@ -41,7 +41,7 @@ public class IT_StaticSerializable
 	{
 		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.header_notNull.", ".txt");
 		tempFile.deleteOnExit();
-		final String data = "\u221E>\uD83D\uDE22";  //BMP (infinity), ascii, non-BMP (Crying Face)
+		final String data = "\u221E > \uD83D\uDE22";  //BMP (infinity), ascii, non-BMP (Crying Face)
 
 		StaticSerializableConfig.generateClassNameOverhead = true;
 		final ObjectWriter writer = new ObjectWriter(tempFile);
