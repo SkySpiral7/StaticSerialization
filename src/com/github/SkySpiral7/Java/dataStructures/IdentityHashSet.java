@@ -51,12 +51,15 @@ public class IdentityHashSet<E> extends AbstractSet<E> implements Set<E> {
 
 	@Override
 	public boolean add(E newElement) {
-		return dataMap.put(newElement, Boolean.TRUE);
+		if(dataMap.containsKey(newElement)) return false;
+		dataMap.put(newElement, Boolean.TRUE);  //always returns null
+		return true;
 	}
 
 	@Override
 	public boolean remove(Object elementToRemove) {
-		return dataMap.remove(elementToRemove);
+		if(dataMap.containsKey(elementToRemove)) return false;
+		return dataMap.remove(elementToRemove);  //previous value is always true
 	}
 
 	@Override

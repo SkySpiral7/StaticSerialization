@@ -28,8 +28,7 @@ public final class SimpleHappy implements StaticSerializable
 	public boolean equals(final Object obj)
 	{
 		if (!(obj instanceof SimpleHappy)) return false;
-		return obj.hashCode() == this.hashCode();
-		//this is only ok because there are provably 0 collisions.
+		return (SimpleHappy.class.cast(obj).smilyStickersCount == this.smilyStickersCount);
 	}
 
 	@Override
