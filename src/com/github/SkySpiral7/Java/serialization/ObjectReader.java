@@ -15,8 +15,6 @@ import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class ObjectReader implements Closeable, Flushable
 {
-	/**This is cached so that the value can't change for this stream.*/
-	private final boolean generateClassNameOverhead;
 	private final ObjectRegistry registry = new ObjectRegistry();
 	/**Greedy loading the entire file into memory is bad for performance.*/
 	private final byte[] source;
@@ -25,7 +23,6 @@ public class ObjectReader implements Closeable, Flushable
 
 	public ObjectReader(final File sourceFile)
 	{
-		generateClassNameOverhead = StaticSerializableConfig.generateClassNameOverhead;
 		source = FileIoUtil.readBinaryFile(sourceFile);
 	}
 
@@ -75,7 +72,7 @@ public class ObjectReader implements Closeable, Flushable
 		if (!hasData()) throw new IllegalStateException("stream is empty");
 
 		expectedClass = (Class<T>) autoBox(expectedClass);
-		if (generateClassNameOverhead)
+		//Class Overhead
 		{
 			final byte firstByte = readBytes(1)[0];
 			if(firstByte == '|') return null;

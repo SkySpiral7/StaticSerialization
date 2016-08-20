@@ -10,14 +10,11 @@ import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class ObjectWriter implements Closeable, Flushable
 {
-	/**This is cached so that the value can't change for this stream.*/
-	private final boolean generateClassNameOverhead;
 	private final ObjectRegistry registry = new ObjectRegistry();
 	private final File destination;
 
 	public ObjectWriter(final File destination)
 	{
-		generateClassNameOverhead = StaticSerializableConfig.generateClassNameOverhead;
 		this.destination = destination;
 
 		//start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)
@@ -129,21 +126,16 @@ public class ObjectWriter implements Closeable, Flushable
 	}
 	private void writeOverhead(final Object data)
 	{
-		if (generateClassNameOverhead)
+		if (data != null)
 		{
-			if (data != null)
-			{
-				final String className = data.getClass().getName();
-				//can't use recursion to write the string because that's endless and needs different format
-				final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
-				FileIoUtil.writeToFile(destination, writeMe, true);
-			}
-			writeBytes('|', 1);
-			//instead of size then string have the string terminated by | since this saves 3 bytes and class names can't contain |
-			//if data is null then class name will be the empty string
+			final String className = data.getClass().getName();
+			//can't use recursion to write the string because that's endless and needs different format
+			final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
+			FileIoUtil.writeToFile(destination, writeMe, true);
 		}
-		else if (data == null) throw new IllegalArgumentException(
-				"Can't write null without overhead because it would be impossible to read");
+		writeBytes('|', 1);
+		//instead of size then string have the string terminated by | since this saves 3 bytes and class names can't contain |
+		//if data is null then class name will be the empty string
 	}
 
 	public void writeSerializable(final Serializable data){}  //TODO: unchecked/unsafe and difficult to implement

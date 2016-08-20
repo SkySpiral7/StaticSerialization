@@ -8,8 +8,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.github.SkySpiral7.Java.serialization.testClasses.SimpleHappy;
@@ -17,29 +17,6 @@ import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class UT_ObjectReader
 {
-	@Before
-	public void setUp()
-	{
-		StaticSerializableConfig.generateClassNameOverhead = false;
-	}
-
-	@Test
-	public void constructor_cachesConfig() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.constructor_cachesConfig.", ".txt");
-		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 2 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectReader testObject = new ObjectReader(tempFile);
-		StaticSerializableConfig.generateClassNameOverhead = true;
-
-		assertEquals(2L, testObject.readObject(byte.class).longValue());
-		//same as the readObject_byte test. can only pass if there's no overhead
-
-		testObject.close();
-	}
-
 	@Test
 	public void constructor_throws()
 	{
@@ -58,7 +35,6 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_overHead_happy.", ".txt");
 		tempFile.deleteOnExit();
-		StaticSerializableConfig.generateClassNameOverhead = true;
 
 		//@formatter:off
 		final byte[] fileContents = new byte[] {
@@ -84,7 +60,6 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_overHead_upCast.", ".txt");
 		tempFile.deleteOnExit();
-		StaticSerializableConfig.generateClassNameOverhead = true;
 
 		//@formatter:off
 		final byte[] fileContents = new byte[] {
@@ -108,7 +83,6 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_overHead_boxing.", ".txt");
 		tempFile.deleteOnExit();
-		StaticSerializableConfig.generateClassNameOverhead = true;
 
 		//@formatter:off
 		final byte[] fileContents = new byte[] {
@@ -132,7 +106,6 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_overHead_null.", ".txt");
 		tempFile.deleteOnExit();
-		StaticSerializableConfig.generateClassNameOverhead = true;
 
 		final byte[] fileContents = new byte[] { (byte) '|' };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
@@ -150,7 +123,6 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.writeObject_overHead_noClassThrows.", ".txt");
 		tempFile.deleteOnExit();
-		StaticSerializableConfig.generateClassNameOverhead = true;
 
 		//@formatter:off
 		final byte[] fileContents = new byte[] {
@@ -180,7 +152,6 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.writeObject_overHead_noCastThrows.", ".txt");
 		tempFile.deleteOnExit();
-		StaticSerializableConfig.generateClassNameOverhead = true;
 
 		//@formatter:off
 		final byte[] fileContents = new byte[] {
@@ -216,7 +187,6 @@ public class UT_ObjectReader
 		final byte[] fileContents = { (byte) 2 };
 		FileIoUtil.writeToFile(tempFile, fileContents, false);
 
-		StaticSerializableConfig.generateClassNameOverhead = true;
 		final ObjectReader testObject = new ObjectReader(tempFile);
 
 		try
@@ -236,8 +206,9 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readBytes_throw.", ".txt");
 		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Short|".getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = { (byte) 0x0a };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		assertTrue(testObject.hasData());
@@ -301,8 +272,9 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_throw_unknownClass.", ".txt");
 		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Object|".getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = { (byte) 2 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		try
@@ -318,12 +290,13 @@ public class UT_ObjectReader
 	}
 
 	@Test
-	public void readObject_byte() throws IOException
+	public void autoBox_byte() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_byte.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.autoBox_byte.", ".txt");
 		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Byte|".getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = { (byte) 2 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		assertTrue(testObject.hasData());
@@ -334,28 +307,13 @@ public class UT_ObjectReader
 	}
 
 	@Test
-	public void readObject_Byte() throws IOException
+	public void autoBox_short() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Byte.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.autoBox_short.", ".txt");
 		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 2 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectReader testObject = new ObjectReader(tempFile);
-		assertTrue(testObject.hasData());
-		assertEquals(2L, testObject.readObject(Byte.class).longValue());
-		assertFalse(testObject.hasData());
-
-		testObject.close();
-	}
-
-	@Test
-	public void readObject_short() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_short.", ".txt");
-		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Short|".getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		assertTrue(testObject.hasData());
@@ -366,28 +324,13 @@ public class UT_ObjectReader
 	}
 
 	@Test
-	public void readObject_Short() throws IOException
+	public void autoBox_int() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Short.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.autoBox_int.", ".txt");
 		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectReader testObject = new ObjectReader(tempFile);
-		assertTrue(testObject.hasData());
-		assertEquals(0x0afeL, testObject.readObject(Short.class).longValue());
-		assertFalse(testObject.hasData());
-
-		testObject.close();
-	}
-
-	@Test
-	public void readObject_int() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_int.", ".txt");
-		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Integer|".getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		assertTrue(testObject.hasData());
@@ -398,29 +341,14 @@ public class UT_ObjectReader
 	}
 
 	@Test
-	public void readObject_Integer() throws IOException
+	public void autoBox_long() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Integer.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.autoBox_long.", ".txt");
 		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectReader testObject = new ObjectReader(tempFile);
-		assertTrue(testObject.hasData());
-		assertEquals(0x0afe_babeL, testObject.readObject(Integer.class).longValue());
-		assertFalse(testObject.hasData());
-
-		testObject.close();
-	}
-
-	@Test
-	public void readObject_long() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_long.", ".txt");
-		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Long|".getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
 				(byte) 0x07, (byte) 0x08 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		assertTrue(testObject.hasData());
@@ -431,29 +359,13 @@ public class UT_ObjectReader
 	}
 
 	@Test
-	public void readObject_Long() throws IOException
+	public void autoBox_float() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Long.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.autoBox_float.", ".txt");
 		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
-				(byte) 0x07, (byte) 0x08 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectReader testObject = new ObjectReader(tempFile);
-		assertTrue(testObject.hasData());
-		assertEquals(0x01020304_05060708L, testObject.readObject(Long.class).longValue());
-		assertFalse(testObject.hasData());
-
-		testObject.close();
-	}
-
-	@Test
-	public void readObject_float() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_float.", ".txt");
-		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Float|".getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final Float expected = Float.intBitsToFloat(0x01020304);
 		final ObjectReader testObject = new ObjectReader(tempFile);
@@ -465,30 +377,14 @@ public class UT_ObjectReader
 	}
 
 	@Test
-	public void readObject_Float() throws IOException
+	public void autoBox_double() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Float.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.autoBox_double.", ".txt");
 		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final Float expected = Float.intBitsToFloat(0x01020304);
-		final ObjectReader testObject = new ObjectReader(tempFile);
-		assertTrue(testObject.hasData());
-		assertEquals(expected, testObject.readObject(Float.class));
-		assertFalse(testObject.hasData());
-
-		testObject.close();
-	}
-
-	@Test
-	public void readObject_double() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_double.", ".txt");
-		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Double|".getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
 				(byte) 0x07, (byte) 0x08 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final Double expected = Double.longBitsToDouble(0x01020304_05060708L);
 		final ObjectReader testObject = new ObjectReader(tempFile);
@@ -500,30 +396,14 @@ public class UT_ObjectReader
 	}
 
 	@Test
-	public void readObject_Double() throws IOException
+	public void autoBox_boolean() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Double.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.autoBox_boolean.", ".txt");
 		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
-				(byte) 0x07, (byte) 0x08 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final Double expected = Double.longBitsToDouble(0x01020304_05060708L);
-		final ObjectReader testObject = new ObjectReader(tempFile);
-		assertTrue(testObject.hasData());
-		assertEquals(expected, testObject.readObject(Double.class));
-		assertFalse(testObject.hasData());
-
-		testObject.close();
-	}
-
-	@Test
-	public void readObject_boolean() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_boolean.", ".txt");
-		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 0x00, (byte) 0x01 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, "java.lang.Boolean|".getBytes(StandardCharsets.UTF_8), false);
+		FileIoUtil.writeToFile(tempFile, new byte[] { (byte) 0x00 }, true);
+		FileIoUtil.writeToFile(tempFile, "java.lang.Boolean|".getBytes(StandardCharsets.UTF_8), true);
+		FileIoUtil.writeToFile(tempFile, new byte[] { (byte) 0x01 }, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		assertTrue(testObject.hasData());
@@ -535,29 +415,14 @@ public class UT_ObjectReader
 	}
 
 	@Test
-	public void readObject_Boolean() throws IOException
+	public void autoBox_char() throws IOException
 	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Boolean.", ".txt");
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.autoBox_char.", ".txt");
 		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 0x00, (byte) 0x01 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectReader testObject = new ObjectReader(tempFile);
-		assertTrue(testObject.hasData());
-		assertFalse(testObject.readObject(Boolean.class));
-		assertTrue(testObject.readObject(Boolean.class));
-		assertFalse(testObject.hasData());
-
-		testObject.close();
-	}
-
-	@Test
-	public void readObject_char() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_char.", ".txt");
-		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, "java.lang.Character|".getBytes(StandardCharsets.UTF_8), false);
+		FileIoUtil.writeToFile(tempFile, new byte[] { (byte) 0x00, (byte) 0x66 }, true);
+		FileIoUtil.writeToFile(tempFile, "java.lang.Character|".getBytes(StandardCharsets.UTF_8), true);
+		FileIoUtil.writeToFile(tempFile, new byte[] { (byte) 0x22, (byte) 0x1e }, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		assertTrue(testObject.hasData());
@@ -569,12 +434,139 @@ public class UT_ObjectReader
 	}
 
 	@Test
+	public void readObject_Byte() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Byte.", ".txt");
+		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Byte|".getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = { (byte) 2 };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals(2L, testObject.readObject(Byte.class).longValue());
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_Short() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Short.", ".txt");
+		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Short|".getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals(0x0afeL, testObject.readObject(Short.class).longValue());
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_Integer() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Integer.", ".txt");
+		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Integer|".getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals(0x0afe_babeL, testObject.readObject(Integer.class).longValue());
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_Long() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Long.", ".txt");
+		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Long|".getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
+				(byte) 0x07, (byte) 0x08 };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals(0x01020304_05060708L, testObject.readObject(Long.class).longValue());
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_Float() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Float.", ".txt");
+		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Float|".getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04 };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		final Float expected = Float.intBitsToFloat(0x01020304);
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals(expected, testObject.readObject(Float.class));
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_Double() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Double.", ".txt");
+		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Double|".getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06,
+				(byte) 0x07, (byte) 0x08 };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		final Double expected = Double.longBitsToDouble(0x01020304_05060708L);
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals(expected, testObject.readObject(Double.class));
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_Boolean() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Boolean.", ".txt");
+		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.Boolean|".getBytes(StandardCharsets.UTF_8), false);
+		FileIoUtil.writeToFile(tempFile, new byte[] { (byte) 0x00 }, true);
+		FileIoUtil.writeToFile(tempFile, "java.lang.Boolean|".getBytes(StandardCharsets.UTF_8), true);
+		FileIoUtil.writeToFile(tempFile, new byte[] { (byte) 0x01 }, true);
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		assertTrue(testObject.hasData());
+		assertFalse(testObject.readObject(Boolean.class));
+		assertTrue(testObject.readObject(Boolean.class));
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
 	public void readObject_Character() throws IOException
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_Character.", ".txt");
 		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, "java.lang.Character|".getBytes(StandardCharsets.UTF_8), false);
+		FileIoUtil.writeToFile(tempFile, new byte[] { (byte) 0x00, (byte) 0x66 }, true);
+		FileIoUtil.writeToFile(tempFile, "java.lang.Character|".getBytes(StandardCharsets.UTF_8), true);
+		FileIoUtil.writeToFile(tempFile, new byte[] { (byte) 0x22, (byte) 0x1e }, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		assertTrue(testObject.hasData());
@@ -590,9 +582,10 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_String.", ".txt");
 		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.lang.String|".getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
 				(byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		assertTrue(testObject.hasData());
@@ -607,8 +600,11 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_custom_happy.", ".txt");
 		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.testClasses.SimpleHappy|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+		FileIoUtil.writeToFile(tempFile, "java.lang.Integer|".getBytes(StandardCharsets.UTF_8), true);
 		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		final SimpleHappy readData = testObject.readObject(SimpleHappy.class);
@@ -623,8 +619,10 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_custom_throw_noReader.", ".txt");
 		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$1NoReader|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		abstract class NoReader implements StaticSerializable
 		{}  //abstract and no writer doesn't matter
@@ -656,8 +654,10 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_custom_throw_nonPublic.", ".txt");
 		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$NonPublicReader|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		try
@@ -678,8 +678,10 @@ public class UT_ObjectReader
 	{
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_custom_throw_nonStatic.", ".txt");
 		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$1LocalNonStaticReader|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		abstract class LocalNonStaticReader implements StaticSerializable
 		{
@@ -717,8 +719,10 @@ public class UT_ObjectReader
 		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_custom_throw_throwingReader.",
 				".txt");
 		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$ThrowingReader|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
 		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
 
 		final ObjectReader testObject = new ObjectReader(tempFile);
 		try

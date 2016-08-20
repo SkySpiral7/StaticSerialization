@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.github.SkySpiral7.Java.serialization.testClasses.RootedGraph;
@@ -16,28 +15,6 @@ import com.github.SkySpiral7.Java.serialization.testClasses.SimpleHappy;
 
 public class IT_StaticSerializable
 {
-	@Before
-	public void setUp()
-	{
-		StaticSerializableConfig.generateClassNameOverhead = false;
-	}
-
-	@Test
-	public void noHeader() throws IOException
-	{
-		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.noHeader.", ".txt");
-		tempFile.deleteOnExit();
-		final String data = "\u221E > \uD83D\uDE22";  //BMP (infinity), ascii, non-BMP (Crying Face)
-
-		final ObjectWriter writer = new ObjectWriter(tempFile);
-		writer.writeObject(data);
-		writer.close();
-		final ObjectReader reader = new ObjectReader(tempFile);
-		assertEquals(data, reader.readObject(String.class));
-		reader.close();
-		//don't create tests for each data type. the UT covers those. This is only for making sure the classes agree
-	}
-
 	@Test
 	public void header_notNull() throws IOException
 	{
@@ -45,12 +22,12 @@ public class IT_StaticSerializable
 		tempFile.deleteOnExit();
 		final String data = "\u221E > \uD83D\uDE22";  //BMP (infinity), ascii, non-BMP (Crying Face)
 
-		StaticSerializableConfig.generateClassNameOverhead = true;
 		final ObjectWriter writer = new ObjectWriter(tempFile);
 		writer.writeObject(data);
 		writer.close();
 		final ObjectReader reader = new ObjectReader(tempFile);
 		assertEquals(data, reader.readObject(String.class));
+		//don't create tests for each data type. the UT covers those. This is only for making sure the classes agree
 		reader.close();
 	}
 
@@ -60,7 +37,6 @@ public class IT_StaticSerializable
 		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.header_null.", ".txt");
 		tempFile.deleteOnExit();
 
-		StaticSerializableConfig.generateClassNameOverhead = true;
 		final ObjectWriter writer = new ObjectWriter(tempFile);
 		writer.writeObject(null);
 		writer.close();
@@ -107,7 +83,6 @@ public class IT_StaticSerializable
 	{
 		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.getObjectRegistry.", ".txt");
 		tempFile.deleteOnExit();
-		StaticSerializableConfig.generateClassNameOverhead = true;
 		final RootedGraph data;
 		{
 			final Node alice = new Node("Alice");

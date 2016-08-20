@@ -5,21 +5,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class UT_ObjectWriter
 {
-	@Before
-	public void setUp()
-	{
-		StaticSerializableConfig.generateClassNameOverhead = false;
-	}
-
 	@Test
 	public void constructor_throws()
 	{
@@ -44,26 +38,10 @@ public class UT_ObjectWriter
 	}
 
 	@Test
-	public void constructor_cachesConfig() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.constructor_cachesConfig.", ".txt");
-		tempFile.deleteOnExit();
-		final ObjectWriter testObject = new ObjectWriter(tempFile);
-		StaticSerializableConfig.generateClassNameOverhead = true;
-
-		testObject.writeObject((byte) 2);
-		assertEquals("[2]", Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
-		//same as the writeObject_byte test. can only pass if there's no overhead
-
-		testObject.close();
-	}
-
-	@Test
 	public void writeObject_overHead() throws IOException
 	{
 		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_overHead.", ".txt");
 		tempFile.deleteOnExit();
-		StaticSerializableConfig.generateClassNameOverhead = true;
 		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		testObject.writeObject((byte) 0xab);
@@ -76,6 +54,7 @@ public class UT_ObjectWriter
 				(byte)0xab  //the data
 		};
 		//@formatter:on
+		//don't use bytesToString since that assumes the header has correct encoding
 		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
 
 		testObject.close();
@@ -86,31 +65,12 @@ public class UT_ObjectWriter
 	{
 		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_overHead_null.", ".txt");
 		tempFile.deleteOnExit();
-		StaticSerializableConfig.generateClassNameOverhead = true;
 		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		testObject.writeObject(null);
 		final byte[] expected = new byte[] { (byte) '|' };
+		//don't use bytesToString since that assumes the header has correct encoding
 		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
-
-		testObject.close();
-	}
-
-	@Test
-	public void writeObject_overHead_nullThrows() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_overHead_nullThrows.", ".txt");
-		tempFile.deleteOnExit();
-		final ObjectWriter testObject = new ObjectWriter(tempFile);
-
-		try
-		{
-			testObject.writeObject(null);
-		}
-		catch (final IllegalArgumentException actual)
-		{
-			assertEquals("Can't write null without overhead because it would be impossible to read", actual.getMessage());
-		}
 
 		testObject.close();
 	}
@@ -124,7 +84,10 @@ public class UT_ObjectWriter
 		final Byte data = (byte) 2;
 
 		testObject.writeObject(data);
-		assertEquals("[2]", Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		final String header = "java.lang.Byte|";
+		assertEquals(header, bytesToString(fileContents, 1));
+		assertEquals(2, fileContents[header.length()]);
 
 		testObject.close();
 	}
@@ -139,7 +102,9 @@ public class UT_ObjectWriter
 		final byte[] expected = { (byte) 0xca, (byte) 0xfe };
 
 		testObject.writeObject(data);
-		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.lang.Short|", bytesToString(fileContents, 2));
+		assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 2)));
 
 		testObject.close();
 	}
@@ -154,7 +119,9 @@ public class UT_ObjectWriter
 		final byte[] expected = { (byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad };
 
 		testObject.writeObject(data);
-		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.lang.Integer|", bytesToString(fileContents, 4));
+		assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
 
 		testObject.close();
 	}
@@ -170,7 +137,9 @@ public class UT_ObjectWriter
 				(byte) 0xd1, (byte) 0x23 };
 
 		testObject.writeObject(data);
-		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.lang.Long|", bytesToString(fileContents, 8));
+		assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 8)));
 
 		testObject.close();
 	}
@@ -185,7 +154,9 @@ public class UT_ObjectWriter
 		final byte[] expected = { (byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad };
 
 		testObject.writeObject(data);
-		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.lang.Float|", bytesToString(fileContents, 4));
+		assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
 
 		testObject.close();
 	}
@@ -201,7 +172,9 @@ public class UT_ObjectWriter
 				(byte) 0xd1, (byte) 0x23 };
 
 		testObject.writeObject(data);
-		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.lang.Double|", bytesToString(fileContents, 8));
+		assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 8)));
 
 		testObject.close();
 	}
@@ -214,8 +187,16 @@ public class UT_ObjectWriter
 		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		testObject.writeObject(true);
+		byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.lang.Boolean|", bytesToString(fileContents, 1));
+		assertEquals("[1]", Arrays.toString(shortenBytes(fileContents, 1)));
+
+		FileIoUtil.writeToFile(tempFile, "");
+
 		testObject.writeObject(false);
-		assertEquals("[1, 0]", Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+		fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.lang.Boolean|", bytesToString(fileContents, 1));
+		assertEquals("[0]", Arrays.toString(shortenBytes(fileContents, 1)));
 
 		testObject.close();
 	}
@@ -228,9 +209,16 @@ public class UT_ObjectWriter
 		final ObjectWriter testObject = new ObjectWriter(tempFile);
 
 		testObject.writeObject('f');
+		byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.lang.Character|", bytesToString(fileContents, 2));
+		assertEquals("[0, " + 0x66 + "]", Arrays.toString(shortenBytes(fileContents, 2)));
+
+		FileIoUtil.writeToFile(tempFile, "");
+
 		testObject.writeObject('\u221E');  //infinity sign is BMP non-private
-		final byte[] expected = new byte[] { (byte) 0x00, (byte) 0x66, (byte) 0x22, (byte) 0x1e };
-		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+		fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.lang.Character|", bytesToString(fileContents, 2));
+		assertEquals("[" + 0x22 + ", " + 0x1e + "]", Arrays.toString(shortenBytes(fileContents, 2)));
 
 		testObject.close();
 	}
@@ -245,7 +233,9 @@ public class UT_ObjectWriter
 		testObject.writeObject("f\u221E");  //infinity sign is BMP (3 UTF-8 bytes) non-private
 		final byte[] expected = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
 				(byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e };
-		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.lang.String|", bytesToString(fileContents, expected.length));
+		assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
 
 		testObject.close();
 	}
@@ -295,4 +285,17 @@ public class UT_ObjectWriter
 
 		testObject.close();
 	}
+
+	private String bytesToString(final byte[] data, final int bytesToIgnore)
+	{
+		return new String(data, 0, (data.length - bytesToIgnore), StandardCharsets.UTF_8);
+	}
+
+	private byte[] shortenBytes(final byte[] data, final int bytesToKeep)
+	{
+		final byte[] smallerData = new byte[bytesToKeep];
+		System.arraycopy(data, (data.length - bytesToKeep), smallerData, 0, bytesToKeep);
+		return smallerData;
+	}
+
 }
