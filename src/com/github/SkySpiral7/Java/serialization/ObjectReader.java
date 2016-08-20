@@ -92,6 +92,13 @@ public class ObjectReader implements Closeable, Flushable
 			return (T) new String(data, StandardCharsets.UTF_8);
 		}
 
+		if (StaticSerializableEnumByName.class.isAssignableFrom(expectedClass))
+		{
+			final String name = readObject(String.class);
+			//raw type can't be avoided without an unchecked helper method
+			return (T) Enum.valueOf((Class) expectedClass, name);
+		}
+
 		if (StaticSerializable.class.isAssignableFrom(expectedClass)) { return readCustomClass(expectedClass); }
 
 		throw new IllegalArgumentException("Don't know how to deserialize class " + expectedClass.getName());

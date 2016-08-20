@@ -3,6 +3,7 @@ package com.github.SkySpiral7.Java.serialization;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -591,6 +592,84 @@ public class UT_ObjectReader
 		assertTrue(testObject.hasData());
 		assertEquals("f\u221E", testObject.readObject(String.class));  //infinity sign is BMP (3 UTF-8 bytes) non-private
 		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	private static enum EnumByName implements StaticSerializableEnumByName
+	{
+		One, Two;
+	}
+
+	@Test
+	public void readObject_enumByName() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_enumByName.", ".txt");
+		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$EnumByName|"
+				+ "java.lang.String|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03 };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+		FileIoUtil.writeToFile(tempFile, "One".getBytes(StandardCharsets.UTF_8), true);
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		assertSame(EnumByName.One, testObject.readObject(EnumByName.class));
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_enumByName_nameNotFound() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_enumByName_nameNotFound.", ".txt");
+		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$EnumByName|"
+				+ "java.lang.String|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03 };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+		FileIoUtil.writeToFile(tempFile, "six".getBytes(StandardCharsets.UTF_8), true);
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		try
+		{
+			testObject.readObject(EnumByName.class);
+		}
+		catch (final IllegalArgumentException actual)
+		{
+			assertEquals("No enum constant com.github.SkySpiral7.Java.serialization.UT_ObjectReader.EnumByName.six",
+					actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_enumByName_classNotEnum() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_enumByName_classNotEnum.", ".txt");
+		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$1NotEnum|"
+				+ "java.lang.String|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03 };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+		FileIoUtil.writeToFile(tempFile, "One".getBytes(StandardCharsets.UTF_8), true);
+
+		class NotEnum implements StaticSerializableEnumByName
+		{}
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		try
+		{
+			testObject.readObject(NotEnum.class);
+		}
+		catch (final IllegalArgumentException actual)
+		{
+			assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectReader$1NotEnum is not an enum type",
+					actual.getMessage());
+		}
 
 		testObject.close();
 	}

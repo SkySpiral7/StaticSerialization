@@ -61,6 +61,13 @@ public class ObjectWriter implements Closeable, Flushable
 			return;
 		}
 
+		if (data instanceof StaticSerializableEnumByName)
+		{
+			final Enum<?> castedData = (Enum<?>) data;
+			writeObject(castedData.name());
+			return;
+		}
+
 		if (data instanceof StaticSerializable)
 		{
 			final StaticSerializable castedData = (StaticSerializable) data;

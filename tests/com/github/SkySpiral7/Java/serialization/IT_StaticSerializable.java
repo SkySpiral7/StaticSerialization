@@ -3,6 +3,7 @@ package com.github.SkySpiral7.Java.serialization;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,6 +76,26 @@ public class IT_StaticSerializable
 		final SimpleHappy actual = reader.readObject(SimpleHappy.class);
 		assertFalse(data == actual);
 		assertEquals(data, actual);
+		reader.close();
+	}
+
+	private static enum EnumByName implements StaticSerializableEnumByName
+	{
+		One, Two;
+	}
+
+	@Test
+	public void enumByName() throws IOException
+	{
+		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.enumByName.", ".txt");
+		tempFile.deleteOnExit();
+
+		final ObjectWriter writer = new ObjectWriter(tempFile);
+		writer.writeObject(EnumByName.One);
+		writer.close();
+		final ObjectReader reader = new ObjectReader(tempFile);
+
+		assertSame(EnumByName.One, reader.readObject(EnumByName.class));
 		reader.close();
 	}
 
