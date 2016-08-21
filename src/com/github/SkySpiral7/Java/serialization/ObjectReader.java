@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
+import com.github.SkySpiral7.Java.util.ClassUtil;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class ObjectReader implements Closeable, Flushable
@@ -95,8 +96,7 @@ public class ObjectReader implements Closeable, Flushable
 		if (StaticSerializableEnumByName.class.isAssignableFrom(expectedClass))
 		{
 			final String name = readObject(String.class);
-			//raw type can't be avoided without an unchecked helper method
-			return (T) Enum.valueOf((Class) expectedClass, name);
+			return (T) Enum.valueOf(ClassUtil.cast(expectedClass), name);
 		}
 
 		if (StaticSerializable.class.isAssignableFrom(expectedClass)) { return readCustomClass(expectedClass); }
@@ -215,9 +215,7 @@ public class ObjectReader implements Closeable, Flushable
 
 		try
 		{
-			@SuppressWarnings("unchecked")
-			final T result = (T) method.invoke(null, this);
-			return result;
+			return ClassUtil.cast(method.invoke(null, this));
 		}
 		catch (final IllegalAccessException | IllegalArgumentException e)
 		{

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.github.SkySpiral7.Java.util.ClassUtil;
+
 public class ObjectRegistry
 {
 	private final Map<Key, Object> registry = new HashMap<>();
@@ -15,12 +17,11 @@ public class ObjectRegistry
 		registry.put(new Key(id, instance.getClass()), instance);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> T getRegisteredObject(final Object id, final Class<T> classOfInstance)
 	{
 		Objects.requireNonNull(id);
 		Objects.requireNonNull(classOfInstance);
-		return (T) registry.get(new Key(id, classOfInstance));
+		return ClassUtil.cast(registry.get(new Key(id, classOfInstance)));
 	}
 
 	private static final class Key

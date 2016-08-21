@@ -2,7 +2,7 @@ package com.github.SkySpiral7.Java.serialization;
 
 /**
  * This interface should only be implemented by enums.
- * Use this interface if you want the enum to be serialized by the variable name.
+ * Use this interface if you want the enum to be serialized by the variable's name.
  * The order of the enum contants can change without breaking but the names must not
  * (case sensitive). This interface provides a definition for writeToStream (don't override it)
  * so that the enum only needs to implement this interface to receive functionality.

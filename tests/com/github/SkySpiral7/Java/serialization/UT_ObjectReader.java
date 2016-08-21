@@ -722,6 +722,7 @@ public class UT_ObjectReader
 
 	private abstract static class NonPublicReader implements StaticSerializable
 	{
+		@SuppressWarnings("unused")
 		protected static NonPublicReader readFromStream(final ObjectReader in)
 		{
 			return null;
@@ -764,6 +765,7 @@ public class UT_ObjectReader
 
 		abstract class LocalNonStaticReader implements StaticSerializable
 		{
+			@SuppressWarnings("unused")
 			public LocalNonStaticReader readFromStream(final ObjectReader in)
 			{
 				return null;
@@ -786,6 +788,7 @@ public class UT_ObjectReader
 
 	private abstract static class ThrowingReader implements StaticSerializable
 	{
+		@SuppressWarnings("unused")
 		public static ThrowingReader readFromStream(final ObjectReader in)
 		{
 			throw new UnsupportedOperationException();
