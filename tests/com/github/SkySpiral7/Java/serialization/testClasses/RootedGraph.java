@@ -41,7 +41,7 @@ public final class RootedGraph implements StaticSerializable
 			for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
 			{
 				final String id = reader.readObject(String.class);
-				node.links.add(registry.getRegisteredObject(id, Node.class));
+				node.links.add(registry.getRegisteredObject(id));
 			}
 		});
 		//0 is the root because it's the first returned by getAllNodes which is used by write
