@@ -98,6 +98,7 @@ public class ObjectReader implements Closeable, Flushable
 			final String name = readObject(String.class);
 			return (T) Enum.valueOf(ClassUtil.cast(expectedClass), name);
 		}
+		if (StaticSerializableEnumByOrdinal.class.isAssignableFrom(expectedClass)) { return readEnumByOrdinal(expectedClass); }
 
 		if (StaticSerializable.class.isAssignableFrom(expectedClass)) { return readCustomClass(expectedClass); }
 
@@ -192,9 +193,48 @@ public class ObjectReader implements Closeable, Flushable
 		return null;
 	}
 
+	private <T> T readEnumByOrdinal(final Class<T> expectedClass)
+	{
+		if(!expectedClass.isEnum()) throw new IllegalArgumentException(expectedClass.getName()
+				+ " implements StaticSerializableEnumByOrdinal but isn't an enum");
+
+		final int ordinal = readObject(int.class);
+		final Method method;
+		try
+		{
+			//public static Enum[] values()
+			method = expectedClass.getDeclaredMethod("values");
+		}
+		catch (final NoSuchMethodException e)
+		{
+			throw new RuntimeException("This can't be thrown", e);  //since I already know it is an enum
+		}
+		catch (final SecurityException e)
+		{
+			throw new RuntimeException("Couldn't deserialize", e);  //it's too specific to test
+		}
+
+		final Enum<?>[] values;
+		try
+		{
+			values = Enum[].class.cast(method.invoke(null));
+		}
+		catch (final IllegalAccessException | InvocationTargetException | IllegalArgumentException e)
+		{
+			throw new RuntimeException("This can't be thrown", e);
+			//since values is public static, doesn't throw, and I know I'm giving it the right args (none)
+		}
+
+		//TODO: create a class for an unchecked StreamCorruptedException and throw that instead of IllegalStateException
+		if (values.length <= ordinal) throw new IllegalStateException(String.format(
+				"%s[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
+
+		return ClassUtil.cast(values[ordinal]);
+	}
+
 	private <T> T readCustomClass(final Class<T> expectedClass)
 	{
-		Method method = null;
+		final Method method;
 		try
 		{
 			//public static T readFromStream(ObjectReader reader)
@@ -219,7 +259,9 @@ public class ObjectReader implements Closeable, Flushable
 		}
 		catch (final IllegalAccessException | IllegalArgumentException e)
 		{
-			throw new RuntimeException("This can't be thrown", e);  //since I already know it is public static
+			throw new RuntimeException("This can't be thrown", e);
+			//since I already know it is public static and I know I'm giving it the right args
+			//(because otherwise it wouldn't have been found)
 		}
 		catch (final InvocationTargetException e)
 		{

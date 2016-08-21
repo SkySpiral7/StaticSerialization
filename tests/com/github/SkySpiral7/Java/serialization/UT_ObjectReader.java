@@ -674,6 +674,84 @@ public class UT_ObjectReader
 		testObject.close();
 	}
 
+	private static enum EnumByOrdinal implements StaticSerializableEnumByOrdinal
+	{
+		One, Two, Three, Four;
+	}
+
+	@Test
+	public void readObject_enumByOrdinal() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_enumByOrdinal.", ".txt");
+		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$EnumByOrdinal|"
+				+ "java.lang.Integer|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03 };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		assertSame(EnumByOrdinal.Four, testObject.readObject(EnumByOrdinal.class));
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_enumByOrdinal_classNotEnum() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_enumByOrdinal_classNotEnum.",
+				".txt");
+		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$2NotEnum|"
+				+ "java.lang.Integer|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01 };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		class NotEnum implements StaticSerializableEnumByOrdinal
+		{}
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		try
+		{
+			testObject.readObject(NotEnum.class);
+		}
+		catch (final IllegalArgumentException actual)
+		{
+			assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectReader$2NotEnum"
+					+ " implements StaticSerializableEnumByOrdinal but isn't an enum", actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_enumByOrdinal_OrdinalNotFound() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readObject_enumByOrdinal_OrdinalNotFound.",
+				".txt");
+		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$EnumByOrdinal|"
+				+ "java.lang.Integer|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x0a };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		try
+		{
+			testObject.readObject(EnumByOrdinal.class);
+		}
+		catch (final IllegalStateException actual)
+		{
+			assertEquals(
+					"com.github.SkySpiral7.Java.serialization.UT_ObjectReader$EnumByOrdinal[10] doesn't exist. Actual length: 4",
+					actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
 	@Test
 	public void readObject_custom_happy() throws IOException
 	{

@@ -288,6 +288,53 @@ public class UT_ObjectWriter
 		testObject.close();
 	}
 
+	private static enum EnumByOrdinal implements StaticSerializableEnumByOrdinal
+	{
+		One, Two, Three, Four;
+	}
+
+	@Test
+	public void writeObject_enumByOrdinal() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_enumByOrdinal.", ".txt");
+		tempFile.deleteOnExit();
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
+
+		testObject.writeObject(EnumByOrdinal.Four);
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectWriter$EnumByOrdinal|"
+				+ "java.lang.Integer|";
+		final byte[] data = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03 };
+		assertEquals(overhead, bytesToString(fileContents, data.length));
+		assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_enumByOrdinal_notEnum() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_enumByOrdinal_notEnum.", ".txt");
+		tempFile.deleteOnExit();
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
+
+		class NotEnum implements StaticSerializableEnumByOrdinal
+		{}
+
+		try
+		{
+			testObject.writeObject(new NotEnum());
+		}
+		catch (final ClassCastException actual)
+		{
+			assertEquals(
+					"com.github.SkySpiral7.Java.serialization.UT_ObjectWriter$2NotEnum cannot be cast to java.lang.Enum",
+					actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
 	@Test
 	public void writeObject_custom() throws IOException
 	{

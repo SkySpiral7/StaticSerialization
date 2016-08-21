@@ -99,6 +99,26 @@ public class IT_StaticSerializable
 		reader.close();
 	}
 
+	private static enum EnumByOrdinal implements StaticSerializableEnumByOrdinal
+	{
+		One, Two, Three, Four;
+	}
+
+	@Test
+	public void enumByOrdinal() throws IOException
+	{
+		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.enumByOrdinal.", ".txt");
+		tempFile.deleteOnExit();
+
+		final ObjectWriter writer = new ObjectWriter(tempFile);
+		writer.writeObject(EnumByOrdinal.Four);
+		writer.close();
+		final ObjectReader reader = new ObjectReader(tempFile);
+
+		assertSame(EnumByOrdinal.Four, reader.readObject(EnumByOrdinal.class));
+		reader.close();
+	}
+
 	@Test
 	public void getObjectRegistry() throws IOException
 	{
