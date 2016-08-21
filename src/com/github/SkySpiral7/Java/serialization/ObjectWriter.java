@@ -10,7 +10,7 @@ import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class ObjectWriter implements Closeable, Flushable
 {
-	private final ObjectRegistry registry = new ObjectRegistry();
+	private final ObjectWriterRegistry registry = new ObjectWriterRegistry();
 	private final File destination;
 
 	public ObjectWriter(final File destination)
@@ -154,5 +154,5 @@ public class ObjectWriter implements Closeable, Flushable
 	public void writeSerializable(final Serializable data){}  //TODO: unchecked/unsafe and difficult to implement
 	public void writeFieldsReflectively(final Object data){}  //TODO: stub
 
-	public ObjectRegistry getObjectRegistry(){return registry;}
+	public ObjectWriterRegistry getObjectRegistry(){return registry;}
 }

@@ -16,7 +16,7 @@ import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class ObjectReader implements Closeable, Flushable
 {
-	private final ObjectRegistry registry = new ObjectRegistry();
+	private final ObjectReaderRegistry registry = new ObjectReaderRegistry();
 	/**Greedy loading the entire file into memory is bad for performance.*/
 	private final byte[] source;
 	/**This is the index of the next byte to be read from source*/
@@ -272,5 +272,5 @@ public class ObjectReader implements Closeable, Flushable
 	public Object readSerializable(){return null;}  //TODO: unchecked/unsafe and difficult to implement
 	public void readFieldsReflectively(final Object instance){}  //TODO: stub
 
-	public ObjectRegistry getObjectRegistry(){return registry;}
+	public ObjectReaderRegistry getObjectRegistry(){return registry;}
 }

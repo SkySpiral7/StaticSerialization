@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import com.github.SkySpiral7.Java.util.ClassUtil;
 
-public class ObjectRegistry
+public class ObjectReaderRegistry
 {
 	private final Map<String, Object> registry = new HashMap<>();
 

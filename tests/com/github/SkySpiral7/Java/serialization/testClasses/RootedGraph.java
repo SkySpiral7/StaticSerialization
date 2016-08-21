@@ -3,15 +3,15 @@ package com.github.SkySpiral7.Java.serialization.testClasses;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
+import com.github.SkySpiral7.Java.dataStructures.IdentityHashSet;
 import com.github.SkySpiral7.Java.serialization.ObjectReader;
-import com.github.SkySpiral7.Java.serialization.ObjectRegistry;
+import com.github.SkySpiral7.Java.serialization.ObjectReaderRegistry;
 import com.github.SkySpiral7.Java.serialization.ObjectWriter;
+import com.github.SkySpiral7.Java.serialization.ObjectWriterRegistry;
 import com.github.SkySpiral7.Java.serialization.StaticSerializable;
 
 public final class RootedGraph implements StaticSerializable
@@ -25,7 +25,7 @@ public final class RootedGraph implements StaticSerializable
 
 	public static RootedGraph readFromStream(final ObjectReader reader)
 	{
-		final ObjectRegistry registry = reader.getObjectRegistry();
+		final ObjectReaderRegistry registry = reader.getObjectRegistry();
 
 		final List<Node> allNodes = new ArrayList<>();
 		final int nodeCount = reader.readObject(int.class);
@@ -51,35 +51,35 @@ public final class RootedGraph implements StaticSerializable
 	@Override
 	public void writeToStream(final ObjectWriter writer)
 	{
-		final ObjectRegistry registry = writer.getObjectRegistry();
+		final ObjectWriterRegistry registry = writer.getObjectRegistry();
 
 		final List<Node> allNodes = getAllNodes();
 		writer.writeObject(allNodes.size());
 		allNodes.stream().forEach(node -> {
-			writer.writeObject(node.id);
+			writer.writeObject(registry.registerObject(node));
 			writer.writeObject(node);
 		});
 		allNodes.stream().forEach(node -> {
 			writer.writeObject(node.links.size());
 			node.links.stream().forEach(linkedNode -> {
-				writer.writeObject(linkedNode.id);
+				writer.writeObject(registry.getId(linkedNode));
 			});
 		});
 	}
 
 	private List<Node> getAllNodes()
 	{
-		//I can't use IdentityHashSet because I must retain order
+		//I can't use IdentityHashSet alone because I must retain order
 		final List<Node> result = new ArrayList<>();
-		final Set<String> visited = new HashSet<>();
+		final Set<Node> visited = new IdentityHashSet<>();
 		final Deque<Node> unexplored = new ArrayDeque<>();
 		unexplored.add(root);
 		while (!unexplored.isEmpty())
 		{
 			final Node cursor = unexplored.removeLast();
-			if (visited.contains(cursor.id)) continue;
+			if (visited.contains(cursor)) continue;
 			result.add(cursor);
-			visited.add(cursor.id);
+			visited.add(cursor);
 			unexplored.addAll(cursor.links);
 		}
 		return result;
@@ -121,7 +121,6 @@ public final class RootedGraph implements StaticSerializable
 
 	public static final class Node implements StaticSerializable
 	{
-		public final String id;
 		public final String data;
 		public final List<Node> links = new ArrayList<>();
 
@@ -129,8 +128,6 @@ public final class RootedGraph implements StaticSerializable
 		{
 			Objects.requireNonNull(data);
 			this.data = data;
-			this.id = UUID.randomUUID().toString();
-			//TODO: Nodes require a UID. this indicates a lacking design of ObjectRegistry
 		}
 
 		public static Node readFromStream(final ObjectReader reader)

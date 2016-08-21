@@ -8,14 +8,14 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-public class UT_ObjectRegistry
+public class UT_ObjectReaderRegistry
 {
-	private ObjectRegistry testObject;
+	private ObjectReaderRegistry testObject;
 
 	@Before
 	public void setUp()
 	{
-		testObject = new ObjectRegistry();
+		testObject = new ObjectReaderRegistry();
 	}
 
 	@Test(expected = NullPointerException.class)
