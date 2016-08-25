@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -269,8 +270,8 @@ public class ObjectReader implements Closeable, Flushable
 		}
 	}
 
-	public Object readSerializable(){return null;}  //TODO: unchecked/unsafe and difficult to implement
-	public void readFieldsReflectively(final Object instance){}  //TODO: stub
+	public Serializable readSerializable(){return null;}  //TODO: unchecked/unsafe and difficult to implement
+	public Object readFieldsReflectively(final Object instance){return null;}  //TODO: stub
 
 	public ObjectReaderRegistry getObjectRegistry(){return registry;}
 }

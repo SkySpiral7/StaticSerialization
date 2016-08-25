@@ -1,5 +1,11 @@
 package com.github.SkySpiral7.Java.util;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public enum ClassUtil
 {
 	;  //no instances
@@ -26,4 +32,34 @@ public enum ClassUtil
 		return (T) anything;
 	};
 
+	/**
+	 * This method returns the List of all Fields for a class.
+	 * All fields are included regardless of scope (eg private, public),
+	 * and regardless of modifiers (eg static, transient).
+	 * All fields are included in the base class and all parent class,
+	 * however enclosing classes are excluding because such Fields can't be used directly on an object of class anyClass.
+	 * Additionally generated fields are excluded because you usually don't want to touch them.
+	 * 
+	 * @return a List of every possible Field that can be used by any object of the given anyClass
+	 *         except generated ones
+	 */
+	public static List<Field> getAllFields(final Class<?> anyClass)
+	{
+		final List<Class<?>> allClasses = new ArrayList<>();
+		Class<?> cursor = anyClass;
+		while (cursor != null)
+		{
+			allClasses.add(cursor);
+			cursor = cursor.getSuperclass();
+		}
+
+		final List<Field> result = new ArrayList<>();
+		allClasses.stream().forEach(clazz -> {
+			result.addAll(Arrays.asList(clazz.getDeclaredFields()));
+		});
+		return result.stream().filter(field -> {
+			//exclude generated fields
+				return !field.getName().contains("$");
+			}).collect(Collectors.toList());
+	};
 }
