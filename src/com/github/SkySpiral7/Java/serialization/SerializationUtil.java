@@ -1,5 +1,6 @@
 package com.github.SkySpiral7.Java.serialization;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -35,7 +36,7 @@ public enum SerializationUtil
             if (ClassUtil.isBoxedPrimitive(type)) return true;
             if (type.equals(String.class)) return true;
             if (StaticSerializable.class.isAssignableFrom(type)) return true;
-            //if (Serializable.class.isAssignableFrom(type)) return true;
+            if (Serializable.class.isAssignableFrom(type)) return true;
 
             return false;
         }).collect(Collectors.toList());

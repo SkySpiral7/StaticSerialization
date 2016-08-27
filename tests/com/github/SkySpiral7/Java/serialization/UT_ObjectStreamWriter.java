@@ -5,9 +5,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 
+import com.github.SkySpiral7.Java.util.BitWiseUtil;
 import org.junit.Test;
 
 import com.github.SkySpiral7.Java.util.FileIoUtil;
@@ -377,6 +380,29 @@ public class UT_ObjectStreamWriter
 		{
 			assertEquals("Couldn't serialize object of class java.io.File", actual.getMessage());
 		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeObject_Serializable() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_Serializable.", ".txt");
+		tempFile.deleteOnExit();
+		final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+		final BigInteger data = BigInteger.TEN;
+		final byte[] javaData = ObjectStreamWriter.javaSerialize(data);
+
+		testObject.writeObject(data);
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("java.math.BigInteger|", bytesToString(fileContents, (javaData.length+4)));
+
+		final byte[] bytesOfSize = new byte[4];
+		System.arraycopy(fileContents, "java.math.BigInteger|".length(), bytesOfSize, 0, 4);
+		assertEquals(javaData.length, BitWiseUtil.bigEndianBytesToInteger(bytesOfSize));
+
+		assertEquals(Arrays.toString(javaData), Arrays.toString(shortenBytes(fileContents, javaData.length)));
 
 		testObject.close();
 	}

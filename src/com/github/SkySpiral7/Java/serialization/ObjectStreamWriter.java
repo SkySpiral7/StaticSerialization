@@ -1,9 +1,6 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.Flushable;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -85,8 +82,30 @@ public class ObjectStreamWriter implements Closeable, Flushable
 			castedData.writeToStream(this);
 			return;
 		}
+		if (data instanceof Serializable)
+		{
+			final Serializable castedData = (Serializable) data;
+			final byte[] serializedData = javaSerialize(castedData);
+			this.writeBytes(serializedData.length, 4);
+			FileIoUtil.writeToFile(destination, serializedData, true);
+			return;
+		}
 
 		throw new IllegalArgumentException("Couldn't serialize object of class " + data.getClass().getName());
+	}
+
+	static byte[] javaSerialize(final Serializable castedData)
+	{
+		final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(512);
+		try (final ObjectOutputStream out = new ObjectOutputStream(byteStream))
+		{
+			out.writeObject(castedData);
+		}
+		catch (final IOException ex)
+		{
+			throw new RuntimeException(ex);
+		}
+		return byteStream.toByteArray();
 	}
 
 	/**
@@ -156,11 +175,6 @@ public class ObjectStreamWriter implements Closeable, Flushable
 		writeBytes('|', 1);
 		//instead of size then string have the string terminated by | since this saves 3 bytes and class names can't contain |
 		//if data is null then class name will be the empty string
-	}
-
-	public void writeSerializable(final Serializable data)
-	{
-		//TODO: unchecked/unsafe and difficult to implement
 	}
 
 	public void writeFieldsReflectively(final Object data)

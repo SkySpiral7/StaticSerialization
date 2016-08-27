@@ -1,10 +1,6 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.Flushable;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -112,8 +108,27 @@ public class ObjectStreamReader implements Closeable, Flushable
 		if (StaticSerializableEnumByOrdinal.class.isAssignableFrom(expectedClass)) { return readEnumByOrdinal(expectedClass); }
 
 		if (StaticSerializable.class.isAssignableFrom(expectedClass)) { return readCustomClass(expectedClass); }
+		if (Serializable.class.isAssignableFrom(expectedClass))
+		{
+			final int length = BitWiseUtil.bigEndianBytesToInteger(readBytes(4));
+			final byte[] objectData = readBytes(length);
+			return javaDeserialize(objectData);
+		}
 
 		throw new IllegalArgumentException("Don't know how to deserialize class " + expectedClass.getName());
+	}
+
+	private <T> T javaDeserialize(final byte[] objectData)
+	{
+		final ByteArrayInputStream byteStream = new ByteArrayInputStream(objectData);
+		try (final ObjectInputStream in = new ObjectInputStream(byteStream))
+		{
+			return ClassUtil.cast(in.readObject());
+		}
+		catch (final ClassNotFoundException | IOException ex)
+		{
+			throw new RuntimeException(ex);
+		}
 	}
 
 	private Class<?> readOverhead(final Class<?> expectedClass, final byte firstByte)
@@ -279,12 +294,6 @@ public class ObjectStreamReader implements Closeable, Flushable
 		{
 			throw new RuntimeException("Couldn't deserialize", e);
 		}
-	}
-
-	public Serializable readSerializable()
-	{
-		//TODO: unchecked/unsafe and difficult to implement
-		return null;
 	}
 
 	public void readFieldsReflectively(final Object instance)

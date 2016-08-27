@@ -1,18 +1,15 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-
-import java.io.File;
-import java.io.IOException;
-
-import org.junit.Test;
-
 import com.github.SkySpiral7.Java.serialization.testClasses.RootedGraph;
 import com.github.SkySpiral7.Java.serialization.testClasses.RootedGraph.Node;
 import com.github.SkySpiral7.Java.serialization.testClasses.SimpleHappy;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.math.BigInteger;
+
+import static org.junit.Assert.*;
 
 public class IT_StaticSerializable
 {
@@ -74,7 +71,7 @@ public class IT_StaticSerializable
 		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
 		final SimpleHappy actual = reader.readObject(SimpleHappy.class);
-		assertFalse(data == actual);
+		assertNotSame(data, actual);
 		assertEquals(data, actual);
 		reader.close();
 	}
@@ -145,7 +142,7 @@ public class IT_StaticSerializable
 		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
 		final RootedGraph actual = (RootedGraph) reader.readObject();
-		assertFalse(data == actual);
+		assertNotSame(data, actual);
 		assertEquals(data, actual);
 		reader.close();
 	}
@@ -182,8 +179,26 @@ public class IT_StaticSerializable
 		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
 		final ReflectiveClass actual = reader.readObject(ReflectiveClass.class);
-		assertFalse(data == actual);
+		assertNotSame(data, actual);
 		assertEquals(data.field, actual.field);
+		reader.close();
+	}
+
+	@Test
+	public void serializable() throws IOException
+	{
+		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.serializable.", ".txt");
+		tempFile.deleteOnExit();
+		final BigInteger data = BigInteger.TEN;
+
+		final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+		writer.writeObject(data);
+		writer.close();
+		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+
+		final BigInteger actual = (BigInteger) reader.readObject();
+		assertNotSame(data, actual);  //TEN is not a singleton and BigInteger won't readResolve it to be the same
+		assertEquals(data, actual);
 		reader.close();
 	}
 }

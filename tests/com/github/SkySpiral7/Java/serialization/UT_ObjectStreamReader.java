@@ -9,8 +9,11 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
+import com.github.SkySpiral7.Java.util.BitWiseUtil;
 import org.junit.Test;
 
 import com.github.SkySpiral7.Java.serialization.testClasses.SimpleHappy;
@@ -895,6 +898,24 @@ public class UT_ObjectStreamReader
 			assertEquals(InvocationTargetException.class, actual.getCause().getClass());
 			assertEquals(UnsupportedOperationException.class, actual.getCause().getCause().getClass());
 		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_Serializable() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_Serializable.", ".txt");
+		tempFile.deleteOnExit();
+		FileIoUtil.writeToFile(tempFile, "java.math.BigInteger|".getBytes(StandardCharsets.UTF_8), false);
+		final BigInteger data = BigInteger.TEN;
+		final byte[] javaData = ObjectStreamWriter.javaSerialize(data);
+		assert(javaData.length < 256);  //currently 203. Possible for the length to change after a Java release
+		FileIoUtil.writeToFile(tempFile, new byte[]{0, 0, 0, (byte) javaData.length}, true);
+		FileIoUtil.writeToFile(tempFile, javaData, true);
+
+		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+		assertEquals(data, testObject.readObject());
 
 		testObject.close();
 	}
