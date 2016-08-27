@@ -1,5 +1,11 @@
-*.class
+bin/
+   # contains *.class
+
+# Eclipse
 .project
 .classpath
 .settings/
-/bin/
+
+# IntelliJ
+.idea/
+*.iml

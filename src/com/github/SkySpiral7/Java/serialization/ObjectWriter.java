@@ -166,7 +166,7 @@ public class ObjectWriter implements Closeable, Flushable
 	public void writeFieldsReflectively(final Object data)
 	{
 		final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(data.getClass());
-		allSerializableFields.stream().forEach(field -> {
+		allSerializableFields.forEach(field -> {
 			field.setAccessible(true);
 			try
 			{

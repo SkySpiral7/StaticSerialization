@@ -290,7 +290,7 @@ public class ObjectReader implements Closeable, Flushable
 	public void readFieldsReflectively(final Object instance)
 	{
 		final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(instance.getClass());
-		allSerializableFields.stream().forEach(field -> {
+		allSerializableFields.forEach(field -> {
 			field.setAccessible(true);
 			try
 			{

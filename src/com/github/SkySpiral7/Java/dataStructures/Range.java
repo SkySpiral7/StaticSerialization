@@ -136,15 +136,15 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 	{
 		boolean isLegal = true;
 
-		if (boundaryInfo.type == Float.class)
+		if (boundaryInfo.type.equals(Float.class))
 		{
 			if(Float.isNaN((Float) num)) isLegal = false;
 		}
-		else if (boundaryInfo.type == Double.class)
+		else if (boundaryInfo.type.equals(Double.class))
 		{
 			if(Double.isNaN((Double) num)) isLegal = false;
 		}
-		else if (boundaryInfo.type == InfiniteInteger.class)
+		else if (boundaryInfo.type.equals(InfiniteInteger.class))
 		{
 			if(((InfiniteInteger) num).isNaN()) isLegal = false;
 		}
@@ -514,17 +514,17 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 		{
 			//unfortunately there would be cast class exceptions for the boxes if I tried to just return (int) 1
 			//don't need to check for the primitive classes since Range couldn't've been created with them
-			if(type == Byte.class) return (T_BoundaryInfo) Byte.valueOf((byte) 1);
-			if(type == Short.class) return (T_BoundaryInfo) Short.valueOf((short) 1);
-			if(type == Integer.class) return (T_BoundaryInfo) Integer.valueOf(1);
-			if(type == Long.class) return (T_BoundaryInfo) Long.valueOf(1L);
-			if(type == Float.class) return (T_BoundaryInfo) Float.valueOf(1f);
-			if(type == Double.class) return (T_BoundaryInfo) Double.valueOf(1d);
+			if(type.equals(Byte.class)) return (T_BoundaryInfo) Byte.valueOf((byte) 1);
+			if(type.equals(Short.class)) return (T_BoundaryInfo) Short.valueOf((short) 1);
+			if(type.equals(Integer.class)) return (T_BoundaryInfo) Integer.valueOf(1);
+			if(type.equals(Long.class)) return (T_BoundaryInfo) Long.valueOf(1L);
+			if(type.equals(Float.class)) return (T_BoundaryInfo) Float.valueOf(1f);
+			if(type.equals(Double.class)) return (T_BoundaryInfo) Double.valueOf(1d);
 
-			if(type == BigInteger.class) return (T_BoundaryInfo) BigInteger.ONE;
-			if(type == BigDecimal.class) return (T_BoundaryInfo) BigDecimal.ONE;
+			if(type.equals(BigInteger.class)) return (T_BoundaryInfo) BigInteger.ONE;
+			if(type.equals(BigDecimal.class)) return (T_BoundaryInfo) BigDecimal.ONE;
 
-			if(type == InfiniteInteger.class) return (T_BoundaryInfo) InfiniteInteger.ONE;
+			if(type.equals(InfiniteInteger.class)) return (T_BoundaryInfo) InfiniteInteger.ONE;
 			//MutableInfiniteInteger shouldn't be used because it can violate invariants
 			//likewise for AbstractInfiniteInteger which could be mutable
 
@@ -545,17 +545,17 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 		public T_BoundaryInfo add(final T_BoundaryInfo starting, final T_BoundaryInfo stepBy)
 		{
 			//don't need to check for the primitive classes since Range couldn't've been created with them
-			if(type == Byte.class) return (T_BoundaryInfo) Byte.valueOf((byte) (starting.byteValue() + stepBy.byteValue()));
-			if(type == Short.class) return (T_BoundaryInfo) Short.valueOf((short) (starting.shortValue() + stepBy.shortValue()));
-			if(type == Integer.class) return (T_BoundaryInfo) Integer.valueOf(starting.intValue() + stepBy.intValue());
-			if(type == Long.class) return (T_BoundaryInfo) Long.valueOf(starting.longValue() + stepBy.longValue());
-			if(type == Float.class) return (T_BoundaryInfo) Float.valueOf(starting.floatValue() + stepBy.floatValue());
-			if(type == Double.class) return (T_BoundaryInfo) Double.valueOf(starting.doubleValue() + stepBy.doubleValue());
+			if(type.equals(Byte.class)) return (T_BoundaryInfo) Byte.valueOf((byte) (starting.byteValue() + stepBy.byteValue()));
+			if(type.equals(Short.class)) return (T_BoundaryInfo) Short.valueOf((short) (starting.shortValue() + stepBy.shortValue()));
+			if(type.equals(Integer.class)) return (T_BoundaryInfo) Integer.valueOf(starting.intValue() + stepBy.intValue());
+			if(type.equals(Long.class)) return (T_BoundaryInfo) Long.valueOf(starting.longValue() + stepBy.longValue());
+			if(type.equals(Float.class)) return (T_BoundaryInfo) Float.valueOf(starting.floatValue() + stepBy.floatValue());
+			if(type.equals(Double.class)) return (T_BoundaryInfo) Double.valueOf(starting.doubleValue() + stepBy.doubleValue());
 
-			if(type == BigInteger.class) return (T_BoundaryInfo) ((BigInteger)starting).add((BigInteger)stepBy);
-			if(type == BigDecimal.class) return (T_BoundaryInfo) ((BigDecimal)starting).add((BigDecimal)stepBy);
+			if(type.equals(BigInteger.class)) return (T_BoundaryInfo) ((BigInteger)starting).add((BigInteger)stepBy);
+			if(type.equals(BigDecimal.class)) return (T_BoundaryInfo) ((BigDecimal)starting).add((BigDecimal)stepBy);
 
-			if(type == InfiniteInteger.class) return (T_BoundaryInfo) ((InfiniteInteger)starting).add((InfiniteInteger)stepBy);
+			if(type.equals(InfiniteInteger.class)) return (T_BoundaryInfo) ((InfiniteInteger)starting).add((InfiniteInteger)stepBy);
 			//MutableInfiniteInteger shouldn't be used because it can violate invariants
 			//likewise for AbstractInfiniteInteger which could be mutable
 
