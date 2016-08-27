@@ -14,16 +14,16 @@ public interface StaticSerializableEnumByName extends StaticSerializable
 {
 	/**
 	 * DO NOT CALL OR OVERRIDE THIS METHOD.
-	 * This method is ignored by ObjectWriter so overriding it will
+	 * This method is ignored by ObjectStreamWriter so overriding it will
 	 * lead to unexpected behavior. I can't make this method final
-	 * and ObjectWriter/Reader won't validate it. Because there's no reason to call
+	 * and ObjectStreamWriter/Reader won't validate it. Because there's no reason to call
 	 * this method, it always throws (this maintains overhead and is consistent with the other read/writes).
 	 * 
 	 * @throws IllegalStateException
 	 *            always
 	 * @see StaticSerializable use StaticSerializable directly for custom functionality
 	 */
-	public default void writeToStream(final ObjectWriter writer)
+	public default void writeToStream(final ObjectStreamWriter writer)
 	{
 		throw new IllegalStateException("Don't call this method.");
 		//final Enum<?> self = (Enum<?>) this;

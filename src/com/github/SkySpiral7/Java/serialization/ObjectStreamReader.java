@@ -17,7 +17,7 @@ import com.github.SkySpiral7.Java.util.BitWiseUtil;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
-public class ObjectReader implements Closeable, Flushable
+public class ObjectStreamReader implements Closeable, Flushable
 {
 	private final ObjectReaderRegistry registry = new ObjectReaderRegistry();
 	/** Greedy loading the entire file into memory is bad for performance. */
@@ -25,7 +25,7 @@ public class ObjectReader implements Closeable, Flushable
 	/** This is the index of the next byte to be read from source */
 	private int sourceIndex = 0;
 
-	public ObjectReader(final File sourceFile)
+	public ObjectStreamReader(final File sourceFile)
 	{
 		source = FileIoUtil.readBinaryFile(sourceFile);
 	}
@@ -249,8 +249,8 @@ public class ObjectReader implements Closeable, Flushable
 		final Method method;
 		try
 		{
-			//public static T readFromStream(ObjectReader reader)
-			method = expectedClass.getDeclaredMethod("readFromStream", ObjectReader.class);
+			//public static T readFromStream(ObjectStreamReader reader)
+			method = expectedClass.getDeclaredMethod("readFromStream", ObjectStreamReader.class);
 		}
 		catch (final NoSuchMethodException e)
 		{

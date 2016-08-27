@@ -8,11 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.github.SkySpiral7.Java.dataStructures.IdentityHashSet;
-import com.github.SkySpiral7.Java.serialization.ObjectReader;
-import com.github.SkySpiral7.Java.serialization.ObjectReaderRegistry;
-import com.github.SkySpiral7.Java.serialization.ObjectWriter;
-import com.github.SkySpiral7.Java.serialization.ObjectWriterRegistry;
-import com.github.SkySpiral7.Java.serialization.StaticSerializable;
+import com.github.SkySpiral7.Java.serialization.*;
 
 public final class RootedGraph implements StaticSerializable
 {
@@ -23,7 +19,7 @@ public final class RootedGraph implements StaticSerializable
 		this.root = root;
 	}
 
-	public static RootedGraph readFromStream(final ObjectReader reader)
+	public static RootedGraph readFromStream(final ObjectStreamReader reader)
 	{
 		final ObjectReaderRegistry registry = reader.getObjectRegistry();
 
@@ -36,7 +32,7 @@ public final class RootedGraph implements StaticSerializable
 			allNodes.add(node);
 			registry.registerObject(id, node);
 		}
-		allNodes.stream().forEach(node -> {
+		allNodes.forEach(node -> {
 			final int linkSize = reader.readObject(int.class);
 			for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
 			{
@@ -49,19 +45,19 @@ public final class RootedGraph implements StaticSerializable
 	}
 
 	@Override
-	public void writeToStream(final ObjectWriter writer)
+	public void writeToStream(final ObjectStreamWriter writer)
 	{
 		final ObjectWriterRegistry registry = writer.getObjectRegistry();
 
 		final List<Node> allNodes = getAllNodes();
 		writer.writeObject(allNodes.size());
-		allNodes.stream().forEach(node -> {
+		allNodes.forEach(node -> {
 			writer.writeObject(registry.registerObject(node));
 			writer.writeObject(node);
 		});
-		allNodes.stream().forEach(node -> {
+		allNodes.forEach(node -> {
 			writer.writeObject(node.links.size());
-			node.links.stream().forEach(linkedNode -> {
+			node.links.forEach(linkedNode -> {
 				writer.writeObject(registry.getId(linkedNode));
 			});
 		});
@@ -130,13 +126,13 @@ public final class RootedGraph implements StaticSerializable
 			this.data = data;
 		}
 
-		public static Node readFromStream(final ObjectReader reader)
+		public static Node readFromStream(final ObjectStreamReader reader)
 		{
 			return new Node(reader.readObject(String.class));
 		}
 
 		@Override
-		public void writeToStream(final ObjectWriter writer)
+		public void writeToStream(final ObjectStreamWriter writer)
 		{
 			writer.writeObject(data);
 		}

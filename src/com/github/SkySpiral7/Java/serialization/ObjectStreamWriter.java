@@ -10,12 +10,12 @@ import java.util.List;
 
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
-public class ObjectWriter implements Closeable, Flushable
+public class ObjectStreamWriter implements Closeable, Flushable
 {
 	private final ObjectWriterRegistry registry = new ObjectWriterRegistry();
 	private final File destination;
 
-	public ObjectWriter(final File destination)
+	public ObjectStreamWriter(final File destination)
 	{
 		this.destination = destination;
 

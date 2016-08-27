@@ -23,10 +23,10 @@ public class IT_StaticSerializable
 		tempFile.deleteOnExit();
 		final String data = "\u221E > \uD83D\uDE22";  //BMP (infinity), ascii, non-BMP (Crying Face)
 
-		final ObjectWriter writer = new ObjectWriter(tempFile);
+		final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
 		writer.writeObject(data);
 		writer.close();
-		final ObjectReader reader = new ObjectReader(tempFile);
+		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 		assertEquals(data, reader.readObject(String.class));
 		//don't create tests for each data type. the UT covers those. This is only for making sure the classes agree
 		reader.close();
@@ -38,10 +38,10 @@ public class IT_StaticSerializable
 		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.header_null.", ".txt");
 		tempFile.deleteOnExit();
 
-		final ObjectWriter writer = new ObjectWriter(tempFile);
+		final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
 		writer.writeObject(null);
 		writer.close();
-		final ObjectReader reader = new ObjectReader(tempFile);
+		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 		assertNull(reader.readObject(byte.class));
 		reader.close();
 	}
@@ -53,10 +53,10 @@ public class IT_StaticSerializable
 		tempFile.deleteOnExit();
 		final byte data = (byte) 2;
 
-		final ObjectWriter writer = new ObjectWriter(tempFile);
+		final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
 		writer.writeObject(data);
 		writer.close();
-		final ObjectReader reader = new ObjectReader(tempFile);
+		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 		assertEquals(Byte.valueOf(data), reader.readObject(byte.class));
 		reader.close();
 	}
@@ -68,10 +68,10 @@ public class IT_StaticSerializable
 		tempFile.deleteOnExit();
 		final SimpleHappy data = new SimpleHappy(4);
 
-		final ObjectWriter writer = new ObjectWriter(tempFile);
+		final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
 		writer.writeObject(data);
 		writer.close();
-		final ObjectReader reader = new ObjectReader(tempFile);
+		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
 		final SimpleHappy actual = reader.readObject(SimpleHappy.class);
 		assertFalse(data == actual);
@@ -90,10 +90,10 @@ public class IT_StaticSerializable
 		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.enumByName.", ".txt");
 		tempFile.deleteOnExit();
 
-		final ObjectWriter writer = new ObjectWriter(tempFile);
+		final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
 		writer.writeObject(EnumByName.One);
 		writer.close();
-		final ObjectReader reader = new ObjectReader(tempFile);
+		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
 		assertSame(EnumByName.One, reader.readObject(EnumByName.class));
 		reader.close();
@@ -110,10 +110,10 @@ public class IT_StaticSerializable
 		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.enumByOrdinal.", ".txt");
 		tempFile.deleteOnExit();
 
-		final ObjectWriter writer = new ObjectWriter(tempFile);
+		final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
 		writer.writeObject(EnumByOrdinal.Four);
 		writer.close();
-		final ObjectReader reader = new ObjectReader(tempFile);
+		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
 		assertSame(EnumByOrdinal.Four, reader.readObject(EnumByOrdinal.class));
 		reader.close();
@@ -139,10 +139,10 @@ public class IT_StaticSerializable
 			data = new RootedGraph(alice);
 		}
 
-		final ObjectWriter writer = new ObjectWriter(tempFile);
+		final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
 		writer.writeObject(data);
 		writer.close();
-		final ObjectReader reader = new ObjectReader(tempFile);
+		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
 		final RootedGraph actual = (RootedGraph) reader.readObject();
 		assertFalse(data == actual);
@@ -154,7 +154,7 @@ public class IT_StaticSerializable
 	{
 		private int field = 0xdead_beef;
 
-		public static ReflectiveClass readFromStream(final ObjectReader reader)
+		public static ReflectiveClass readFromStream(final ObjectStreamReader reader)
 		{
 			final ReflectiveClass result = new ReflectiveClass();
 			reader.readFieldsReflectively(result);
@@ -162,7 +162,7 @@ public class IT_StaticSerializable
 		}
 
 		@Override
-		public void writeToStream(final ObjectWriter writer)
+		public void writeToStream(final ObjectStreamWriter writer)
 		{
 			writer.writeFieldsReflectively(this);
 		}
@@ -176,10 +176,10 @@ public class IT_StaticSerializable
 		final ReflectiveClass data = new ReflectiveClass();
 		data.field = 0x0afe_babe;
 
-		final ObjectWriter writer = new ObjectWriter(tempFile);
+		final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
 		writer.writeObject(data);
 		writer.close();
-		final ObjectReader reader = new ObjectReader(tempFile);
+		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
 		final ReflectiveClass actual = reader.readObject(ReflectiveClass.class);
 		assertFalse(data == actual);

@@ -13,9 +13,9 @@ package com.github.SkySpiral7.Java.serialization;
 public interface StaticSerializableEnumByOrdinal extends StaticSerializable
 {
 	/**
-	 * @see StaticSerializableEnumByName#writeToStream(ObjectWriter)
+	 * @see StaticSerializableEnumByName#writeToStream(ObjectStreamWriter)
 	 */
-	public default void writeToStream(final ObjectWriter writer)
+	public default void writeToStream(final ObjectStreamWriter writer)
 	{
 		throw new IllegalStateException("Don't call this method.");
 		//final Enum<?> self = (Enum<?>) this;
