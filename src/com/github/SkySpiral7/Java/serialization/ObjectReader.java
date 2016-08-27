@@ -5,10 +5,12 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Objects;
 
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
@@ -18,9 +20,9 @@ import com.github.SkySpiral7.Java.util.FileIoUtil;
 public class ObjectReader implements Closeable, Flushable
 {
 	private final ObjectReaderRegistry registry = new ObjectReaderRegistry();
-	/**Greedy loading the entire file into memory is bad for performance.*/
+	/** Greedy loading the entire file into memory is bad for performance. */
 	private final byte[] source;
-	/**This is the index of the next byte to be read from source*/
+	/** This is the index of the next byte to be read from source */
 	private int sourceIndex = 0;
 
 	public ObjectReader(final File sourceFile)
@@ -32,12 +34,15 @@ public class ObjectReader implements Closeable, Flushable
 	 * TODO: Currently does nothing. Placeholder for later.
 	 */
 	@Override
-   public void flush(){}
+	public void flush()
+	{}
+
 	/**
 	 * TODO: Currently does nothing. Placeholder for later.
 	 */
 	@Override
-   public void close(){}
+	public void close()
+	{}
 
 	private byte[] readBytes(final int byteCount)
 	{
@@ -56,16 +61,21 @@ public class ObjectReader implements Closeable, Flushable
 	{
 		return (sourceIndex < source.length);
 	}
+
 	public boolean hasData(final int byteCount)
 	{
 		return (byteCount <= remainingBytes());
 	}
+
 	public int remainingBytes()
 	{
 		return (source.length - sourceIndex);
 	}
 
-	public Object readObject(){return readObject(Object.class);}
+	public Object readObject()
+	{
+		return readObject(Object.class);
+	}
 
 	@SuppressWarnings("unchecked")
 	public <T> T readObject(Class<T> expectedClass)
@@ -77,7 +87,7 @@ public class ObjectReader implements Closeable, Flushable
 		//Class Overhead
 		{
 			final byte firstByte = readBytes(1)[0];
-			if(firstByte == '|') return null;
+			if (firstByte == '|') return null;
 			expectedClass = (Class<T>) readOverhead(expectedClass, firstByte);
 		}
 		//TODO: for now it doesn't allow array
@@ -112,7 +122,7 @@ public class ObjectReader implements Closeable, Flushable
 		data.write(firstByte);
 		while (true)
 		{
-			if(!hasData()) throw new IllegalStateException("Header not found");
+			if (!hasData()) throw new IllegalStateException("Header not found");
 			final byte thisByte = readBytes(1)[0];
 			if (thisByte == '|') break;
 			data.write(thisByte);
@@ -145,6 +155,7 @@ public class ObjectReader implements Closeable, Flushable
 		if (char.class.equals(expectedClass)) { return Character.class; }
 		return expectedClass;
 	}
+
 	@SuppressWarnings("unchecked")
 	private <T> T readPrimitive(final Class<T> expectedClass)
 	{
@@ -196,7 +207,7 @@ public class ObjectReader implements Closeable, Flushable
 
 	private <T> T readEnumByOrdinal(final Class<T> expectedClass)
 	{
-		if(!expectedClass.isEnum()) throw new IllegalArgumentException(expectedClass.getName()
+		if (!expectedClass.isEnum()) throw new IllegalArgumentException(expectedClass.getName()
 				+ " implements StaticSerializableEnumByOrdinal but isn't an enum");
 
 		final int ordinal = readObject(int.class);
@@ -270,8 +281,30 @@ public class ObjectReader implements Closeable, Flushable
 		}
 	}
 
-	public Serializable readSerializable(){return null;}  //TODO: unchecked/unsafe and difficult to implement
-	public Object readFieldsReflectively(final Object instance){return null;}  //TODO: stub
+	public Serializable readSerializable()
+	{
+		//TODO: unchecked/unsafe and difficult to implement
+		return null;
+	}
 
-	public ObjectReaderRegistry getObjectRegistry(){return registry;}
+	public void readFieldsReflectively(final Object instance)
+	{
+		final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(instance.getClass());
+		allSerializableFields.stream().forEach(field -> {
+			field.setAccessible(true);
+			try
+			{
+				field.set(instance, this.readObject());  //will auto-cast
+			}
+			catch (final IllegalAccessException e)
+			{
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	public ObjectReaderRegistry getObjectRegistry()
+	{
+		return registry;
+	}
 }

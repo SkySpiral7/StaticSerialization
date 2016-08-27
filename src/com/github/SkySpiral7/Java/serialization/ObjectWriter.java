@@ -4,7 +4,9 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
@@ -25,12 +27,15 @@ public class ObjectWriter implements Closeable, Flushable
 	 * TODO: Currently does nothing. Placeholder for later.
 	 */
 	@Override
-   public void flush(){}
+	public void flush()
+	{}
+
 	/**
 	 * TODO: Currently does nothing. Placeholder for later.
 	 */
 	@Override
-   public void close(){}
+	public void close()
+	{}
 
 	private void writeBytes(long data, final int byteCount)
 	{
@@ -50,7 +55,7 @@ public class ObjectWriter implements Closeable, Flushable
 		//TODO: for now it doesn't allow arrays
 		writeOverhead(data);
 		if (data == null) return;
-		if(tryWritePrimitive(data)) return;
+		if (tryWritePrimitive(data)) return;
 
 		if (data instanceof String)
 		{
@@ -83,6 +88,7 @@ public class ObjectWriter implements Closeable, Flushable
 
 		throw new IllegalArgumentException("Couldn't serialize object of class " + data.getClass().getName());
 	}
+
 	/**
 	 * @return true if data was written (which means data was primitive)
 	 */
@@ -125,7 +131,7 @@ public class ObjectWriter implements Closeable, Flushable
 		}
 		if (data instanceof Boolean)
 		{
-			if((boolean) data) writeBytes(1, 1);  //write true
+			if ((boolean) data) writeBytes(1, 1);  //write true
 			else writeBytes(0, 1);
 			return true;
 		}
@@ -137,6 +143,7 @@ public class ObjectWriter implements Closeable, Flushable
 
 		return false;
 	}
+
 	private void writeOverhead(final Object data)
 	{
 		if (data != null)
@@ -151,8 +158,29 @@ public class ObjectWriter implements Closeable, Flushable
 		//if data is null then class name will be the empty string
 	}
 
-	public void writeSerializable(final Serializable data){}  //TODO: unchecked/unsafe and difficult to implement
-	public void writeFieldsReflectively(final Object data){}  //TODO: stub
+	public void writeSerializable(final Serializable data)
+	{
+		//TODO: unchecked/unsafe and difficult to implement
+	}
 
-	public ObjectWriterRegistry getObjectRegistry(){return registry;}
+	public void writeFieldsReflectively(final Object data)
+	{
+		final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(data.getClass());
+		allSerializableFields.stream().forEach(field -> {
+			field.setAccessible(true);
+			try
+			{
+				this.writeObject(field.get(data));
+			}
+			catch (final IllegalAccessException e)
+			{
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	public ObjectWriterRegistry getObjectRegistry()
+	{
+		return registry;
+	}
 }

@@ -30,7 +30,7 @@ public enum ClassUtil
 	public static <T> T cast(final Object anything)
 	{
 		return (T) anything;
-	};
+	}
 
 	/**
 	 * This method returns the List of all Fields for a class.
@@ -61,5 +61,15 @@ public enum ClassUtil
 			//exclude generated fields
 				return !field.getName().contains("$");
 			}).collect(Collectors.toList());
-	};
+	}
+
+	/**
+	 * @return true if an instance of classInQuestion could be auto-unboxed.
+	 * @see Class#isPrimitive()
+	 */
+	public static boolean isBoxedPrimitive(final Class<?> classInQuestion)
+	{
+		return Arrays.asList(Byte.class, Short.class, Integer.class, Long.class,  //integers
+				Float.class, Double.class, Boolean.class, Character.class).contains(classInQuestion);
+	}
 }

@@ -1,7 +1,9 @@
 package com.github.SkySpiral7.Java.serialization;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 import java.math.RoundingMode;
@@ -49,4 +51,10 @@ public class UT_ClassUtil
 		assertThat(ClassUtil.getAllFields(ClassB.class), is(expected));
 	}
 
+	@Test
+	public void isBoxedPrimitive()
+	{
+		assertFalse(ClassUtil.isBoxedPrimitive(String.class));
+		assertTrue(ClassUtil.isBoxedPrimitive(Character.class));
+	}
 }
