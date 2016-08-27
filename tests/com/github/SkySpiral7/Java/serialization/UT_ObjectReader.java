@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -898,4 +899,36 @@ public class UT_ObjectReader
 
 		testObject.close();
 	}
+
+	private static final class ReflectiveClass implements StaticSerializable
+	{
+		private int field = 0xdead_beef;
+
+		public static ReflectiveClass readFromStream(final ObjectReader reader)
+		{
+			final ReflectiveClass result = new ReflectiveClass();
+			reader.readFieldsReflectively(result);
+			return result;
+		}
+
+		@Override
+		public void writeToStream(final ObjectWriter writer){}
+	}
+
+	@Test
+	public void readFieldsReflectively() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectReader.TempFile.readFieldsReflectively.", ".txt");
+		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectReader$ReflectiveClass|java.lang.Integer|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = { (byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe };
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		final ObjectReader testObject = new ObjectReader(tempFile);
+		assertEquals(0x0afe_babeL, testObject.readObject(ReflectiveClass.class).field);
+
+		testObject.close();
+	}
+
 }

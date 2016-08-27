@@ -338,7 +338,7 @@ public class UT_ObjectWriter
 	@Test
 	public void writeObject_custom() throws IOException
 	{
-		final class Local implements StaticSerializable
+		final class CustomLocal implements StaticSerializable
 		{
 			boolean wasCalled = false;
 
@@ -354,7 +354,7 @@ public class UT_ObjectWriter
 		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeObject_custom.", ".txt");
 		tempFile.deleteOnExit();
 		final ObjectWriter testObject = new ObjectWriter(tempFile);
-		final Local data = new Local();
+		final CustomLocal data = new CustomLocal();
 
 		testObject.writeObject(data);
 		assertTrue(data.wasCalled);
@@ -377,6 +377,36 @@ public class UT_ObjectWriter
 		{
 			assertEquals("Couldn't serialize object of class java.io.File", actual.getMessage());
 		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void writeFieldsReflectively() throws IOException
+	{
+		final class ReflectiveLocal implements StaticSerializable
+		{
+			private int field = 0xcafe_bead;
+
+			//no reader doesn't matter
+
+			@Override
+			public void writeToStream(final ObjectWriter writer)
+			{
+				writer.writeFieldsReflectively(this);
+			}
+		}
+
+		final File tempFile = File.createTempFile("UT_ObjectWriter.TempFile.writeFieldsReflectively.", ".txt");
+		tempFile.deleteOnExit();
+		final ObjectWriter testObject = new ObjectWriter(tempFile);
+		final byte[] expected = { (byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad };
+
+		testObject.writeObject(new ReflectiveLocal());
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectWriter$1ReflectiveLocal|java.lang.Integer|",
+			bytesToString(fileContents, 4));
+		assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
 
 		testObject.close();
 	}

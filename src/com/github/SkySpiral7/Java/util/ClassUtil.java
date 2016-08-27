@@ -54,13 +54,11 @@ public enum ClassUtil
 		}
 
 		final List<Field> result = new ArrayList<>();
-		allClasses.stream().forEach(clazz -> {
-			result.addAll(Arrays.asList(clazz.getDeclaredFields()));
-		});
+		allClasses.forEach(clazz -> result.addAll(Arrays.asList(clazz.getDeclaredFields())));
 		return result.stream().filter(field -> {
 			//exclude generated fields
-				return !field.getName().contains("$");
-			}).collect(Collectors.toList());
+			return !field.getName().contains("$");
+		}).collect(Collectors.toList());
 	}
 
 	/**

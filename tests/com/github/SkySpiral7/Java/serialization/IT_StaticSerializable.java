@@ -150,4 +150,40 @@ public class IT_StaticSerializable
 		reader.close();
 	}
 
+	private static final class ReflectiveClass implements StaticSerializable
+	{
+		private int field = 0xdead_beef;
+
+		public static ReflectiveClass readFromStream(final ObjectReader reader)
+		{
+			final ReflectiveClass result = new ReflectiveClass();
+			reader.readFieldsReflectively(result);
+			return result;
+		}
+
+		@Override
+		public void writeToStream(final ObjectWriter writer)
+		{
+			writer.writeFieldsReflectively(this);
+		}
+	}
+
+	@Test
+	public void reflection() throws IOException
+	{
+		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.reflection.", ".txt");
+		tempFile.deleteOnExit();
+		final ReflectiveClass data = new ReflectiveClass();
+		data.field = 0x0afe_babe;
+
+		final ObjectWriter writer = new ObjectWriter(tempFile);
+		writer.writeObject(data);
+		writer.close();
+		final ObjectReader reader = new ObjectReader(tempFile);
+
+		final ReflectiveClass actual = reader.readObject(ReflectiveClass.class);
+		assertFalse(data == actual);
+		assertEquals(data.field, actual.field);
+		reader.close();
+	}
 }
