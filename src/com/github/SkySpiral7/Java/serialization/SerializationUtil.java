@@ -33,10 +33,8 @@ public enum SerializationUtil
 
             final Class<?> type = field.getType();
             if (type.isPrimitive()) return true;  //pretty sure type.equals(void.class) isn't possible
-            if (ClassUtil.isBoxedPrimitive(type)) return true;
-            if (type.equals(String.class)) return true;
             if (StaticSerializable.class.isAssignableFrom(type)) return true;
-            if (Serializable.class.isAssignableFrom(type)) return true;
+            if (Serializable.class.isAssignableFrom(type)) return true;  //includes String and boxes
 
             return false;
         }).collect(Collectors.toList());

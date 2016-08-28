@@ -179,6 +179,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
 		writeBytes('|', 1);
 		//instead of size then string have the string terminated by | since this saves 3 bytes and class names can't contain |
 		//if data is null then class name will be the empty string
+		//TODO: better compression: &Z see Class.getName
 	}
 
 	public void writeFieldsReflectively(final Object data)

@@ -107,7 +107,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable {
 	 * @see #append(String)
 	 */
 	public void append(final byte[] newContents) {
-		if (!amOpen) throw new IllegalStateException("Can't write to closed stream");
+		if (!amOpen) throw new IllegalStateException("Can't write to a closed stream");
 		//otherwise it would get put in a queue that would never be emptied
 
 		for (int i = 0; i < newContents.length; i++) {

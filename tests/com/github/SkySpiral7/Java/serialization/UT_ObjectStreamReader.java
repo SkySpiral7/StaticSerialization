@@ -222,7 +222,7 @@ public class UT_ObjectStreamReader
 		}
 		catch (final IllegalStateException actual)
 		{
-			assertEquals("expeceted 2 bytes, found 1 bytes", actual.getMessage());
+			assertEquals("expected 2 bytes, found 1 bytes", actual.getMessage());
 			//this indirectly tests hasData(int) and remainingBytes(). hasData() is tested everywhere
 		}
 

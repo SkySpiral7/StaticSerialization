@@ -158,7 +158,7 @@ public enum FileIoUtil
 
 		//this is only an estimate since character size is not always 1 byte
 		if (targetFile.length() > Integer.MAX_VALUE) throw new IllegalArgumentException(
-				"File too large to fit into a string");
+				"File (length " + targetFile.length() + ") too large to fit into a string");
 		//for completeness I could count the number of characters read and throw but it's better to have this hedge
 
 		final StringBuilder returnValue = new StringBuilder();
@@ -201,7 +201,7 @@ public enum FileIoUtil
 		if (!targetFile.exists()) throw new IllegalArgumentException("File doesn't exist");
 
 		if (targetFile.length() > Integer.MAX_VALUE) throw new IllegalArgumentException(
-				"File too large to fit into a byte[]");
+				"File (length " + targetFile.length() + ") too large to fit into a byte[]");
 
 		final byte[] result = new byte[(int) targetFile.length()];
 		try

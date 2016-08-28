@@ -43,7 +43,7 @@ public class UT_AsynchronousFileAppender {
 		try {
 			testObject.append("hi");
 		} catch (final IllegalStateException actual) {
-			assertEquals("Can't write to closed stream", actual.getMessage());
+			assertEquals("Can't write to a closed stream", actual.getMessage());
 		}
 	}
 }

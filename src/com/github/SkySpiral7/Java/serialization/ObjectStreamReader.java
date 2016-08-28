@@ -1,5 +1,9 @@
 package com.github.SkySpiral7.Java.serialization;
 
+import com.github.SkySpiral7.Java.AsynchronousFileReader;
+import com.github.SkySpiral7.Java.util.BitWiseUtil;
+import com.github.SkySpiral7.Java.util.ClassUtil;
+
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -9,53 +13,28 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
-import com.github.SkySpiral7.Java.util.BitWiseUtil;
-import com.github.SkySpiral7.Java.util.ClassUtil;
-import com.github.SkySpiral7.Java.util.FileIoUtil;
-
-public class ObjectStreamReader implements Closeable, Flushable
+public class ObjectStreamReader implements Closeable
 {
 	private final ObjectReaderRegistry registry = new ObjectReaderRegistry();
-	/** Greedy loading the entire file into memory is bad for performance. */
-	private final byte[] source;
-	/** This is the index of the next byte to be read from source */
-	private int sourceIndex = 0;
+	private final AsynchronousFileReader fileReader;
 
 	public ObjectStreamReader(final File sourceFile)
 	{
-		source = FileIoUtil.readBinaryFile(sourceFile);
+		fileReader = new AsynchronousFileReader(sourceFile);
 	}
 
 	/**
-	 * TODO: Currently does nothing. Placeholder for later.
-	 */
-	@Override
-	public void flush()
-	{}
-
-	/**
-	 * TODO: Currently does nothing. Placeholder for later.
+	 * @see AsynchronousFileReader#close()
 	 */
 	@Override
 	public void close()
-	{}
-
-	private byte[] readBytes(final int byteCount)
 	{
-		final byte[] result = new byte[byteCount];
-		if (!hasData(byteCount)) throw new IllegalStateException("expeceted " + byteCount + " bytes, found "
-				+ remainingBytes() + " bytes");
-		for (int i = 0; i < byteCount; ++i)
-		{
-			result[i] = source[sourceIndex];
-			++sourceIndex;
-		}
-		return result;
+		fileReader.close();
 	}
 
 	public boolean hasData()
 	{
-		return (sourceIndex < source.length);
+		return hasData(1);
 	}
 
 	public boolean hasData(final int byteCount)
@@ -65,7 +44,7 @@ public class ObjectStreamReader implements Closeable, Flushable
 
 	public int remainingBytes()
 	{
-		return (source.length - sourceIndex);
+		return fileReader.remainingBytes();
 	}
 
 	public Object readObject()
@@ -82,7 +61,7 @@ public class ObjectStreamReader implements Closeable, Flushable
 		expectedClass = (Class<T>) autoBox(expectedClass);
 		//Class Overhead
 		{
-			final byte firstByte = readBytes(1)[0];
+			final byte firstByte = fileReader.readBytes(1)[0];
 			if (firstByte == '|') return null;
 			expectedClass = (Class<T>) readOverhead(expectedClass, firstByte);
 		}
@@ -95,9 +74,8 @@ public class ObjectStreamReader implements Closeable, Flushable
 
 		if (String.class.equals(expectedClass))
 		{
-			final int stringByteLength = BitWiseUtil.bigEndianBytesToInteger(readBytes(4));
-			final byte[] data = readBytes(stringByteLength);
-			return (T) new String(data, StandardCharsets.UTF_8);
+			final int stringByteLength = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
+			return (T) fileReader.readBytesAsString(stringByteLength);
 		}
 
 		if (StaticSerializableEnumByName.class.isAssignableFrom(expectedClass))
@@ -110,8 +88,8 @@ public class ObjectStreamReader implements Closeable, Flushable
 		if (StaticSerializable.class.isAssignableFrom(expectedClass)) { return readCustomClass(expectedClass); }
 		if (Serializable.class.isAssignableFrom(expectedClass))
 		{
-			final int length = BitWiseUtil.bigEndianBytesToInteger(readBytes(4));
-			final byte[] objectData = readBytes(length);
+			final int length = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
+			final byte[] objectData = fileReader.readBytes(length);
 			return javaDeserialize(objectData);
 		}
 
@@ -138,7 +116,7 @@ public class ObjectStreamReader implements Closeable, Flushable
 		while (true)
 		{
 			if (!hasData()) throw new IllegalStateException("Header not found");
-			final byte thisByte = readBytes(1)[0];
+			final byte thisByte = fileReader.readBytes(1)[0];
 			if (thisByte == '|') break;
 			data.write(thisByte);
 		}
@@ -175,44 +153,44 @@ public class ObjectStreamReader implements Closeable, Flushable
 	private <T> T readPrimitive(final Class<T> expectedClass)
 	{
 		//expectedClass.isPrimitive() is useless because this method also checks boxes
-		if (Byte.class.equals(expectedClass)) { return (T) (Byte) readBytes(1)[0]; }
+		if (Byte.class.equals(expectedClass)) { return (T) (Byte) fileReader.readBytes(1)[0]; }
 		if (Short.class.equals(expectedClass))
 		{
-			final byte[] data = readBytes(2);
+			final byte[] data = fileReader.readBytes(2);
 			final int result = ((data[0] & 0xff) << 8) | (data[1] & 0xff);
 			return (T) (Short) (short) result;
 		}
 		if (Integer.class.equals(expectedClass))
 		{
-			final byte[] data = readBytes(4);
+			final byte[] data = fileReader.readBytes(4);
 			return (T) (Integer) BitWiseUtil.bigEndianBytesToInteger(data);
 		}
 		if (Long.class.equals(expectedClass))
 		{
-			final byte[] data = readBytes(8);
+			final byte[] data = fileReader.readBytes(8);
 			return (T) (Long) BitWiseUtil.bigEndianBytesToLong(data);
 		}
 		if (Float.class.equals(expectedClass))
 		{
-			final byte[] data = readBytes(4);
+			final byte[] data = fileReader.readBytes(4);
 			final int intData = BitWiseUtil.bigEndianBytesToInteger(data);
 			return (T) (Float) Float.intBitsToFloat(intData);
 		}
 		if (Double.class.equals(expectedClass))
 		{
-			final byte[] data = readBytes(8);
+			final byte[] data = fileReader.readBytes(8);
 			final long longData = BitWiseUtil.bigEndianBytesToLong(data);
 			return (T) (Double) Double.longBitsToDouble(longData);
 		}
 		if (Boolean.class.equals(expectedClass))
 		{
-			final byte data = readBytes(1)[0];
+			final byte data = fileReader.readBytes(1)[0];
 			if (data == 1) return (T) Boolean.TRUE;
 			return (T) Boolean.FALSE;
 		}
 		if (Character.class.equals(expectedClass))
 		{
-			final byte[] data = readBytes(2);
+			final byte[] data = fileReader.readBytes(2);
 			final int intData = ((data[0] & 0xff) << 8) | (data[1] & 0xff);
 			return (T) (Character) (char) (short) intData;
 		}

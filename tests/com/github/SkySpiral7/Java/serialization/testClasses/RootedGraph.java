@@ -52,6 +52,7 @@ public final class RootedGraph implements StaticSerializable
 		final List<Node> allNodes = getAllNodes();
 		writer.writeObject(allNodes.size());
 		allNodes.forEach(node -> {
+			//TODO: make a recursive writer.writeObjectOrId(node)
 			writer.writeObject(registry.registerObject(node));
 			writer.writeObject(node);
 		});
