@@ -5,34 +5,38 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import com.github.SkySpiral7.Java.AsynchronousFileAppender;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class ObjectStreamWriter implements Closeable, Flushable
 {
 	private final ObjectWriterRegistry registry = new ObjectWriterRegistry();
-	private final File destination;
+	private final AsynchronousFileAppender fileAppender;
 
 	public ObjectStreamWriter(final File destination)
 	{
-		this.destination = destination;
-
 		//start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)
-		FileIoUtil.writeToFile(destination, "");
+		FileIoUtil.writeToFile(destination, "");  //must do before fileAppender is created so that the file won't be locked
+		fileAppender = new AsynchronousFileAppender(destination);
 	}
 
 	/**
-	 * TODO: Currently does nothing. Placeholder for later.
+	 * @see AsynchronousFileAppender#flush()
 	 */
 	@Override
 	public void flush()
-	{}
+	{
+		fileAppender.flush();
+	}
 
 	/**
-	 * TODO: Currently does nothing. Placeholder for later.
+	 * @see AsynchronousFileAppender#close()
 	 */
 	@Override
 	public void close()
-	{}
+	{
+		fileAppender.close();
+	}
 
 	private void writeBytes(long data, final int byteCount)
 	{
@@ -43,7 +47,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
 			writeMe[i] = (byte) (data & 0xFF);
 			data >>>= 8;
 		}
-		FileIoUtil.writeToFile(destination, writeMe, true);
+		fileAppender.append(writeMe);
 	}
 
 	//for now ignore overloading for all primitives and array stuff
@@ -59,7 +63,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
 			final String castedData = (String) data;
 			final byte[] writeMe = castedData.getBytes(StandardCharsets.UTF_8);
 			writeBytes(writeMe.length, 4);
-			FileIoUtil.writeToFile(destination, writeMe, true);
+			fileAppender.append(writeMe);
 			return;
 		}
 
@@ -87,7 +91,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
 			final Serializable castedData = (Serializable) data;
 			final byte[] serializedData = javaSerialize(castedData);
 			this.writeBytes(serializedData.length, 4);
-			FileIoUtil.writeToFile(destination, serializedData, true);
+			fileAppender.append(serializedData);
 			return;
 		}
 
@@ -170,7 +174,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
 			final String className = data.getClass().getName();
 			//can't use recursion to write the string because that's endless and needs different format
 			final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
-			FileIoUtil.writeToFile(destination, writeMe, true);
+			fileAppender.append(writeMe);
 		}
 		writeBytes('|', 1);
 		//instead of size then string have the string terminated by | since this saves 3 bytes and class names can't contain |
