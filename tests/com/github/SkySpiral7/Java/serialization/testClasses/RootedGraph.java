@@ -21,47 +21,13 @@ public final class RootedGraph implements StaticSerializable
 
 	public static RootedGraph readFromStream(final ObjectStreamReader reader)
 	{
-		final ObjectReaderRegistry registry = reader.getObjectRegistry();
-
-		final List<Node> allNodes = new ArrayList<>();
-		final int nodeCount = reader.readObject(int.class);
-		for (int nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
-		{
-			final String id = reader.readObject(String.class);
-			final Node node = reader.readObject(Node.class);
-			allNodes.add(node);
-			registry.registerObject(id, node);
-		}
-		allNodes.forEach(node -> {
-			final int linkSize = reader.readObject(int.class);
-			for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
-			{
-				final String id = reader.readObject(String.class);
-				node.links.add(registry.getRegisteredObject(id));
-			}
-		});
-		//0 is the root because it's the first returned by getAllNodes which is used by write
-		return new RootedGraph(allNodes.get(0));
+		return new RootedGraph(reader.readObjectOrId());
 	}
 
 	@Override
 	public void writeToStream(final ObjectStreamWriter writer)
 	{
-		final ObjectWriterRegistry registry = writer.getObjectRegistry();
-
-		final List<Node> allNodes = getAllNodes();
-		writer.writeObject(allNodes.size());
-		allNodes.forEach(node -> {
-			//TODO: make a recursive writer.writeObjectOrId(node)
-			writer.writeObject(registry.registerObject(node));
-			writer.writeObject(node);
-		});
-		allNodes.forEach(node -> {
-			writer.writeObject(node.links.size());
-			node.links.forEach(linkedNode -> {
-				writer.writeObject(registry.getId(linkedNode));
-			});
-		});
+		writer.writeObjectOrId(root);
 	}
 
 	private List<Node> getAllNodes()
@@ -129,13 +95,24 @@ public final class RootedGraph implements StaticSerializable
 
 		public static Node readFromStream(final ObjectStreamReader reader)
 		{
-			return new Node(reader.readObject(String.class));
+			final Node result = new Node(reader.readObject(String.class));
+			reader.getObjectRegistry().claimId(result);
+
+			final int linkSize = reader.readObject(int.class);
+			for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
+			{
+				result.links.add(reader.readObjectOrId());
+			}
+
+			return result;
 		}
 
 		@Override
 		public void writeToStream(final ObjectStreamWriter writer)
 		{
 			writer.writeObject(data);
+			writer.writeObject(links.size());
+			links.forEach(writer::writeObjectOrId);
 		}
 
 		@Override

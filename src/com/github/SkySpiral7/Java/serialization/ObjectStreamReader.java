@@ -294,4 +294,9 @@ public class ObjectStreamReader implements Closeable
 	{
 		return registry;
 	}
+
+	public <T> T readObjectOrId()
+	{
+		return registry.readObjectOrId(this);
+	}
 }

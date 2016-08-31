@@ -202,4 +202,9 @@ public class ObjectStreamWriter implements Closeable, Flushable
 	{
 		return registry;
 	}
+
+	public void writeObjectOrId(final Object instance)
+	{
+		registry.writeObjectOrId(instance, this);
+	}
 }

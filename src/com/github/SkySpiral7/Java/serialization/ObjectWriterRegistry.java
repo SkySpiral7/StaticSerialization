@@ -30,4 +30,19 @@ public class ObjectWriterRegistry
 		return registry.get(instance);
 	}
 
+	public void writeObjectOrId(final Object instance, final ObjectStreamWriter writer)
+	{
+		Objects.requireNonNull(instance);
+		Objects.requireNonNull(writer);
+		if (registry.containsKey(instance))
+		{
+			writer.writeObject(registry.get(instance));
+			return;
+		}
+		final String id = UUID.randomUUID().toString();
+		registry.put(instance, id);
+		writer.writeObject(id);
+		writer.writeObject(instance);
+	}
+
 }
