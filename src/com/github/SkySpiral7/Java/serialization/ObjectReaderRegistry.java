@@ -25,20 +25,32 @@ public class ObjectReaderRegistry
 		return ClassUtil.cast(registry.get(id));
 	}
 
+	/**
+	 * This method reads an id then returns an object registered with that id.
+	 * If there is no object with that id then the id becomes unclaimed and null is returned.
+	 * Note that there can only be 1 unclaimed id at a time.
+	 */
 	public <T> T readObjectOrId(final ObjectStreamReader reader)
 	{
 		Objects.requireNonNull(reader);
 		final String id = reader.readObject(String.class);
 		if(registry.containsKey(id)) return ClassUtil.cast(registry.get(id));
 		unclaimedId = id;
-		return ClassUtil.cast(reader.readObject());
+		return null;
 	}
 
-	public void claimId(final Object instance)
+	/**
+	 * Call this method to associate the most recent generated id to the instance given
+	 * so that the same instance can be referenced again while reading.
+	 * @throws NullPointerException if there is no id to claim or if input is null
+	 * @see GenerateId
+	 */
+	public void claimId(final Object input)
 	{
-		Objects.requireNonNull(instance);
+		Objects.requireNonNull(input);
+		Objects.requireNonNull(unclaimedId);
 		//TODO: if root element will throw NPE
-		registry.put(unclaimedId, instance);
+		registry.put(unclaimedId, input);
 		unclaimedId = null;
 	}
 }

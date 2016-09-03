@@ -21,13 +21,13 @@ public final class RootedGraph implements StaticSerializable
 
 	public static RootedGraph readFromStream(final ObjectStreamReader reader)
 	{
-		return new RootedGraph(reader.readObjectOrId());
+		return new RootedGraph(reader.readObject(Node.class));
 	}
 
 	@Override
 	public void writeToStream(final ObjectStreamWriter writer)
 	{
-		writer.writeObjectOrId(root);
+		writer.writeObject(root);
 	}
 
 	private List<Node> getAllNodes()
@@ -82,6 +82,7 @@ public final class RootedGraph implements StaticSerializable
 		return allNodes.toString();
 	}
 
+	@GenerateId
 	public static final class Node implements StaticSerializable
 	{
 		public final String data;
@@ -101,7 +102,7 @@ public final class RootedGraph implements StaticSerializable
 			final int linkSize = reader.readObject(int.class);
 			for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
 			{
-				result.links.add(reader.readObjectOrId());
+				result.links.add(reader.readObject(Node.class));
 			}
 
 			return result;
@@ -112,7 +113,7 @@ public final class RootedGraph implements StaticSerializable
 		{
 			writer.writeObject(data);
 			writer.writeObject(links.size());
-			links.forEach(writer::writeObjectOrId);
+			links.forEach(writer::writeObject);
 		}
 
 		@Override

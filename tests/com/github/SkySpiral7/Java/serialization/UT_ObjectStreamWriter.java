@@ -1,19 +1,18 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.github.SkySpiral7.Java.util.BitWiseUtil;
+import com.github.SkySpiral7.Java.util.FileIoUtil;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.List;
+import java.util.UUID;
 
-import com.github.SkySpiral7.Java.util.BitWiseUtil;
-import org.junit.Test;
-
-import com.github.SkySpiral7.Java.util.FileIoUtil;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class UT_ObjectStreamWriter
 {
@@ -74,6 +73,61 @@ public class UT_ObjectStreamWriter
 		final byte[] expected = new byte[] { (byte) '|' };
 		//don't use bytesToString since that assumes the header has correct encoding
 		assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+	}
+
+	@Test
+	public void writeObject_stops_GenerateId() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_stops_GenerateId.", ".txt");
+		tempFile.deleteOnExit();
+		final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+		@GenerateId
+		class LocalWithGenerateId {
+		}
+
+		final String id = "f";
+		final Object data = new LocalWithGenerateId();
+		testObject.getObjectRegistry().registerObject(id, data);
+
+		testObject.writeObject(data);
+		testObject.close();
+		final byte[] expected = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
+				(byte) 0x66};
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1LocalWithGenerateId|java.lang.String|";
+		assertEquals(overhead, bytesToString(fileContents, expected.length));
+		assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
+	}
+
+	@Test
+	public void writeObject_continues_GenerateId() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_continues_GenerateId.", ".txt");
+		tempFile.deleteOnExit();
+		final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+		@GenerateId
+		class LocalWithGenerateIdAndWrite implements StaticSerializable {
+			@Override
+			public void writeToStream(final ObjectStreamWriter writer) {
+				writer.writeObject((byte) 5);
+			}
+		}
+
+		final Object data = new LocalWithGenerateIdAndWrite();
+		testObject.writeObject(data);
+		testObject.close();
+		final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1LocalWithGenerateIdAndWrite|java.lang.String|";
+		int offset = 0;
+		assertEquals(overhead, bytesToString(subArrayWithLength(fileContents, offset, overhead.length()), 0));
+		offset += overhead.length();
+		assertEquals(Arrays.toString(new byte[]{0, 0, 0, 36}), Arrays.toString(subArrayWithLength(fileContents, offset, 4)));
+		offset += 4;
+		offset += 36;
+		assertEquals("java.lang.Byte|", bytesToString(subArrayWithLength(fileContents, offset, "java.lang.Byte|".length()), 0));
+		assertEquals("[5]", Arrays.toString(shortenBytes(fileContents, 1)));
 	}
 
 	@Test
@@ -432,6 +486,13 @@ public class UT_ObjectStreamWriter
 	{
 		final byte[] smallerData = new byte[bytesToKeep];
 		System.arraycopy(data, (data.length - bytesToKeep), smallerData, 0, bytesToKeep);
+		return smallerData;
+	}
+
+	private byte[] subArrayWithLength(final byte[] data, final int start, final int length)
+	{
+		final byte[] smallerData = new byte[length];
+		System.arraycopy(data, start, smallerData, 0, length);
 		return smallerData;
 	}
 

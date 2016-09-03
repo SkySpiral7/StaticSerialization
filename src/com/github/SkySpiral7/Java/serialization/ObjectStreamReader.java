@@ -62,11 +62,16 @@ public class ObjectStreamReader implements Closeable
 		//Class Overhead
 		{
 			final byte firstByte = fileReader.readBytes(1)[0];
-			if (firstByte == '|') return null;
+			if (firstByte == '|') return null;  //the empty string class name means null, which can be cast to anything
 			expectedClass = (Class<T>) readOverhead(expectedClass, firstByte);
 		}
 		//TODO: for now it doesn't allow array
 
+		if (expectedClass.isAnnotationPresent(GenerateId.class))
+		{
+			final T registeredObject = registry.readObjectOrId(this);
+			if(registeredObject != null) return registeredObject;
+		}
 		{
 			final T result = readPrimitive(expectedClass);
 			if (result != null) return result;
@@ -293,10 +298,5 @@ public class ObjectStreamReader implements Closeable
 	public ObjectReaderRegistry getObjectRegistry()
 	{
 		return registry;
-	}
-
-	public <T> T readObjectOrId()
-	{
-		return registry.readObjectOrId(this);
 	}
 }

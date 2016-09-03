@@ -1,12 +1,12 @@
 package com.github.SkySpiral7.Java.serialization;
 
+import com.github.SkySpiral7.Java.AsynchronousFileAppender;
+import com.github.SkySpiral7.Java.util.FileIoUtil;
+
 import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-
-import com.github.SkySpiral7.Java.AsynchronousFileAppender;
-import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class ObjectStreamWriter implements Closeable, Flushable
 {
@@ -56,7 +56,18 @@ public class ObjectStreamWriter implements Closeable, Flushable
 		//TODO: for now it doesn't allow arrays
 		writeOverhead(data);
 		if (data == null) return;
-		if (tryWritePrimitive(data)) return;
+		if (data.getClass().isAnnotationPresent(GenerateId.class))
+		{
+			if (registry.getId(data) != null) {
+				registry.writeId(data, this);
+				//if already exists then write the id and stop
+				return;
+			}
+			//else create an id, write it, and continue writing the object
+			registry.registerObject(data);
+			registry.writeId(data, this);
+		}
+		else if (tryWritePrimitive(data)) return;
 
 		if (data instanceof String)
 		{
@@ -201,10 +212,5 @@ public class ObjectStreamWriter implements Closeable, Flushable
 	public ObjectWriterRegistry getObjectRegistry()
 	{
 		return registry;
-	}
-
-	public void writeObjectOrId(final Object instance)
-	{
-		registry.writeObjectOrId(instance, this);
 	}
 }

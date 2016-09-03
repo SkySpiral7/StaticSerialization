@@ -1,23 +1,16 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import com.github.SkySpiral7.Java.serialization.testClasses.SimpleHappy;
+import com.github.SkySpiral7.Java.util.FileIoUtil;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
-import com.github.SkySpiral7.Java.util.BitWiseUtil;
-import org.junit.Test;
-
-import com.github.SkySpiral7.Java.serialization.testClasses.SimpleHappy;
-import com.github.SkySpiral7.Java.util.FileIoUtil;
+import static org.junit.Assert.*;
 
 public class UT_ObjectStreamReader
 {
@@ -32,177 +25,6 @@ public class UT_ObjectStreamReader
 		{
 			assertEquals("It is not possible to read file contents of a directory", actual.getMessage());
 		}
-	}
-
-	@Test
-	public void readObject_overHead_happy() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_happy.", ".txt");
-		tempFile.deleteOnExit();
-
-		//@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
-				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
-				(byte)124,  //"|"
-				(byte)2  //the data
-		};
-		//@formatter:on
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-		assertTrue(testObject.hasData());
-		assertEquals(2L, testObject.readObject(Byte.class).longValue());
-		assertFalse(testObject.hasData());
-
-		testObject.close();
-	}
-
-	@Test
-	public void readObject_overHead_upCast() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_upCast.", ".txt");
-		tempFile.deleteOnExit();
-
-		//@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
-				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
-				(byte)124,  //"|"
-				(byte)2  //the data
-		};
-		//@formatter:on
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-		assertEquals(Byte.valueOf((byte) 2), testObject.readObject(Number.class));
-
-		testObject.close();
-	}
-
-	@Test
-	public void readObject_overHead_boxing() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_boxing.", ".txt");
-		tempFile.deleteOnExit();
-
-		//@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
-				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
-				(byte)124,  //"|"
-				(byte)2  //the data
-		};
-		//@formatter:on
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-		assertEquals(Byte.valueOf((byte) 2), testObject.readObject(byte.class));
-
-		testObject.close();
-	}
-
-	@Test
-	public void readObject_overHead_null() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_null.", ".txt");
-		tempFile.deleteOnExit();
-
-		final byte[] fileContents = new byte[] { (byte) '|' };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-		assertTrue(testObject.hasData());
-		assertNull(testObject.readObject(Byte.class));
-		assertFalse(testObject.hasData());
-
-		testObject.close();
-	}
-
-	@Test
-	public void writeObject_overHead_noClassThrows() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.writeObject_overHead_noClassThrows.", ".txt");
-		tempFile.deleteOnExit();
-
-		//@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)124,  //"|"
-				(byte)2  //the data
-		};
-		//@formatter:on
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-
-		try
-		{
-			testObject.readObject(Object.class);
-		}
-		catch (final RuntimeException actual)
-		{
-			assertEquals(ClassNotFoundException.class, actual.getCause().getClass());
-		}
-
-		testObject.close();
-	}
-
-	@Test
-	public void writeObject_overHead_noCastThrows() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.writeObject_overHead_noCastThrows.", ".txt");
-		tempFile.deleteOnExit();
-
-		//@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
-				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
-				(byte)124,  //"|"
-				(byte)2  //the data
-		};
-		//@formatter:on
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-		try
-		{
-			testObject.readObject(void.class);
-			//also covers a possible edge case: void.class.isPrimitive() is true
-		}
-		catch (final ClassCastException actual)
-		{
-			assertEquals("java.lang.Byte can't be cast into void", actual.getMessage());
-		}
-
-		testObject.close();
-	}
-
-	@Test
-	public void writeObject_overHead_noHeaderThrows() throws IOException
-	{
-		final File tempFile = File
-				.createTempFile("UT_ObjectStreamReader.TempFile.writeObject_overHead_noHeaderThrows.", ".txt");
-		tempFile.deleteOnExit();
-		final byte[] fileContents = { (byte) 2 };
-		FileIoUtil.writeToFile(tempFile, fileContents, false);
-
-		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-
-		try
-		{
-			testObject.readObject(Byte.class);
-		}
-		catch (final IllegalStateException actual)
-		{
-			assertEquals("Header not found", actual.getMessage());
-		}
-
-		testObject.close();
 	}
 
 	@Test
@@ -434,6 +256,240 @@ public class UT_ObjectStreamReader
 		assertEquals('\u221E', testObject.readObject(char.class).charValue());  //infinity sign is BMP non-private
 		assertFalse(testObject.hasData());
 
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_overHead_happy() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_happy.", ".txt");
+		tempFile.deleteOnExit();
+
+		//@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
+				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
+				(byte)124,  //"|"
+				(byte)2  //the data
+		};
+		//@formatter:on
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+		assertTrue(testObject.hasData());
+		assertEquals(2L, testObject.readObject(Byte.class).longValue());
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_overHead_upCast() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_upCast.", ".txt");
+		tempFile.deleteOnExit();
+
+		//@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
+				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
+				(byte)124,  //"|"
+				(byte)2  //the data
+		};
+		//@formatter:on
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+		assertEquals(Byte.valueOf((byte) 2), testObject.readObject(Number.class));
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_overHead_boxing() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_boxing.", ".txt");
+		tempFile.deleteOnExit();
+
+		//@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
+				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
+				(byte)124,  //"|"
+				(byte)2  //the data
+		};
+		//@formatter:on
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+		assertEquals(Byte.valueOf((byte) 2), testObject.readObject(byte.class));
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_overHead_null() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_null.", ".txt");
+		tempFile.deleteOnExit();
+
+		final byte[] fileContents = new byte[] { (byte) '|' };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+		assertTrue(testObject.hasData());
+		assertNull(testObject.readObject(Byte.class));
+		assertFalse(testObject.hasData());
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_overHead_noClassThrows() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_noClassThrows.", ".txt");
+		tempFile.deleteOnExit();
+
+		//@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)124,  //"|"
+				(byte)2  //the data
+		};
+		//@formatter:on
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+
+		try
+		{
+			testObject.readObject(Object.class);
+		}
+		catch (final RuntimeException actual)
+		{
+			assertEquals(ClassNotFoundException.class, actual.getCause().getClass());
+		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_overHead_noCastThrows() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_noCastThrows.", ".txt");
+		tempFile.deleteOnExit();
+
+		//@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
+				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
+				(byte)124,  //"|"
+				(byte)2  //the data
+		};
+		//@formatter:on
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+		try
+		{
+			testObject.readObject(void.class);
+			//also covers a possible edge case: void.class.isPrimitive() is true
+		}
+		catch (final ClassCastException actual)
+		{
+			assertEquals("java.lang.Byte can't be cast into void", actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_overHead_noHeaderThrows() throws IOException
+	{
+		final File tempFile = File
+				.createTempFile("UT_ObjectStreamReader.TempFile.readObject_overHead_noHeaderThrows.", ".txt");
+		tempFile.deleteOnExit();
+		final byte[] fileContents = { (byte) 2 };
+		FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+
+		try
+		{
+			testObject.readObject(Byte.class);
+		}
+		catch (final IllegalStateException actual)
+		{
+			assertEquals("Header not found", actual.getMessage());
+		}
+
+		testObject.close();
+	}
+
+	@Test
+	public void readObject_stops_GenerateId() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_stops_GenerateId.", ".txt");
+		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamReader$1LocalWithGenerateId|java.lang.String|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
+				(byte) 0x66};
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+
+		@GenerateId
+		class LocalWithGenerateId {
+		}
+		final Object data = new LocalWithGenerateId();
+
+		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+		testObject.getObjectRegistry().registerObject("f", data);
+
+		assertSame(data, testObject.readObject());
+		testObject.close();
+	}
+
+	@GenerateId
+	private final static class ClassWithGenerateIdAndRead implements StaticSerializable {
+		public final int data;
+
+		public ClassWithGenerateIdAndRead(final int data) {
+			this.data = data;
+		}
+
+		public static ClassWithGenerateIdAndRead readFromStream(final ObjectStreamReader reader) {
+			final ClassWithGenerateIdAndRead result = new ClassWithGenerateIdAndRead(reader.readObject(int.class));
+			reader.getObjectRegistry().claimId(result);
+			return result;
+		}
+
+		@Override
+		public void writeToStream(final ObjectStreamWriter writer) {
+			writer.writeObject(data);
+		}
+	}
+
+	@Test
+	public void readObject_continues_GenerateId() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamReader.TempFile.readObject_continues_GenerateId.", ".txt");
+		tempFile.deleteOnExit();
+		final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamReader$ClassWithGenerateIdAndRead|java.lang.String|";
+		FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+		final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
+				(byte) 0x66};  //id
+		FileIoUtil.writeToFile(tempFile, fileContents, true);
+		FileIoUtil.writeToFile(tempFile, "java.lang.Integer|".getBytes(StandardCharsets.UTF_8), true);
+		FileIoUtil.writeToFile(tempFile, new byte[]{0, 0, 0, 12}, true);  //data to read
+
+		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+
+		assertEquals(12, testObject.readObject(ClassWithGenerateIdAndRead.class).data);
+		assertNotNull(testObject.getObjectRegistry().getRegisteredObject("f"));
 		testObject.close();
 	}
 
