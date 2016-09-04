@@ -6,11 +6,11 @@ import com.github.SkySpiral7.Java.serialization.StaticSerializable;
 
 public final class SimpleHappy implements StaticSerializable
 {
-	public final int smilyStickersCount;
+	public final int smileyStickersCount;
 
-	public SimpleHappy(final int smilyStickersCount)
+	public SimpleHappy(final int smileyStickersCount)
 	{
-		this.smilyStickersCount = smilyStickersCount;
+		this.smileyStickersCount = smileyStickersCount;
 	}
 
 	public static SimpleHappy readFromStream(final ObjectStreamReader in)
@@ -21,25 +21,25 @@ public final class SimpleHappy implements StaticSerializable
 	@Override
 	public void writeToStream(final ObjectStreamWriter out)
 	{
-		out.writeObject(smilyStickersCount);
+		out.writeObject(smileyStickersCount);
 	}
 
 	@Override
 	public boolean equals(final Object obj)
 	{
 		if (!(obj instanceof SimpleHappy)) return false;
-		return (SimpleHappy.class.cast(obj).smilyStickersCount == this.smilyStickersCount);
+		return (SimpleHappy.class.cast(obj).smileyStickersCount == this.smileyStickersCount);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return smilyStickersCount;
+		return smileyStickersCount;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "I'm so happy that I own " + smilyStickersCount + " smily stickers!";
+		return "I'm so happy that I own " + smileyStickersCount + " smiley stickers!";
 	}
 }

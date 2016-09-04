@@ -37,6 +37,7 @@ public class ObjectStreamReader implements Closeable
 		return hasData(1);
 	}
 
+	//TODO: this is misleading because it includes overhead
 	public boolean hasData(final int byteCount)
 	{
 		return (byteCount <= remainingBytes());
@@ -290,7 +291,8 @@ public class ObjectStreamReader implements Closeable
 			}
 			catch (final IllegalAccessException e)
 			{
-				throw new RuntimeException(e);
+				throw new RuntimeException("This can't be thrown.", e);
+				//since I would've gotten SecurityException from setAccessible(true)
 			}
 		});
 	}

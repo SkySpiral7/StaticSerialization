@@ -106,7 +106,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
 			return;
 		}
 
-		throw new IllegalArgumentException("Couldn't serialize object of class " + data.getClass().getName());
+		throw new IllegalArgumentException("Don't know how to serialize object of class " + data.getClass().getName());
 	}
 
 	static byte[] javaSerialize(final Serializable castedData)
@@ -204,7 +204,8 @@ public class ObjectStreamWriter implements Closeable, Flushable
 			}
 			catch (final IllegalAccessException e)
 			{
-				throw new RuntimeException(e);
+				throw new RuntimeException("This can't be thrown.", e);
+				//since I would've gotten SecurityException from setAccessible(true)
 			}
 		});
 	}

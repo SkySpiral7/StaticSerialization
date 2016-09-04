@@ -121,29 +121,34 @@ public class IT_StaticSerializable
 	{
 		final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.getObjectRegistry.", ".txt");
 		tempFile.deleteOnExit();
-		final RootedGraph data;
+		final RootedGraph graph;
+		final Node root = new Node("Alice");
 		{
-			final Node alice = new Node("Alice");
 			final Node bob = new Node("Bob");
 			final Node clark = new Node("Clark");
 
-			alice.links.add(bob);
+			root.links.add(bob);
 			bob.links.add(clark);
 			clark.links.add(bob);
 			clark.links.add(clark);
 			//a -> b <-> c -> c
 
-			data = new RootedGraph(alice);
+			graph = new RootedGraph(root);
 		}
 
 		final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
-		writer.writeObject(data);
+		//write both the graph and root to show that self-referencing is handled inside an object and as the root object being written
+		writer.writeObject(graph);
+		writer.writeObject(root);
 		writer.close();
 		final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
-		final RootedGraph actual = (RootedGraph) reader.readObject();
-		assertNotSame(data, actual);
-		assertEquals(data, actual);
+		final RootedGraph actualGraph = reader.readObject(RootedGraph.class);
+		assertNotSame(graph, actualGraph);
+		assertEquals(graph, actualGraph);
+		final Node actualRoot = (Node) reader.readObject();
+		assertNotSame(root, actualRoot);
+		assertEquals(root, actualRoot);
 		reader.close();
 	}
 

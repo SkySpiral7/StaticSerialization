@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class UT_ObjectStreamWriter
 {
@@ -22,6 +23,7 @@ public class UT_ObjectStreamWriter
 		try
 		{
 			new ObjectStreamWriter(new File(".")).close();
+			fail("Didn't throw");
 		}
 		catch (final IllegalArgumentException actual)
 		{
@@ -324,6 +326,7 @@ public class UT_ObjectStreamWriter
 		try
 		{
 			testObject.writeObject(new NotEnum());
+			fail("Didn't throw");
 		}
 		catch (final ClassCastException actual)
 		{
@@ -370,6 +373,7 @@ public class UT_ObjectStreamWriter
 		try
 		{
 			testObject.writeObject(new NotEnum());
+			fail("Didn't throw");
 		}
 		catch (final ClassCastException actual)
 		{
@@ -408,25 +412,6 @@ public class UT_ObjectStreamWriter
 	}
 
 	@Test
-	public void writeObject_throws() throws IOException
-	{
-		final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_throws.", ".txt");
-		tempFile.deleteOnExit();
-		final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-
-		try
-		{
-			testObject.writeObject(tempFile);
-		}
-		catch (final IllegalArgumentException actual)
-		{
-			assertEquals("Couldn't serialize object of class java.io.File", actual.getMessage());
-		}
-
-		testObject.close();
-	}
-
-	@Test
 	public void writeObject_Serializable() throws IOException
 	{
 		final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_Serializable.", ".txt");
@@ -446,6 +431,26 @@ public class UT_ObjectStreamWriter
 		assertEquals(javaData.length, BitWiseUtil.bigEndianBytesToInteger(bytesOfSize));
 
 		assertEquals(Arrays.toString(javaData), Arrays.toString(shortenBytes(fileContents, javaData.length)));
+	}
+
+	@Test
+	public void writeObject_throw_unknownClass() throws IOException
+	{
+		final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_throw_unknownClass.", ".txt");
+		tempFile.deleteOnExit();
+
+		final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+		try
+		{
+			testObject.writeObject(new Object());
+			fail("Didn't throw");
+		}
+		catch (final IllegalArgumentException actual)
+		{
+			assertEquals("Don't know how to serialize object of class java.lang.Object", actual.getMessage());
+		}
+
+		testObject.close();
 	}
 
 	@Test

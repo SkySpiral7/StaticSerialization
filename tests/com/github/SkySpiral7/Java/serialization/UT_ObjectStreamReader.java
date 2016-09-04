@@ -20,6 +20,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			new ObjectStreamReader(new File(".")).close();
+			fail("Didn't throw");
 		}
 		catch (final IllegalArgumentException actual)
 		{
@@ -41,6 +42,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(Short.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalStateException actual)
 		{
@@ -84,6 +86,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(Byte.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalStateException actual)
 		{
@@ -106,6 +109,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(Object.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalArgumentException actual)
 		{
@@ -367,6 +371,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(Object.class);
+			fail("Didn't throw");
 		}
 		catch (final RuntimeException actual)
 		{
@@ -398,6 +403,7 @@ public class UT_ObjectStreamReader
 		{
 			testObject.readObject(void.class);
 			//also covers a possible edge case: void.class.isPrimitive() is true
+			fail("Didn't throw");
 		}
 		catch (final ClassCastException actual)
 		{
@@ -421,6 +427,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(Byte.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalStateException actual)
 		{
@@ -694,6 +701,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(EnumByName.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalArgumentException actual)
 		{
@@ -723,6 +731,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(NotEnum.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalArgumentException actual)
 		{
@@ -774,6 +783,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(NotEnum.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalArgumentException actual)
 		{
@@ -800,6 +810,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(EnumByOrdinal.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalStateException actual)
 		{
@@ -824,7 +835,7 @@ public class UT_ObjectStreamReader
 
 		final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
 		final SimpleHappy readData = testObject.readObject(SimpleHappy.class);
-		assertEquals(4, readData.smilyStickersCount);
+		assertEquals(4, readData.smileyStickersCount);
 		assertFalse(testObject.hasData());
 
 		testObject.close();
@@ -847,6 +858,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(NoReader.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalStateException actual)
 		{
@@ -880,6 +892,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(NonPublicReader.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalStateException actual)
 		{
@@ -913,6 +926,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(LocalNonStaticReader.class);
+			fail("Didn't throw");
 		}
 		catch (final IllegalStateException actual)
 		{
@@ -947,6 +961,7 @@ public class UT_ObjectStreamReader
 		try
 		{
 			testObject.readObject(ThrowingReader.class);
+			fail("Didn't throw");
 		}
 		catch (final RuntimeException actual)
 		{
