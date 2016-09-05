@@ -3,8 +3,8 @@ package com.github.SkySpiral7.Java.util;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.github.SkySpiral7.Java.numbers.NumberFormatException;
 import com.github.SkySpiral7.Java.numbers.NumericOverflowException;
-import com.github.SkySpiral7.Java.numbers.UncheckedNumberFormatException;
 
 public final class RadixUtil {
    private RadixUtil(){}
@@ -123,7 +123,7 @@ public final class RadixUtil {
     * Note some differences from Long.parseLong:
     * <ul>
     * <li>base 1 is allowed to have inputString be the empty string (with an optional leading - or +).
-    * For any other radix UncheckedNumberFormatException is thrown (same behavior).</li>
+    * For any other radix NumberFormatException is thrown (same behavior).</li>
     * <li>this method is case sensitive (in order to support radix &gt; 36).</li>
     * <li>the fullwidth Latin letters are not supported (because they are different characters).</li>
     * </ul>
@@ -134,7 +134,7 @@ public final class RadixUtil {
     *
     * @throws NullPointerException if inputString is null
     * @throws NumericOverflowException if inputString represents a number greater than a Long can represent
-    * @throws UncheckedNumberFormatException excluding a leading + or - if inputString is empty (and not base 1)
+    * @throws NumberFormatException excluding a leading + or - if inputString is empty (and not base 1)
     * or contains illegal characters for that radix
     * @throws IllegalArgumentException {@code if(radix > 62 || radix < 1)}
     *
@@ -150,7 +150,7 @@ public final class RadixUtil {
    	{
    		//should be faster than parseLongStandardBase. Also this handles the special case that "" is 0 in base 1
 	   	if(inputString.isEmpty()) return 0;
-	   	if(!inputString.matches("^[+-]?1*$")) throw UncheckedNumberFormatException.forInputString(inputString, radix);
+	   	if(!inputString.matches("^[+-]?1*$")) throw NumberFormatException.forInputRadix(inputString, radix);
    		if(inputString.charAt(0) == '-') return -(inputString.length()-1);  //these 2 might return 0
    		if(inputString.charAt(0) == '+') return (inputString.length()-1);
    		return inputString.length();
@@ -173,17 +173,17 @@ public final class RadixUtil {
       long multmin;
       int digit;
 
-	   if(inputLength == 0) throw UncheckedNumberFormatException.forInputString(inputString, radix);
+	   if(inputLength == 0) throw NumberFormatException.forInputRadix(inputString, radix);
 
 	   char firstChar = inputString.charAt(0);
        if (firstChar < '0') { // Possible leading "+" or "-"
            if (firstChar == '-') {
                limit = Long.MIN_VALUE;
            } else if (firstChar != '+')
-               throw UncheckedNumberFormatException.forInputString(inputString, radix);
+               throw NumberFormatException.forInputRadix(inputString, radix);
 
            if (inputLength == 1) // Cannot have lone "+" or "-"
-               throw UncheckedNumberFormatException.forInputString(inputString, radix);
+               throw NumberFormatException.forInputRadix(inputString, radix);
            i++;
        }
        multmin = limit / radix;
@@ -191,7 +191,7 @@ public final class RadixUtil {
            // Accumulating negatively avoids surprises near MAX_VALUE
            digit = getDigitValue(inputString.charAt(i++),radix);
            if (digit < 0) {
-               throw UncheckedNumberFormatException.forInputString(inputString, radix);
+               throw NumberFormatException.forInputRadix(inputString, radix);
            }
            if (result < multmin) {
                throw new NumericOverflowException("radix: "+radix+" input string: \"" + inputString + "\"");

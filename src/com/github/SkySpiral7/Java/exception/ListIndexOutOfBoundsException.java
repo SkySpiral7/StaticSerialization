@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java;
+package com.github.SkySpiral7.Java.exception;
 
 /**
  * The list version of ArrayIndexOutOfBoundsException.

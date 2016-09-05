@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 import com.github.SkySpiral7.Java.Copyable;
-import com.github.SkySpiral7.Java.ListIndexOutOfBoundsException;
+import com.github.SkySpiral7.Java.exception.ListIndexOutOfBoundsException;
 import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
 import com.github.SkySpiral7.Java.iterators.DescendingListIterator;
 import com.github.SkySpiral7.Java.pojo.DequeNode;
