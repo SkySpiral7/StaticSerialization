@@ -18,38 +18,43 @@ import java.util.Objects;
  * </ul>
  * <br /><br />
  *
- * @param <T> any child class of Number. Although only integers make sense.
+ * @param <T>
+ *       any child class of Number. Although only integers make sense.
  */
-public final class IntegerQuotient<T extends Number> {
-    protected T wholeResult;
-    protected T remainder;
+public final class IntegerQuotient<T extends Number>
+{
+   protected T wholeResult;
+   protected T remainder;
 
-  /**
-   * Note that this constructor is the only way to create this immutable object.
-   *
-   * @throws NullPointerException if either parameter is null.
-   * @see IntegerQuotient
-   */
+   /**
+    * Note that this constructor is the only way to create this immutable object.
+    *
+    * @throws NullPointerException
+    *       if either parameter is null.
+    * @see IntegerQuotient
+    */
    public IntegerQuotient(T wholeResult, T remainder)
    {
-       Objects.requireNonNull(wholeResult);
-       Objects.requireNonNull(remainder);
-       this.wholeResult = wholeResult;
-       this.remainder = remainder;
+      Objects.requireNonNull(wholeResult);
+      Objects.requireNonNull(remainder);
+      this.wholeResult = wholeResult;
+      this.remainder = remainder;
    }
 
    /**
     * @return the integer that resulted from the division. It may be zero but not null.
     */
-    public T getWholeResult(){return wholeResult;}
+   public T getWholeResult() {return wholeResult;}
+
    /**
     * @return the integer that remained after the division. It may be zero but not null or negative.
     */
-   public T getRemainder(){return remainder;}
+   public T getRemainder() {return remainder;}
 
    @Override
-   public String toString() {
-	   return "whole="+wholeResult+"; remainder="+remainder;
+   public String toString()
+   {
+      return "whole=" + wholeResult + "; remainder=" + remainder;
    }
 
 }

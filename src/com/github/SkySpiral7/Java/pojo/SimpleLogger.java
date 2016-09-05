@@ -20,45 +20,50 @@ import com.github.SkySpiral7.Java.util.FileIoUtil;
  * and should not be a method parameter or class field. This is because this class is intended for quick debugging
  * and should not be used in production (or other environments like QA) for that see a real logger like Log4J.</p>
  */
-public final class SimpleLogger {
-    private final File log;
+public final class SimpleLogger
+{
+   private final File log;
 
    /**
-    * @param log the File that will be written to (even if it does not exist).
-    * @throws IllegalArgumentException if the File is a directory (which can't be written to)
+    * @param log
+    *       the File that will be written to (even if it does not exist).
+    * @throws IllegalArgumentException
+    *       if the File is a directory (which can't be written to)
     */
    public SimpleLogger(File log)
    {
-       if(log.isDirectory()) throw new IllegalArgumentException("It is not possible to log to a directory");
-       this.log = log;
+      if (log.isDirectory()) throw new IllegalArgumentException("It is not possible to log to a directory");
+      this.log = log;
    }
 
    /**
     * This is a standard getter for the file that was used to construct this object.
     */
-   public File getFile(){return log;}
+   public File getFile() {return log;}
 
    /**
     * Append to the log. Note that an end line is not added.
     * The log will be created if it does not exist.
-    * 
-    * @param text the text to be appended exactly as passed in
+    *
+    * @param text
+    *       the text to be appended exactly as passed in
     */
    public void append(String text)
    {
-       FileIoUtil.appendToFile(log, text);
+      FileIoUtil.appendToFile(log, text);
    }
 
    /**
     * Append to the log. An end line is appended to the string.
     * The log will be created if it does not exist.
-    * 
-    * @param line the text to be appended followed by a system end line
+    *
+    * @param line
+    *       the text to be appended followed by a system end line
     */
    public void appendLine(String line)
    {
-       Objects.requireNonNull(line);
-       this.append(line + System.lineSeparator());
+      Objects.requireNonNull(line);
+      this.append(line + System.lineSeparator());
    }
 
    /**
@@ -67,14 +72,14 @@ public final class SimpleLogger {
     */
    public void clear()
    {
-   	FileIoUtil.writeToFile(log, "");
+      FileIoUtil.writeToFile(log, "");
    }
 
    /**
     * Delete the log on disk. Note that it will be recreated if you call append or clear.
     * Nio Files.delete is used to delete the file because according to the Javadoc the error messages
     * are more specific than the ones for getFile().delete.
-    * 
+    *
     * @see #clear()
     */
    public void delete()
@@ -83,7 +88,7 @@ public final class SimpleLogger {
       {
          Files.delete(Paths.get(log.getAbsolutePath()));
       }
-       catch(IOException e){throw new RuntimeException(e);}
+      catch (IOException e) {throw new RuntimeException(e);}
    }
 
 }

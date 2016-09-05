@@ -14,29 +14,32 @@ import com.github.SkySpiral7.Java.util.ClassUtil;
  */
 public enum SerializationUtil
 {
-	;  //no instances
+   ;  //no instances
 
-    /**
-     * @param subject the class to inspect
-     * @return all fields that can and should be written with ObjectStreamWriter.
-     * Known limitation: doesn't support fields of TypeVariable that extend StaticSerializable.
-     * @see ClassUtil#getAllFields(Class)
-     */
-    public static List<Field> getAllSerializableFields(final Class<?> subject)
-	{
-		final List<Field> allFields = ClassUtil.getAllFields(subject);
-		return allFields.stream().filter(field -> {
-            final int modifiers = field.getModifiers();
-            if (Modifier.isFinal(modifiers)) return false;  //can't be read from stream
-            if (Modifier.isTransient(modifiers)) return false;  //shouldn't be touched
-            if (Modifier.isStatic(modifiers)) return false;  //not related to the instance
+   /**
+    * @param subject
+    *       the class to inspect
+    * @return all fields that can and should be written with ObjectStreamWriter.
+    * Known limitation: doesn't support fields of TypeVariable that extend StaticSerializable.
+    *
+    * @see ClassUtil#getAllFields(Class)
+    */
+   public static List<Field> getAllSerializableFields(final Class<?> subject)
+   {
+      final List<Field> allFields = ClassUtil.getAllFields(subject);
+      return allFields.stream().filter(field ->
+                                       {
+                                          final int modifiers = field.getModifiers();
+                                          if (Modifier.isFinal(modifiers)) return false;  //can't be read from stream
+                                          if (Modifier.isTransient(modifiers)) return false;  //shouldn't be touched
+                                          if (Modifier.isStatic(modifiers)) return false;  //not related to the instance
 
-            final Class<?> type = field.getType();
-            if (type.isPrimitive()) return true;  //pretty sure type.equals(void.class) isn't possible
-            if (StaticSerializable.class.isAssignableFrom(type)) return true;
-            if (Serializable.class.isAssignableFrom(type)) return true;  //includes String and boxes
+                                          final Class<?> type = field.getType();
+                                          if (type.isPrimitive()) return true;  //pretty sure type.equals(void.class) isn't possible
+                                          if (StaticSerializable.class.isAssignableFrom(type)) return true;
+                                          if (Serializable.class.isAssignableFrom(type)) return true;  //includes String and boxes
 
-            return false;
-        }).collect(Collectors.toList());
-	}
+                                          return false;
+                                       }).collect(Collectors.toList());
+   }
 }
