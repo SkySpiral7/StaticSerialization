@@ -3,6 +3,7 @@ package com.github.SkySpiral7.Java;
 import java.io.File;
 import java.io.IOException;
 
+import com.github.SkySpiral7.Java.exception.ClosedResourceException;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 import org.junit.Test;
 
@@ -48,7 +49,7 @@ public class UT_AsynchronousFileAppender
       {
          testObject.append("hi");
       }
-      catch (final IllegalStateException actual)
+      catch (final ClosedResourceException actual)
       {
          assertEquals("Can't write to a closed stream", actual.getMessage());
       }

@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.github.SkySpiral7.Java.exception.ClosedResourceException;
+
 /**
  * <p>This class lets you send data into a queue that another thread will write to the file.
  * Therefore the other thread will be waiting on the disk instead of the main thread.
@@ -126,7 +128,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
     */
    public void append(final byte[] newContents)
    {
-      if (!amOpen) throw new IllegalStateException("Can't write to a closed stream");
+      if (!amOpen) throw new ClosedResourceException("Can't write to a closed stream");
       //otherwise it would get put in a queue that would never be emptied
 
       for (int i = 0; i < newContents.length; i++)

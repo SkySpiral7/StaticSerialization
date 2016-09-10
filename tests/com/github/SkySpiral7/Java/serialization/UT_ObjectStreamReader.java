@@ -6,6 +6,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
+import com.github.SkySpiral7.Java.exception.InvalidClassException;
+import com.github.SkySpiral7.Java.exception.NoMoreDataException;
+import com.github.SkySpiral7.Java.exception.NotSerializableException;
+import com.github.SkySpiral7.Java.exception.StreamCorruptedException;
 import com.github.SkySpiral7.Java.serialization.testClasses.SimpleHappy;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 import org.junit.Test;
@@ -50,7 +54,7 @@ public class UT_ObjectStreamReader
          testObject.readObject(Short.class);
          fail("Didn't throw");
       }
-      catch (final IllegalStateException actual)
+      catch (final NoMoreDataException actual)
       {
          assertEquals("expected 2 bytes, found 1 bytes", actual.getMessage());
          //this indirectly tests hasData(int) and remainingBytes(). hasData() is tested everywhere
@@ -94,9 +98,9 @@ public class UT_ObjectStreamReader
          testObject.readObject(Byte.class);
          fail("Didn't throw");
       }
-      catch (final IllegalStateException actual)
+      catch (final NoMoreDataException actual)
       {
-         assertEquals("stream is empty", actual.getMessage());
+         assertNull(actual.getMessage());
       }
 
       testObject.close();
@@ -117,9 +121,9 @@ public class UT_ObjectStreamReader
          testObject.readObject(Object.class);
          fail("Didn't throw");
       }
-      catch (final IllegalArgumentException actual)
+      catch (final NotSerializableException actual)
       {
-         assertEquals("Don't know how to deserialize class java.lang.Object", actual.getMessage());
+         assertEquals("java.lang.Object", actual.getMessage());
       }
 
       testObject.close();
@@ -435,7 +439,7 @@ public class UT_ObjectStreamReader
          testObject.readObject(Byte.class);
          fail("Didn't throw");
       }
-      catch (final IllegalStateException actual)
+      catch (final StreamCorruptedException actual)
       {
          assertEquals("Header not found", actual.getMessage());
       }
@@ -796,7 +800,7 @@ public class UT_ObjectStreamReader
          testObject.readObject(NotEnum.class);
          fail("Didn't throw");
       }
-      catch (final IllegalArgumentException actual)
+      catch (final InvalidClassException actual)
       {
          assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectStreamReader$2NotEnum"
                       + " implements StaticSerializableEnumByOrdinal but isn't an enum", actual.getMessage());
@@ -823,7 +827,7 @@ public class UT_ObjectStreamReader
          testObject.readObject(EnumByOrdinal.class);
          fail("Didn't throw");
       }
-      catch (final IllegalStateException actual)
+      catch (final StreamCorruptedException actual)
       {
          assertEquals(
                "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamReader$EnumByOrdinal[10] doesn't exist. Actual length: 4",
@@ -871,7 +875,7 @@ public class UT_ObjectStreamReader
          testObject.readObject(NoReader.class);
          fail("Didn't throw");
       }
-      catch (final IllegalStateException actual)
+      catch (final InvalidClassException actual)
       {
          assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectStreamReader$1NoReader"
                       + " implements StaticSerializable but doesn't define readFromStream", actual.getMessage());
@@ -905,7 +909,7 @@ public class UT_ObjectStreamReader
          testObject.readObject(NonPublicReader.class);
          fail("Didn't throw");
       }
-      catch (final IllegalStateException actual)
+      catch (final InvalidClassException actual)
       {
          assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectStreamReader$NonPublicReader.readFromStream"
                       + " must be public static", actual.getMessage());
@@ -939,7 +943,7 @@ public class UT_ObjectStreamReader
          testObject.readObject(LocalNonStaticReader.class);
          fail("Didn't throw");
       }
-      catch (final IllegalStateException actual)
+      catch (final InvalidClassException actual)
       {
          assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectStreamReader$1LocalNonStaticReader.readFromStream"
                       + " must be public static", actual.getMessage());

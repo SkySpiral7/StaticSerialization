@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Objects;
 
 import com.github.SkySpiral7.Java.AsynchronousFileReader;
+import com.github.SkySpiral7.Java.exception.InvalidClassException;
+import com.github.SkySpiral7.Java.exception.NoMoreDataException;
+import com.github.SkySpiral7.Java.exception.NotSerializableException;
+import com.github.SkySpiral7.Java.exception.StreamCorruptedException;
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 
@@ -57,7 +61,7 @@ public class ObjectStreamReader implements Closeable
    public <T> T readObject(Class<T> expectedClass)
    {
       Objects.requireNonNull(expectedClass);
-      if (!hasData()) throw new IllegalStateException("stream is empty");
+      if (!hasData()) throw new NoMoreDataException();
 
       expectedClass = (Class<T>) autoBox(expectedClass);
       //Class Overhead
@@ -99,7 +103,7 @@ public class ObjectStreamReader implements Closeable
          return javaDeserialize(objectData);
       }
 
-      throw new IllegalArgumentException("Don't know how to deserialize class " + expectedClass.getName());
+      throw new NotSerializableException(expectedClass);
    }
 
    private <T> T javaDeserialize(final byte[] objectData)
@@ -111,7 +115,7 @@ public class ObjectStreamReader implements Closeable
       }
       catch (final ClassNotFoundException | IOException ex)
       {
-         throw new RuntimeException(ex);
+         throw new StreamCorruptedException(ex);
       }
    }
 
@@ -121,7 +125,7 @@ public class ObjectStreamReader implements Closeable
       data.write(firstByte);
       while (true)
       {
-         if (!hasData()) throw new IllegalStateException("Header not found");
+         if (!hasData()) throw new StreamCorruptedException("Header not found");
          final byte thisByte = fileReader.readBytes(1)[0];
          if (thisByte == '|') break;
          data.write(thisByte);
@@ -137,7 +141,7 @@ public class ObjectStreamReader implements Closeable
       }
       catch (final ClassNotFoundException e)
       {
-         throw new RuntimeException(e);
+         throw new StreamCorruptedException(e);
       }
    }
 
@@ -206,8 +210,7 @@ public class ObjectStreamReader implements Closeable
 
    private <T> T readEnumByOrdinal(final Class<T> expectedClass)
    {
-      if (!expectedClass.isEnum()) throw new IllegalArgumentException(expectedClass.getName()
-                                                                      + " implements StaticSerializableEnumByOrdinal but isn't an enum");
+      if (!expectedClass.isEnum()) throw new InvalidClassException(expectedClass.getName() + " implements StaticSerializableEnumByOrdinal but isn't an enum");
 
       final int ordinal = readObject(int.class);
       final Method method;
@@ -218,11 +221,7 @@ public class ObjectStreamReader implements Closeable
       }
       catch (final NoSuchMethodException e)
       {
-         throw new RuntimeException("This can't be thrown", e);  //since I already know it is an enum
-      }
-      catch (final SecurityException e)
-      {
-         throw new RuntimeException("Couldn't deserialize", e);  //it's too specific to test
+         throw new AssertionError("This can't be thrown", e);  //since I already know it is an enum
       }
 
       final Enum<?>[] values;
@@ -232,12 +231,11 @@ public class ObjectStreamReader implements Closeable
       }
       catch (final IllegalAccessException | InvocationTargetException | IllegalArgumentException e)
       {
-         throw new RuntimeException("This can't be thrown", e);
+         throw new AssertionError("This can't be thrown", e);
          //since values is public static, doesn't throw, and I know I'm giving it the right args (none)
       }
 
-      //TODO: create a class for an unchecked StreamCorruptedException and throw that instead of IllegalStateException
-      if (values.length <= ordinal) throw new IllegalStateException(String.format(
+      if (values.length <= ordinal) throw new StreamCorruptedException(String.format(
             "%s[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
 
       return ClassUtil.cast(values[ordinal]);
@@ -253,18 +251,12 @@ public class ObjectStreamReader implements Closeable
       }
       catch (final NoSuchMethodException e)
       {
-         throw new IllegalStateException(expectedClass.getName()
-                                         + " implements StaticSerializable but doesn't define readFromStream", e);
-      }
-      catch (final SecurityException e)
-      {
-         throw new RuntimeException("Couldn't deserialize", e);  //it's too specific to test
+         throw new InvalidClassException(expectedClass.getName() + " implements StaticSerializable but doesn't define readFromStream");
       }
 
       if (!Modifier.isPublic(method.getModifiers()) || !Modifier.isStatic(method.getModifiers()))
       {
-         throw new IllegalStateException(
-               expectedClass.getName() + ".readFromStream must be public static");
+         throw new InvalidClassException(expectedClass.getName() + ".readFromStream must be public static");
       }
 
       try
@@ -273,7 +265,7 @@ public class ObjectStreamReader implements Closeable
       }
       catch (final IllegalAccessException | IllegalArgumentException e)
       {
-         throw new RuntimeException("This can't be thrown", e);
+         throw new AssertionError("This can't be thrown", e);
          //since I already know it is public static and I know I'm giving it the right args
          //(because otherwise it wouldn't have been found)
       }
@@ -295,7 +287,7 @@ public class ObjectStreamReader implements Closeable
                                        }
                                        catch (final IllegalAccessException e)
                                        {
-                                          throw new RuntimeException("This can't be thrown.", e);
+                                          throw new AssertionError("This can't be thrown.", e);
                                           //since I would've gotten SecurityException from setAccessible(true)
                                        }
                                     });

@@ -3,6 +3,8 @@ package com.github.SkySpiral7.Java;
 import java.io.File;
 import java.io.IOException;
 
+import com.github.SkySpiral7.Java.exception.ClosedResourceException;
+import com.github.SkySpiral7.Java.exception.NoMoreDataException;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 import org.junit.Test;
 
@@ -48,7 +50,7 @@ public class UT_AsynchronousFileReader
       {
          testObject.readBytes(1);
       }
-      catch (final IllegalStateException actual)
+      catch (final ClosedResourceException actual)
       {
          assertEquals("Can't read from a closed stream", actual.getMessage());
       }
@@ -65,7 +67,7 @@ public class UT_AsynchronousFileReader
       {
          testObject.readBytes(3);
       }
-      catch (final IllegalStateException actual)
+      catch (final NoMoreDataException actual)
       {
          assertEquals("expected 3 bytes, found 2 bytes", actual.getMessage());
       }

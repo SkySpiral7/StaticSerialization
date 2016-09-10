@@ -5,6 +5,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import com.github.SkySpiral7.Java.exception.ClosedResourceException;
+import com.github.SkySpiral7.Java.exception.NoMoreDataException;
+
 /**
  * <p>Creating this class will start reading the file in another thread and placing the results in a queue.
  * Therefore the other thread will be waiting on the disk instead of the main thread.
@@ -45,7 +48,7 @@ public final class AsynchronousFileReader implements Closeable
       }
       catch (final FileNotFoundException e)
       {
-         throw new RuntimeException(e);
+         throw new AssertionError("This can't be thrown", e);  //since I already checked that it exists
       }
       new Thread(reader).start();
    }
@@ -114,11 +117,10 @@ public final class AsynchronousFileReader implements Closeable
     */
    public byte[] readBytes(final int byteCount)
    {
-      if (!amOpen) throw new IllegalStateException("Can't read from a closed stream");
+      if (!amOpen) throw new ClosedResourceException("Can't read from a closed stream");
       //otherwise it would wait forever
 
-      if (byteCount > remainingBytes)
-         throw new IllegalStateException("expected " + byteCount + " bytes, found " + remainingBytes + " bytes");
+      if (byteCount > remainingBytes) throw new NoMoreDataException(byteCount, remainingBytes);
       remainingBytes -= byteCount;
 
       final byte[] result = new byte[byteCount];

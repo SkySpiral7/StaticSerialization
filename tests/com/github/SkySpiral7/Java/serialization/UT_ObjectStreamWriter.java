@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import com.github.SkySpiral7.Java.exception.NotSerializableException;
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 import org.junit.Test;
@@ -447,9 +448,9 @@ public class UT_ObjectStreamWriter
          testObject.writeObject(new Object());
          fail("Didn't throw");
       }
-      catch (final IllegalArgumentException actual)
+      catch (final NotSerializableException actual)
       {
-         assertEquals("Don't know how to serialize object of class java.lang.Object", actual.getMessage());
+         assertEquals("java.lang.Object", actual.getMessage());
       }
 
       testObject.close();

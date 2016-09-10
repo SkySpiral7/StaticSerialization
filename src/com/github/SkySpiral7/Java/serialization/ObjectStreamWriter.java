@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.github.SkySpiral7.Java.AsynchronousFileAppender;
+import com.github.SkySpiral7.Java.exception.NotSerializableException;
+import com.github.SkySpiral7.Java.exception.StreamCorruptedException;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class ObjectStreamWriter implements Closeable, Flushable
@@ -107,7 +109,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
          return;
       }
 
-      throw new IllegalArgumentException("Don't know how to serialize object of class " + data.getClass().getName());
+      throw new NotSerializableException(data.getClass());
    }
 
    static byte[] javaSerialize(final Serializable castedData)
@@ -119,7 +121,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
       }
       catch (final IOException ex)
       {
-         throw new RuntimeException(ex);
+         throw new StreamCorruptedException(ex);
       }
       return byteStream.toByteArray();
    }
@@ -206,7 +208,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
                                        }
                                        catch (final IllegalAccessException e)
                                        {
-                                          throw new RuntimeException("This can't be thrown.", e);
+                                          throw new AssertionError("This can't be thrown.", e);
                                           //since I would've gotten SecurityException from setAccessible(true)
                                        }
                                     });

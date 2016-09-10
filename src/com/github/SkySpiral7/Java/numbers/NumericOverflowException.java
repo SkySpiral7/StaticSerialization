@@ -1,11 +1,18 @@
 package com.github.SkySpiral7.Java.numbers;
 
 /**
- * This exception is thrown when a number overflows.
+ * This exception is thrown when a number has overflowed or to indicate that it would overflow.
  */
 public class NumericOverflowException extends RuntimeException
 {
    private static final long serialVersionUID = 1L;
+
+   /**
+    * Constructs a <code>NumericOverflowException</code> with no detail message.
+    */
+   public NumericOverflowException () {
+      super();
+   }
 
    /**
     * Constructs a new <code>NumericOverflowException</code>
