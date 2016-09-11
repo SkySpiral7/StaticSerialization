@@ -63,7 +63,7 @@ public enum ClassUtil
    }
 
    /**
-    * @return true if an instance of classInQuestion could be auto-unboxed.
+    * @return true if an instance of classInQuestion could be auto-unboxed (excludes Void.class).
     *
     * @see Class#isPrimitive()
     */
@@ -71,5 +71,47 @@ public enum ClassUtil
    {
       return Arrays.asList(Byte.class, Short.class, Integer.class, Long.class,  //integers
                            Float.class, Double.class, Boolean.class, Character.class).contains(classInQuestion);
+   }
+
+   /**
+    * @return the primitive class that matches the passed in boxedClass
+    *
+    * @throws IllegalArgumentException
+    *       if boxedClass isn't a boxed class. Note that Void isn't a boxed class.
+    */
+   public static Class<?> unboxClass(final Class<?> boxedClass)
+   {
+      //isBoxedPrimitive(boxedClass) is pointless: just let it fall through
+      if (Byte.class.equals(boxedClass)) return byte.class;
+      if (Short.class.equals(boxedClass)) return short.class;
+      if (Integer.class.equals(boxedClass)) return int.class;
+      if (Long.class.equals(boxedClass)) return long.class;
+      if (Float.class.equals(boxedClass)) return float.class;
+      if (Double.class.equals(boxedClass)) return double.class;
+      if (Boolean.class.equals(boxedClass)) return boolean.class;
+      if (Character.class.equals(boxedClass)) return char.class;
+      //if(Void.class.equals(boxedClass)) return void.class;
+      throw new IllegalArgumentException(boxedClass.getName() + " isn't a box class");
+   }
+
+   /**
+    * @return the boxed class that matches the passed in primitiveClass
+    *
+    * @throws IllegalArgumentException
+    *       if primitiveClass isn't a primitive class or is void.class since Void.class isn't a boxed class.
+    */
+   public static Class<?> boxClass(final Class<?> primitiveClass)
+   {
+      //expectedClass.isPrimitive() is pointless: just let it fall through
+      if (byte.class.equals(primitiveClass)) return Byte.class;
+      if (short.class.equals(primitiveClass)) return Short.class;
+      if (int.class.equals(primitiveClass)) return Integer.class;
+      if (long.class.equals(primitiveClass)) return Long.class;
+      if (float.class.equals(primitiveClass)) return Float.class;
+      if (double.class.equals(primitiveClass)) return Double.class;
+      if (boolean.class.equals(primitiveClass)) return Boolean.class;
+      if (char.class.equals(primitiveClass)) return Character.class;
+      //if (void.class.equals(primitiveClass)) return Void.class;
+      throw new IllegalArgumentException(primitiveClass.getName() + " isn't a primitive class or is void.class");
    }
 }

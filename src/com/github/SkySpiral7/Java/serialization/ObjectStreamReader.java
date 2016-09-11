@@ -63,7 +63,9 @@ public class ObjectStreamReader implements Closeable
       Objects.requireNonNull(expectedClass);
       if (!hasData()) throw new NoMoreDataException();
 
-      expectedClass = (Class<T>) autoBox(expectedClass);
+      //must check for void.class because ClassUtil.boxClass would throw something less helpful
+      if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
+      if (expectedClass.isPrimitive()) expectedClass = (Class<T>) ClassUtil.boxClass(expectedClass);
       //Class Overhead
       {
          final byte firstByte = fileReader.readBytes(1)[0];
@@ -72,14 +74,11 @@ public class ObjectStreamReader implements Closeable
       }
       //TODO: for now it doesn't allow array
 
+      if (ClassUtil.isBoxedPrimitive(expectedClass)) return readPrimitive(expectedClass);
       if (expectedClass.isAnnotationPresent(GenerateId.class))
       {
          final T registeredObject = registry.readObjectOrId(this);
          if (registeredObject != null) return registeredObject;
-      }
-      {
-         final T result = readPrimitive(expectedClass);
-         if (result != null) return result;
       }
 
       if (String.class.equals(expectedClass))
@@ -121,20 +120,36 @@ public class ObjectStreamReader implements Closeable
 
    private Class<?> readOverhead(final Class<?> expectedClass, final byte firstByte)
    {
-      final ByteArrayOutputStream data = new ByteArrayOutputStream();
-      data.write(firstByte);
-      while (true)
+      final String actualClassName;
+
+      if ('&' == firstByte)
       {
-         if (!hasData()) throw new StreamCorruptedException("Header not found");
-         final byte thisByte = fileReader.readBytes(1)[0];
-         if (thisByte == '|') break;
-         data.write(thisByte);
+         final char classCode = (char) fileReader.readBytes(1)[0];
+         if('T' == classCode) actualClassName = "java.lang.String";
+         else actualClassName = "[" + classCode;  //classCode needs to be decoded as an array by java
       }
-      final String actualClassName = new String(data.toByteArray(), StandardCharsets.UTF_8);
+      else
+      {
+         final ByteArrayOutputStream data = new ByteArrayOutputStream();
+         data.write(firstByte);
+         while (true)
+         {
+            if (!hasData()) throw new StreamCorruptedException("Header not found");
+            final byte thisByte = fileReader.readBytes(1)[0];
+            if (thisByte == '|') break;
+            data.write(thisByte);
+         }
+         actualClassName = new String(data.toByteArray(), StandardCharsets.UTF_8);
+      }
 
       try
       {
-         final Class<?> actualClass = Class.forName(actualClassName);
+         Class<?> actualClass = Class.forName(actualClassName);
+         if ('&' == firstByte && !"java.lang.String".equals(actualClassName))
+         {
+            actualClass = actualClass.getComponentType();  //it was wrapped in an array in order to decode the value
+            actualClass = ClassUtil.boxClass(actualClass);  //expectedClass has already been boxed
+         }
          if (!expectedClass.isAssignableFrom(actualClass)) throw new ClassCastException(actualClass.getName()
                                                                                         + " can't be cast into " + expectedClass.getName());
          return actualClass;
@@ -145,25 +160,10 @@ public class ObjectStreamReader implements Closeable
       }
    }
 
-   private Class<?> autoBox(final Class<?> expectedClass)
-   {
-      //expectedClass.isPrimitive() is pointless: just let it fall through
-      if (byte.class.equals(expectedClass)) { return Byte.class; }
-      if (short.class.equals(expectedClass)) { return Short.class; }
-      if (int.class.equals(expectedClass)) { return Integer.class; }
-      if (long.class.equals(expectedClass)) { return Long.class; }
-      if (float.class.equals(expectedClass)) { return Float.class; }
-      if (double.class.equals(expectedClass)) { return Double.class; }
-      if (boolean.class.equals(expectedClass)) { return Boolean.class; }
-      if (char.class.equals(expectedClass)) { return Character.class; }
-      return expectedClass;
-   }
-
    @SuppressWarnings("unchecked")
    private <T> T readPrimitive(final Class<T> expectedClass)
    {
-      //expectedClass.isPrimitive() is useless because this method also checks boxes
-      if (Byte.class.equals(expectedClass)) { return (T) (Byte) fileReader.readBytes(1)[0]; }
+      if (Byte.class.equals(expectedClass)) return (T) (Byte) fileReader.readBytes(1)[0];
       if (Short.class.equals(expectedClass))
       {
          final byte[] data = fileReader.readBytes(2);
@@ -205,7 +205,7 @@ public class ObjectStreamReader implements Closeable
          return (T) (Character) (char) (short) intData;
       }
 
-      return null;
+      throw new AssertionError("Method shouldn't've been called");
    }
 
    private <T> T readEnumByOrdinal(final Class<T> expectedClass)

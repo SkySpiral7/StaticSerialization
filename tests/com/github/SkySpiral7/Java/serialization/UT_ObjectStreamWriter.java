@@ -52,14 +52,11 @@ public class UT_ObjectStreamWriter
       testObject.close();
       //@formatter:off
 		final byte[] expected = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
-				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
-				(byte)124,  //"|"
+				(byte)38, (byte)66,  //"&B"
 				(byte)0xab  //the data
 		};
 		//@formatter:on
-      //don't use bytesToString since that assumes the header has correct encoding
+      //don't use bytesToString since that assumes the header has UTF-8 encoding
       assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
    }
 
@@ -73,7 +70,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(null);
       testObject.close();
       final byte[] expected = new byte[] {(byte) '|'};
-      //don't use bytesToString since that assumes the header has correct encoding
+      //don't use bytesToString since that assumes the header has UTF-8 encoding
       assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
    }
 
@@ -98,7 +95,7 @@ public class UT_ObjectStreamWriter
       final byte[] expected = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
             (byte) 0x66};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1LocalWithGenerateId|java.lang.String|";
+      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1LocalWithGenerateId|&T";
       assertEquals(overhead, bytesToString(fileContents, expected.length));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
    }
@@ -124,14 +121,14 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(data);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1LocalWithGenerateIdAndWrite|java.lang.String|";
+      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1LocalWithGenerateIdAndWrite|&T";
       int offset = 0;
       assertEquals(overhead, bytesToString(subArrayWithLength(fileContents, offset, overhead.length()), 0));
       offset += overhead.length();
       assertEquals(Arrays.toString(new byte[] {0, 0, 0, 36}), Arrays.toString(subArrayWithLength(fileContents, offset, 4)));
       offset += 4;
       offset += 36;
-      assertEquals("java.lang.Byte|", bytesToString(subArrayWithLength(fileContents, offset, "java.lang.Byte|".length()), 0));
+      assertEquals("&B", bytesToString(subArrayWithLength(fileContents, offset, 2), 0));
       assertEquals("[5]", Arrays.toString(shortenBytes(fileContents, 1)));
    }
 
@@ -146,9 +143,8 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(data);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String header = "java.lang.Byte|";
-      assertEquals(header, bytesToString(fileContents, 1));
-      assertEquals(2, fileContents[header.length()]);
+      assertEquals("&B", bytesToString(fileContents, 1));
+      assertEquals(2, fileContents[2]);
    }
 
    @Test
@@ -163,7 +159,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(data);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.lang.Short|", bytesToString(fileContents, 2));
+      assertEquals("&S", bytesToString(fileContents, 2));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 2)));
    }
 
@@ -179,7 +175,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(data);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.lang.Integer|", bytesToString(fileContents, 4));
+      assertEquals("&I", bytesToString(fileContents, 4));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
    }
 
@@ -196,7 +192,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(data);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.lang.Long|", bytesToString(fileContents, 8));
+      assertEquals("&J", bytesToString(fileContents, 8));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 8)));
    }
 
@@ -212,7 +208,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(data);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.lang.Float|", bytesToString(fileContents, 4));
+      assertEquals("&F", bytesToString(fileContents, 4));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
    }
 
@@ -229,7 +225,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(data);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.lang.Double|", bytesToString(fileContents, 8));
+      assertEquals("&D", bytesToString(fileContents, 8));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 8)));
    }
 
@@ -243,7 +239,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(true);
       testObject.flush();
       byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.lang.Boolean|", bytesToString(fileContents, 1));
+      assertEquals("&Z", bytesToString(fileContents, 1));
       assertEquals("[1]", Arrays.toString(shortenBytes(fileContents, 1)));
 
       FileIoUtil.writeToFile(tempFile, "");
@@ -251,7 +247,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(false);
       testObject.close();
       fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.lang.Boolean|", bytesToString(fileContents, 1));
+      assertEquals("&Z", bytesToString(fileContents, 1));
       assertEquals("[0]", Arrays.toString(shortenBytes(fileContents, 1)));
    }
 
@@ -265,7 +261,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject('f');
       testObject.flush();
       byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.lang.Character|", bytesToString(fileContents, 2));
+      assertEquals("&C", bytesToString(fileContents, 2));
       assertEquals("[0, " + 0x66 + "]", Arrays.toString(shortenBytes(fileContents, 2)));
 
       FileIoUtil.writeToFile(tempFile, "");
@@ -273,7 +269,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject('\u221E');  //infinity sign is BMP non-private
       testObject.close();
       fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.lang.Character|", bytesToString(fileContents, 2));
+      assertEquals("&C", bytesToString(fileContents, 2));
       assertEquals("[" + 0x22 + ", " + 0x1e + "]", Arrays.toString(shortenBytes(fileContents, 2)));
    }
 
@@ -289,7 +285,7 @@ public class UT_ObjectStreamWriter
       final byte[] expected = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
             (byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.lang.String|", bytesToString(fileContents, expected.length));
+      assertEquals("&T", bytesToString(fileContents, expected.length));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
    }
 
@@ -308,8 +304,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(EnumByName.One);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$EnumByName|"
-                              + "java.lang.String|";
+      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$EnumByName|&T";
       final byte[] data = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03,  //UTF-8 length (int)
             (byte) 79, (byte) 110, (byte) 101};  //"One"
       assertEquals(overhead, bytesToString(fileContents, data.length));
@@ -356,8 +351,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(EnumByOrdinal.Four);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$EnumByOrdinal|"
-                              + "java.lang.Integer|";
+      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$EnumByOrdinal|&I";
       final byte[] data = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
       assertEquals(overhead, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
@@ -480,8 +474,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(new ReflectiveLocal());
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1ReflectiveLocal|java.lang.Integer|",
-                   bytesToString(fileContents, 4));
+      assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1ReflectiveLocal|&I", bytesToString(fileContents, 4));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
    }
 

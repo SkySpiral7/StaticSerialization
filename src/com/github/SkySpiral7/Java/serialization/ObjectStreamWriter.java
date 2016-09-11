@@ -1,6 +1,7 @@
 package com.github.SkySpiral7.Java.serialization;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 import com.github.SkySpiral7.Java.AsynchronousFileAppender;
 import com.github.SkySpiral7.Java.exception.NotSerializableException;
 import com.github.SkySpiral7.Java.exception.StreamCorruptedException;
+import com.github.SkySpiral7.Java.util.ClassUtil;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 public class ObjectStreamWriter implements Closeable, Flushable
@@ -58,6 +60,12 @@ public class ObjectStreamWriter implements Closeable, Flushable
       //TODO: for now it doesn't allow arrays
       writeOverhead(data);
       if (data == null) return;
+
+      if (ClassUtil.isBoxedPrimitive(data.getClass()))
+      {
+         writePrimitive(data);
+         return;
+      }
       if (data.getClass().isAnnotationPresent(GenerateId.class))
       {
          if (registry.getId(data) != null)
@@ -70,7 +78,6 @@ public class ObjectStreamWriter implements Closeable, Flushable
          registry.registerObject(data);
          registry.writeId(data, this);
       }
-      else if (tryWritePrimitive(data)) return;
 
       if (data instanceof String)
       {
@@ -126,74 +133,57 @@ public class ObjectStreamWriter implements Closeable, Flushable
       return byteStream.toByteArray();
    }
 
-   /**
-    * @return true if data was written (which means data was primitive)
-    */
-   private boolean tryWritePrimitive(final Object data)
+   private void writePrimitive(final Object data)
    {
-      //data.getClass().isPrimitive() is useless because data can only be a box
-      if (data instanceof Byte)
-      {
-         writeBytes((byte) data, 1);
-         return true;
-      }
-      if (data instanceof Short)
-      {
-         writeBytes((short) data, 2);
-         return true;
-      }
-      if (data instanceof Integer)
-      {
-         writeBytes((int) data, 4);
-         return true;
-      }
-      if (data instanceof Long)
-      {
-         writeBytes((long) data, 8);
-         return true;
-      }
-      if (data instanceof Float)
+      if (data instanceof Byte) writeBytes((byte) data, 1);
+      else if (data instanceof Short) writeBytes((short) data, 2);
+      else if (data instanceof Integer) writeBytes((int) data, 4);
+      else if (data instanceof Long) writeBytes((long) data, 8);
+      else if (data instanceof Float)
       {
          final int castedData = Float.floatToIntBits((float) data);
          //intentionally normalizes NaN
          writeBytes(castedData, 4);
-         return true;
       }
-      if (data instanceof Double)
+      else if (data instanceof Double)
       {
          long castedData = Double.doubleToLongBits((double) data);
          //intentionally normalizes NaN
          writeBytes(castedData, 8);
-         return true;
       }
-      if (data instanceof Boolean)
+      else if (data instanceof Boolean)
       {
          if ((boolean) data) writeBytes(1, 1);  //write true
          else writeBytes(0, 1);
-         return true;
       }
-      if (data instanceof Character)
-      {
-         writeBytes((char) data, 2);
-         return true;
-      }
-
-      return false;
+      else if (data instanceof Character) writeBytes((char) data, 2);
+      else throw new AssertionError("Method shouldn't've been called");
    }
 
    private void writeOverhead(final Object data)
    {
-      if (data != null)
+      if (data != null && ClassUtil.isBoxedPrimitive(data.getClass()))
+      {
+         final Class<?> primitiveClass = ClassUtil.unboxClass(data.getClass());
+         final String primitiveArrayName = Array.newInstance(primitiveClass, 0).getClass().getName();
+         writeBytes('&', 1);
+         writeBytes(primitiveArrayName.charAt(1), 1);  //charAt(1) is to exclude '['
+      }
+      else if (data != null && data instanceof String)  //!= null is redundant but more clear
+      {
+         writeBytes('&', 1);
+         writeBytes('T', 1);
+      }
+      else if (data != null)
       {
          final String className = data.getClass().getName();
          //can't use recursion to write the string because that's endless and needs different format
          final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
          fileAppender.append(writeMe);
+         writeBytes('|', 1);
+         //instead of size then string have the string terminated by | since this saves 3 bytes and class names can't contain |
       }
-      writeBytes('|', 1);
-      //instead of size then string have the string terminated by | since this saves 3 bytes and class names can't contain |
-      //if data is null then class name will be the empty string
-      //TODO: better compression: &Z see Class.getName
+      else writeBytes('|', 1);  //if data is null then class name is the empty string
    }
 
    public void writeFieldsReflectively(final Object data)

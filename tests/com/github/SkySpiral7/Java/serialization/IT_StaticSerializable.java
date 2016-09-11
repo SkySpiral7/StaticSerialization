@@ -21,7 +21,7 @@ public class IT_StaticSerializable
    {
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.header_notNull.", ".txt");
       tempFile.deleteOnExit();
-      final String data = "\u221E > \uD83D\uDE22";  //BMP (infinity), ascii, non-BMP (Crying Face)
+      final String data = "data value";
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       writer.writeObject(data);
@@ -49,6 +49,7 @@ public class IT_StaticSerializable
    @Test
    public void primitive() throws IOException
    {
+      //This test case exists because primitives have a special format
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.primitive.", ".txt");
       tempFile.deleteOnExit();
       final byte data = (byte) 2;
@@ -58,6 +59,22 @@ public class IT_StaticSerializable
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       assertEquals(Byte.valueOf(data), reader.readObject(byte.class));
+      reader.close();
+   }
+
+   @Test
+   public void string() throws IOException
+   {
+      //This test case exists because Strings have a special format
+      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.string.", ".txt");
+      tempFile.deleteOnExit();
+      final String data = "\u221E > \uD83D\uDE22";  //BMP (infinity), ascii, non-BMP (Crying Face)
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertEquals(data, reader.readObject(String.class));
       reader.close();
    }
 
