@@ -2,7 +2,10 @@ package com.github.SkySpiral7.Java.pojo;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -129,8 +132,20 @@ maxFinds = maxDepth = -1;</pre></code>
       remaining.add(rootFolder);
       while (!remaining.isEmpty())
       {
-         File thisFile = remaining.pollLast();
+         final File thisFile = remaining.pollLast();
          if (maxDepth != -1 && maxDepth < Paths.get(thisFile.getAbsolutePath()).getNameCount()) continue;
+         try
+         {
+            if (thisFile.isDirectory()) Files.newDirectoryStream(thisFile.toPath());
+         }
+         catch (final AccessDeniedException e)
+         {
+            continue;  //ignore the directory
+         }
+         catch (final IOException e)
+         {
+            throw new RuntimeException(e);
+         }
          if (thisFile.isDirectory() && subFolderCriteria.accept(thisFile)) remaining.addAll(Arrays.asList(thisFile.listFiles()));
 
          if (!thisFile.isDirectory() && findFiles && fileCriteria.accept(thisFile)) result.add(thisFile);
@@ -139,7 +154,7 @@ maxFinds = maxDepth = -1;</pre></code>
          if (maxFinds == result.size()) break;
       }
 
-      Collections.sort(result);  //so that the folders will have some kind of order (in this case full path alphabetical ascending)
+      Collections.sort(result);  //so that the results will have some kind of order (in this case full path alphabetical ascending)
       return result;
    }
 

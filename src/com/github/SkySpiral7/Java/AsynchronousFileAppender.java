@@ -60,7 +60,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
       {
          try
          {
-            Thread.sleep(100);
+            Thread.sleep(10);
          }
          catch (final InterruptedException e)
          {
@@ -131,10 +131,17 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
       if (!amOpen) throw new ClosedResourceException("Can't write to a closed stream");
       //otherwise it would get put in a queue that would never be emptied
 
-      for (int i = 0; i < newContents.length; i++)
+      try
       {
-         //not sure if this is better than converting to Byte[] then addAll
-         writer.queue.add(newContents[i]);
+         for (int i = 0; i < newContents.length; i++)
+         {
+            //not sure if this is better than converting to Byte[] then addAll
+            writer.queue.put(newContents[i]);
+         }
+      }
+      catch (InterruptedException e)
+      {
+         throw new RuntimeException(e);
       }
    }
 
@@ -145,7 +152,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
        * I don't know enough about concurrency to make a simple disruptor.
        * And the fact that each queue entry holds 1 byte makes me think I could be doing this better.
        */
-      public final ArrayBlockingQueue<Byte> queue = new ArrayBlockingQueue<>(10240);
+      public final ArrayBlockingQueue<Byte> queue = new ArrayBlockingQueue<>(1024000);
       /**
        * I'm using Object.wait ect because I don't know how to use java.util.concurrent.locks.Lock
        */
@@ -166,7 +173,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
             try
             {
                //the timeout exists (instead of take) so that shouldWrite can be examined again
-               final Byte data = queue.poll(100, TimeUnit.MILLISECONDS);
+               final Byte data = queue.poll(10, TimeUnit.MILLISECONDS);
                if (data != null)
                {
                   //since primitive bytes were added, this can only be null if there was a timeout

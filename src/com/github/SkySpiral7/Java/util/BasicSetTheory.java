@@ -61,8 +61,8 @@ public abstract class BasicSetTheory
    {
       if (left == null) throw new IllegalArgumentException("Parameter left can't be null.");
       if (right == null) throw new IllegalArgumentException("Parameter right can't be null.");
-      Set<E> intersection = new HashSet<E>(left);
-      intersection.retainAll(new HashSet<E>(right));
+      Set<E> intersection = new HashSet<>(left);
+      intersection.retainAll(new HashSet<>(right));
       return intersection;
    }
 
@@ -119,7 +119,7 @@ public abstract class BasicSetTheory
    {
       if (left == null) throw new IllegalArgumentException("Parameter left can't be null.");
       if (right == null) throw new IllegalArgumentException("Parameter right can't be null.");
-      Set<E> result = new HashSet<E>(left);
+      Set<E> result = new HashSet<>(left);
       result.removeAll(right);
       return result;
    }

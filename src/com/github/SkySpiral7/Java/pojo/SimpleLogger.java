@@ -1,12 +1,8 @@
 package com.github.SkySpiral7.Java.pojo;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-
-import com.github.SkySpiral7.Java.util.FileIoUtil;
 
 /**
  * <p>This class is a very simple logger. It is useful for quick and dirty debugging.
@@ -18,28 +14,35 @@ import com.github.SkySpiral7.Java.util.FileIoUtil;
  *
  * <p>This class is final to make it perform faster. This class should not gain functionality
  * and should not be a method parameter or class field. This is because this class is intended for quick debugging
- * and should not be used in production (or other environments like QA) for that see a real logger like Log4J.</p>
+ * and should not be used in production (or other environments like QA) for that see a real logger like Log4J 2.</p>
+ *
+ * <p>Note that all exceptions thrown by this class are unchecked in order to simplify the intended use case.</p>
  */
-public final class SimpleLogger
+public final class SimpleLogger implements Closeable
 {
-   private final File log;
+   private final OutputStream writer;
 
    /**
-    * @param log
+    * @param file
     *       the File that will be written to (even if it does not exist).
     * @throws IllegalArgumentException
     *       if the File is a directory (which can't be written to)
+    * @throws RuntimeException
+    *       of FileNotFoundException from the constructor of FileOutputStream
+    * @see FileOutputStream#FileOutputStream(File, boolean)
     */
-   public SimpleLogger(File log)
+   public SimpleLogger(final File file)
    {
-      if (log.isDirectory()) throw new IllegalArgumentException("It is not possible to log to a directory");
-      this.log = log;
+      if (file.isDirectory()) throw new IllegalArgumentException("It is not possible to log to a directory");
+      try
+      {
+         writer = new BufferedOutputStream(new FileOutputStream(file, false));
+      }
+      catch (final FileNotFoundException e)
+      {
+         throw new RuntimeException(e);
+      }
    }
-
-   /**
-    * This is a standard getter for the file that was used to construct this object.
-    */
-   public File getFile() {return log;}
 
    /**
     * Append to the log. Note that an end line is not added.
@@ -47,10 +50,21 @@ public final class SimpleLogger
     *
     * @param text
     *       the text to be appended exactly as passed in
+    * @throws RuntimeException
+    *       of IOException from OutputStream.write
+    * @see OutputStream#write(byte[])
     */
-   public void append(String text)
+   public void append(final String text)
    {
-      FileIoUtil.appendToFile(log, text);
+      Objects.requireNonNull(text);
+      try
+      {
+         writer.write(text.getBytes(StandardCharsets.UTF_8));
+      }
+      catch (final IOException e)
+      {
+         throw new RuntimeException(e);
+      }
    }
 
    /**
@@ -59,36 +73,32 @@ public final class SimpleLogger
     *
     * @param line
     *       the text to be appended followed by a system end line
+    * @throws RuntimeException
+    *       of IOException from OutputStream.write
+    * @see OutputStream#write(byte[])
     */
-   public void appendLine(String line)
+   public void appendLine(final String line)
    {
       Objects.requireNonNull(line);
       this.append(line + System.lineSeparator());
    }
 
    /**
-    * Clear the log. The file contents become empty.
-    * The log will be created if it does not exist.
+    * @throws RuntimeException
+    *       of IOException from OutputStream.close
+    * @see OutputStream#close()
     */
-   public void clear()
-   {
-      FileIoUtil.writeToFile(log, "");
-   }
-
-   /**
-    * Delete the log on disk. Note that it will be recreated if you call append or clear.
-    * Nio Files.delete is used to delete the file because according to the Javadoc the error messages
-    * are more specific than the ones for getFile().delete.
-    *
-    * @see #clear()
-    */
-   public void delete()
+   @Override
+   public void close()
    {
       try
       {
-         Files.delete(Paths.get(log.getAbsolutePath()));
+         writer.close();
       }
-      catch (IOException e) {throw new RuntimeException(e);}
+      catch (final IOException e)
+      {
+         throw new RuntimeException(e);
+      }
    }
 
 }
