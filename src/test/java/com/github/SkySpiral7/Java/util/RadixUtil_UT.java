@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class UT_RadixUtil
+public class RadixUtil_UT
 {
 
    @Test

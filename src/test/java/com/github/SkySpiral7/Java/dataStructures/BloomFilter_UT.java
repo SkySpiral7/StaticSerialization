@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public final class UT_BloomFilter
+public final class BloomFilter_UT
 {
 
    @Test

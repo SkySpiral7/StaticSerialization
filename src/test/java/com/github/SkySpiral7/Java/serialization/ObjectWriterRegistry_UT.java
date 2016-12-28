@@ -13,7 +13,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
-public class UT_ObjectWriterRegistry
+public class ObjectWriterRegistry_UT
 {
    private ObjectWriterRegistry testObject;
 
@@ -68,7 +68,7 @@ public class UT_ObjectWriterRegistry
    @Test(expected = NullPointerException.class)
    public void writeId_throwsNpe_givenNullInstance() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectWriterRegistry.TempFile.writeId_throwsNpe_givenNullInstance.", ".txt");
+      final File tempFile = File.createTempFile("ObjectWriterRegistry_UT.TempFile.writeId_throwsNpe_givenNullInstance.", ".txt");
       tempFile.deleteOnExit();
       testObject.writeId(null, new ObjectStreamWriter(tempFile));
    }
@@ -82,7 +82,7 @@ public class UT_ObjectWriterRegistry
    @Test
    public void writeId_writesId_whenIdExists() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectWriterRegistry.TempFile.writeId_writesId_whenIdExists.", ".txt");
+      final File tempFile = File.createTempFile("ObjectWriterRegistry_UT.TempFile.writeId_writesId_whenIdExists.", ".txt");
       tempFile.deleteOnExit();
       final String id = "f";
       final Object instance = new Object();
@@ -103,7 +103,7 @@ public class UT_ObjectWriterRegistry
    @Test(expected = NullPointerException.class)
    public void writeId_throwsNpe_whenIdNotFound() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectWriterRegistry.TempFile.writeId_throwsNpe_whenIdNotFound.", ".txt");
+      final File tempFile = File.createTempFile("ObjectWriterRegistry_UT.TempFile.writeId_throwsNpe_whenIdNotFound.", ".txt");
       tempFile.deleteOnExit();
       testObject.writeId(new Object(), new ObjectStreamWriter(tempFile));
    }

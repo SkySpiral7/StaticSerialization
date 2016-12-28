@@ -11,7 +11,7 @@ import org.junit.Test;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class UT_SerializationUtil
+public class SerializationUtil_UT
 {
 
    private static class Class_getAllSerializableFields

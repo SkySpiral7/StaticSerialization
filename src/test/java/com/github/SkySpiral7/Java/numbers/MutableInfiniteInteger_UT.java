@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
  * the other versions of equals, hashCode, copy, toFile (but toString should be tested when finished),
  * calculateMaxBigInteger (too slow), calculateGoogolplex (lol slow and nothing to test)
  */
-public class UT_MutableInfiniteInteger
+public class MutableInfiniteInteger_UT
 {
    private MutableInfiniteInteger infiniteInteger;
    //TODO: make tests to ensure that this is mutated but not param

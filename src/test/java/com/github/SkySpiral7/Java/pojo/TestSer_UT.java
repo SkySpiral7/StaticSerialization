@@ -13,7 +13,7 @@ import org.junit.Test;
 import static com.github.SkySpiral7.Java.pojo.DeepSerializableMatcher.isDeeplySerializable;
 import static org.junit.Assert.assertThat;
 
-public class UT_TestSer
+public class TestSer_UT
 {
 
    @Test

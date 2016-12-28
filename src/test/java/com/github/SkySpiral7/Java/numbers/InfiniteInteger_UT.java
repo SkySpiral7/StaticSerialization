@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
  * getMagnitudeTail, selfPower, factorial, abs, negate, signum, isNaN, isInfinite, isFinite, signalNaN,
  * the other versions of equals, hashCode, toFile (and not toString because it delegates)
  */
-public class UT_InfiniteInteger
+public class InfiniteInteger_UT
 {
    private InfiniteInteger infiniteInteger;
    //TODO: make test to ensure nothing is mutated

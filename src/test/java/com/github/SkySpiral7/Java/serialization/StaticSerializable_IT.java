@@ -13,12 +13,12 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-public class IT_StaticSerializable
+public class StaticSerializable_IT
 {
    @Test
    public void header_notNull() throws Exception
    {
-      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.header_notNull.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.header_notNull.", ".txt");
       tempFile.deleteOnExit();
       final String data = "data value";
 
@@ -34,7 +34,7 @@ public class IT_StaticSerializable
    @Test
    public void header_null() throws Exception
    {
-      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.header_null.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.header_null.", ".txt");
       tempFile.deleteOnExit();
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
@@ -49,7 +49,7 @@ public class IT_StaticSerializable
    public void primitive() throws Exception
    {
       //This test case exists because primitives have a special format
-      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.primitive.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive.", ".txt");
       tempFile.deleteOnExit();
       final byte data = (byte) 2;
 
@@ -65,7 +65,7 @@ public class IT_StaticSerializable
    public void string() throws Exception
    {
       //This test case exists because Strings have a special format
-      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.string.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.string.", ".txt");
       tempFile.deleteOnExit();
       final String data = "\u221E > \uD83D\uDE22";  //BMP (infinity), ascii, non-BMP (Crying Face)
 
@@ -80,7 +80,7 @@ public class IT_StaticSerializable
    @Test
    public void custom() throws Exception
    {
-      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.custom.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.custom.", ".txt");
       tempFile.deleteOnExit();
       final SimpleHappy data = new SimpleHappy(4);
 
@@ -103,7 +103,7 @@ public class IT_StaticSerializable
    @Test
    public void enumByName() throws Exception
    {
-      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.enumByName.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.enumByName.", ".txt");
       tempFile.deleteOnExit();
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
@@ -123,7 +123,7 @@ public class IT_StaticSerializable
    @Test
    public void enumByOrdinal() throws Exception
    {
-      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.enumByOrdinal.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.enumByOrdinal.", ".txt");
       tempFile.deleteOnExit();
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
@@ -138,7 +138,7 @@ public class IT_StaticSerializable
    @Test
    public void getObjectRegistry() throws Exception
    {
-      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.getObjectRegistry.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.getObjectRegistry.", ".txt");
       tempFile.deleteOnExit();
       final RootedGraph graph;
       final Node root = new Node("Alice");
@@ -192,7 +192,7 @@ public class IT_StaticSerializable
    @Test
    public void reflection() throws Exception
    {
-      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.reflection.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.reflection.", ".txt");
       tempFile.deleteOnExit();
       final ReflectiveClass data = new ReflectiveClass();
       data.field = 0x0afe_babe;
@@ -211,7 +211,7 @@ public class IT_StaticSerializable
    @Test
    public void serializable() throws Exception
    {
-      final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.serializable.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.serializable.", ".txt");
       tempFile.deleteOnExit();
       final BigInteger data = BigInteger.TEN;
 

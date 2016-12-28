@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class UT_ObjectStreamWriter
+public class ObjectStreamWriter_UT
 {
    @Test
    public void constructor_throws()
@@ -34,7 +34,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void constructor_clears() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.constructor_clears.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.constructor_clears.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "test");
       new ObjectStreamWriter(tempFile).close();
@@ -44,7 +44,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_overHead() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_overHead.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_overHead.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -63,7 +63,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_overHead_null() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_overHead_null.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_overHead_null.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -77,7 +77,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_stops_GenerateId() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_stops_GenerateId.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_stops_GenerateId.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -95,7 +95,7 @@ public class UT_ObjectStreamWriter
       final byte[] expected = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
             (byte) 0x66};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1LocalWithGenerateId|&T";
+      final String overhead = "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$1LocalWithGenerateId|&T";
       assertEquals(overhead, bytesToString(fileContents, expected.length));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
    }
@@ -103,7 +103,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_continues_GenerateId() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_continues_GenerateId.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_continues_GenerateId.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -121,7 +121,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(data);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1LocalWithGenerateIdAndWrite|&T";
+      final String overhead = "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$1LocalWithGenerateIdAndWrite|&T";
       int offset = 0;
       assertEquals(overhead, bytesToString(subArrayWithLength(fileContents, offset, overhead.length()), 0));
       offset += overhead.length();
@@ -135,7 +135,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_byte() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_byte.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_byte.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Byte data = (byte) 2;
@@ -150,7 +150,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_short() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_short.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_short.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Short data = (short) 0xcafe;
@@ -166,7 +166,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_int() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_int.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_int.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Integer data = 0xcafe_bead;
@@ -182,7 +182,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_long() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_long.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_long.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Long data = 0xdead_beef__b100_d123L;
@@ -199,7 +199,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_float() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_float.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_float.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Float data = Float.intBitsToFloat(0xcafe_bead);
@@ -215,7 +215,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_double() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_double.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_double.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Double data = Double.longBitsToDouble(0xdead_beef__b100_d123L);
@@ -232,7 +232,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_boolean() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_boolean.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_boolean.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -254,7 +254,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_char() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_char.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_char.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -276,7 +276,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_String() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_String.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_String.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -297,14 +297,14 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_enumByName() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_enumByName.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_enumByName.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
       testObject.writeObject(EnumByName.One);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$EnumByName|&T";
+      final String overhead = "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$EnumByName|&T";
       final byte[] data = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03,  //UTF-8 length (int)
             (byte) 79, (byte) 110, (byte) 101};  //"One"
       assertEquals(overhead, bytesToString(fileContents, data.length));
@@ -314,7 +314,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_enumByName_notEnum() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_enumByName_notEnum.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_enumByName_notEnum.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -329,7 +329,7 @@ public class UT_ObjectStreamWriter
       catch (final ClassCastException actual)
       {
          assertEquals(
-               "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1NotEnum cannot be cast to java.lang.Enum",
+               "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$1NotEnum cannot be cast to java.lang.Enum",
                actual.getMessage());
       }
 
@@ -344,14 +344,14 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_enumByOrdinal() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_enumByOrdinal.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_enumByOrdinal.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
       testObject.writeObject(EnumByOrdinal.Four);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$EnumByOrdinal|&I";
+      final String overhead = "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$EnumByOrdinal|&I";
       final byte[] data = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
       assertEquals(overhead, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
@@ -360,7 +360,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_enumByOrdinal_notEnum() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_enumByOrdinal_notEnum.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_enumByOrdinal_notEnum.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -375,7 +375,7 @@ public class UT_ObjectStreamWriter
       catch (final ClassCastException actual)
       {
          assertEquals(
-               "com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$2NotEnum cannot be cast to java.lang.Enum",
+               "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$2NotEnum cannot be cast to java.lang.Enum",
                actual.getMessage());
       }
 
@@ -398,7 +398,7 @@ public class UT_ObjectStreamWriter
          }
       }
 
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_custom.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_custom.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final CustomLocal data = new CustomLocal();
@@ -411,7 +411,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_Serializable() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_Serializable.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_Serializable.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -433,7 +433,7 @@ public class UT_ObjectStreamWriter
    @Test
    public void writeObject_throw_unknownClass() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeObject_throw_unknownClass.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_throw_unknownClass.", ".txt");
       tempFile.deleteOnExit();
 
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
@@ -466,7 +466,7 @@ public class UT_ObjectStreamWriter
          }
       }
 
-      final File tempFile = File.createTempFile("UT_ObjectStreamWriter.TempFile.writeFieldsReflectively.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeFieldsReflectively.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final byte[] expected = {(byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad};
@@ -474,7 +474,7 @@ public class UT_ObjectStreamWriter
       testObject.writeObject(new ReflectiveLocal());
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("com.github.SkySpiral7.Java.serialization.UT_ObjectStreamWriter$1ReflectiveLocal|&I", bytesToString(fileContents, 4));
+      assertEquals("com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$1ReflectiveLocal|&I", bytesToString(fileContents, 4));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
    }
 

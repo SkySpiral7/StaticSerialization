@@ -9,13 +9,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class UT_AsynchronousFileAppender
+public class AsynchronousFileAppender_UT
 {
 
    @Test
    public void writesToFile() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_AsynchronousFileAppender.TempFile.writesToFile.", ".txt");
+      final File tempFile = File.createTempFile("AsynchronousFileAppender_UT.TempFile.writesToFile.", ".txt");
       tempFile.deleteOnExit();
       final AsynchronousFileAppender testObject = new AsynchronousFileAppender(tempFile);
 
@@ -31,7 +31,7 @@ public class UT_AsynchronousFileAppender
    @Test
    public void closeTwiceDoesNothing() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_AsynchronousFileAppender.TempFile.closeTwiceDoesNothing.", ".txt");
+      final File tempFile = File.createTempFile("AsynchronousFileAppender_UT.TempFile.closeTwiceDoesNothing.", ".txt");
       tempFile.deleteOnExit();
       final AsynchronousFileAppender testObject = new AsynchronousFileAppender(tempFile);
       testObject.close();
@@ -41,7 +41,7 @@ public class UT_AsynchronousFileAppender
    @Test
    public void appendAfterCloseThrows() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_AsynchronousFileAppender.TempFile.appendAfterCloseThrows.", ".txt");
+      final File tempFile = File.createTempFile("AsynchronousFileAppender_UT.TempFile.appendAfterCloseThrows.", ".txt");
       tempFile.deleteOnExit();
       final AsynchronousFileAppender testObject = new AsynchronousFileAppender(tempFile);
       testObject.close();

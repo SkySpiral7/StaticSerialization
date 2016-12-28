@@ -10,13 +10,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class UT_AsynchronousFileReader
+public class AsynchronousFileReader_UT
 {
 
    @Test
    public void readsFromFile() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_AsynchronousFileReader.TempFile.readsFromFile.", ".txt");
+      final File tempFile = File.createTempFile("AsynchronousFileReader_UT.TempFile.readsFromFile.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "hi");
       final AsynchronousFileReader testObject = new AsynchronousFileReader(tempFile);
@@ -31,7 +31,7 @@ public class UT_AsynchronousFileReader
    @Test
    public void closeTwiceDoesNothing() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_AsynchronousFileReader.TempFile.closeTwiceDoesNothing.", ".txt");
+      final File tempFile = File.createTempFile("AsynchronousFileReader_UT.TempFile.closeTwiceDoesNothing.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "hi");  //make sure it ignores remaining data
       final AsynchronousFileReader testObject = new AsynchronousFileReader(tempFile);
@@ -42,7 +42,7 @@ public class UT_AsynchronousFileReader
    @Test
    public void readAfterCloseThrows() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_AsynchronousFileReader.TempFile.readAfterCloseThrows.", ".txt");
+      final File tempFile = File.createTempFile("AsynchronousFileReader_UT.TempFile.readAfterCloseThrows.", ".txt");
       tempFile.deleteOnExit();
       final AsynchronousFileReader testObject = new AsynchronousFileReader(tempFile);
       testObject.close();
@@ -59,7 +59,7 @@ public class UT_AsynchronousFileReader
    @Test
    public void readEndOfFileThrows() throws IOException
    {
-      final File tempFile = File.createTempFile("UT_AsynchronousFileReader.TempFile.readEndOfFileThrows.", ".txt");
+      final File tempFile = File.createTempFile("AsynchronousFileReader_UT.TempFile.readEndOfFileThrows.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "hi");
       final AsynchronousFileReader testObject = new AsynchronousFileReader(tempFile);

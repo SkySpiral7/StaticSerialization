@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-public class UT_ObjectReaderRegistry
+public class ObjectReaderRegistry_UT
 {
    private ObjectReaderRegistry testObject;
 
@@ -67,7 +67,7 @@ public class UT_ObjectReaderRegistry
    public void readObjectOrId_returnsSame_whenIdFound() throws IOException
    {
       final String id = UUID.randomUUID().toString();
-      final File tempFile = writeIdToFile("UT_ObjectReaderRegistry.TempFile.readObjectOrId_returnsSame_whenIdFound.", id);
+      final File tempFile = writeIdToFile("ObjectReaderRegistry_UT.TempFile.readObjectOrId_returnsSame_whenIdFound.", id);
 
       final Object data = new Object();
       testObject.registerObject(id, data);
@@ -81,7 +81,7 @@ public class UT_ObjectReaderRegistry
    @Test
    public void readObjectOrId_returnsNull_whenIdNotFound() throws IOException
    {
-      final File tempFile = writeIdToFile("UT_ObjectReaderRegistry.TempFile.readObjectOrId_returnsNull_whenIdNotFound.", UUID.randomUUID().toString());
+      final File tempFile = writeIdToFile("ObjectReaderRegistry_UT.TempFile.readObjectOrId_returnsNull_whenIdNotFound.", UUID.randomUUID().toString());
 
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       assertNull(testObject.readObjectOrId(reader));
@@ -99,7 +99,7 @@ public class UT_ObjectReaderRegistry
    public void claimId_registersObject_whenIdExists() throws IOException
    {
       final String id = UUID.randomUUID().toString();
-      final File tempFile = writeIdToFile("UT_ObjectReaderRegistry.TempFile.claimId_registersObject_whenIdExists.", id);
+      final File tempFile = writeIdToFile("ObjectReaderRegistry_UT.TempFile.claimId_registersObject_whenIdExists.", id);
 
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       testObject.readObjectOrId(reader);

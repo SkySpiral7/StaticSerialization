@@ -15,7 +15,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class UT_ClassUtil
+public class ClassUtil_UT
 {
    @Test
    public <T extends Enum<T>> void cast_compiles()
@@ -43,7 +43,7 @@ public class UT_ClassUtil
          @SuppressWarnings("unused")
          public int fieldB = 2;
       }
-      //by virtue of being non-static these local classes contain a generated field (this$0) which references UT_ClassUtil
+      //by virtue of being non-static these local classes contain a generated field (this$0) which references ClassUtil_UT
 
       final List<Field> expected = new ArrayList<>();
       expected.add(ClassB.class.getField("fieldB"));

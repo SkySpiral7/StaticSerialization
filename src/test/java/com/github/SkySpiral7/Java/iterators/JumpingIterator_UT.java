@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Don't bother testing the interface default since they all delegate to the static methods.
  */
-public class UT_JumpingIterator
+public class JumpingIterator_UT
 {
    private LinkedList<Integer> linkedList;
 

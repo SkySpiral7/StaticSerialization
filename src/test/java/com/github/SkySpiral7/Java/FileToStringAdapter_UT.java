@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @Ignore
-public class UT_FileToStringAdapter
+public class FileToStringAdapter_UT
 {
    private String projectPath = "tests/";
    //projectPath can be "" (same as "./") or any relative or absolute path. It is only used for the 2 constructors
@@ -57,7 +57,7 @@ public class UT_FileToStringAdapter
       }
       catch (IllegalStateException e) {assertEquals("Operation is not supported for folders because they do not have contents.", e.getMessage());}
 
-      noContentFile = new FileToStringAdapter("UT_FileToStringAdapter temporary non existent file: ?<>~!@#$%^&*()_+=`\"';,.[]{}");
+      noContentFile = new FileToStringAdapter("FileToStringAdapter_UT temporary non existent file: ?<>~!@#$%^&*()_+=`\"';,.[]{}");
       //I hope this file doesn't exist but just to be sure I'll find one that doesn't:
       while (noContentFile.exists()) {noContentFile = new FileToStringAdapter(noContentFile.getAbsolutePath() + "_");}
       try
