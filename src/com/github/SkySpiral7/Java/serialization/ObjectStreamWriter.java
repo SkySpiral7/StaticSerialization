@@ -190,18 +190,18 @@ public class ObjectStreamWriter implements Closeable, Flushable
    {
       final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(data.getClass());
       allSerializableFields.forEach(field ->
-                                    {
-                                       field.setAccessible(true);
-                                       try
-                                       {
-                                          this.writeObject(field.get(data));
-                                       }
-                                       catch (final IllegalAccessException e)
-                                       {
-                                          throw new AssertionError("This can't be thrown.", e);
-                                          //since I would've gotten SecurityException from setAccessible(true)
-                                       }
-                                    });
+      {
+         field.setAccessible(true);
+         try
+         {
+            this.writeObject(field.get(data));
+         }
+         catch (final IllegalAccessException e)
+         {
+            throw new AssertionError("This can't be thrown.", e);
+            //since I would've gotten SecurityException from setAccessible(true)
+         }
+      });
    }
 
    public ObjectWriterRegistry getObjectRegistry()

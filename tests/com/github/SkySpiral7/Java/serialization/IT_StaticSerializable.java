@@ -1,7 +1,6 @@
 package com.github.SkySpiral7.Java.serialization;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigInteger;
 
 import com.github.SkySpiral7.Java.serialization.testClasses.RootedGraph;
@@ -17,7 +16,7 @@ import static org.junit.Assert.assertSame;
 public class IT_StaticSerializable
 {
    @Test
-   public void header_notNull() throws IOException
+   public void header_notNull() throws Exception
    {
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.header_notNull.", ".txt");
       tempFile.deleteOnExit();
@@ -33,7 +32,7 @@ public class IT_StaticSerializable
    }
 
    @Test
-   public void header_null() throws IOException
+   public void header_null() throws Exception
    {
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.header_null.", ".txt");
       tempFile.deleteOnExit();
@@ -47,7 +46,7 @@ public class IT_StaticSerializable
    }
 
    @Test
-   public void primitive() throws IOException
+   public void primitive() throws Exception
    {
       //This test case exists because primitives have a special format
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.primitive.", ".txt");
@@ -63,7 +62,7 @@ public class IT_StaticSerializable
    }
 
    @Test
-   public void string() throws IOException
+   public void string() throws Exception
    {
       //This test case exists because Strings have a special format
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.string.", ".txt");
@@ -79,7 +78,7 @@ public class IT_StaticSerializable
    }
 
    @Test
-   public void custom() throws IOException
+   public void custom() throws Exception
    {
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.custom.", ".txt");
       tempFile.deleteOnExit();
@@ -102,7 +101,7 @@ public class IT_StaticSerializable
    }
 
    @Test
-   public void enumByName() throws IOException
+   public void enumByName() throws Exception
    {
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.enumByName.", ".txt");
       tempFile.deleteOnExit();
@@ -122,7 +121,7 @@ public class IT_StaticSerializable
    }
 
    @Test
-   public void enumByOrdinal() throws IOException
+   public void enumByOrdinal() throws Exception
    {
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.enumByOrdinal.", ".txt");
       tempFile.deleteOnExit();
@@ -137,7 +136,7 @@ public class IT_StaticSerializable
    }
 
    @Test
-   public void getObjectRegistry() throws IOException
+   public void getObjectRegistry() throws Exception
    {
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.getObjectRegistry.", ".txt");
       tempFile.deleteOnExit();
@@ -191,7 +190,7 @@ public class IT_StaticSerializable
    }
 
    @Test
-   public void reflection() throws IOException
+   public void reflection() throws Exception
    {
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.reflection.", ".txt");
       tempFile.deleteOnExit();
@@ -210,7 +209,7 @@ public class IT_StaticSerializable
    }
 
    @Test
-   public void serializable() throws IOException
+   public void serializable() throws Exception
    {
       final File tempFile = File.createTempFile("IT_StaticSerializable.TempFile.serializable.", ".txt");
       tempFile.deleteOnExit();

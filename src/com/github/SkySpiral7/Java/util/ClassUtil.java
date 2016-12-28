@@ -43,7 +43,7 @@ public enum ClassUtil
     * @return a List of every possible Field that can be used by any object of the given anyClass
     * except generated ones
     */
-   public static List<Field> getAllFields(final Class<?> anyClass)
+   public static List<Field> getAllFields(final Class<?> anyClass)  //TODO: either include interface fields or exclude static
    {
       final List<Class<?>> allClasses = new ArrayList<>();
       Class<?> cursor = anyClass;
@@ -56,10 +56,10 @@ public enum ClassUtil
       final List<Field> result = new ArrayList<>();
       allClasses.forEach(clazz -> result.addAll(Arrays.asList(clazz.getDeclaredFields())));
       return result.stream().filter(field ->
-                                    {
-                                       //exclude generated fields
-                                       return !field.getName().contains("$");
-                                    }).collect(Collectors.toList());
+      {
+         //exclude generated fields
+         return !field.getName().contains("$");
+      }).collect(Collectors.toList());
    }
 
    /**
@@ -70,7 +70,7 @@ public enum ClassUtil
    public static boolean isBoxedPrimitive(final Class<?> classInQuestion)
    {
       return Arrays.asList(Byte.class, Short.class, Integer.class, Long.class,  //integers
-                           Float.class, Double.class, Boolean.class, Character.class).contains(classInQuestion);
+            Float.class, Double.class, Boolean.class, Character.class).contains(classInQuestion);
    }
 
    /**

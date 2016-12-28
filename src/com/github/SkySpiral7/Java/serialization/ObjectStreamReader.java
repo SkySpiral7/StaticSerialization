@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Objects;
 
 import com.github.SkySpiral7.Java.AsynchronousFileReader;
+import com.github.SkySpiral7.Java.exception.*;
 import com.github.SkySpiral7.Java.exception.InvalidClassException;
-import com.github.SkySpiral7.Java.exception.NoMoreDataException;
 import com.github.SkySpiral7.Java.exception.NotSerializableException;
 import com.github.SkySpiral7.Java.exception.StreamCorruptedException;
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
@@ -57,6 +57,13 @@ public class ObjectStreamReader implements Closeable
       return readObject(Object.class);
    }
 
+   /* TODO: unfinished doc
+    * @throws ClassNotFoundException
+    *       if the class indicated by the stream doesn't exist
+    * @throws IOException
+    *       only thrown when Java's deserialization is used and "Any of the usual Input/Output related exceptions." occurs.
+    * @see ObjectInputStream#readObject()
+    */
    @SuppressWarnings("unchecked")
    public <T> T readObject(Class<T> expectedClass)
    {
@@ -112,9 +119,13 @@ public class ObjectStreamReader implements Closeable
       {
          return ClassUtil.cast(in.readObject());
       }
-      catch (final ClassNotFoundException | IOException ex)
+      catch (final ObjectStreamException ex)
       {
          throw new StreamCorruptedException(ex);
+      }
+      catch (final ClassNotFoundException | IOException e)
+      {
+         throw new DeserializationException(e);
       }
    }
 
@@ -125,7 +136,7 @@ public class ObjectStreamReader implements Closeable
       if ('&' == firstByte)
       {
          final char classCode = (char) fileReader.readBytes(1)[0];
-         if('T' == classCode) actualClassName = "java.lang.String";
+         if ('T' == classCode) actualClassName = "java.lang.String";
          else actualClassName = "[" + classCode;  //classCode needs to be decoded as an array by java
       }
       else
@@ -156,7 +167,7 @@ public class ObjectStreamReader implements Closeable
       }
       catch (final ClassNotFoundException e)
       {
-         throw new StreamCorruptedException(e);
+         throw new DeserializationException(e);
       }
    }
 
@@ -213,27 +224,7 @@ public class ObjectStreamReader implements Closeable
       if (!expectedClass.isEnum()) throw new InvalidClassException(expectedClass.getName() + " implements StaticSerializableEnumByOrdinal but isn't an enum");
 
       final int ordinal = readObject(int.class);
-      final Method method;
-      try
-      {
-         //public static Enum[] values()
-         method = expectedClass.getDeclaredMethod("values");
-      }
-      catch (final NoSuchMethodException e)
-      {
-         throw new AssertionError("This can't be thrown", e);  //since I already know it is an enum
-      }
-
-      final Enum<?>[] values;
-      try
-      {
-         values = Enum[].class.cast(method.invoke(null));
-      }
-      catch (final IllegalAccessException | InvocationTargetException | IllegalArgumentException e)
-      {
-         throw new AssertionError("This can't be thrown", e);
-         //since values is public static, doesn't throw, and I know I'm giving it the right args (none)
-      }
+      final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum
 
       if (values.length <= ordinal) throw new StreamCorruptedException(String.format(
             "%s[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
@@ -271,7 +262,7 @@ public class ObjectStreamReader implements Closeable
       }
       catch (final InvocationTargetException e)
       {
-         throw new RuntimeException("Couldn't deserialize", e);
+         throw new DeserializationException(e);
       }
    }
 
@@ -279,18 +270,18 @@ public class ObjectStreamReader implements Closeable
    {
       final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(instance.getClass());
       allSerializableFields.forEach(field ->
-                                    {
-                                       field.setAccessible(true);
-                                       try
-                                       {
-                                          field.set(instance, this.readObject());  //will auto-cast
-                                       }
-                                       catch (final IllegalAccessException e)
-                                       {
-                                          throw new AssertionError("This can't be thrown.", e);
-                                          //since I would've gotten SecurityException from setAccessible(true)
-                                       }
-                                    });
+      {
+         field.setAccessible(true);
+         try
+         {
+            field.set(instance, this.readObject());  //will auto-cast
+         }
+         catch (final IllegalAccessException e)
+         {
+            throw new AssertionError("This can't be thrown.", e);
+            //since I would've gotten SecurityException from setAccessible(true)
+         }
+      });
    }
 
    public ObjectReaderRegistry getObjectRegistry()
