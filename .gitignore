@@ -1,11 +1,3 @@
-bin/
-   # contains *.class
-
-# Eclipse
-.project
-.classpath
-.settings/
-
-# IntelliJ
+target/
 .idea/
 *.iml
