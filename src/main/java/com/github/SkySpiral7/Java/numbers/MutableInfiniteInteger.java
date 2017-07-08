@@ -40,17 +40,23 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
     * Common abbreviation for "not a number". This constant is the result of invalid math such as 0/0.
     * Note that this is a normal object such that <code>(InfiniteInteger.NaN == InfiniteInteger.NaN)</code> is
     * always true. Therefore it is logically correct unlike the floating point unit's NaN.
+    *
+    * This value is immutable.
     */
    //future results for NaN: x/0 (including 0), |inifn|/|inifn|, 0^0, 1^|inifn|, |inifn|^0
    public static final MutableInfiniteInteger NaN = new MutableInfiniteInteger(false);
    /**
     * +&infin; is a concept rather than a number and can't be the result of math involving finite numbers.
     * It is defined for completeness and behaves as expected with math resulting in &plusmn;&infin; or NaN.
+    *
+    * This value is immutable.
     */
    public static final MutableInfiniteInteger POSITIVE_INFINITITY = new MutableInfiniteInteger(true);
    /**
     * -&infin; is a concept rather than a number and can't be the result of math involving finite numbers.
     * It is defined for completeness and behaves as expected with math resulting in &plusmn;&infin; or NaN.
+    *
+    * This value is immutable.
     */
    public static final MutableInfiniteInteger NEGATIVE_INFINITITY = new MutableInfiniteInteger(false);
 
@@ -191,7 +197,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
     *       whether the resulting InfiniteInteger should be negative or not
     * @return a new InfiniteInteger representing the indicated number
     *
-    * @see #bigEndian(Iterator, boolean)
+    * @see #bigEndian(ListIterator, boolean)
     * @see #littleEndian(long[], boolean)
     * @see #littleEndian(Iterator, boolean)
     */
@@ -217,7 +223,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
     * @return a new InfiniteInteger representing the indicated number
     *
     * @see #littleEndian(long[], boolean)
-    * @see #bigEndian(Iterator, boolean)
+    * @see #bigEndian(ListIterator, boolean)
     */
    public static MutableInfiniteInteger littleEndian(Iterator<Long> valueIterator, boolean isNegative)
    {
@@ -308,7 +314,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
          remainingNodes = remainingNodes.subtract(1);
       }
       result = result.divideByPowerOf2DropRemainder(32);  //remove trailing 0 node
-      result.isNegative = random.nextBoolean();
+      if(!result.equals(0)) result.isNegative = random.nextBoolean();  //don't allow negative 0
       return result;
    }
 
@@ -1816,7 +1822,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
    public boolean isInfinite() {return (this == POSITIVE_INFINITITY || this == NEGATIVE_INFINITITY);}
 
    /**
-    * Compares this InfiniteInteger to &plusmn;&infin; and NaN (returns false of this is any of them).
+    * Compares this InfiniteInteger to &plusmn;&infin; and NaN (returns false if this is any of them).
     *
     * @return true if this InfiniteInteger is not a special value (ie if this is a finite number).
     *
@@ -1838,7 +1844,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
     * Returns {@code true} if <code>this.abs() == 2<sup>n</sup></code> where {@code n} is any finite non-negative integer.
     * The exception is that 0 ({@code n} is -&infin;) returns {@code true}.
     *
-    * @return {@code true} if this is a power of 2
+    * @return {@code true} if this is a power of 2 (including 0 and 1)
     *
     * @see #abs()
     */
@@ -2049,8 +2055,6 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
       if (this == NEGATIVE_INFINITITY) return "-Infinity";
       if (this == NaN) return "NaN";
       if (this.equals(0)) return "0";
-      String stringValue = "+ ";
-      if (isNegative) stringValue = "- ";
       //method stub
       //BigInteger > string max
       //BigInteger.toString(any) doesn't check range and will just crash
@@ -2058,8 +2062,13 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
       //instead of messing with all that I think I'll just return the base 10 string if possible or "> 2^max+" otherwise
       //unfortunately this stores in base 2 so I don't know how to display it in base 10
       //return "2^?";
+      return toDebuggingString();
+   }
 
-      //string for debugging:
+   private String toDebuggingString() {
+      String stringValue = "+ ";
+      if (isNegative) stringValue = "- ";
+
       StringBuilder stringBuilder = new StringBuilder(stringValue);
       for (DequeNode<Integer> cursor = magnitudeHead; cursor != null; cursor = cursor.getNext())
       {
@@ -2072,7 +2081,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
    @Override
    public void toFile(File writeToHere)
    {
-      // method stub it can always fit (assuming the JVM and OS had no max file size which they do)
+      // method stub. it can always fit into a file (assuming the JVM and OS had no max file size which they do)
    }
    //I could implement writeObject and readObject but the JVM default serialization works fine.
    //readObject is possible by putting a long for count of following nodes that exist and repeat
@@ -2106,7 +2115,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
    /**
     * Mutates this to have the same value as the parameter
     *
-    * @return itself
+    * @return the result which is itself or a defined singleton
     */
    public MutableInfiniteInteger set(long newValue)
    {
@@ -2116,7 +2125,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
    /**
     * Mutates this to have the same value as the parameter
     *
-    * @return itself
+    * @return the result which is itself or a defined singleton
     */
    public MutableInfiniteInteger set(BigInteger newValue)
    {
@@ -2128,7 +2137,7 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
     * In order to maintain the singleton constants mutation will not
     * occur is this or the parameter are a singleton constant.
     *
-    * @return itself or a defined singleton
+    * @return the result which is itself or a defined singleton
     */
    public MutableInfiniteInteger set(MutableInfiniteInteger newValue)
    {

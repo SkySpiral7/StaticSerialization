@@ -96,7 +96,7 @@ public class ObjectWriterRegistry_UT
       final byte[] expected = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
             (byte) 0x66};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("&T", bytesToString(fileContents, expected.length));
+      assertEquals("*", bytesToString(fileContents, expected.length));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
    }
 

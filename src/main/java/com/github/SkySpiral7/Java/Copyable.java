@@ -52,12 +52,12 @@ public interface Copyable<T>
     * </p>
     * <p>
     * The object returned by this method needs to be independent
-    * of this object (which is being copied).  To achieve this independence,
+    * of this object (which is being copied). To achieve this independence,
     * it may be necessary to modify one or more fields
     * before returning the copy. Typically, this means
     * copying any mutable objects that comprise the internal "deep structure"
     * of the object being copied and replacing the references to these
-    * objects with references to the copies.  If a class contains only
+    * objects with references to the copies. If a class contains only
     * primitive fields or references to immutable objects, then it is usually
     * the case that all fields may simply be assigned.
     * </p>

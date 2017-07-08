@@ -121,7 +121,7 @@ public final class RadixUtil
       if (value > Integer.MAX_VALUE) throw new IllegalArgumentException(value + " in base 1 would exceed max string length");
 
       //I'm not checking for array overhead such as -8 since it is implementation dependent
-      char[] ones = new char[(int) value];
+      final char[] ones = new char[(int) value];
       Arrays.fill(ones, '1');
       return (sign + String.valueOf(ones));
    }
