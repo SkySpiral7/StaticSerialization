@@ -89,13 +89,13 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
 
    protected MutableInfiniteInteger baseNumber;
 
-   protected InfiniteInteger(MutableInfiniteInteger baseNumber) {this.baseNumber = baseNumber;}
+   protected InfiniteInteger(MutableInfiniteInteger baseNumber){this.baseNumber = baseNumber;}
 
    /**
     * Converts a long value to an InfiniteInteger.
     *
-    * @param value
-    *       the desired numeric value
+    * @param value the desired numeric value
+    *
     * @return a new InfiniteInteger or a defined singleton
     */
    public static InfiniteInteger valueOf(long value)
@@ -107,8 +107,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * Converts a BigInteger value to an InfiniteInteger.
     * Conversion is O(n) and may be slow for large values of the parameter.
     *
-    * @param value
-    *       the desired numeric value
+    * @param value the desired numeric value
+    *
     * @return a new InfiniteInteger or a defined singleton
     */
    public static InfiniteInteger valueOf(BigInteger value)
@@ -121,8 +121,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * The value passed in is copied so that this InfiniteInteger won't be affected
     * by mutating the value.
     *
-    * @param value
-    *       the desired numeric value
+    * @param value the desired numeric value
+    *
     * @return a new InfiniteInteger or a defined singleton
     */
    public static InfiniteInteger valueOf(MutableInfiniteInteger value)
@@ -155,10 +155,9 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * The elements must be in little endian order. This method delegates to littleEndian(Iterator, boolean).
     * An empty array is considered 0.
     *
-    * @param valueArray
-    *       the unsigned elements in little endian order
-    * @param isNegative
-    *       whether the resulting InfiniteInteger should be negative or not
+    * @param valueArray the unsigned elements in little endian order
+    * @param isNegative whether the resulting InfiniteInteger should be negative or not
+    *
     * @return a new InfiniteInteger representing the indicated number
     *
     * @see #littleEndian(Iterator, boolean)
@@ -174,10 +173,9 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * The elements must be in big endian order. This method ultimately delegates to littleEndian(Iterator, boolean).
     * An empty array is considered 0.
     *
-    * @param valueArray
-    *       the unsigned elements in big endian order
-    * @param isNegative
-    *       whether the resulting InfiniteInteger should be negative or not
+    * @param valueArray the unsigned elements in big endian order
+    * @param isNegative whether the resulting InfiniteInteger should be negative or not
+    *
     * @return a new InfiniteInteger representing the indicated number
     *
     * @see #bigEndian(Iterator, boolean)
@@ -197,10 +195,9 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * The iterator can't be infinite since this method aggregates the values (it would also be meaningless).
     * An empty iterator is considered 0.</p>
     *
-    * @param valueIterator
-    *       the unsigned elements in little endian order
-    * @param isNegative
-    *       whether the resulting InfiniteInteger should be negative or not
+    * @param valueIterator the unsigned elements in little endian order
+    * @param isNegative    whether the resulting InfiniteInteger should be negative or not
+    *
     * @return a new InfiniteInteger representing the indicated number
     *
     * @see #littleEndian(long[], boolean)
@@ -221,10 +218,9 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * The iterator can't be infinite since this method aggregates the values (it would also be meaningless).
     * An empty iterator is considered 0.</p>
     *
-    * @param valueIterator
-    *       the unsigned elements in big endian order
-    * @param isNegative
-    *       whether the resulting InfiniteInteger should be negative or not
+    * @param valueIterator the unsigned elements in big endian order
+    * @param isNegative    whether the resulting InfiniteInteger should be negative or not
+    *
     * @return a new InfiniteInteger representing the indicated number
     *
     * @see #bigEndian(long[], boolean)
@@ -276,10 +272,10 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
          private InfiniteInteger nextElement = InfiniteInteger.valueOf(1);
 
          @Override
-         public boolean hasNext() {return true;}
+         public boolean hasNext(){return true;}
 
          @Override
-         public boolean hasPrevious() {return true;}
+         public boolean hasPrevious(){return true;}
 
          @Override
          public InfiniteInteger next()
@@ -310,13 +306,13 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
 
          //will be replaced by ReadOnlyListIterator to throw:
          @Override
-         public void remove() {}
+         public void remove(){}
 
          @Override
-         public void set(InfiniteInteger e) {}
+         public void set(InfiniteInteger e){}
 
          @Override
-         public void add(InfiniteInteger e) {}
+         public void add(InfiniteInteger e){}
       });
    }
 
@@ -340,7 +336,7 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
          private InfiniteInteger back2 = null;
 
          @Override
-         public boolean hasNext() {return true;}
+         public boolean hasNext(){return true;}
 
          @Override
          public InfiniteInteger next()
@@ -354,9 +350,7 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
             return next;
          }
       };
-      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
-            iterator,
-            Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
    }
 
    /**
@@ -365,7 +359,7 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * @see #longValue()
     */
    @Override
-   public float floatValue() {return baseNumber.floatValue();}
+   public float floatValue(){return baseNumber.floatValue();}
 
    /**
     * Entire code: <blockquote>{@code return (double) longValue();}</blockquote>
@@ -373,15 +367,14 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * @see #longValue()
     */
    @Override
-   public double doubleValue() {return baseNumber.doubleValue();}
+   public double doubleValue(){return baseNumber.doubleValue();}
 
    /**
     * This method returns the least significant 31 bits of the number represented by this InfiniteInteger.
     * The int is then given the same sign as this class. This is different than a narrowing cast because
     * normally the bits would be unchanged signed or otherwise but this method performs a two's complement.
     *
-    * @throws ArithmeticException
-    *       if this is &plusmn;&infin; or NaN
+    * @throws ArithmeticException if this is &plusmn;&infin; or NaN
     * @see #longValue()
     */
    @Override
@@ -395,8 +388,7 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * The long is then given the same sign as this class. This is different than a narrowing cast because
     * normally the bits would be unchanged signed or otherwise but this method performs a two's complement.
     *
-    * @throws ArithmeticException
-    *       if this is &plusmn;&infin; or NaN
+    * @throws ArithmeticException if this is &plusmn;&infin; or NaN
     * @see #longValueExact()
     * @see #bigIntegerValue()
     */
@@ -409,10 +401,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
    /**
     * This method returns the longValue only if this InfiniteInteger can fit within a signed long without losing information.
     *
-    * @throws ArithmeticException
-    *       if this is &plusmn;&infin; or NaN
-    * @throws ArithmeticException
-    *       if this is greater than max long: 2^63-1
+    * @throws ArithmeticException if this is &plusmn;&infin; or NaN
+    * @throws ArithmeticException if this is greater than max long: 2^63-1
     * @see #longValue()
     * @see #bigIntegerValue()
     */
@@ -432,10 +422,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * This method returns the a BigInteger representing the same number as this InfiniteInteger.
     * Or will throw if this InfiniteInteger is greater than BigInteger will allow.
     *
-    * @throws ArithmeticException
-    *       if this is &plusmn;&infin; or NaN
-    * @throws ArithmeticException
-    *       if this is greater than the max of BigInteger: 2^(2^31-1)-1
+    * @throws ArithmeticException if this is &plusmn;&infin; or NaN
+    * @throws ArithmeticException if this is greater than the max of BigInteger: 2^(2^31-1)-1
     * @see #bigIntegerValue()
     * @see #longValue()
     */
@@ -451,8 +439,7 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * Calling nextIndex or previousIndex will return -1 and calling add, set, or remove will throw.
     * Note that there might be more than Long.Max elements (or even max BigInteger!).
     *
-    * @throws UnsupportedOperationException
-    *       if this is &plusmn;&infin; or NaN
+    * @throws UnsupportedOperationException if this is &plusmn;&infin; or NaN
     * @see #magnitudeStream()
     * @see ReadOnlyListIterator
     * @see DequeNodeIterator.IndexAgnosticValueIterator
@@ -470,8 +457,7 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * This method represents that there can be any number of elements better than magnitudeIterator.
     * Streams are also naturally read only with unknown size.
     *
-    * @throws UnsupportedOperationException
-    *       if this is &plusmn;&infin; or NaN
+    * @throws UnsupportedOperationException if this is &plusmn;&infin; or NaN
     * @see #magnitudeIterator()
     */
    @Override
@@ -483,8 +469,7 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
    /**
     * Helper method to get the last (most significant) node of this InfiniteInteger.
     *
-    * @throws NullPointerException
-    *       if magnitudeHead is null
+    * @throws NullPointerException if magnitudeHead is null
     */
    @Override
    protected DequeNode<Integer> getMagnitudeTail()
@@ -497,8 +482,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * Note that the formula used is designed for a long and is slightly more efficient
     * than calling add(InfiniteInteger.valueOf(value)) would be.
     *
-    * @param value
-    *       the operand to be added to this InfiniteInteger.
+    * @param value the operand to be added to this InfiniteInteger.
+    *
     * @return the result including &plusmn;&infin; and NaN
     *
     * @see #add(InfiniteInteger)
@@ -524,8 +509,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
    /**
     * Returns an InfiniteInteger whose value is {@code (this + value)}.
     *
-    * @param value
-    *       the operand to be added to this InfiniteInteger.
+    * @param value the operand to be added to this InfiniteInteger.
+    *
     * @return the result including &plusmn;&infin; and NaN
     *
     * @see #add(long)
@@ -541,8 +526,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * Note that the formula used is designed for a long and is slightly more efficient
     * than calling subtract(InfiniteInteger.valueOf(value)) would be.
     *
-    * @param value
-    *       the operand to be subtracted from this InfiniteInteger.
+    * @param value the operand to be subtracted from this InfiniteInteger.
+    *
     * @return the result including &plusmn;&infin; and NaN
     *
     * @see #subtract(InfiniteInteger)
@@ -569,8 +554,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * Returns an InfiniteInteger whose value is {@code (this - value)}.
     * Note &infin; - &infin; results in NaN.
     *
-    * @param value
-    *       the operand to be subtracted from this InfiniteInteger.
+    * @param value the operand to be subtracted from this InfiniteInteger.
+    *
     * @return the result including &plusmn;&infin; and NaN
     *
     * @see #subtract(long)
@@ -587,8 +572,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * than calling multiply(InfiniteInteger.valueOf(value)) would be.
     * Note &plusmn;&infin; * 0 results in NaN.
     *
-    * @param value
-    *       the operand to be multiplied to this InfiniteInteger.
+    * @param value the operand to be multiplied to this InfiniteInteger.
+    *
     * @return the result including &plusmn;&infin; and NaN
     *
     * @see #multiply(InfiniteInteger)
@@ -615,8 +600,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * Returns an InfiniteInteger whose value is {@code (this * value)}.
     * Note &plusmn;&infin; * 0 results in NaN.
     *
-    * @param value
-    *       the operand to be multiplied to this InfiniteInteger.
+    * @param value the operand to be multiplied to this InfiniteInteger.
+    *
     * @return the result including &plusmn;&infin; and NaN
     *
     * @see #multiply(long)
@@ -665,8 +650,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     *
     * <p>This method is not named shiftLeft because the direction left only makes sense for big endian numbers.</p>
     *
-    * @param exponent
-    *       is also the shift distance in bits
+    * @param exponent is also the shift distance in bits
+    *
     * @return the result including &plusmn;&infin; and NaN
     *
     * @see #divideByPowerOf2DropRemainder(InfiniteInteger)
@@ -690,7 +675,7 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * @see #valueOf(BigInteger)
     */
    @Override
-   public IntegerQuotient<InfiniteInteger> divide(BigInteger value) {return this.divide(InfiniteInteger.valueOf(value));}
+   public IntegerQuotient<InfiniteInteger> divide(BigInteger value){return this.divide(InfiniteInteger.valueOf(value));}
 
    @Override
    public IntegerQuotient<InfiniteInteger> divide(InfiniteInteger value)
@@ -763,8 +748,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     *
     * <p>This method is not named shiftRight because the direction right only makes sense for big endian numbers.</p>
     *
-    * @param exponent
-    *       is also the shift distance in bits
+    * @param exponent is also the shift distance in bits
+    *
     * @return the result including &plusmn;&infin; and NaN
     *
     * @see #multiplyByPowerOf2(InfiniteInteger)
@@ -850,7 +835,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * <tr align="center"><td>0</td>        <td>NaN</td> <td>0</td>        <td>NaN</td>     <td>NaN</td> <td>NaN</td> <td>0</td></tr>
     * <tr align="center"><td>1</td>        <td>1</td>   <td>1</td>        <td>NaN</td>     <td>NaN</td> <td>1</td>   <td>1</td></tr>
     * <tr align="center"><td>&infin;</td>  <td>NaN</td> <td>&infin;</td>  <td>&infin;</td> <td>0</td>   <td>0</td>   <td>&infin;</td></tr>
-    * <tr align="center"><td>-&infin;</td> <td>NaN</td> <td>-&infin;</td> <td>NaN</td>     <td>NaN</td> <td>0</td>   <td>&plusmn;&infin;</td></tr>
+    * <tr align="center"><td>-&infin;</td> <td>NaN</td> <td>-&infin;</td> <td>NaN</td>     <td>NaN</td> <td>0</td>
+    * <td>&plusmn;&infin;</td></tr>
     * <tr align="center"><td>-X</td>       <td>1</td>   <td>-X</td>       <td>NaN</td>     <td>0</td>   <td>1/?</td> <td>?</td></tr>
     * <tr align="center"><td>X</td>        <td>1</td>   <td>X</td>        <td>&infin;</td> <td>0</td>   <td>1/?</td> <td>?</td></tr>
     * </table>
@@ -904,15 +890,15 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
 
    /**
     * Returns an InfiniteInteger whose value is this<sup>exponent</sup>.
-    * There are many special cases, for a full table see {@link InfiniteInteger#powerSpecialLookUp(InfiniteInteger, InfiniteInteger) this table}
+    * There are many special cases, for a full table see {@link InfiniteInteger#powerSpecialLookUp(InfiniteInteger, InfiniteInteger) this
+    * table}
     * except the pow method will return the result instead of null.
     *
-    * @param exponent
-    *       to which this InfiniteInteger is to be raised.
+    * @param exponent to which this InfiniteInteger is to be raised.
+    *
     * @return the result including &plusmn;&infin; and NaN
     *
-    * @throws ArithmeticException
-    *       if the result would be a fraction (only possible if exponent is negative)
+    * @throws ArithmeticException if the result would be a fraction (only possible if exponent is negative)
     */
    @Override
    public InfiniteInteger power(InfiniteInteger exponent)
@@ -995,7 +981,7 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * @see #NaN
     */
    @Override
-   public boolean isNaN() {return this == NaN;}
+   public boolean isNaN(){return this == NaN;}
 
    /**
     * Compares this InfiniteInteger to both positive and negative infinity.
@@ -1006,7 +992,7 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * @see #NEGATIVE_INFINITITY
     */
    @Override
-   public boolean isInfinite() {return (this == POSITIVE_INFINITITY || this == NEGATIVE_INFINITITY);}
+   public boolean isInfinite(){return (this == POSITIVE_INFINITITY || this == NEGATIVE_INFINITITY);}
 
    /**
     * Compares this InfiniteInteger to &plusmn;&infin; and NaN (returns false of this is any of them).
@@ -1018,21 +1004,20 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * @see #NEGATIVE_INFINITITY
     */
    @Override
-   public boolean isFinite() {return (!this.isNaN() && !this.isInfinite());}
+   public boolean isFinite(){return (!this.isNaN() && !this.isInfinite());}
 
    /**
-    * @throws ArithmeticException
-    *       if this == NaN
+    * @throws ArithmeticException if this == NaN
     */
    @Override
-   public void signalNaN() {if (isNaN()) throw new ArithmeticException("Not a number.");}
+   public void signalNaN(){if (isNaN()) throw new ArithmeticException("Not a number.");}
 
    /**
     * Compares this InfiniteInteger with the specified object for numeric equality.
     * Note that this equality is not always symmetric as other.equals(this) != this.equals(other).
     *
-    * @param other
-    *       the value to be compared to this
+    * @param other the value to be compared to this
+    *
     * @return true if this InfiniteInteger has the same numeric value as other. false if other is not a number
     *
     * @see #equals(InfiniteInteger)
@@ -1051,8 +1036,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
    /**
     * Compares this InfiniteInteger with the specified object for numeric equality.
     *
-    * @param other
-    *       the value to be compared to this
+    * @param other the value to be compared to this
+    *
     * @return true if this InfiniteInteger has the same numeric value as other
     *
     * @see #compareTo(InfiniteInteger)
@@ -1068,8 +1053,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * Note that this equality is symmetric with Long.valueOf(value).equals(this.longValueExact())
     * only if this <= Long.MAX_VALUE.
     *
-    * @param value
-    *       the value to be compared to this
+    * @param value the value to be compared to this
+    *
     * @return true if this InfiniteInteger has the same numeric value as the value parameter
     *
     * @see #longValueExact()
@@ -1086,8 +1071,8 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * The natural order is as expected with &plusmn;&infin; being at either end.
     * However for the sake of sorting 0 < NaN < 1.
     *
-    * @param other
-    *       the value to be compared to this
+    * @param other the value to be compared to this
+    *
     * @return -1, 0 or 1 if this InfiniteInteger is numerically less than, equal
     * to, or greater than other.
     */
@@ -1102,26 +1087,26 @@ public final class InfiniteInteger extends AbstractInfiniteInteger<InfiniteInteg
     * Even though sorting is not possible this method returns as expected.
     * Entire code: <blockquote>{@code return this.compareTo(InfiniteInteger.valueOf(other));}</blockquote>
     *
-    * @param other
-    *       the value to be compared to this
+    * @param other the value to be compared to this
+    *
     * @see #compareTo(InfiniteInteger)
     * @see Comparable#compareTo(Object)
     */
    @Override
-   public int compareTo(BigInteger other) {return this.compareTo(InfiniteInteger.valueOf(other));}
+   public int compareTo(BigInteger other){return this.compareTo(InfiniteInteger.valueOf(other));}
 
    /**
     * Compares this InfiniteInteger with the specified other for numeric equality.
     * Even though sorting is not possible this method returns as expected.
     * Entire code: <blockquote>{@code return this.compareTo(InfiniteInteger.valueOf(other));}</blockquote>
     *
-    * @param other
-    *       the value to be compared to this
+    * @param other the value to be compared to this
+    *
     * @see #compareTo(InfiniteInteger)
     * @see Comparable#compareTo(Object)
     */
    @Override
-   public int compareTo(long other) {return this.compareTo(InfiniteInteger.valueOf(other));}
+   public int compareTo(long other){return this.compareTo(InfiniteInteger.valueOf(other));}
 
    /**
     * Returns the hash code for this InfiniteInteger.

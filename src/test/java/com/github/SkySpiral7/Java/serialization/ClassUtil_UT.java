@@ -25,8 +25,7 @@ public class ClassUtil_UT
    {
       final Class<?> questionable = RoundingMode.class;
 
-      @SuppressWarnings("unchecked")
-      final Class<T> unchecked = ((Class<T>) questionable);
+      @SuppressWarnings("unchecked") final Class<T> unchecked = ((Class<T>) questionable);
       //not convenient and only possible because of the method's capturing
 
       assertThat(Enum.valueOf(unchecked, "UP"), is(RoundingMode.UP));

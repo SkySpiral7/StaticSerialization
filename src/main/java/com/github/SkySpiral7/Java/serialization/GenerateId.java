@@ -1,6 +1,10 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * <p>This annotation only has meaning when placed on a class that implements StaticSerializable.
@@ -21,5 +25,4 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface GenerateId
-{
-}
+{}

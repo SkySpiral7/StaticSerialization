@@ -2,7 +2,8 @@ package com.github.SkySpiral7.Java.exception;
 
 /**
  * This exception is thrown when attempting to use an AutoCloseable resource that has already been closed.
- * Instead of throwing this exception consider alternatives such as doing nothing, returning null, returning Optional, or returning a special value.
+ * Instead of throwing this exception consider alternatives such as doing nothing, returning null, returning Optional, or returning a
+ * special value.
  */
 public class ClosedResourceException extends RuntimeException
 {
@@ -11,7 +12,7 @@ public class ClosedResourceException extends RuntimeException
    /**
     * Constructs a <code>ClosedResourceException</code> with no detail message.
     */
-   public ClosedResourceException() {}
+   public ClosedResourceException(){}
 
    /**
     * Constructs a <code>ClosedResourceException</code> with the specified detail message.

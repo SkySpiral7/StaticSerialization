@@ -19,7 +19,7 @@ public class NoMoreDataException extends RuntimeException
    /**
     * Constructs a <code>NoMoreDataException</code> with no detail message in order to indicate that there are 0 bytes remaining.
     */
-   public NoMoreDataException() {}
+   public NoMoreDataException(){}
 
    /**
     * Constructs a <code>NoMoreDataException</code> with the specified detail message.

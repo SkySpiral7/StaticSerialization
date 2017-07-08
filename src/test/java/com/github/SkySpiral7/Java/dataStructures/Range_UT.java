@@ -18,20 +18,20 @@ public class Range_UT
    {
       final Range<Integer> range = new Range<Integer>(1, "..", 3);
 
-      assertArrayEquals(new Integer[] {1, 2, 3}, range.createArray());
-      assertArrayEquals(new Integer[] {1, 3}, range.createArray(2));
+      assertArrayEquals(new Integer[]{1, 2, 3}, range.createArray());
+      assertArrayEquals(new Integer[]{1, 3}, range.createArray(2));
 
-      assertArrayEquals(new int[] {1, 2, 3}, range.createArray(int[].class));
-      assertArrayEquals(new byte[] {1, 2, 3}, range.createArray(byte[].class));
-      assertArrayEquals(new long[] {1, 3}, range.createArray(long[].class, 2));
+      assertArrayEquals(new int[]{1, 2, 3}, range.createArray(int[].class));
+      assertArrayEquals(new byte[]{1, 2, 3}, range.createArray(byte[].class));
+      assertArrayEquals(new long[]{1, 3}, range.createArray(long[].class, 2));
    }
 
    @Test
    public void createArray_otherTypes()
    {
-      assertArrayEquals(new Double[] {1d, 1.75d, 2.5d}, new Range<Double>(1d, "..", 3d).createArray(Double[].class, 0.75d));
+      assertArrayEquals(new Double[]{1d, 1.75d, 2.5d}, new Range<Double>(1d, "..", 3d).createArray(Double[].class, 0.75d));
       final Range<BigInteger> bigIntegerRange = new Range<BigInteger>(BigInteger.ZERO, "..>", BigInteger.valueOf(2));
-      assertArrayEquals(new BigInteger[] {BigInteger.ZERO, BigInteger.ONE}, bigIntegerRange.createArray());
+      assertArrayEquals(new BigInteger[]{BigInteger.ZERO, BigInteger.ONE}, bigIntegerRange.createArray());
       assertArrayEquals(new int[0], new Range<Integer>(1, "<..", 3).createArray(int[].class, 5));
    }
 
@@ -40,12 +40,12 @@ public class Range_UT
    {
       final Range<Integer> range = new Range<Integer>(1, "..", 3);
 
-      assertEquals(Arrays.asList(new Integer[] {1, 2, 3}), range.createList());
-      assertEquals(Arrays.asList(new Integer[] {1, 3}), range.createList(2));
+      assertEquals(Arrays.asList(new Integer[]{1, 2, 3}), range.createList());
+      assertEquals(Arrays.asList(new Integer[]{1, 3}), range.createList(2));
 
-      assertEquals(Arrays.asList(new Integer[] {1, 2, 3}), range.createList(Integer.class));
-      assertEquals(Arrays.asList(new Byte[] {1, 2, 3}), range.createList(Byte.class));
-      assertEquals(Arrays.asList(new Long[] {1L, 3L}), range.createList(Long.class, 2));
+      assertEquals(Arrays.asList(new Integer[]{1, 2, 3}), range.createList(Integer.class));
+      assertEquals(Arrays.asList(new Byte[]{1, 2, 3}), range.createList(Byte.class));
+      assertEquals(Arrays.asList(new Long[]{1L, 3L}), range.createList(Long.class, 2));
    }
 
    @Test

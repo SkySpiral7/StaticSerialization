@@ -11,16 +11,16 @@ import com.github.SkySpiral7.Java.dataStructures.ModCountList;
  * Copied from AbstractList.ListItr with few changes. In addition to those defined IteratorExternal the underlyingList must also
  * have the following methods defined: set(int, E), add(int, E).
  *
- * @param <E>
- *       the data type of the list
+ * @param <E> the data type of the list
+ *
  * @see AbstractList
  */
 public class ListIteratorExternal<E> extends IteratorExternal<E> implements ListIterator<E>
 {
 
-   public ListIteratorExternal(ModCountList<E> underlyingList, int initialIndex) {super(underlyingList, initialIndex);}
+   public ListIteratorExternal(ModCountList<E> underlyingList, int initialIndex){super(underlyingList, initialIndex);}
 
-   public ListIteratorExternal(ModCountList<E> underlyingList) {super(underlyingList);}
+   public ListIteratorExternal(ModCountList<E> underlyingList){super(underlyingList);}
 
    public boolean hasPrevious()
    {
@@ -56,8 +56,7 @@ public class ListIteratorExternal<E> extends IteratorExternal<E> implements List
 
    public void set(E e)
    {
-      if (lastRet < 0)
-         throw new IllegalStateException();
+      if (lastRet < 0) throw new IllegalStateException();
       checkForComodification();
 
       try

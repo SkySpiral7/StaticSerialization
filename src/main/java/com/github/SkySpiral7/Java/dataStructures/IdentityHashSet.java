@@ -1,13 +1,18 @@
 package com.github.SkySpiral7.Java.dataStructures;
 
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A very simple set wrapper for IdentityHashMap.
  * The set uses pointer equality instead of .equals to determine if an object is redundant.
  *
- * @param <E>
- *       the data type to be stored
+ * @param <E> the data type to be stored
+ *
  * @see IdentityHashMap
  */
 public class IdentityHashSet<E> extends AbstractSet<E> implements Set<E>
@@ -35,7 +40,7 @@ public class IdentityHashSet<E> extends AbstractSet<E> implements Set<E>
       this.addAll(initialElements);
    }
 
-   public IdentityHashSet(E[] initialElements) {this(Arrays.asList(initialElements));}
+   public IdentityHashSet(E[] initialElements){this(Arrays.asList(initialElements));}
 
    @Override
    public int size()

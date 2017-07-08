@@ -1,6 +1,12 @@
 package com.github.SkySpiral7.Java.pojo;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -23,12 +29,10 @@ public final class SimpleLogger implements Closeable
    private final OutputStream writer;
 
    /**
-    * @param file
-    *       the File that will be written to (even if it does not exist).
-    * @throws IllegalArgumentException
-    *       if the File is a directory (which can't be written to)
-    * @throws RuntimeException
-    *       of FileNotFoundException from the constructor of FileOutputStream
+    * @param file the File that will be written to (even if it does not exist).
+    *
+    * @throws IllegalArgumentException if the File is a directory (which can't be written to)
+    * @throws RuntimeException         of FileNotFoundException from the constructor of FileOutputStream
     * @see FileOutputStream#FileOutputStream(File, boolean)
     */
    public SimpleLogger(final File file)
@@ -48,10 +52,9 @@ public final class SimpleLogger implements Closeable
     * Append to the log. Note that an end line is not added.
     * The log will be created if it does not exist.
     *
-    * @param text
-    *       the text to be appended exactly as passed in
-    * @throws RuntimeException
-    *       of IOException from OutputStream.write
+    * @param text the text to be appended exactly as passed in
+    *
+    * @throws RuntimeException of IOException from OutputStream.write
     * @see OutputStream#write(byte[])
     */
    public void append(final String text)
@@ -71,10 +74,9 @@ public final class SimpleLogger implements Closeable
     * Append to the log. An end line is appended to the string.
     * The log will be created if it does not exist.
     *
-    * @param line
-    *       the text to be appended followed by a system end line
-    * @throws RuntimeException
-    *       of IOException from OutputStream.write
+    * @param line the text to be appended followed by a system end line
+    *
+    * @throws RuntimeException of IOException from OutputStream.write
     * @see OutputStream#write(byte[])
     */
    public void appendLine(final String line)
@@ -84,8 +86,7 @@ public final class SimpleLogger implements Closeable
    }
 
    /**
-    * @throws RuntimeException
-    *       of IOException from OutputStream.close
+    * @throws RuntimeException of IOException from OutputStream.close
     * @see OutputStream#close()
     */
    @Override

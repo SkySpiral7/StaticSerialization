@@ -8,8 +8,7 @@ import java.util.ListIterator;
  * Such as causing it to jump between index 1 and the end.
  * These methods might not have meaning to infinite iterators.
  *
- * @param <E>
- *       the element type of the ListIterator
+ * @param <E> the element type of the ListIterator
  */
 public interface JumpingIterator<E> extends ListIterator<E>
 {
@@ -18,24 +17,24 @@ public interface JumpingIterator<E> extends ListIterator<E>
     *
     * @see #jumpToBeginning(ListIterator)
     */
-   default public void jumpToBeginning() {jumpToBeginning(this);}
+   default public void jumpToBeginning(){jumpToBeginning(this);}
 
    /**
     * After calling this method the iterator will be at the beginning of the list such that hasPrevious() is false.
     * Note that if the iterator has no beginning then this method will be stuck in a loop forever.
     *
-    * @param iteratorToUse
-    *       the iterator changed
+    * @param iteratorToUse the iterator changed
+    *
     * @see ListIterator#hasPrevious()
     */
-   public static <T> void jumpToBeginning(ListIterator<T> iteratorToUse) {while (iteratorToUse.hasPrevious()) { iteratorToUse.previous(); }}
+   public static <T> void jumpToBeginning(ListIterator<T> iteratorToUse){while (iteratorToUse.hasPrevious()){ iteratorToUse.previous(); }}
 
    /**
     * Delegates to the static method.
     *
     * @see #jumpByIndex(ListIterator, int)
     */
-   default public void jumpByIndex(int jumpAmount) {jumpByIndex(this, jumpAmount);}
+   default public void jumpByIndex(int jumpAmount){jumpByIndex(this, jumpAmount);}
 
    /**
     * <p>This method will move the iterator forward or backward based on the jumpAmount. If the jumpAmount is positive
@@ -48,8 +47,8 @@ public interface JumpingIterator<E> extends ListIterator<E>
     * will instead put the iterator at the end, likewise if there is only 1 previous element passing in -2 will instead
     * go to the beginning.</p>
     *
-    * @param iteratorToUse
-    *       the iterator changed
+    * @param iteratorToUse the iterator changed
+    *
     * @see ListIterator#next()
     * @see ListIterator#previous()
     * @see #jumpToIndex(ListIterator, int)
@@ -73,7 +72,7 @@ public interface JumpingIterator<E> extends ListIterator<E>
     *
     * @see #jumpByIndex(ListIterator, int)
     */
-   default public void jumpToIndex(int destination) {jumpByIndex(this, destination);}
+   default public void jumpToIndex(int destination){jumpByIndex(this, destination);}
 
    /**
     * <p>After calling this method the iterator will be in a position such that nextIndex() matches the destination.
@@ -85,10 +84,9 @@ public interface JumpingIterator<E> extends ListIterator<E>
     * being 0 and the last being size). This is a necessary assumption because otherwise there would be no way of knowing
     * whether next() or previous() should be called to reach the destination index.</p>
     *
-    * @param iteratorToUse
-    *       the iterator changed
-    * @param destination
-    *       desired index
+    * @param iteratorToUse the iterator changed
+    * @param destination   desired index
+    *
     * @see ListIterator#nextIndex()
     * @see #jumpByIndex(ListIterator, int)
     */
@@ -102,15 +100,15 @@ public interface JumpingIterator<E> extends ListIterator<E>
     *
     * @see #jumpToEnd(ListIterator)
     */
-   default public void jumpToEnd() {jumpToEnd(this);}
+   default public void jumpToEnd(){jumpToEnd(this);}
 
    /**
     * After calling this method the iterator will be at the end of the list such that hasNext() is false.
     * Note that if the iterator has no end then this method will be stuck in a loop forever.
     *
-    * @param iteratorToUse
-    *       the iterator changed
+    * @param iteratorToUse the iterator changed
+    *
     * @see ListIterator#hasNext()
     */
-   public static <T> void jumpToEnd(Iterator<T> iteratorToUse) {while (iteratorToUse.hasNext()) { iteratorToUse.next(); }}
+   public static <T> void jumpToEnd(Iterator<T> iteratorToUse){while (iteratorToUse.hasNext()){ iteratorToUse.next(); }}
 }

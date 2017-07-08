@@ -22,8 +22,7 @@ public class NumberFormatException extends RuntimeException
     * Factory method for making a <code>NumberFormatException</code>
     * given the specified input which caused the error.
     *
-    * @param invalidString
-    *       the input causing the error
+    * @param invalidString the input causing the error
     */
    public static NumberFormatException forInputString(final String invalidString)
    {
@@ -34,8 +33,7 @@ public class NumberFormatException extends RuntimeException
     * Factory method for making a <code>NumberFormatException</code>
     * given the specified input which caused the error.
     *
-    * @param invalidString
-    *       the input causing the error
+    * @param invalidString the input causing the error
     */
    public static NumberFormatException forInputRadix(final String invalidString, final int radix)
    {

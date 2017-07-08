@@ -5,12 +5,12 @@ import com.github.SkySpiral7.Java.dataStructures.ModCountList;
 public class JumpingIteratorExternalRandomAccess<E> extends ListIteratorExternal<E> implements JumpingIterator<E>
 {
 
-   public JumpingIteratorExternalRandomAccess(ModCountList<E> underlyingList, int initialIndex) {super(underlyingList, initialIndex);}
+   public JumpingIteratorExternalRandomAccess(ModCountList<E> underlyingList, int initialIndex){super(underlyingList, initialIndex);}
 
-   public JumpingIteratorExternalRandomAccess(ModCountList<E> underlyingList) {super(underlyingList);}
+   public JumpingIteratorExternalRandomAccess(ModCountList<E> underlyingList){super(underlyingList);}
 
    @Override
-   public void jumpToBeginning() {cursor = 0;}
+   public void jumpToBeginning(){cursor = 0;}
 
    @Override
    public void jumpByIndex(int jumpAmount)
@@ -30,6 +30,6 @@ public class JumpingIteratorExternalRandomAccess<E> extends ListIteratorExternal
    }
 
    @Override
-   public void jumpToEnd() {cursor = underlyingList.size();}
+   public void jumpToEnd(){cursor = underlyingList.size();}
 
 }

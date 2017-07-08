@@ -36,7 +36,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E>
       addAll(initialElements);
    }
 
-   public InfinitelyLinkedList(E[] initialElements) {this(Arrays.asList(initialElements));}
+   public InfinitelyLinkedList(E[] initialElements){this(Arrays.asList(initialElements));}
 
    @Override
    public boolean offerFirst(E newElement)
@@ -108,7 +108,8 @@ public class InfinitelyLinkedList<E> extends LinkedList<E>
 
    protected void rangeCheckForGet(InfiniteInteger index)
    {
-      if (is(index, GREATER_THAN_OR_EQUAL_TO, actualSize)) throw new ListIndexOutOfBoundsException("Index: " + index + ", Size: " + actualSize);
+      if (is(index, GREATER_THAN_OR_EQUAL_TO, actualSize))
+         throw new ListIndexOutOfBoundsException("Index: " + index + ", Size: " + actualSize);
    }
 
    @Override
@@ -155,8 +156,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E>
       boolean modified = false;
       for (E newElement : newElementCollection)
       {
-         if (add(newElement))
-            modified = true;
+         if (add(newElement)) modified = true;
       }
       return modified;
    }
@@ -176,16 +176,14 @@ public class InfinitelyLinkedList<E> extends LinkedList<E>
       {
          while (it.hasNext())
          {
-            if (it.next() == null)
-               return true;
+            if (it.next() == null) return true;
          }
       }
       else
       {
          while (it.hasNext())
          {
-            if (objectToFind.equals(it.next()))
-               return true;
+            if (objectToFind.equals(it.next())) return true;
          }
       }
       return false;
@@ -397,8 +395,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E>
    {
       if (ComparableSugar.isComparisonResult(actualSize.compareTo(Integer.MAX_VALUE), Comparison.GREATER_THAN))
          throw new IllegalStateException("This list is larger than max array size");
-      @SuppressWarnings("unchecked")
-      E[] destination = (E[]) java.lang.reflect.Array.newInstance(elementType, actualSize.intValue());
+      @SuppressWarnings("unchecked") E[] destination = (E[]) java.lang.reflect.Array.newInstance(elementType, actualSize.intValue());
       int i = 0;
       for (DequeNode<E> cursor = first; cursor != null; cursor = cursor.getNext())
       {
@@ -416,8 +413,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E>
          throw new IllegalStateException("This list is larger than max array size");
       size = actualSize.intValue();
       if (destination.length < size)
-         destination = (T[]) java.lang.reflect.Array.newInstance(
-               destination.getClass().getComponentType(), size);
+         destination = (T[]) java.lang.reflect.Array.newInstance(destination.getClass().getComponentType(), size);
       int i = 0;
       //result exists in order to cause an ArrayStoreException instead of a ClassCastException
       Object[] result = destination;
@@ -427,8 +423,7 @@ public class InfinitelyLinkedList<E> extends LinkedList<E>
          i++;
       }
 
-      if (destination.length > size)
-         destination[size] = null;
+      if (destination.length > size) destination[size] = null;
 
       size = -1;
       return destination;

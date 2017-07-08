@@ -37,10 +37,8 @@ public final class BloomFilter
    private final BitSet mask;
 
    /**
-    * @param hasher
-    *       the hash function that will be used to convert objects to bits
-    * @param numberOfBits
-    *       the size of the BitSet returned by hasher
+    * @param hasher       the hash function that will be used to convert objects to bits
+    * @param numberOfBits the size of the BitSet returned by hasher
     */
    public BloomFilter(BloomHash hasher, int numberOfBits)
    {
@@ -51,7 +49,7 @@ public final class BloomFilter
    /**
     * Adds the element to this filter.
     */
-   public void add(Object element) {mask.or(hasher.hash(element));}
+   public void add(Object element){mask.or(hasher.hash(element));}
 
    /**
     * @return true if element might have been added or false if element definitely hasn't been
@@ -71,7 +69,7 @@ public final class BloomFilter
     * bits are set then contains will always return true. Likewise if all bits are equally likely (which is absurd)
     * then the percent chance of a false positive is: {@code setBits / totalBits *100}.
     */
-   public BitSet getMask() {return (BitSet) mask.clone();}
+   public BitSet getMask(){return (BitSet) mask.clone();}
 
    /**
     * This interface is a strategy pattern that the Bloom filter relies on to turn objects into bits.
@@ -98,8 +96,8 @@ public final class BloomFilter
        * Additionally Object.hashCode returns an int however 32 bits is too small of a range for an effective
        * Bloom filter: the crowded range will cause many false positives.</p>
        *
-       * @param element
-       *       the object that was requested to be added to the Bloom filter.
+       * @param element the object that was requested to be added to the Bloom filter.
+       *
        * @return the BitSet that will be masked into the Bloom filter.
        */
       public BitSet hash(Object element);

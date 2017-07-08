@@ -20,8 +20,8 @@ import com.github.SkySpiral7.Java.iterators.DequeNodeIterator;
  * This class does not validate pointers or detect structure shape.
  * Although not supported other shapes are possible (for example a circle should function mostly correctly).</p>
  *
- * @param <E>
- *       the data type to be stored
+ * @param <E> the data type to be stored
+ *
  * @see Factory
  * @see DequeNodeIterator
  * @see LinkedList My Linked List which uses these nodes
@@ -49,7 +49,7 @@ public class DequeNode<E> implements Serializable
     * @see Factory#createStandAloneNode(Object)
     * @see #DequeNode(DequeNode, Object, DequeNode)
     */
-   public DequeNode(E data) {this.data = data;}
+   public DequeNode(E data){this.data = data;}
 
    /**
     * Create a new node that comes before the node given.
@@ -68,12 +68,10 @@ public class DequeNode<E> implements Serializable
    /**
     * Prev and next will both be linked to the new node and the new node will be linked to each of them.
     *
-    * @param prev
-    *       the node that comes before this node or null if there is no previous node
-    * @param data
-    *       the data that this node holds
-    * @param next
-    *       the node that comes after this node or null if there is no next node
+    * @param prev the node that comes before this node or null if there is no previous node
+    * @param data the data that this node holds
+    * @param next the node that comes after this node or null if there is no next node
+    *
     * @return the newly created node
     *
     * @see Factory#createNodeBetween(DequeNode, Object, DequeNode)
@@ -136,14 +134,14 @@ public class DequeNode<E> implements Serializable
     * being evaluated. This implementation also allows the linked list to call node.toString for each element.
     */
    @Override
-   public String toString() {return data.toString();}
+   public String toString(){return data.toString();}
 
    /**
     * Note that this simply calls data.hashCode(). Next and previous nodes are not included to prevent the entire list
     * being evaluated. This implementation also allows the linked list to call node.hashCode for each element.
     */
    @Override
-   public int hashCode() {return data.hashCode();}
+   public int hashCode(){return data.hashCode();}
 
    /**
     * Note that this only compares data.equals(). Next and previous nodes are not included to prevent the entire list
@@ -160,23 +158,22 @@ public class DequeNode<E> implements Serializable
    /**
     * @return the data that this node holds
     */
-   public E getData() {return data;}
+   public E getData(){return data;}
 
    /**
     * @return the next node or null if there is no next node
     */
-   public DequeNode<E> getNext() {return next;}
+   public DequeNode<E> getNext(){return next;}
 
    /**
     * @return the previous node or null if there is no previous node
     */
-   public DequeNode<E> getPrev() {return prev;}
+   public DequeNode<E> getPrev(){return prev;}
 
    /**
-    * @param the
-    *       data that this node holds
+    * @param the data that this node holds
     */
-   public void setData(E data) {this.data = data;}
+   public void setData(E data){this.data = data;}
 
    /**
     * This factory creates nodes and links them together.
@@ -190,7 +187,7 @@ public class DequeNode<E> implements Serializable
        *
        * @see #createNodeBetween(DequeNode, Object, DequeNode)
        */
-      public static <E> DequeNode<E> createStandAloneNode(E data) {return new DequeNode<E>(data);}
+      public static <E> DequeNode<E> createStandAloneNode(E data){return new DequeNode<E>(data);}
 
       /**
        * Insert a new node that comes before the node given.
@@ -199,20 +196,21 @@ public class DequeNode<E> implements Serializable
        *
        * @see #createNodeBetween(DequeNode, Object, DequeNode)
        */
-      public static <E> DequeNode<E> createNodeBefore(E data, DequeNode<E> next) {return new DequeNode<E>(data, next);}
+      public static <E> DequeNode<E> createNodeBefore(E data, DequeNode<E> next){return new DequeNode<E>(data, next);}
 
       /**
        * Prev and next will both be linked to the new node and the new node will be linked to each of them.
        *
-       * @param prev
-       *       the node that comes before this node or null if there is no previous node
-       * @param data
-       *       the data that this node holds
-       * @param next
-       *       the node that comes after this node or null if there is no next node
+       * @param prev the node that comes before this node or null if there is no previous node
+       * @param data the data that this node holds
+       * @param next the node that comes after this node or null if there is no next node
+       *
        * @return the newly created node
        */
-      public static <E> DequeNode<E> createNodeBetween(DequeNode<E> prev, E data, DequeNode<E> next) {return new DequeNode<E>(prev, data, next);}
+      public static <E> DequeNode<E> createNodeBetween(DequeNode<E> prev, E data, DequeNode<E> next)
+      {
+         return new DequeNode<E>(prev, data, next);
+      }
 
       /**
        * Insert a new node that comes after the node given.
@@ -221,7 +219,7 @@ public class DequeNode<E> implements Serializable
        *
        * @see #createNodeBetween(DequeNode, Object, DequeNode)
        */
-      public static <E> DequeNode<E> createNodeAfter(DequeNode<E> prev, E data) {return new DequeNode<E>(prev, data);}
+      public static <E> DequeNode<E> createNodeAfter(DequeNode<E> prev, E data){return new DequeNode<E>(prev, data);}
    }
 
 }

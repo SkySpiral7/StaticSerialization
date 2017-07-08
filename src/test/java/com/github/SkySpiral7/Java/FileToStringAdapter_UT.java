@@ -22,7 +22,8 @@ public class FileToStringAdapter_UT
 {
    private String projectPath = "tests/";
    //projectPath can be "" (same as "./") or any relative or absolute path. It is only used for the 2 constructors
-   private String smallFileContents = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\r\nABCDEFGHIJKLMNOPQRSTUVWXYZ\r\nabcdefghijklmnopqrstuvwxyz\r\nabcdefghijklmnopqrstuvwxyz";
+   private String smallFileContents = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\r\nABCDEFGHIJKLMNOPQRSTUVWXYZ\r\nabcdefghijklmnopqrstuvwxyz\r"
+                                      + "\nabcdefghijklmnopqrstuvwxyz";
    private FileToStringAdapter smallFile = new FileToStringAdapter(projectPath + "smallFile.txt");
    private FileToStringAdapter largeFile = new FileToStringAdapter(projectPath + "no largeFile.txt");
    //TODO: after done, turn the large file on for certain tests to find out which ones it can reasonably do
@@ -55,17 +56,23 @@ public class FileToStringAdapter_UT
          noContentFile.isEmpty();
          fail("failed to throw when directory file called isEmpty");
       }
-      catch (IllegalStateException e) {assertEquals("Operation is not supported for folders because they do not have contents.", e.getMessage());}
+      catch (IllegalStateException e)
+      {
+         assertEquals("Operation is not supported for folders because they do not have contents.", e.getMessage());
+      }
 
       noContentFile = new FileToStringAdapter("FileToStringAdapter_UT temporary non existent file: ?<>~!@#$%^&*()_+=`\"';,.[]{}");
       //I hope this file doesn't exist but just to be sure I'll find one that doesn't:
-      while (noContentFile.exists()) {noContentFile = new FileToStringAdapter(noContentFile.getAbsolutePath() + "_");}
+      while (noContentFile.exists()){noContentFile = new FileToStringAdapter(noContentFile.getAbsolutePath() + "_");}
       try
       {
          noContentFile.isEmpty();
          fail("failed to throw when nonexistent file called isEmpty");
       }
-      catch (IllegalStateException e) {assertEquals("Operation is not supported for files that do exist because they not have contents.", e.getMessage());}
+      catch (IllegalStateException e)
+      {
+         assertEquals("Operation is not supported for files that do exist because they not have contents.", e.getMessage());
+      }
    }
 
    @Test
@@ -356,8 +363,8 @@ public class FileToStringAdapter_UT
       tempFile.deleteOnExit();
       assertTrue(tempFile.isEmpty());
       tempFile.concat("1||23||4");
-      assertArrayEquals(new String[] {"1", "23", "4"}, tempFile.split("||"));
-      assertArrayEquals(new String[] {"1", "23||4"}, tempFile.split("||", 1));
+      assertArrayEquals(new String[]{"1", "23", "4"}, tempFile.split("||"));
+      assertArrayEquals(new String[]{"1", "23||4"}, tempFile.split("||", 1));
    }
 
    @Test
@@ -416,7 +423,7 @@ public class FileToStringAdapter_UT
       String fillerString = new String(fillerArray);  //another MB of RAM needed for a total of 2 MB
       //uses windows line encoding. WARNING: do NOT change the line encoding as it cause the tests to fail
       largeFile.setFileContents(smallFileContents + "\r\n\r\n");
-      for (int i = 0; i < (4 * 1024); i++) {largeFile.concat(fillerString + "\r\n");}
+      for (int i = 0; i < (4 * 1024); i++){largeFile.concat(fillerString + "\r\n");}
       largeFile.concat("\r\n" + smallFileContents + "\r\n");
       //largeFile will be slightly bigger than 4 GB
       assertTrue(largeFile.length() > Integer.MAX_VALUE);

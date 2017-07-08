@@ -1,6 +1,10 @@
 package com.github.SkySpiral7.Java.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <p>This is a utility class to perform some basic Set Theory operations.</p>
@@ -14,7 +18,7 @@ import java.util.*;
  */
 public abstract class BasicSetTheory
 {
-   private BasicSetTheory() {}
+   private BasicSetTheory(){}
 
    /**
     * <p>A union operation returns a set which contains all of the elements of both parameters.
@@ -29,8 +33,7 @@ public abstract class BasicSetTheory
     *
     * @return a set of all elements in both
     *
-    * @throws IllegalArgumentException
-    *       if either parameter is null
+    * @throws IllegalArgumentException if either parameter is null
     */
    public static <E> Set<E> union(Collection<? extends E> left, Collection<? extends E> right)
    {
@@ -54,8 +57,7 @@ public abstract class BasicSetTheory
     *
     * @return a set of the elements in common
     *
-    * @throws IllegalArgumentException
-    *       if either parameter is null
+    * @throws IllegalArgumentException if either parameter is null
     */
    public static <E> Set<E> intersection(Collection<? extends E> left, Collection<? extends E> right)
    {
@@ -82,8 +84,7 @@ public abstract class BasicSetTheory
     *
     * @return a set of the elements that are different
     *
-    * @throws IllegalArgumentException
-    *       if either parameter is null
+    * @throws IllegalArgumentException if either parameter is null
     */
    public static <E> Set<E> symmetricDifference(Collection<? extends E> left, Collection<? extends E> right)
    {
@@ -106,14 +107,12 @@ public abstract class BasicSetTheory
     *
     * <p>As a simple Ascii Venn diagram: (A {B) C} returns A</p>
     *
-    * @param left
-    *       start with this set
-    * @param right
-    *       and remove these elements
+    * @param left  start with this set
+    * @param right and remove these elements
+    *
     * @return a set of the elements that only exist in left
     *
-    * @throws IllegalArgumentException
-    *       if either parameter is null
+    * @throws IllegalArgumentException if either parameter is null
     */
    public static <E> Set<E> leftDifference(Collection<? extends E> left, Collection<? extends E> right)
    {
@@ -136,14 +135,12 @@ public abstract class BasicSetTheory
     *
     * <p>As a simple Ascii Venn diagram: (A {B) C} returns C</p>
     *
-    * @param left
-    *       remove these elements from right
-    * @param right
-    *       start with this set
+    * @param left  remove these elements from right
+    * @param right start with this set
+    *
     * @return a set of the elements only exist in right
     *
-    * @throws IllegalArgumentException
-    *       if either parameter is null
+    * @throws IllegalArgumentException if either parameter is null
     * @see #leftDifference(Collection, Collection)
     */
    public static <E> Set<E> rightDifference(Collection<? extends E> left, Collection<? extends E> right)
@@ -172,8 +169,7 @@ public abstract class BasicSetTheory
     *
     * @return true if child is a subset of parent
     *
-    * @throws IllegalArgumentException
-    *       if either parameter is null
+    * @throws IllegalArgumentException if either parameter is null
     * @see #isProperSubset(Set, Set)
     */
    public static <E> boolean isSubset(Set<? extends E> child, Set<? extends E> parent)
@@ -203,8 +199,7 @@ public abstract class BasicSetTheory
     *
     * @return true if child is a proper subset of parent
     *
-    * @throws IllegalArgumentException
-    *       if either parameter is null
+    * @throws IllegalArgumentException if either parameter is null
     * @see #isSubset(Set, Set)
     */
    public static <E> boolean isProperSubset(Set<? extends E> child, Set<? extends E> parent)
@@ -217,7 +212,8 @@ public abstract class BasicSetTheory
    private static <E> List<List<E>> cartesianProduct(E[][] inputArray)
    {
       if (inputArray == null) throw new IllegalArgumentException("Parameter inputArray can't be null.");
-      if (inputArray.length < 2) throw new IllegalArgumentException("Parameter inputArray's first dimension must have at least 2 elements.");
+      if (inputArray.length < 2)
+         throw new IllegalArgumentException("Parameter inputArray's first dimension must have at least 2 elements.");
       List<List<E>> cartesianProduct = new ArrayList<>();
 
       for (E[] collection : inputArray)
@@ -241,8 +237,10 @@ public abstract class BasicSetTheory
     * [["Left", "Hand"], ["Left", "Foot"], ["Right", "Hand"], ["Right", "Foot"]].</p>
     *
     * <p>["Left Hand", "Left Foot", "Right Hand", "Right Foot"] x ["Red", "Green", "Yellow", "Blue"] ==
-    * [["Left Hand", "Red"], ["Left Hand", "Green"], ["Left Hand", "Yellow"], ["Left Hand", "Blue"], ["Left Foot", "Red"], ["Left Foot", "Green"], ["Left Foot",
-    * "Yellow"], ["Left Foot", "Blue"], ["Right Hand", "Red"], ["Right Hand", "Green"], ["Right Hand", "Yellow"], ["Right Hand", "Blue"], ["Right Foot", "Red"],
+    * [["Left Hand", "Red"], ["Left Hand", "Green"], ["Left Hand", "Yellow"], ["Left Hand", "Blue"], ["Left Foot", "Red"], ["Left Foot",
+    * "Green"], ["Left Foot",
+    * "Yellow"], ["Left Foot", "Blue"], ["Right Hand", "Red"], ["Right Hand", "Green"], ["Right Hand", "Yellow"], ["Right Hand", "Blue"],
+    * ["Right Foot", "Red"],
     * ["Right Foot", "Green"], ["Right Foot", "Yellow"], ["Right Foot", "Blue"]]
     * </p>
     *
@@ -259,12 +257,12 @@ public abstract class BasicSetTheory
     * ie cartesianProduct(A, B).get(x).size() == 2 for any x (within range).</p>
     *
     * <p>Calling cartesianProduct multiple times will likely not result in the desired outcome. For example:
-    * [1,2]x[-1,-2]x[3,4] == [[[1, -1], 3], [[1, -1], 4], [[1, -2], 3], [[1, -2], 4], [[2, -1], 3], [[2, -1], 4], [[2, -2], 3], [[2, -2], 4]].</p>
+    * [1,2]x[-1,-2]x[3,4] == [[[1, -1], 3], [[1, -1], 4], [[1, -2], 3], [[1, -2], 4], [[2, -1], 3], [[2, -1], 4], [[2, -2], 3], [[2, -2],
+    * 4]].</p>
     *
     * @return every possible combination of the collections
     *
-    * @throws IllegalArgumentException
-    *       if either parameter is null
+    * @throws IllegalArgumentException if either parameter is null
     * @see #uniqueCartesianProduct(Set, Set)
     */
    public static <E> List<List<E>> cartesianProduct(Collection<? extends E> collectionA, Collection<? extends E> collectionB)
@@ -290,7 +288,8 @@ public abstract class BasicSetTheory
    //might have to use this for cartesianProduct(E[][])
    //[1,2]x[-1,-2]x[3,4] == [[[1, -1], 3], [[1, -1], 4], [[1, -2], 3], [[1, -2], 4], [[2, -1], 3], [[2, -1], 4], [[2, -2], 3], [[2, -2], 4]]
    //desire: [[1, -1, 3], [1, -1, 4], [1, -2, 3], [1, -2, 4], [2, -1, 3], [2, -1, 4], [2, -2, 3], [2, -2, 4]]
-   private static <E> List<List<E>> anotherCartesianProduct(List<List<E>> previousCartesianProduct, Collection<? extends E> anotherCollection)
+   private static <E> List<List<E>> anotherCartesianProduct(List<List<E>> previousCartesianProduct,
+                                                            Collection<? extends E> anotherCollection)
    {
       if (previousCartesianProduct == null) throw new IllegalArgumentException("Parameter previousCartesianProduct can't be null.");
       if (anotherCollection == null) throw new IllegalArgumentException("Parameter anotherCollection can't be null.");
@@ -330,12 +329,12 @@ public abstract class BasicSetTheory
     * ie uniqueCartesianProduct(A, B).get(x).size() == 2 for any x (within range).</p>
     *
     * <p>Calling uniqueCartesianProduct multiple times will likely not result in the desired outcome. For example:
-    * [1,2]x[-1,-2]x[3,4] == [[[1, -1], 3], [[1, -1], 4], [[1, -2], 3], [[1, -2], 4], [[2, -1], 3], [[2, -1], 4], [[2, -2], 3], [[2, -2], 4]].</p>
+    * [1,2]x[-1,-2]x[3,4] == [[[1, -1], 3], [[1, -1], 4], [[1, -2], 3], [[1, -2], 4], [[2, -1], 3], [[2, -1], 4], [[2, -2], 3], [[2, -2],
+    * 4]].</p>
     *
     * @return every possible combination of the collections without repeated elements
     *
-    * @throws IllegalArgumentException
-    *       if either parameter is null
+    * @throws IllegalArgumentException if either parameter is null
     * @see #cartesianProduct(Collection, Collection)
     */
    public static <E> Set<Set<E>> uniqueCartesianProduct(Set<? extends E> collectionA, Set<? extends E> collectionB)
@@ -358,7 +357,8 @@ public abstract class BasicSetTheory
          }
       }
       return uniqueCartesianProduct;
-      //I notice that uniqueCartesianProduct could call powerSet then remove all elements that don't have a size of 2 but that would be slower
+      //I notice that uniqueCartesianProduct could call powerSet then remove all elements that don't have a size of 2 but that would be
+      // slower
    }
 
    /**
@@ -370,15 +370,15 @@ public abstract class BasicSetTheory
     *
     * <p><code>powerSet([1, 2, 3]) == [[], [1], [2], [3], [1,2], [1,3], [2,3], [1,2,3]].</code></p>
     *
-    * <p><code>powerSet([1, 2, 3, 4]) == [[], [1], [2], [3], [4], [1,2], [1,3], [1,4], [2,3], [2,4], [3,4], [1,2,3], [1,2,4], [1,3,4], [2,3,4],
+    * <p><code>powerSet([1, 2, 3, 4]) == [[], [1], [2], [3], [4], [1,2], [1,3], [1,4], [2,3], [2,4], [3,4], [1,2,3], [1,2,4], [1,3,4],
+    * [2,3,4],
     * [1,2,3,4]].</code></p>
     *
     * <p>The size of the power set (the returned set) will be equal to 2^originalSet.size().</p>
     *
     * @return every possible subset of the originalSet
     *
-    * @throws IllegalArgumentException
-    *       if either parameter is null
+    * @throws IllegalArgumentException if either parameter is null
     * @see #uniqueCartesianProduct(Set, Set)
     * @see #isSubset(Set, Set)
     */

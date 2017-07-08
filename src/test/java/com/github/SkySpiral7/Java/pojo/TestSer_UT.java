@@ -19,8 +19,7 @@ public class TestSer_UT
    @Test
    public void isSerializable()
    {
-      DeepSerializableMatcher.ASSUMED_SERIALIZABLE_DEFAULTS.addAll(Arrays.asList(Comparator.class, Copyable.class,
-                                                                                 Comparable.class));
+      DeepSerializableMatcher.ASSUMED_SERIALIZABLE_DEFAULTS.addAll(Arrays.asList(Comparator.class, Copyable.class, Comparable.class));
       assertThat(TestSer.class, isDeeplySerializable("empty"));
    }
 

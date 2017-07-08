@@ -36,8 +36,7 @@ public class ObjectWriterRegistry
    /**
     * Writes the id of instance to the stream.
     *
-    * @throws NullPointerException
-    *       if either parameter is null or if instance isn't registered.
+    * @throws NullPointerException if either parameter is null or if instance isn't registered.
     */
    public void writeId(final Object instance, final ObjectStreamWriter writer)
    {

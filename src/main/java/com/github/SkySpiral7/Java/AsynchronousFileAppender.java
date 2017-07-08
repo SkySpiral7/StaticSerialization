@@ -1,6 +1,12 @@
 package com.github.SkySpiral7.Java;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.Flushable;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -28,8 +34,8 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
     * Note that this class only appends to the file (not write). If appending is not desired then you must
     * clear the file yourself beforehand.
     *
-    * @param targetFile
-    *       the file that will be appended to
+    * @param targetFile the file that will be appended to
+    *
     * @see com.github.SkySpiral7.Java.util.FileIoUtil#writeToFile(File, String)
     * use FileIoUtil.writeToFile(targetFile, "") to clear the file
     */

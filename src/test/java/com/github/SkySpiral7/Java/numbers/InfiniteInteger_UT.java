@@ -70,7 +70,7 @@ public class InfiniteInteger_UT
       //must use debugger to see if the fast path was used for these
       //these ones should not be moved since they are not visible
        /*
-    	InfiniteInteger.ZERO.add(12);
+       InfiniteInteger.ZERO.add(12);
     	InfiniteInteger.valueOf(BigInteger.TEN);
     	/**/
    }

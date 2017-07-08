@@ -6,34 +6,34 @@ public class JumpingIteratorDecoratorSequential<E> implements JumpingIterator<E>
 {
    protected ListIterator<E> underlyingListIterator;
 
-   public JumpingIteratorDecoratorSequential(ListIterator<E> underlyingListIterator) {this.underlyingListIterator = underlyingListIterator;}
+   public JumpingIteratorDecoratorSequential(ListIterator<E> underlyingListIterator){this.underlyingListIterator = underlyingListIterator;}
 
    @Override
-   public boolean hasNext() {return underlyingListIterator.hasNext();}
+   public boolean hasNext(){return underlyingListIterator.hasNext();}
 
    @Override
-   public E next() {return underlyingListIterator.next();}
+   public E next(){return underlyingListIterator.next();}
 
    @Override
-   public boolean hasPrevious() {return underlyingListIterator.hasPrevious();}
+   public boolean hasPrevious(){return underlyingListIterator.hasPrevious();}
 
    @Override
-   public E previous() {return underlyingListIterator.previous();}
+   public E previous(){return underlyingListIterator.previous();}
 
    @Override
-   public int nextIndex() {return underlyingListIterator.nextIndex();}
+   public int nextIndex(){return underlyingListIterator.nextIndex();}
 
    @Override
-   public int previousIndex() {return underlyingListIterator.previousIndex();}
+   public int previousIndex(){return underlyingListIterator.previousIndex();}
 
    @Override
-   public void remove() {underlyingListIterator.remove();}
+   public void remove(){underlyingListIterator.remove();}
 
    @Override
-   public void set(E newData) {underlyingListIterator.set(newData);}
+   public void set(E newData){underlyingListIterator.set(newData);}
 
    @Override
-   public void add(E newElement) {underlyingListIterator.add(newElement);}
+   public void add(E newElement){underlyingListIterator.add(newElement);}
 
    //don't need to implement any methods for JumpingIterator because they all have defaults
 }

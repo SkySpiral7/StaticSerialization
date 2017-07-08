@@ -93,7 +93,7 @@ public class ObjectWriterRegistry_UT
       testObject.writeId(instance, writer);
       writer.close();
 
-      final byte[] expected = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
+      final byte[] expected = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
             (byte) 0x66};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals("*", bytesToString(fileContents, expected.length));

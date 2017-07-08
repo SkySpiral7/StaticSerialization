@@ -2,15 +2,15 @@ package com.github.SkySpiral7.Java.util;
 
 public class BitWiseUtil
 {
-   private BitWiseUtil() {}
+   private BitWiseUtil(){}
 
    public static final long HIGH_64 = -1;  //== 0xFFFF_FFFF__FFFF_FFFFL
 
-   public static boolean isPowerOf2(long x) {return ((x & -x) == x);}  //also works for Long.MIN_VALUE and negative but maybe not unsigned
+   public static boolean isPowerOf2(long x){return ((x & -x) == x);}  //also works for Long.MIN_VALUE and negative but maybe not unsigned
 
-   public static boolean isEven(long x) {return ((x & 1) == 0);}
+   public static boolean isEven(long x){return ((x & 1) == 0);}
 
-   public static boolean isOdd(long x) {return ((x & 1) == 1);}  //these work for negative and unsigned values
+   public static boolean isOdd(long x){return ((x & 1) == 1);}  //these work for negative and unsigned values
 
    public static long getLowestNBits(long value, int nBitsToKeep)
    {
@@ -65,9 +65,9 @@ public class BitWiseUtil
       return ((byte) (value & bitMask));
    }
 
-   public static long multiplyByPowerOf2(long value, int exponent) {return (value << exponent);}
+   public static long multiplyByPowerOf2(long value, int exponent){return (value << exponent);}
 
-   public static long divideByPowerOf2(long value, int exponent) {return (value >> exponent);}
+   public static long divideByPowerOf2(long value, int exponent){return (value >> exponent);}
 
    public static int bigEndianBytesToInteger(byte[] input)
    {

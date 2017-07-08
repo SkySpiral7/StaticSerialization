@@ -3,7 +3,13 @@ package com.github.SkySpiral7.Java.dataStructures;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -20,11 +26,11 @@ import com.github.SkySpiral7.Java.util.ComparableSugar;
  * an array or list of all numbers in range. The 2 ends may be included or excluded.
  * Note that null is not allowed for any method.
  *
- * @param <T_Range>
- *       the type of number that the range represents.
- *       The range supports all JRE classes that extend Number (and are self Comparable)
- *       and also InfiniteInteger. Mutable numbers can't be used as they could disrupt
- *       the invariants of Range.
+ * @param <T_Range> the type of number that the range represents.
+ *                  The range supports all JRE classes that extend Number (and are self Comparable)
+ *                  and also InfiniteInteger. Mutable numbers can't be used as they could disrupt
+ *                  the invariants of Range.
+ *
  * @see #Range(Boundary, Boundary)
  * @see #Range(Number, String, Number)
  * @see InfiniteInteger
@@ -41,14 +47,12 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     * Create a new Range with the bounds given.
     * See inclusive/exclusive in order to create the Boundary objects.
     *
-    * @param lower
-    *       the lower bound for the number range
-    * @param upper
-    *       the upper bound for the number range
-    * @throws IllegalArgumentException
-    *       if lower &gt;= upper,
-    *       if lower or upper are NaN,
-    *       or if T_Range is mutable.
+    * @param lower the lower bound for the number range
+    * @param upper the upper bound for the number range
+    *
+    * @throws IllegalArgumentException if lower &gt;= upper,
+    *                                  if lower or upper are NaN,
+    *                                  or if T_Range is mutable.
     * @see #inclusive(Number)
     * @see #exclusive(Number)
     * @see #Range(Number, String, Number)
@@ -59,8 +63,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
       Objects.requireNonNull(upper, "upper");
       this.lower = lower;
       this.upper = upper;
-      @SuppressWarnings("unchecked")
-      final Class<T_Range> temp = (Class<T_Range>) lower.getValue().getClass();
+      @SuppressWarnings("unchecked") final Class<T_Range> temp = (Class<T_Range>) lower.getValue().getClass();
       boundaryInfo = new BoundaryInfo<T_Range>(temp);
 
       checkInvariants();
@@ -81,17 +84,14 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     * <p>Examples: {@code new Range<Integer>(0, "..>", 10)} to represent all legal indexes for an array with length 10.
     * {@code new Range<Float>(0.0f, "<..>", Float.POSITIVE_INFINITY)} to represent all non-negative finite floating point numbers.</p>
     *
-    * @param lower
-    *       the lower bound for the number range
-    * @param rangePattern
-    *       one of the four strings as listed above
-    * @param upper
-    *       the upper bound for the number range
-    * @throws IllegalArgumentException
-    *       if lower &gt;= upper,
-    *       if rangePattern has an invalid value,
-    *       if lower or upper are NaN,
-    *       or if T_Range is mutable.
+    * @param lower        the lower bound for the number range
+    * @param rangePattern one of the four strings as listed above
+    * @param upper        the upper bound for the number range
+    *
+    * @throws IllegalArgumentException if lower &gt;= upper,
+    *                                  if rangePattern has an invalid value,
+    *                                  if lower or upper are NaN,
+    *                                  or if T_Range is mutable.
     * @see #Range(Boundary, Boundary)
     */
    public Range(final T_Range lower, String rangePattern, final T_Range upper)
@@ -104,18 +104,16 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
 
       this.lower = new Boundary<T_Range>(lower, !rangePattern.startsWith("<"));
       this.upper = new Boundary<T_Range>(upper, !rangePattern.endsWith(">"));
-      @SuppressWarnings("unchecked")
-      final Class<T_Range> temp = (Class<T_Range>) lower.getClass();
+      @SuppressWarnings("unchecked") final Class<T_Range> temp = (Class<T_Range>) lower.getClass();
       boundaryInfo = new BoundaryInfo<T_Range>(temp);
 
       checkInvariants();
    }
 
    /**
-    * @throws IllegalArgumentException
-    *       if lower &gt;= upper,
-    *       if lower or upper are NaN,
-    *       or if T_Range is mutable.
+    * @throws IllegalArgumentException if lower &gt;= upper,
+    *                                  if lower or upper are NaN,
+    *                                  or if T_Range is mutable.
     */
    private void checkInvariants()
    {
@@ -129,8 +127,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
    }
 
    /**
-    * @throws IllegalArgumentException
-    *       if num is NaN
+    * @throws IllegalArgumentException if num is NaN
     */
    private void checkForNanOfKnownClasses(final T_Range num)
    {
@@ -153,8 +150,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
    }
 
    /**
-    * @throws IllegalArgumentException
-    *       if class1 is mutable
+    * @throws IllegalArgumentException if class1 is mutable
     */
    private static void checkKnownMutableClasses(final Class<?> class1)
    {
@@ -220,7 +216,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     *
     * @see #createArray(Class, Number)
     */
-   public T_Range[] createArray() {return createArray(toArrayClass(boundaryInfo.type), boundaryInfo.getOne());}
+   public T_Range[] createArray(){return createArray(toArrayClass(boundaryInfo.type), boundaryInfo.getOne());}
 
    /**
     * Simply calls createArray(T_Range[].class, stepBy).
@@ -229,7 +225,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     *
     * @see #createArray(Class, Number)
     */
-   public T_Range[] createArray(final T_Range stepBy) {return createArray(toArrayClass(boundaryInfo.type), stepBy);}
+   public T_Range[] createArray(final T_Range stepBy){return createArray(toArrayClass(boundaryInfo.type), stepBy);}
 
    /**
     * Simply calls createArray(typeOf, 1).
@@ -238,7 +234,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     *
     * @see #createArray(Class, Number)
     */
-   public <T_Custom> T_Custom createArray(final Class<T_Custom> typeOf) {return createArray(typeOf, boundaryInfo.getOne());}
+   public <T_Custom> T_Custom createArray(final Class<T_Custom> typeOf){return createArray(typeOf, boundaryInfo.getOne());}
 
    /**
     * <p>Creates an array of type {@code typeOf} of all numbers included in this range counting by {@code stepBy}.
@@ -259,14 +255,12 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     * {@code new Range<Double>(0.0d, "..", 1.0d).createArray(Float[].class, 0.5d)} returns {@code new Float[]{0.0f, 0.5f, 1.0f}}.
     * {@code new Range<Integer>(1, "<..", 10).createArray(short[].class, 1000)} returns an empty array.</p>
     *
-    * @param typeOf
-    *       the class of the array to be returned
-    * @param stepBy
-    *       the amount to add between each number
+    * @param typeOf the class of the array to be returned
+    * @param stepBy the amount to add between each number
+    *
     * @return an array of all numbers (counting by stepBy) included in this range
     *
-    * @throws IllegalArgumentException
-    *       if typeOf isn't an array class or if the component type of typeOf is not supported
+    * @throws IllegalArgumentException if typeOf isn't an array class or if the component type of typeOf is not supported
     * @see #createList(Class, Number)
     */
    public <T_Custom> T_Custom createArray(final Class<T_Custom> typeOf, final T_Range stepBy)
@@ -279,8 +273,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
       //I can't have the stream convert to primitive so I do that myself below
 
       final Class<?> componentType = typeOf.getComponentType();
-      @SuppressWarnings("unchecked")
-      final T_Custom result = (T_Custom) Array.newInstance(componentType, numberArray.length);
+      @SuppressWarnings("unchecked") final T_Custom result = (T_Custom) Array.newInstance(componentType, numberArray.length);
 
       for (int i = 0; i < numberArray.length; i++)
       {
@@ -313,7 +306,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     *
     * @see #createList(Class, Number)
     */
-   public List<T_Range> createList() {return createList(boundaryInfo.type, boundaryInfo.getOne());}
+   public List<T_Range> createList(){return createList(boundaryInfo.type, boundaryInfo.getOne());}
 
    /**
     * Simply calls createList(T_Range.class, stepBy).
@@ -322,7 +315,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     *
     * @see #createList(Class, Number)
     */
-   public List<T_Range> createList(final T_Range stepBy) {return createList(boundaryInfo.type, stepBy);}
+   public List<T_Range> createList(final T_Range stepBy){return createList(boundaryInfo.type, stepBy);}
 
    /**
     * Simply calls createList(typeOf, 1).
@@ -331,7 +324,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     *
     * @see #createList(Class, Number)
     */
-   public <T_Custom> List<T_Custom> createList(final Class<T_Custom> typeOf) {return createList(typeOf, boundaryInfo.getOne());}
+   public <T_Custom> List<T_Custom> createList(final Class<T_Custom> typeOf){return createList(typeOf, boundaryInfo.getOne());}
 
    /**
     * <p>Creates a list of type {@code typeOf} of all numbers included in this range counting by {@code stepBy}.
@@ -350,14 +343,12 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     * <p>For example: {@code new Range<Integer>(256, "..", 258).createList(Byte.class, 1)} returns a list of 3 elements
     * however each of them will have been truncated when cast from int to byte.</p>
     *
-    * @param typeOf
-    *       the class of the elements of the returned list (primitives will be auto-boxed)
-    * @param stepBy
-    *       the amount to add between each number
+    * @param typeOf the class of the elements of the returned list (primitives will be auto-boxed)
+    * @param stepBy the amount to add between each number
+    *
     * @return a list of all numbers (counting by stepBy) included in this range
     *
-    * @throws IllegalArgumentException
-    *       if typeOf is not a supported class
+    * @throws IllegalArgumentException if typeOf is not a supported class
     * @see #createArray(Class, Number)
     */
    public <T_Custom> List<T_Custom> createList(final Class<T_Custom> typeOf, final T_Range stepBy)
@@ -372,7 +363,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     *
     * @see #createStream(Class, Number)
     */
-   public Stream<T_Range> createStream() {return createStream(boundaryInfo.getOne());}
+   public Stream<T_Range> createStream(){return createStream(boundaryInfo.getOne());}
 
    /**
     * Same as createStream(T_Range.class, stepBy).
@@ -387,9 +378,8 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
       T_Range index = lower.getValue();
       if (!lower.isInclusive()) index = boundaryInfo.add(index, stepBy);
 
-      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
-            new IterateByStep(index, stepBy),
-            Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
+      return StreamSupport.stream(
+            Spliterators.spliteratorUnknownSize(new IterateByStep(index, stepBy), Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
    }
 
    /**
@@ -399,7 +389,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     *
     * @see #createStream(Class, Number)
     */
-   public <T_Custom> Stream<T_Custom> createStream(final Class<T_Custom> typeOf) {return createStream(typeOf, boundaryInfo.getOne());}
+   public <T_Custom> Stream<T_Custom> createStream(final Class<T_Custom> typeOf){return createStream(typeOf, boundaryInfo.getOne());}
 
    /**
     * <p>Creates a stream of type {@code typeOf} of all numbers included in this range counting by {@code stepBy}.
@@ -414,14 +404,12 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
     * will not end. Likewise there is no check to see if
     * stepBy &lt;= 0 (or NaN) which would also be endless.</p>
     *
-    * @param typeOf
-    *       the class of the elements in the returned list (primitives will be auto-boxed)
-    * @param stepBy
-    *       the amount to add between each number
+    * @param typeOf the class of the elements in the returned list (primitives will be auto-boxed)
+    * @param stepBy the amount to add between each number
+    *
     * @return a stream of all numbers (counting by stepBy) included in this range
     *
-    * @throws IllegalArgumentException
-    *       if typeOf is not a supported class
+    * @throws IllegalArgumentException if typeOf is not a supported class
     * @see #createList(Class, Number)
     */
    public <T_Custom> Stream<T_Custom> createStream(final Class<T_Custom> typeOf, final T_Range stepBy)
@@ -429,7 +417,9 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
       Objects.requireNonNull(typeOf, "typeOf");
       Objects.requireNonNull(stepBy, "stepBy");  //redundant but easier to understand stack trace
       return createStream(stepBy).map((T_Range input) ->
-                                      {return convertTo(input, typeOf);});
+      {
+         return convertTo(input, typeOf);
+      });
    }
 
    private final class IterateByStep implements Iterator<T_Range>
@@ -444,7 +434,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
       }
 
       @Override
-      public boolean hasNext() {return Range.this.contains(index);}
+      public boolean hasNext(){return Range.this.contains(index);}
 
       @Override
       public T_Range next()
@@ -485,17 +475,17 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
    }
 
    /** Standard getter for the lower bound. */
-   public Boundary<T_Range> getLowerBound() {return lower;}
+   public Boundary<T_Range> getLowerBound(){return lower;}
 
    /** Standard getter for the upper bound. */
-   public Boundary<T_Range> getUpperBound() {return upper;}
+   public Boundary<T_Range> getUpperBound(){return upper;}
 
    /**
     * An instance of this class represents one of the boundaries of Range.
     * This is simply a bean that holds the number value and an inclusive flag.
     *
-    * @param <T_Boundary>
-    *       the type of number stored
+    * @param <T_Boundary> the type of number stored
+    *
     * @see Range
     * @see Range#inclusive(Number)
     * @see Range#exclusive(Number)
@@ -513,20 +503,20 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
       }
 
       /** Standard getter for the value of the boundary. */
-      public T_Boundary getValue() {return value;}
+      public T_Boundary getValue(){return value;}
 
       /**
        * @return true if the Range of numbers includes the value of this boundary
        */
-      public boolean isInclusive() {return inclusive;}
+      public boolean isInclusive(){return inclusive;}
    }
 
    /**
     * This class describes and operates on the numbers used by Range. In order to add another class
     * so that Range can use it you only need to add a single line to each method.
     *
-    * @param <T_BoundaryInfo>
-    *       the type of number stored in Range
+    * @param <T_BoundaryInfo> the type of number stored in Range
+    *
     * @see #add(Number, Number)
     * @see #getOne()
     */
@@ -535,7 +525,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
       /** The class that Range was created with. Stored explicitly for array and list creation. */
       public final Class<T_BoundaryInfo> type;
 
-      public BoundaryInfo(final Class<T_BoundaryInfo> type) {this.type = type;}
+      public BoundaryInfo(final Class<T_BoundaryInfo> type){this.type = type;}
 
       /**
        * This method is used by each of the linked methods in order to get the default stepBy amount.
@@ -545,8 +535,7 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
        *
        * @return the value 1 in order to add by that amount
        *
-       * @throws IllegalArgumentException
-       *       if T_BoundaryInfo doesn't allow a default stepBy amount
+       * @throws IllegalArgumentException if T_BoundaryInfo doesn't allow a default stepBy amount
        * @see Range#createArray()
        * @see Range#createArray(Class)
        * @see Range#createList()
@@ -577,14 +566,12 @@ public final class Range<T_Range extends Number & Comparable<T_Range>>
       /**
        * This method is used by every createArray and list method so that changing between each number is possible.
        *
-       * @param starting
-       *       the previous value already used (or not)
-       * @param stepBy
-       *       the amount to add to get to the next number to be used (or not)
+       * @param starting the previous value already used (or not)
+       * @param stepBy   the amount to add to get to the next number to be used (or not)
+       *
        * @return the next number in the sequence
        *
-       * @throws IllegalArgumentException
-       *       if T_BoundaryInfo can't be made into an array or list
+       * @throws IllegalArgumentException if T_BoundaryInfo can't be made into an array or list
        */
       @SuppressWarnings("unchecked")
       public T_BoundaryInfo add(final T_BoundaryInfo starting, final T_BoundaryInfo stepBy)

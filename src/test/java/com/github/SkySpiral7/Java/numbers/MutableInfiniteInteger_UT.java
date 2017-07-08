@@ -160,29 +160,29 @@ public class MutableInfiniteInteger_UT
    public void divide()
    {
       //simple case
-      assertDivision(MutableInfiniteInteger.valueOf(10).divide(5), 1, new int[] {2}, new int[] {0});
+      assertDivision(MutableInfiniteInteger.valueOf(10).divide(5), 1, new int[]{2}, new int[]{0});
 
       //not so clean numbers: (2^32) / (2^5-1) = (2^32) / 31 = 0x842_1084 r 4
-      assertDivision(MutableInfiniteInteger.valueOf(1L << 32).divide(31), 1, new int[] {0x842_1084}, new int[] {4});
+      assertDivision(MutableInfiniteInteger.valueOf(1L << 32).divide(31), 1, new int[]{0x842_1084}, new int[]{4});
 
       //simple negative with remainder
-      assertDivision(MutableInfiniteInteger.valueOf(-11).divide(5), -1, new int[] {2}, new int[] {1});
+      assertDivision(MutableInfiniteInteger.valueOf(-11).divide(5), -1, new int[]{2}, new int[]{1});
 
       //multiple starting nodes that fit into long after shifting
       infiniteInteger = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1).multiplyByPowerOf2(32);
       //(2^95) / -(2^32) == -(2^63). That's what I'm testing
-      assertDivision(infiniteInteger.divide(-1L << 32), -1, new int[] {0, Integer.MIN_VALUE}, new int[] {0});
+      assertDivision(infiniteInteger.divide(-1L << 32), -1, new int[]{0, Integer.MIN_VALUE}, new int[]{0});
 
       //multiple nodes for both that can't fit into long
       //(2^95)/(2^63) == (2^32)
       final MutableInfiniteInteger twoPower63 = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(1);
       infiniteInteger = twoPower63.copy().multiplyByPowerOf2(32);
-      assertDivision(infiniteInteger.copy().divide(twoPower63), 1, new int[] {0, 1}, new int[] {0});
+      assertDivision(infiniteInteger.copy().divide(twoPower63), 1, new int[]{0, 1}, new int[]{0});
 
       //again but with remainder
       //(2^95)/(2^63-1) == (2^32) r (2^32). Weird but true
       //same infiniteInteger
-      assertDivision(infiniteInteger.divide(Long.MAX_VALUE), 1, new int[] {0, 1}, new int[] {0, 1});
+      assertDivision(infiniteInteger.divide(Long.MAX_VALUE), 1, new int[]{0, 1}, new int[]{0, 1});
    }
 
    @Test
@@ -248,7 +248,7 @@ public class MutableInfiniteInteger_UT
       //must use debugger to see if the fast path was used for these
       //these ones should not be moved since they are not visible
        /*
-    	MutableInfiniteInteger.valueOf(BigInteger.TEN);
+       MutableInfiniteInteger.valueOf(BigInteger.TEN);
     	/**/
    }
 
@@ -416,13 +416,15 @@ public class MutableInfiniteInteger_UT
       assertEqualNodes(MutableInfiniteInteger.valueOf(5).multiply(MutableInfiniteInteger.valueOf(5)), 1, 25);
 
       //more than max int
-      assertEqualNodes(MutableInfiniteInteger.valueOf(4_294_967_295L).multiply(MutableInfiniteInteger.valueOf(-2)), -1, (int) 4_294_967_294L, 1);
+      assertEqualNodes(MutableInfiniteInteger.valueOf(4_294_967_295L).multiply(MutableInfiniteInteger.valueOf(-2)), -1,
+            (int) 4_294_967_294L, 1);
 
       //more than max long
       assertEqualNodes(MutableInfiniteInteger.valueOf(Long.MAX_VALUE).multiply(2).add(MutableInfiniteInteger.valueOf(2)), 1, 0, 0, 1);
 
       //multi digit
-      assertEqualNodes(MutableInfiniteInteger.valueOf(-Long.MAX_VALUE).multiply(MutableInfiniteInteger.valueOf(-Long.MAX_VALUE)), 1, 1, 0, -1, 0x3FFF_FFFF);
+      assertEqualNodes(MutableInfiniteInteger.valueOf(-Long.MAX_VALUE).multiply(MutableInfiniteInteger.valueOf(-Long.MAX_VALUE)), 1, 1, 0,
+            -1, 0x3FFF_FFFF);
       //first pass should be: + 1, 7FFFFFFF, 7FFFFFFF
       //second pass should be: + 0, 80000001, 7FFFFFFF, 3FFFFFFF
    }
@@ -550,7 +552,8 @@ public class MutableInfiniteInteger_UT
    {
       assertEquals(MutableInfiniteInteger.valueOf(5), MutableInfiniteInteger.valueOf(BigInteger.valueOf(5)));
       assertEquals(MutableInfiniteInteger.valueOf(-5), MutableInfiniteInteger.valueOf(BigInteger.valueOf(-5)));
-      assertEquals(MutableInfiniteInteger.valueOf(Long.MAX_VALUE - 5), MutableInfiniteInteger.valueOf(BigInteger.valueOf(Long.MAX_VALUE - 5)));
+      assertEquals(MutableInfiniteInteger.valueOf(Long.MAX_VALUE - 5),
+            MutableInfiniteInteger.valueOf(BigInteger.valueOf(Long.MAX_VALUE - 5)));
 
       infiniteInteger = MutableInfiniteInteger.valueOf(Long.MAX_VALUE).add(Long.MAX_VALUE).add(2).negate();
       BigInteger input = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.valueOf(Long.MAX_VALUE)).add(BigInteger.valueOf(2)).negate();
@@ -573,7 +576,8 @@ public class MutableInfiniteInteger_UT
       assertEqualNodes(MutableInfiniteInteger.valueOf(Long.MIN_VALUE), -1, 0, Integer.MIN_VALUE);
    }
 
-   private void assertDivision(IntegerQuotient<MutableInfiniteInteger> divisionResult, int wholeSign, int[] wholeNodes, int[] remainderNodes)
+   private void assertDivision(IntegerQuotient<MutableInfiniteInteger> divisionResult, int wholeSign, int[] wholeNodes,
+                               int[] remainderNodes)
    {
       assertEqualNodes(divisionResult.getWholeResult(), wholeSign, wholeNodes);
       if (remainderNodes.length == 1 && remainderNodes[0] == 0) assertEqualNodes(divisionResult.getRemainder(), 0, 0);

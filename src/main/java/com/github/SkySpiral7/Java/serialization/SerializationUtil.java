@@ -17,8 +17,8 @@ public enum SerializationUtil
    ;  //no instances
 
    /**
-    * @param subject
-    *       the class to inspect
+    * @param subject the class to inspect
+    *
     * @return all fields that can and should be written with ObjectStreamWriter.
     * Known limitation: doesn't support fields of TypeVariable that extend StaticSerializable.
     *

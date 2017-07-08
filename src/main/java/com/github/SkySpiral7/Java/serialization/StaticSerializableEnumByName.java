@@ -19,8 +19,7 @@ public interface StaticSerializableEnumByName extends StaticSerializable
     * and ObjectStreamWriter/Reader won't validate it. Because there's no reason to call
     * this method, it always throws (this maintains overhead and is consistent with the other read/writes).
     *
-    * @throws IllegalStateException
-    *       always
+    * @throws IllegalStateException always
     * @see StaticSerializable use StaticSerializable directly for custom functionality
     */
    public default void writeToStream(final ObjectStreamWriter writer)

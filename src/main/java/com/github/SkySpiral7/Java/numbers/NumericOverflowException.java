@@ -10,7 +10,8 @@ public class NumericOverflowException extends RuntimeException
    /**
     * Constructs a <code>NumericOverflowException</code> with no detail message.
     */
-   public NumericOverflowException () {
+   public NumericOverflowException()
+   {
       super();
    }
 

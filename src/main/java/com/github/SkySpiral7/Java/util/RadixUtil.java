@@ -8,25 +8,15 @@ import com.github.SkySpiral7.Java.numbers.NumericOverflowException;
 
 public final class RadixUtil
 {
-   private RadixUtil() {}
+   private RadixUtil(){}
 
    /**
     * All possible chars for representing a number as a String up to base 62.
     * private because arrays are mutable.
     */
-   private final static char[] base62Digits = {
-         '0', '1', '2', '3', '4', '5',
-         '6', '7', '8', '9', 'a', 'b',
-         'c', 'd', 'e', 'f', 'g', 'h',
-         'i', 'j', 'k', 'l', 'm', 'n',
-         'o', 'p', 'q', 'r', 's', 't',
-         'u', 'v', 'w', 'x', 'y', 'z',
-         'A', 'B',
-         'C', 'D', 'E', 'F', 'G', 'H',
-         'I', 'J', 'K', 'L', 'M', 'N',
-         'O', 'P', 'Q', 'R', 'S', 'T',
-         'U', 'V', 'W', 'X', 'Y', 'Z'
-   };
+   private final static char[] base62Digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+         'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+         'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
    /**
     * <p>Returns a String that represents value in the given number base (radix).
@@ -40,14 +30,12 @@ public final class RadixUtil
     * <p>This order is used to be compatible with Long.toString.</p>
     * <p><b>Special case</b>: Base 1 uses the character '1' instead of '0'.</p>
     *
-    * @param value
-    *       the number that is to be represented
-    * @param radix
-    *       the number base
+    * @param value the number that is to be represented
+    * @param radix the number base
+    *
     * @return a String that represents value in the given number base (radix).
     *
-    * @throws IllegalArgumentException
-    *       for unsupported radix or if the base 1 number will not fit into a String
+    * @throws IllegalArgumentException for unsupported radix or if the base 1 number will not fit into a String
     * @see Long#toString(long, int)
     */
    public static String toString(long value, final int radix)
@@ -137,21 +125,16 @@ public final class RadixUtil
     * <li>the fullwidth Latin letters are not supported (because they are different characters).</li>
     * </ul>
     *
-    * @param inputString
-    *       the String to be parsed
-    * @param radix
-    *       the number base
+    * @param inputString the String to be parsed
+    * @param radix       the number base
+    *
     * @return the long that inputString represents
     *
-    * @throws NullPointerException
-    *       if inputString is null
-    * @throws NumericOverflowException
-    *       if inputString represents a number greater than a Long can represent
-    * @throws NumberFormatException
-    *       excluding a leading + or - if inputString is empty (and not base 1)
-    *       or contains illegal characters for that radix
-    * @throws IllegalArgumentException
-    *       {@code if(radix > 62 || radix < 1)}
+    * @throws NullPointerException     if inputString is null
+    * @throws NumericOverflowException if inputString represents a number greater than a Long can represent
+    * @throws NumberFormatException    excluding a leading + or - if inputString is empty (and not base 1)
+    *                                  or contains illegal characters for that radix
+    * @throws IllegalArgumentException {@code if(radix > 62 || radix < 1)}
     * @see Long#parseLong(String, int)
     * @see #toString(long, int) toString(long, int) for a description of legal characters per radix
     */
@@ -197,8 +180,7 @@ public final class RadixUtil
          {
             limit = Long.MIN_VALUE;
          }
-         else if (firstChar != '+')
-            throw NumberFormatException.forInputRadix(inputString, radix);
+         else if (firstChar != '+') throw NumberFormatException.forInputRadix(inputString, radix);
 
          if (inputLength == 1) // Cannot have lone "+" or "-"
             throw NumberFormatException.forInputRadix(inputString, radix);
@@ -234,14 +216,12 @@ public final class RadixUtil
     *
     * <p><b>Special case</b>: Base 1 uses the character '1' instead of '0' and returns 1 or -1 accordingly.</p>
     *
-    * @param digit
-    *       the character to be converted
-    * @param radix
-    *       the number base
+    * @param digit the character to be converted
+    * @param radix the number base
+    *
     * @return the numeric value of digit or -1
     *
-    * @throws IllegalArgumentException
-    *       {@code if(radix > 62 || radix < 1)}
+    * @throws IllegalArgumentException {@code if(radix > 62 || radix < 1)}
     * @see Character#digit(char, int)
     */
    public static int getDigitValue(final char digit, final int radix)

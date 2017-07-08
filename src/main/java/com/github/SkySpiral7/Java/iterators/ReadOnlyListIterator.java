@@ -7,8 +7,8 @@ import java.util.ListIterator;
  * the data can't be changed (ie is read only). Add, set, and remove will throw if called
  * everything else delegates to the underlying ListIterator.
  *
- * @param <E>
- *       the element types contained in the list iterator
+ * @param <E> the element types contained in the list iterator
+ *
  * @see ReadOnlyIterator
  */
 public class ReadOnlyListIterator<E> extends ReadOnlyIterator<E> implements ListIterator<E>
@@ -22,16 +22,16 @@ public class ReadOnlyListIterator<E> extends ReadOnlyIterator<E> implements List
    }
 
    @Override
-   public boolean hasPrevious() {return underlyingListIterator.hasPrevious();}
+   public boolean hasPrevious(){return underlyingListIterator.hasPrevious();}
 
    @Override
-   public E previous() {return underlyingListIterator.previous();}
+   public E previous(){return underlyingListIterator.previous();}
 
    @Override
-   public int nextIndex() {return underlyingListIterator.nextIndex();}
+   public int nextIndex(){return underlyingListIterator.nextIndex();}
 
    @Override
-   public int previousIndex() {return underlyingListIterator.previousIndex();}
+   public int previousIndex(){return underlyingListIterator.previousIndex();}
 
    @Override
    public final void set(E dummy)

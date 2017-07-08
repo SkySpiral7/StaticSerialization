@@ -81,7 +81,8 @@ public class ObjectReaderRegistry_UT
    @Test
    public void readObjectOrId_returnsNull_whenIdNotFound() throws IOException
    {
-      final File tempFile = writeIdToFile("ObjectReaderRegistry_UT.TempFile.readObjectOrId_returnsNull_whenIdNotFound.", UUID.randomUUID().toString());
+      final File tempFile = writeIdToFile("ObjectReaderRegistry_UT.TempFile.readObjectOrId_returnsNull_whenIdNotFound.",
+            UUID.randomUUID().toString());
 
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       assertNull(testObject.readObjectOrId(reader));
@@ -121,7 +122,7 @@ public class ObjectReaderRegistry_UT
       final File tempFile = File.createTempFile(prefix, ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.String|".getBytes(StandardCharsets.UTF_8), false);
-      final byte[] idSize = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) id.length()};
+      final byte[] idSize = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) id.length()};
       FileIoUtil.writeToFile(tempFile, idSize, true);
       FileIoUtil.writeToFile(tempFile, id.getBytes(StandardCharsets.UTF_8), true);
       return tempFile;

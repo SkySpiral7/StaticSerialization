@@ -6,8 +6,8 @@ public enum Comparison
 
    private final String toStringValue;
 
-   private Comparison(String toStringValue) {this.toStringValue = toStringValue;}
+   private Comparison(String toStringValue){this.toStringValue = toStringValue;}
 
    @Override
-   public String toString() {return toStringValue;}
+   public String toString(){return toStringValue;}
 }

@@ -31,8 +31,8 @@ package com.github.SkySpiral7.Java;
  * but it doesn't make any OOP sense. While I'm at it using native code to dodge constructors
  * is also confusing.</p>
  *
- * @param <T>
- *       the class that is implementing this interface
+ * @param <T> the class that is implementing this interface
+ *
  * @see Cloneable
  * @see Object#clone()
  * @see #copy()

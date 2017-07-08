@@ -5,7 +5,7 @@ import java.util.Objects;
 //TODO: some of my utils are final and some are abstract. make them all abstract
 public final class JsonHelper
 {
-   private JsonHelper() {}
+   private JsonHelper(){}
 
    public static String stringify(Object target)
    {

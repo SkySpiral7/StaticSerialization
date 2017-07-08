@@ -13,10 +13,9 @@ import com.github.SkySpiral7.Java.util.JsonHelper;
  * internal data this class depends on a map already having data. This class is thread safe and modifications
  * will affect the underlying map. Therefore setValue will throw if the underlying map throws on modification.
  *
- * @param <K>
- *       the data type of the key of the Map.Entry
- * @param <V>
- *       the data type of the value of the Map.Entry
+ * @param <K> the data type of the key of the Map.Entry
+ * @param <V> the data type of the value of the Map.Entry
+ *
  * @see AbstractMap.SimpleEntry
  * @see AbstractMap.SimpleImmutableEntry
  */
@@ -33,7 +32,7 @@ public class MapEntryExternal<K, V> implements Map.Entry<K, V>
    }
 
    @Override
-   public K getKey() {return key;}
+   public K getKey(){return key;}
 
    @Override
    public V getValue()

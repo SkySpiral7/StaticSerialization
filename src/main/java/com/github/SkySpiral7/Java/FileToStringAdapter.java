@@ -1,6 +1,12 @@
 package com.github.SkySpiral7.Java;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Scanner;
@@ -27,22 +33,22 @@ public class FileToStringAdapter extends File
    /**
     * @see File#File(String)
     */
-   public FileToStringAdapter(String pathname) {super(pathname);}
+   public FileToStringAdapter(String pathname){super(pathname);}
 
    /**
     * @see File#File(URI)
     */
-   public FileToStringAdapter(URI uri) {super(uri);}
+   public FileToStringAdapter(URI uri){super(uri);}
 
    /**
     * @see File#File(File, String)
     */
-   public FileToStringAdapter(File parent, String child) {super(parent, child);}
+   public FileToStringAdapter(File parent, String child){super(parent, child);}
 
    /**
     * @see File#File(String, String)
     */
-   public FileToStringAdapter(String parent, String child) {super(parent, child);}
+   public FileToStringAdapter(String parent, String child){super(parent, child);}
 
    /**
     * This constructor converts from a file.
@@ -61,13 +67,12 @@ public class FileToStringAdapter extends File
     * @throws IndexOutOfBoundsException
     * @see #substring(long, long)
     */
-   public String contentsAsString() {return substring(0, length());}
+   public String contentsAsString(){return substring(0, length());}
 
    /**
     * Returns true if the file's contents are empty.
     *
-    * @throws IllegalStateException
-    *       if the file does not exist or is a directory.
+    * @throws IllegalStateException if the file does not exist or is a directory.
     * @see String#isEmpty()
     * @see File#length()
     */
@@ -80,8 +85,7 @@ public class FileToStringAdapter extends File
    /**
     * Called by all methods that require file contents to exist.
     *
-    * @throws IllegalStateException
-    *       if the file does not exist or is a directory.
+    * @throws IllegalStateException if the file does not exist or is a directory.
     */
    private void requireFileContents()
    {
@@ -94,10 +98,8 @@ public class FileToStringAdapter extends File
     * size. The only catch is that it doesn't recognize character encoding and therefore only works on ascii plain text files.
     * Therefore the index is the byte index instead of the character index and the character returned is assumed to be 1 byte in size.
     *
-    * @throws IllegalStateException
-    *       if the file does not exist or is a directory.
-    * @throws IndexOutOfBoundsException
-    *       if the index argument is negative or not less than the length of this file.
+    * @throws IllegalStateException     if the file does not exist or is a directory.
+    * @throws IndexOutOfBoundsException if the index argument is negative or not less than the length of this file.
     * @see String#charAt(int)
     */
    public char charAtRandom(long index)
@@ -120,10 +122,8 @@ public class FileToStringAdapter extends File
     * Returns the character of the file's contents that is located at the index specified.
     * index is zero indexed. index is the character index not the byte index.
     *
-    * @throws IllegalStateException
-    *       if the file does not exist or is a directory.
-    * @throws IndexOutOfBoundsException
-    *       if the index argument is negative or not less than the length of this file.
+    * @throws IllegalStateException     if the file does not exist or is a directory.
+    * @throws IndexOutOfBoundsException if the index argument is negative or not less than the length of this file.
     * @see String#charAt(int)
     */
    public char charAt(long index)
@@ -159,8 +159,7 @@ public class FileToStringAdapter extends File
     *
     * @return the number of characters that the file contains
     *
-    * @throws IllegalStateException
-    *       if the file does not exist or is a directory.
+    * @throws IllegalStateException if the file does not exist or is a directory.
     */
    public long countCharacters()
    {
@@ -186,8 +185,7 @@ public class FileToStringAdapter extends File
     * srcBegin and dstBegin are inclusive and srcEnd is exclusive.
     * Each are zero indexed.
     *
-    * @throws IllegalStateException
-    *       if the file does not exist or is a directory.
+    * @throws IllegalStateException     if the file does not exist or is a directory.
     * @throws IndexOutOfBoundsException
     * @see String#getChars(int, int, char[], int)
     */
@@ -196,11 +194,10 @@ public class FileToStringAdapter extends File
       requireFileContents();
       if (srcBegin < 0 || srcBegin > srcEnd)
          throw new IndexOutOfBoundsException("srcBegin is invalid: " + srcBegin + ". srcEnd was: " + srcEnd);
-      if (srcEnd > length())
-         throw new IndexOutOfBoundsException("srcEnd is invalid: " + srcEnd + ". File content length is " + length());
-      if (dstBegin + (srcEnd - srcBegin) > dst.length)
-         throw new IndexOutOfBoundsException(
-               "srcBegin: " + srcBegin + "; srcEnd: " + srcEnd + "; dstBegin: " + dstBegin + "; Can't fit into an array of length: " + dst.length);
+      if (srcEnd > length()) throw new IndexOutOfBoundsException("srcEnd is invalid: " + srcEnd + ". File content length is " + length());
+      if (dstBegin + (srcEnd - srcBegin) > dst.length) throw new IndexOutOfBoundsException(
+            "srcBegin: " + srcBegin + "; srcEnd: " + srcEnd + "; dstBegin: " + dstBegin + "; Can't fit into an array of length: "
+            + dst.length);
       if (srcBegin == srcEnd) return;  //done
 
       long currentSource = 0;
@@ -263,8 +260,7 @@ public class FileToStringAdapter extends File
    /**
     * Returns true if the file's contents match the CharSequence.
     *
-    * @throws IllegalStateException
-    *       if the file does not exist or is a directory.
+    * @throws IllegalStateException if the file does not exist or is a directory.
     * @see String#contentEquals(CharSequence)
     */
    public boolean contentEquals(CharSequence cs)
@@ -295,8 +291,7 @@ public class FileToStringAdapter extends File
    /**
     * Returns true if both files have the same contents.
     *
-    * @throws IllegalStateException
-    *       if this file or the one passed in does not exist or is a directory.
+    * @throws IllegalStateException if this file or the one passed in does not exist or is a directory.
     * @see String#contentEquals(CharSequence)
     */
    public boolean contentEquals(File otherFile)
@@ -308,8 +303,7 @@ public class FileToStringAdapter extends File
 
       //if(this.length() != otherAdapter.length()) return false;
       //not possible: due to character encoding 2 files of different # bytes can have the same contents
-      try (Scanner thisFileScanner = new Scanner(this);
-           Scanner otherFileScanner = new Scanner(otherAdapter);)
+      try (Scanner thisFileScanner = new Scanner(this); Scanner otherFileScanner = new Scanner(otherAdapter);)
       {
          thisFileScanner.useDelimiter("");  //why isn't this setDelimiter?
          //scanner y u no have nextChar?
@@ -329,8 +323,7 @@ public class FileToStringAdapter extends File
    /**
     * Returns true if the file's contents matches the CharSequence ignoring case.
     *
-    * @throws IllegalStateException
-    *       if the file does not exist or is a directory.
+    * @throws IllegalStateException if the file does not exist or is a directory.
     * @see String#equalsIgnoreCase(String)
     */
    public boolean contentEqualsIgnoreCase(CharSequence cs)
@@ -363,8 +356,7 @@ public class FileToStringAdapter extends File
    /**
     * Returns true if both files have the same contents.
     *
-    * @throws IllegalStateException
-    *       if this file or the one passed in does not exist or is a directory.
+    * @throws IllegalStateException if this file or the one passed in does not exist or is a directory.
     * @see String#equalsIgnoreCase(String)
     */
    public boolean contentEqualsIgnoreCase(File otherFile)
@@ -376,8 +368,7 @@ public class FileToStringAdapter extends File
 
       //if(this.length() != otherAdapter.length()) return false;
       //not possible: due to character encoding 2 files of different # bytes can have the same contents
-      try (Scanner thisFileScanner = new Scanner(this);
-           Scanner otherFileScanner = new Scanner(otherAdapter);)
+      try (Scanner thisFileScanner = new Scanner(this); Scanner otherFileScanner = new Scanner(otherAdapter);)
       {
          thisFileScanner.useDelimiter("");  //why isn't this setDelimiter?
          //scanner y u no have nextChar?
@@ -397,8 +388,7 @@ public class FileToStringAdapter extends File
    /**
     * Compares the file's contents to the CharSequence.
     *
-    * @throws IllegalStateException
-    *       if the file does not exist or is a directory.
+    * @throws IllegalStateException if the file does not exist or is a directory.
     * @see String#compareTo(String)
     */
    public int compareContents(CharSequence cs)
@@ -410,8 +400,7 @@ public class FileToStringAdapter extends File
    /**
     * Compares the file's contents to the CharSequence ignoring case.
     *
-    * @throws IllegalStateException
-    *       if the file does not exist or is a directory.
+    * @throws IllegalStateException if the file does not exist or is a directory.
     * @see String#compareToIgnoreCase(String)
     */
    public int compareContentsIgnoreCase(CharSequence cs)
@@ -437,7 +426,7 @@ public class FileToStringAdapter extends File
     *
     * @see String#startsWith(String)
     */
-   public boolean startsWith(String prefix) {return startsWith(prefix, 0);}
+   public boolean startsWith(String prefix){return startsWith(prefix, 0);}
 
    /**
     * Returns true if the file's contents ends with the String.
@@ -456,7 +445,7 @@ public class FileToStringAdapter extends File
     *
     * @see String#indexOf(int)
     */
-   public long indexOf(char ch) {return indexOf(ch, 0);}
+   public long indexOf(char ch){return indexOf(ch, 0);}
 
    /**
     * This method searches the file's contents, starting at fromIndex (inclusive character index), for the
@@ -476,7 +465,7 @@ public class FileToStringAdapter extends File
     *
     * @see String#lastIndexOf(int)
     */
-   public long lastIndexOf(char ch) {return lastIndexOf(ch, length() - 1);}
+   public long lastIndexOf(char ch){return lastIndexOf(ch, length() - 1);}
 
    /**
     * This method searches the file's contents, starting at fromIndex (inclusive character index), for the
@@ -496,7 +485,7 @@ public class FileToStringAdapter extends File
     *
     * @see String#indexOf(String)
     */
-   public long indexOf(String str) {return indexOf(str, 0);}
+   public long indexOf(String str){return indexOf(str, 0);}
 
    /**
     * This method searches the file's contents, starting at fromIndex (inclusive character index), for the first matching substring
@@ -516,7 +505,7 @@ public class FileToStringAdapter extends File
     *
     * @see String#lastIndexOf(String)
     */
-   public long lastIndexOf(String str) {return lastIndexOf(str, length() - 1);}
+   public long lastIndexOf(String str){return lastIndexOf(str, length() - 1);}
 
    /**
     * This method searches the file's contents, starting at fromIndex (inclusive character index), for the last matching character
@@ -533,12 +522,11 @@ public class FileToStringAdapter extends File
    /**
     * Returns a substring of the file's contents starting at beginIndex until the end of the file.
     *
-    * @throws IndexOutOfBoundsException
-    *       if: beginIndex is negative, beginIndex is larger than the length of this file's contents
-    *       or if the range can't fit into a String.
+    * @throws IndexOutOfBoundsException if: beginIndex is negative, beginIndex is larger than the length of this file's contents
+    *                                   or if the range can't fit into a String.
     * @see String#substring(int)
     */
-   public String substring(long beginIndex) {return substring(beginIndex, length());}
+   public String substring(long beginIndex){return substring(beginIndex, length());}
 
    //TODO: look into InputStream#read(char cbuf[], int off, int len). http://www.coderanch.com/t/385665/java/java/RandomAccessFile
 
@@ -548,14 +536,13 @@ public class FileToStringAdapter extends File
     * then it is assumed that all characters were desired and endIndex is automatically set to characterCount. This allows
     * file.length() to be passed into for the endIndex.
     *
-    * @throws IndexOutOfBoundsException
-    *       if:
-    *       <ul>
-    *       <li>beginIndex is negative</li>
-    *       <li>beginIndex is larger than endIndex</li>
-    *       <li>endIndex is larger than the length of this file's contents</li>
-    *       <li>the range can't fit into a String</li>
-    *       </ul>
+    * @throws IndexOutOfBoundsException if:
+    *                                   <ul>
+    *                                   <li>beginIndex is negative</li>
+    *                                   <li>beginIndex is larger than endIndex</li>
+    *                                   <li>endIndex is larger than the length of this file's contents</li>
+    *                                   <li>the range can't fit into a String</li>
+    *                                   </ul>
     * @see String#substring(int, int)
     */
    public String substring(long beginIndex, long endIndex)
@@ -565,8 +552,8 @@ public class FileToStringAdapter extends File
          throw new IndexOutOfBoundsException("beginIndex is invalid: " + beginIndex + ". endIndex was: " + endIndex);
       if (endIndex > length())
          throw new IndexOutOfBoundsException("endIndex is invalid: " + endIndex + ". File content length is " + length());
-      if ((endIndex - beginIndex) > Integer.MAX_VALUE)
-         throw new IndexOutOfBoundsException("beginIndex: " + beginIndex + "; endIndex: " + endIndex + "; Range too large to fit into a string");
+      if ((endIndex - beginIndex) > Integer.MAX_VALUE) throw new IndexOutOfBoundsException(
+            "beginIndex: " + beginIndex + "; endIndex: " + endIndex + "; Range too large to fit into a string");
       if (beginIndex == endIndex) return "";  //done
 
       StringBuffer contentBuffer = new StringBuffer();
@@ -592,10 +579,8 @@ public class FileToStringAdapter extends File
     * Appends the string to the file's contents.
     * Creates the file if it doesn't currently exist.
     *
-    * @throws IllegalStateException
-    *       if this file is a directory
-    * @throws IOException
-    *       if the file can't be written to.
+    * @throws IllegalStateException if this file is a directory
+    * @throws IOException           if the file can't be written to.
     * @see String#concat(String)
     */
    public void concat(String newContents) throws IOException
@@ -609,10 +594,8 @@ public class FileToStringAdapter extends File
     * The string becomes the file's new contents replacing the previous file contents.
     * Creates the file if it doesn't currently exist.
     *
-    * @throws IllegalStateException
-    *       if this file is a directory
-    * @throws IOException
-    *       if the file can't be written to.
+    * @throws IllegalStateException if this file is a directory
+    * @throws IOException           if the file can't be written to.
     */
    public void setFileContents(String newContents) throws IOException
    {
@@ -627,7 +610,7 @@ public class FileToStringAdapter extends File
     *
     * @see String#contains(CharSequence)
     */
-   public boolean contains(CharSequence s) {return indexOf(s.toString()) > -1;}
+   public boolean contains(CharSequence s){return indexOf(s.toString()) > -1;}
 
    /**
     * This method replaces the first character in the file's contents that matches target with the replacement.
@@ -709,7 +692,7 @@ public class FileToStringAdapter extends File
     *
     * @see String#split(String)
     */
-   public String[] split(String separator) {return split(separator, 0);}
+   public String[] split(String separator){return split(separator, 0);}
 
    /**
     * Changes the file contents to be all lower case according to the locale.
@@ -726,7 +709,7 @@ public class FileToStringAdapter extends File
     *
     * @see String#toLowerCase()
     */
-   public void toLowerCase() throws IOException {toLowerCase(Locale.getDefault());}
+   public void toLowerCase() throws IOException{toLowerCase(Locale.getDefault());}
 
    /**
     * Changes the file contents to be all upper case according to the locale.
@@ -743,7 +726,7 @@ public class FileToStringAdapter extends File
     *
     * @see String#toUpperCase()
     */
-   public void toUpperCase() throws IOException {toUpperCase(Locale.getDefault());}
+   public void toUpperCase() throws IOException{toUpperCase(Locale.getDefault());}
 
    /**
     * Removes all whitespace (including end lines) at the beginning and end of the file contents.

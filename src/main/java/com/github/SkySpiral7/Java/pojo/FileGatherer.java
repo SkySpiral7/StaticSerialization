@@ -7,7 +7,13 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -22,7 +28,8 @@ public class FileGatherer
     * @param rootFolder the root which will be searched along with all subfolders
     * @param fileCriteria will compare using fileCriteria.matcher(thisFile.getName()).find() this includes extension type
     * @param folderCriteria will compare using folderCriteria.matcher(thisFile.getName()).find() to determine if folder matches the pattern
-    * @param subFolderCriteria will compare using folderCriteria.matcher(thisFile.getName()).find() to determine if the folder should be explored
+    * @param subFolderCriteria will compare using folderCriteria.matcher(thisFile.getName()).find() to determine if the folder should be
+    * explored
     * @param maxDepth pass -1 to have no maximum otherwise it only will go that number of folders down pass 0 for this folder only
     * @param maxFinds pass -1 to have no maximum
     * @param findFolders true if you want to check folder's names or false if you do not
@@ -59,22 +66,14 @@ maxFinds = maxDepth = -1;</pre></code>
    }
 
    /**
-    * @param rootFolder
-    *       the root which will be searched along with all subfolders
-    * @param fileCriteria
-    *       if accept returns true then the file will be added to the search results
-    * @param folderCriteria
-    *       if accept returns true then the folder will be added to the search results
-    * @param subFolderCriteria
-    *       if accept returns false then the folder will not be searched. Note that this is called on rootFolder
-    * @param maxDepth
-    *       pass -1 to have no maximum otherwise it only will go that number of folders down pass 0 for this folder only
-    * @param maxFinds
-    *       pass -1 to have no maximum
-    * @param findFolders
-    *       true if you want to check folder's names or false if you do not
-    * @param findFiles
-    *       whether or not you want non-directory (ie normal) files
+    * @param rootFolder        the root which will be searched along with all subfolders
+    * @param fileCriteria      if accept returns true then the file will be added to the search results
+    * @param folderCriteria    if accept returns true then the folder will be added to the search results
+    * @param subFolderCriteria if accept returns false then the folder will not be searched. Note that this is called on rootFolder
+    * @param maxDepth          pass -1 to have no maximum otherwise it only will go that number of folders down pass 0 for this folder only
+    * @param maxFinds          pass -1 to have no maximum
+    * @param findFolders       true if you want to check folder's names or false if you do not
+    * @param findFiles         whether or not you want non-directory (ie normal) files
     */
    public FileGatherer(Builder builder)
    {

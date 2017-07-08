@@ -1,8 +1,23 @@
 package com.github.SkySpiral7.Java.pojo;
 
 import java.io.Serializable;
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -88,8 +103,8 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
     *
     * </p>
     *
-    * @param packageToInspect
-    *       the string of the untrusted package. It should end with a dot such as "org.apache.commons.lang."
+    * @param packageToInspect the string of the untrusted package. It should end with a dot such as "org.apache.commons.lang."
+    *
     * @see DeepSerializableMatcher
     * @see #ASSUMED_SERIALIZABLE_DEFAULTS
     * @see #isDeeplySerializable(String, Set)
@@ -114,18 +129,17 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
     *
     * </p>
     *
-    * @param packageToInspect
-    *       the string of the untrusted package. It should end with a dot such as "org.apache.commons.lang."
-    * @param assumedSerializable
-    *       the set of classes to use instead of the default value (see ASSUMED_SERIALIZABLE_DEFAULTS for
-    *       a description of what it does).
+    * @param packageToInspect    the string of the untrusted package. It should end with a dot such as "org.apache.commons.lang."
+    * @param assumedSerializable the set of classes to use instead of the default value (see ASSUMED_SERIALIZABLE_DEFAULTS for
+    *                            a description of what it does).
+    *
     * @see DeepSerializableMatcher
     * @see #ASSUMED_SERIALIZABLE_DEFAULTS
     * @see #isDeeplySerializable(String)
     */
    @Factory
    public static Matcher<Class<? extends Serializable>> isDeeplySerializable(final String packageToInspect,
-         final Set<Class<?>> assumedSerializable)
+                                                                             final Set<Class<?>> assumedSerializable)
    {
       return new DeepSerializableMatcher(packageToInspect, assumedSerializable);
    }
@@ -143,8 +157,8 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
     * @see #isDeeplySerializable(String)
     * @see #isDeeplySerializable(String, Set)
     */
-   public static final Set<Class<?>> ASSUMED_SERIALIZABLE_DEFAULTS = new HashSet<>(Arrays.asList(Collection.class,
-                                                                                                 Set.class, List.class, Map.class));
+   public static final Set<Class<?>> ASSUMED_SERIALIZABLE_DEFAULTS = new HashSet<>(
+         Arrays.asList(Collection.class, Set.class, List.class, Map.class));
 
    /**
     * This class exists only for logical separation. DeepSerializableMatcher contains everything related to being a
@@ -154,8 +168,8 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
    private final class SerializableInspector
    {
       /**
-       * @param startingClass
-       *       the class that will be scanned for non-Serializable fields or generics.
+       * @param startingClass the class that will be scanned for non-Serializable fields or generics.
+       *
        * @return each string returned contains a readable description of where the non-Serializable type is located.
        * Note that the same class may have multiple fields of the same non-Serializable which will appear each
        * time
@@ -173,16 +187,14 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
             final Class<?> classToCheck = classHistory.getCurrent();
             if (serializableClasses.contains(classToCheck)) continue;  //this prevents getting stuck in this loop
             //additionally because non-serializable classes aren't skipped they will fail for each location they are referenced
-            if (!Serializable.class.isAssignableFrom(classToCheck)) nonSerializableClassLocations.add(classHistory
-                                                                                                            .getHistory()
-                                                                                                            .append("which is not Serializable")
-                                                                                                            .toString());
+            if (!Serializable.class.isAssignableFrom(classToCheck))
+               nonSerializableClassLocations.add(classHistory.getHistory().append("which is not Serializable").toString());
             else
             {
                serializableClasses.add(classToCheck);
 
-               if (classToCheck.getName().startsWith(packageToInspect)) collectClassPieces(uncheckedClassLocations,
-                                                                                           classHistory, classToCheck);
+               if (classToCheck.getName().startsWith(packageToInspect))
+                  collectClassPieces(uncheckedClassLocations, classHistory, classToCheck);
             }
          }
 
@@ -194,27 +206,27 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
        * of classToCheck,
        * and the containing class of classToCheck (if classToCheck is an inner class).
        *
-       * @param uncheckedClassLocations
-       *       a collection of every class (in a ClassHistory) that has not yet been examined
-       * @param classHistory
-       *       the ClassHistory for the class currently being examined
-       * @param classToCheck
-       *       the class contained by the current classHistory
+       * @param uncheckedClassLocations a collection of every class (in a ClassHistory) that has not yet been examined
+       * @param classHistory            the ClassHistory for the class currently being examined
+       * @param classToCheck            the class contained by the current classHistory
        */
-      private void collectClassPieces(final Deque<ClassHistory> uncheckedClassLocations,
-            final ClassHistory classHistory, final Class<?> classToCheck)
+      private void collectClassPieces(final Deque<ClassHistory> uncheckedClassLocations, final ClassHistory classHistory,
+                                      final Class<?> classToCheck)
       {
          for (final Field field : getAllFields(classToCheck))
          {
             newEvents(uncheckedClassLocations, classHistory.getHistory().append("contains field ").toString(),
-                      getGenerics(field.getGenericType()));
+                  getGenerics(field.getGenericType()));
          }
          final Class<?> superClass = classToCheck.getSuperclass();
          //don't need to check interfaces since they can only contain static fields
          if (!Object.class.equals(superClass))
          {
-            final String containedInHistory = classHistory.getHistory().append("is a child of class ")
-                                                          .append(superClass.getName()).append(' ').toString();
+            final String containedInHistory = classHistory.getHistory()
+                                                          .append("is a child of class ")
+                                                          .append(superClass.getName())
+                                                          .append(' ')
+                                                          .toString();
             newClassEvent(uncheckedClassLocations, containedInHistory, superClass);
          }
          //inner classes don't affect serialization
@@ -222,8 +234,11 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
          final Class<?> declaringClass = classToCheck.getDeclaringClass();
          if (null != declaringClass && !Modifier.isStatic(classToCheck.getModifiers()))
          {
-            final String containedInHistory = classHistory.getHistory().append("is contained in class ")
-                                                          .append(declaringClass.getName()).append(' ').toString();
+            final String containedInHistory = classHistory.getHistory()
+                                                          .append("is contained in class ")
+                                                          .append(declaringClass.getName())
+                                                          .append(' ')
+                                                          .toString();
             newClassEvent(uncheckedClassLocations, containedInHistory, declaringClass);
          }
          //ask to confirm that getEnclosingClass doesn't apply to me
@@ -233,16 +248,13 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
        * This method creates a new ClassHistory from newClassEvent and adds it and all of the class generics to
        * uncheckedClassLocations.
        *
-       * @param uncheckedClassLocations
-       *       the collection of ClassHistorys that have not been checked for being serializable.
-       * @param pastHistory
-       *       provided by the current class's ClassHistory
-       * @param newClassEvent
-       *       a class that was discovered by the current class
+       * @param uncheckedClassLocations the collection of ClassHistorys that have not been checked for being serializable.
+       * @param pastHistory             provided by the current class's ClassHistory
+       * @param newClassEvent           a class that was discovered by the current class
+       *
        * @see #getClassGenerics(Class)
        */
-      private void newClassEvent(final Deque<ClassHistory> uncheckedClassLocations, final String pastHistory,
-            final Class<?> newClassEvent)
+      private void newClassEvent(final Deque<ClassHistory> uncheckedClassLocations, final String pastHistory, final Class<?> newClassEvent)
       {
          final ClassHistory item = new ClassHistory(pastHistory, newClassEvent);
          uncheckedClassLocations.addLast(item);
@@ -255,20 +267,16 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
       /**
        * For each element of newEvents a new ClassHistory is created and added to uncheckedClassLocations.
        *
-       * @param uncheckedClassLocations
-       *       the collection of ClassHistorys that have not been checked for being serializable.
-       * @param pastHistory
-       *       provided by the current class's ClassHistory. All elements in newEvents have the same history.
-       * @param newEvents
-       *       a list of classes that need to be checked for serializable. Such as a list of fields in a class.
+       * @param uncheckedClassLocations the collection of ClassHistorys that have not been checked for being serializable.
+       * @param pastHistory             provided by the current class's ClassHistory. All elements in newEvents have the same history.
+       * @param newEvents               a list of classes that need to be checked for serializable. Such as a list of fields in a class.
        */
-      private void newEvents(final Deque<ClassHistory> uncheckedClassLocations, final String pastHistory,
-            final List<Class<?>> newEvents)
+      private void newEvents(final Deque<ClassHistory> uncheckedClassLocations, final String pastHistory, final List<Class<?>> newEvents)
       {
          for (final Class<?> event : newEvents)
          {
-            final ClassHistory item = new ClassHistory(new StringBuilder(pastHistory).append(event.getName())
-                                                                                     .append(' ').toString(), event);
+            final ClassHistory item = new ClassHistory(new StringBuilder(pastHistory).append(event.getName()).append(' ').toString(),
+                  event);
             uncheckedClassLocations.addLast(item);
          }
       }
@@ -283,8 +291,8 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
          {
             //static and transient don't affect serialization
             //ignore synthetic fields since I'll check the declaringClass anyway
-            if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isTransient(field.getModifiers())
-                && !field.isSynthetic()) allFields.add(field);
+            if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isTransient(field.getModifiers()) && !field.isSynthetic())
+               allFields.add(field);
          }
          return allFields;
       }
@@ -414,10 +422,8 @@ public final class DeepSerializableMatcher extends BaseMatcher<Class<? extends S
       private final Class<?> current;
 
       /**
-       * @param history
-       *       a string description of where current is located.
-       * @param current
-       *       the class that has yet to be examined.
+       * @param history a string description of where current is located.
+       * @param current the class that has yet to be examined.
        */
       public ClassHistory(final String history, final Class<?> current)
       {

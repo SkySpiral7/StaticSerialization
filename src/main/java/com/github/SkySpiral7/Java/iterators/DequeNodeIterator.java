@@ -10,8 +10,7 @@ import com.github.SkySpiral7.Java.pojo.DequeNode;
  * This is a ListIterator for a Deque. It is not thread safe and assumes the deque won't be modified by another class.
  * It also assumes that the list will never have Integer.MAX_VALUE elements or more.
  *
- * @param <E>
- *       the data type stored in the DequeNode
+ * @param <E> the data type stored in the DequeNode
  */
 public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>>
 {
@@ -101,8 +100,8 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>>
    public void set(DequeNode<E> nodeWithNewData)
    {
       if (previouslyVistedNode == null) throw new IllegalStateException();
-      if ((nodeWithNewData.getPrev() != null && nodeWithNewData.getPrev() != previouslyVistedNode.getPrev()) ||
-          (nodeWithNewData.getNext() != null && nodeWithNewData.getNext() != previouslyVistedNode.getNext()))
+      if ((nodeWithNewData.getPrev() != null && nodeWithNewData.getPrev() != previouslyVistedNode.getPrev()) || (
+            nodeWithNewData.getNext() != null && nodeWithNewData.getNext() != previouslyVistedNode.getNext()))
          throw new UnsupportedOperationException("This iterator's set can only set the data, not change the order.");
       //this prevents the pointers from being mismatched
       previouslyVistedNode.setData(nodeWithNewData.getData());
@@ -111,9 +110,10 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>>
    @Override
    public void add(DequeNode<E> newNode)
    {
-      if ((newNode.getPrev() != null && newNode.getPrev() != nextNode) ||
-          (newNode.getNext() != null && newNode.getNext() != nextNode.getNext()))
-         throw new UnsupportedOperationException("This iterator's add creates a new node given the data. But the node passed in had mismatching pointers.");
+      if ((newNode.getPrev() != null && newNode.getPrev() != nextNode) || (newNode.getNext() != null
+                                                                           && newNode.getNext() != nextNode.getNext()))
+         throw new UnsupportedOperationException(
+               "This iterator's add creates a new node given the data. But the node passed in had mismatching pointers.");
       //this prevents the pointers from being mismatched
       if (amAtEnd) nextNode = DequeNode.Factory.createNodeAfter(nextNode, newNode.getData());
       else DequeNode.Factory.createNodeBefore(newNode.getData(), nextNode);
@@ -125,24 +125,27 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>>
    {
       protected DequeNodeIterator<E> underlyingIterator;
 
-      public ValueIterator(DequeNode<E> startingNode, int startingIndex) {underlyingIterator = new DequeNodeIterator<E>(startingNode, startingIndex);}
+      public ValueIterator(DequeNode<E> startingNode, int startingIndex)
+      {
+         underlyingIterator = new DequeNodeIterator<E>(startingNode, startingIndex);
+      }
 
-      public ValueIterator(DequeNodeIterator<E> underlyingIterator) {this.underlyingIterator = underlyingIterator;}
-
-      @Override
-      public boolean hasNext() {return underlyingIterator.hasNext();}
-
-      @Override
-      public boolean hasPrevious() {return underlyingIterator.hasPrevious();}
+      public ValueIterator(DequeNodeIterator<E> underlyingIterator){this.underlyingIterator = underlyingIterator;}
 
       @Override
-      public int nextIndex() {return underlyingIterator.nextIndex();}
+      public boolean hasNext(){return underlyingIterator.hasNext();}
 
       @Override
-      public int previousIndex() {return underlyingIterator.previousIndex();}
+      public boolean hasPrevious(){return underlyingIterator.hasPrevious();}
 
       @Override
-      public void remove() {underlyingIterator.remove();}
+      public int nextIndex(){return underlyingIterator.nextIndex();}
+
+      @Override
+      public int previousIndex(){return underlyingIterator.previousIndex();}
+
+      @Override
+      public void remove(){underlyingIterator.remove();}
 
       @Override
       public E next()
@@ -177,10 +180,10 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>>
       }
 
       @Override
-      public int nextIndex() {return -1;}
+      public int nextIndex(){return -1;}
 
       @Override
-      public int previousIndex() {return -1;}
+      public int previousIndex(){return -1;}
    }
 
    /**
@@ -188,8 +191,8 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>>
     * Calling nextIndex or previousIndex will return -1. All other methods are
     * the same as ValueIterator.
     *
-    * @param <E>
-    *       the type of element contained in the nodes
+    * @param <E> the type of element contained in the nodes
+    *
     * @see IndexAgnosticDequeIterator
     * @see ValueIterator
     */
@@ -200,13 +203,13 @@ public class DequeNodeIterator<E> implements ListIterator<DequeNode<E>>
          super(startingNode, -1);
       }
 
-      public IndexAgnosticValueIterator(DequeNodeIterator<E> underlyingIterator) {super(underlyingIterator);}
+      public IndexAgnosticValueIterator(DequeNodeIterator<E> underlyingIterator){super(underlyingIterator);}
 
       @Override
-      public int nextIndex() {return -1;}
+      public int nextIndex(){return -1;}
 
       @Override
-      public int previousIndex() {return -1;}
+      public int previousIndex(){return -1;}
    }
 
 }

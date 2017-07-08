@@ -24,8 +24,8 @@ public enum ClassUtil
     * good). clazz.cast also avoids ambiguities mentioned above.
     * </p>
     *
-    * @param anything
-    *       will cast this to T
+    * @param anything will cast this to T
+    *
     * @return anything as T
     */
    @SuppressWarnings("unchecked")
@@ -78,8 +78,7 @@ public enum ClassUtil
    /**
     * @return the primitive class that matches the passed in boxedClass
     *
-    * @throws IllegalArgumentException
-    *       if boxedClass isn't a boxed class. Note that Void isn't a boxed class.
+    * @throws IllegalArgumentException if boxedClass isn't a boxed class. Note that Void isn't a boxed class.
     */
    public static Class<?> unboxClass(final Class<?> boxedClass)
    {
@@ -99,8 +98,7 @@ public enum ClassUtil
    /**
     * @return the boxed class that matches the passed in primitiveClass
     *
-    * @throws IllegalArgumentException
-    *       if primitiveClass isn't a primitive class or is void.class since Void.class isn't a boxed class.
+    * @throws IllegalArgumentException if primitiveClass isn't a primitive class or is void.class since Void.class isn't a boxed class.
     */
    public static Class<?> boxClass(final Class<?> primitiveClass)
    {

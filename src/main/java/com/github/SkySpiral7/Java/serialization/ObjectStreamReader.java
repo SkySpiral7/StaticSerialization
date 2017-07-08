@@ -1,14 +1,5 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import com.github.SkySpiral7.Java.AsynchronousFileReader;
-import com.github.SkySpiral7.Java.exception.DeserializationException;
-import com.github.SkySpiral7.Java.exception.InvalidClassException;
-import com.github.SkySpiral7.Java.exception.NoMoreDataException;
-import com.github.SkySpiral7.Java.exception.NotSerializableException;
-import com.github.SkySpiral7.Java.exception.StreamCorruptedException;
-import com.github.SkySpiral7.Java.util.BitWiseUtil;
-import com.github.SkySpiral7.Java.util.ClassUtil;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -26,6 +17,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import com.github.SkySpiral7.Java.AsynchronousFileReader;
+import com.github.SkySpiral7.Java.exception.DeserializationException;
+import com.github.SkySpiral7.Java.exception.InvalidClassException;
+import com.github.SkySpiral7.Java.exception.NoMoreDataException;
+import com.github.SkySpiral7.Java.exception.NotSerializableException;
+import com.github.SkySpiral7.Java.exception.StreamCorruptedException;
+import com.github.SkySpiral7.Java.util.BitWiseUtil;
+import com.github.SkySpiral7.Java.util.ClassUtil;
 
 public class ObjectStreamReader implements Closeable
 {
@@ -112,9 +112,9 @@ public class ObjectStreamReader implements Closeable
          final String name = readObject(String.class);
          return (T) Enum.valueOf(ClassUtil.cast(expectedClass), name);
       }
-      if (StaticSerializableEnumByOrdinal.class.isAssignableFrom(expectedClass)) { return readEnumByOrdinal(expectedClass); }
+      if (StaticSerializableEnumByOrdinal.class.isAssignableFrom(expectedClass)){ return readEnumByOrdinal(expectedClass); }
 
-      if (StaticSerializable.class.isAssignableFrom(expectedClass)) { return readCustomClass(expectedClass); }
+      if (StaticSerializable.class.isAssignableFrom(expectedClass)){ return readCustomClass(expectedClass); }
       if (Serializable.class.isAssignableFrom(expectedClass))
       {
          final int length = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
@@ -153,17 +153,20 @@ public class ObjectStreamReader implements Closeable
    [1]
    ] => 3, 2,3,1, 1,2,1,2,3,1
    sounds hard to manage for arbitrary depth
-[2java.lang.Object| length 2 contains [1java.lang.Byte| and [1java.lang.Double| (not the same as primitive arrays but can store elements as primitive)
+[2java.lang.Object| length 2 contains [1java.lang.Byte| and [1java.lang.Double| (not the same as primitive arrays but can store elements
+as primitive)
 */
    /**
     * Not in map:<br/>
-   + boolean true<br/>
-   - boolean false<br/>
-   [2<br/>
-   | null<br/>
-   */
+    * + boolean true<br/>
+    * - boolean false<br/>
+    * [2<br/>
+    * | null<br/>
+    */
    private static final Map<Character, Class<?>> compressedClasses;
-   static {
+
+   static
+   {
       compressedClasses = new HashMap<>();
       compressedClasses.put('~', Byte.class);
       compressedClasses.put('!', Short.class);
@@ -174,6 +177,7 @@ public class ObjectStreamReader implements Closeable
       compressedClasses.put('&', Character.class);
       compressedClasses.put('*', String.class);
    }
+
    private Class<?> readOverhead(final Class<?> expectedClass, final byte firstByte)
    {
       if (compressedClasses.containsKey((char) firstByte)) return compressedClasses.get((char) firstByte);
@@ -191,8 +195,8 @@ public class ObjectStreamReader implements Closeable
       try
       {
          Class<?> actualClass = Class.forName(actualClassName);
-         if (!expectedClass.isAssignableFrom(actualClass)) throw new ClassCastException(actualClass.getName()
-                                                                                        + " can't be cast into " + expectedClass.getName());
+         if (!expectedClass.isAssignableFrom(actualClass))
+            throw new ClassCastException(actualClass.getName() + " can't be cast into " + expectedClass.getName());
          return actualClass;
       }
       catch (final ClassNotFoundException e)
@@ -251,13 +255,14 @@ public class ObjectStreamReader implements Closeable
 
    private <T> T readEnumByOrdinal(final Class<T> expectedClass)
    {
-      if (!expectedClass.isEnum()) throw new InvalidClassException(expectedClass.getName() + " implements StaticSerializableEnumByOrdinal but isn't an enum");
+      if (!expectedClass.isEnum())
+         throw new InvalidClassException(expectedClass.getName() + " implements StaticSerializableEnumByOrdinal but isn't an enum");
 
       final int ordinal = readObject(int.class);
       final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum
 
-      if (values.length <= ordinal) throw new StreamCorruptedException(String.format(
-            "%s[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
+      if (values.length <= ordinal) throw new StreamCorruptedException(
+            String.format("%s[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
 
       return ClassUtil.cast(values[ordinal]);
    }

@@ -14,7 +14,7 @@ import static com.github.SkySpiral7.Java.pojo.Comparison.NOT_EQUAL;
 
 public class ComparableSugar
 {
-   private ComparableSugar() {}
+   private ComparableSugar(){}
 
    public static final byte THIS_LESSER = -1;  //aka me first
    public static final byte THIS_EQUAL = 0;

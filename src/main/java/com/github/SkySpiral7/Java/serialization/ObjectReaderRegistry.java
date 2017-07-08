@@ -42,8 +42,7 @@ public class ObjectReaderRegistry
     * Call this method to associate the most recent generated id to the instance given
     * so that the same instance can be referenced again while reading.
     *
-    * @throws NullPointerException
-    *       if there is no id to claim or if input is null
+    * @throws NullPointerException if there is no id to claim or if input is null
     * @see GenerateId
     */
    public void claimId(final Object input)

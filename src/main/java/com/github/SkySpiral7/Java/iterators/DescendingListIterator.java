@@ -6,7 +6,7 @@ public class DescendingListIterator<E> implements ListIterator<E>
 {
    protected final ListIterator<E> underlyingIterator;
 
-   protected DescendingListIterator(ListIterator<E> iteratorToReverse) {this.underlyingIterator = iteratorToReverse;}
+   protected DescendingListIterator(ListIterator<E> iteratorToReverse){this.underlyingIterator = iteratorToReverse;}
 
    public static <E> ListIterator<E> iterateBackwards(ListIterator<E> iteratorToReverse)
    {
@@ -16,18 +16,18 @@ public class DescendingListIterator<E> implements ListIterator<E>
 
    public static <E> ListIterator<E> iterateBackwardsFromEnd(ListIterator<E> iteratorToReverse)
    {
-      while (iteratorToReverse.hasNext()) { iteratorToReverse.next(); }
+      while (iteratorToReverse.hasNext()){ iteratorToReverse.next(); }
       return iterateBackwards(iteratorToReverse);
    }
 
    @Override
-   public void remove() {underlyingIterator.remove();}
+   public void remove(){underlyingIterator.remove();}
 
    @Override
-   public void set(E newData) {underlyingIterator.set(newData);}
+   public void set(E newData){underlyingIterator.set(newData);}
 
    @Override
-   public void add(E newElement) {underlyingIterator.add(newElement);}
+   public void add(E newElement){underlyingIterator.add(newElement);}
 
    @Override
    public boolean hasNext()

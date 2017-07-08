@@ -1,7 +1,12 @@
 package com.github.SkySpiral7.Java.serialization;
 
-import java.io.*;
-import java.lang.reflect.Array;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.Flushable;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -164,13 +169,15 @@ public class ObjectStreamWriter implements Closeable, Flushable
 
    /**
     * Not in map:<br/>
-    + boolean true<br/>
-    - boolean false<br/>
-    [2<br/>
-    | null<br/>
+    * + boolean true<br/>
+    * - boolean false<br/>
+    * [2<br/>
+    * | null<br/>
     */
    private static final Map<Class<?>, Character> compressedClasses;
-   static {
+
+   static
+   {
       compressedClasses = new HashMap<>();
       compressedClasses.put(Byte.class, '~');
       compressedClasses.put(Short.class, '!');
@@ -181,11 +188,12 @@ public class ObjectStreamWriter implements Closeable, Flushable
       compressedClasses.put(Character.class, '&');
       compressedClasses.put(String.class, '*');
    }
+
    private void writeOverhead(final Object data)
    {
       if (Boolean.TRUE.equals(data)) writeBytes('+', 1);
       else if (Boolean.FALSE.equals(data)) writeBytes('-', 1);
-      else if(data == null) writeBytes('|', 1);  //if data is null then class name is the empty string
+      else if (data == null) writeBytes('|', 1);  //if data is null then class name is the empty string
       else if (compressedClasses.containsKey(data.getClass())) writeBytes(compressedClasses.get(data.getClass()), 1);
       else
       {

@@ -1,6 +1,12 @@
 package com.github.SkySpiral7.Java.dataStructures;
 
-import java.util.*;
+import java.util.AbstractSequentialList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.ListIterator;
 
 import com.github.SkySpiral7.Java.Copyable;
 import com.github.SkySpiral7.Java.exception.ListIndexOutOfBoundsException;
@@ -34,17 +40,16 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
    /**
     * Constructs an empty list.
     */
-   public LinkedList() {}
+   public LinkedList(){}
 
    /**
     * Constructs a list containing the elements of the specified
     * collection, in the order they are returned by the collection's
     * iterator.
     *
-    * @param initialElements
-    *       the collection whose elements are to be placed into this list
-    * @throws NullPointerException
-    *       if the specified collection is null
+    * @param initialElements the collection whose elements are to be placed into this list
+    *
+    * @throws NullPointerException if the specified collection is null
     */
    public LinkedList(Collection<? extends E> initialElements)
    {
@@ -56,23 +61,24 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
     * Constructs a list containing the elements of the specified
     * array in the same order.
     *
-    * @param initialElements
-    *       the collection whose elements are to be placed into this list
-    * @throws NullPointerException
-    *       if the specified collection is null
+    * @param initialElements the collection whose elements are to be placed into this list
+    *
+    * @throws NullPointerException if the specified collection is null
     */
-   public LinkedList(E[] initialElements) {this(Arrays.asList(initialElements));}
+   public LinkedList(E[] initialElements){this(Arrays.asList(initialElements));}
 
    @Override
    public void addFirst(E newElement)
    {
-      if (!this.offerFirst(newElement)) throw new IllegalStateException("Capacity violating. The maximum number of elements can't exceed Integer.MAX_VALUE.");
+      if (!this.offerFirst(newElement))
+         throw new IllegalStateException("Capacity violating. The maximum number of elements can't exceed Integer.MAX_VALUE.");
    }
 
    @Override
    public void addLast(E newElement)
    {
-      if (!this.offerLast(newElement)) throw new IllegalStateException("Capacity violating. The maximum number of elements can't exceed Integer.MAX_VALUE.");
+      if (!this.offerLast(newElement))
+         throw new IllegalStateException("Capacity violating. The maximum number of elements can't exceed Integer.MAX_VALUE.");
    }
 
    @Override
@@ -373,13 +379,13 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
       if (index < (size >> 1))
       {
          DequeNode<E> currentNode = first;
-         for (int i = 0; i < index; i++) { currentNode = currentNode.getNext(); }
+         for (int i = 0; i < index; i++){ currentNode = currentNode.getNext(); }
          return currentNode;
       }
       else
       {
          DequeNode<E> currentNode = last;
-         for (int i = size - 1; i > index; i--) { currentNode = currentNode.getPrev(); }
+         for (int i = size - 1; i > index; i--){ currentNode = currentNode.getPrev(); }
          return currentNode;
       }
    }
@@ -419,8 +425,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
 
    public E[] toArray(Class<E> elementType)
    {
-      @SuppressWarnings("unchecked")
-      E[] destination = (E[]) java.lang.reflect.Array.newInstance(elementType, size);
+      @SuppressWarnings("unchecked") E[] destination = (E[]) java.lang.reflect.Array.newInstance(elementType, size);
       int i = 0;
       for (DequeNode<E> cursor = first; cursor != null; cursor = cursor.getNext())
       {
@@ -435,8 +440,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
    public <T> T[] toArray(T[] destination)
    {
       if (destination.length < size)
-         destination = (T[]) java.lang.reflect.Array.newInstance(
-               destination.getClass().getComponentType(), size);
+         destination = (T[]) java.lang.reflect.Array.newInstance(destination.getClass().getComponentType(), size);
       int i = 0;
       //result exists in order to cause an ArrayStoreException instead of a ClassCastException
       Object[] result = destination;
@@ -446,8 +450,7 @@ public class LinkedList<E> extends AbstractSequentialList<E> implements Deque<E>
          i++;
       }
 
-      if (destination.length > size)
-         destination[size] = null;
+      if (destination.length > size) destination[size] = null;
 
       return destination;
    }

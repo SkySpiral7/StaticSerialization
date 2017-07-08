@@ -2,18 +2,12 @@ package com.github.SkySpiral7.Java.serialization;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 import com.github.SkySpiral7.Java.exception.NotSerializableException;
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
-import com.github.SkySpiral7.Java.util.ClassUtil;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 import org.junit.Test;
 
@@ -75,7 +69,7 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(null);
       testObject.close();
-      final byte[] expected = new byte[] {(byte) '|'};
+      final byte[] expected = new byte[]{(byte) '|'};
       //don't use bytesToString since that assumes the header has UTF-8 encoding
       assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
    }
@@ -89,8 +83,7 @@ public class ObjectStreamWriter_UT
 
       @GenerateId
       class LocalWithGenerateId
-      {
-      }
+      {}
 
       final String id = "f";
       final Object data = new LocalWithGenerateId();
@@ -98,7 +91,7 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(data);
       testObject.close();
-      final byte[] expected = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
+      final byte[] expected = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
             (byte) 0x66};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       final String overhead = "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$1LocalWithGenerateId|*";
@@ -131,7 +124,7 @@ public class ObjectStreamWriter_UT
       int offset = 0;
       assertEquals(overhead, bytesToString(subArrayWithLength(fileContents, offset, overhead.length()), 0));
       offset += overhead.length();
-      assertEquals(Arrays.toString(new byte[] {0, 0, 0, 36}), Arrays.toString(subArrayWithLength(fileContents, offset, 4)));
+      assertEquals(Arrays.toString(new byte[]{0, 0, 0, 36}), Arrays.toString(subArrayWithLength(fileContents, offset, 4)));
       offset += 4;
       offset += 36;
       assertEquals("~", bytesToString(subArrayWithLength(fileContents, offset, 1), 0));
@@ -192,8 +185,7 @@ public class ObjectStreamWriter_UT
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Long data = 0xdead_beef__b100_d123L;
-      final byte[] expected = {(byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, (byte) 0x00,
-            (byte) 0xd1, (byte) 0x23};
+      final byte[] expected = {(byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, (byte) 0x00, (byte) 0xd1, (byte) 0x23};
 
       testObject.writeObject(data);
       testObject.close();
@@ -225,8 +217,7 @@ public class ObjectStreamWriter_UT
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Double data = Double.longBitsToDouble(0xdead_beef__b100_d123L);
-      final byte[] expected = {(byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, (byte) 0x00,
-            (byte) 0xd1, (byte) 0x23};
+      final byte[] expected = {(byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, (byte) 0x00, (byte) 0xd1, (byte) 0x23};
 
       testObject.writeObject(data);
       testObject.close();
@@ -286,7 +277,7 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject("f\u221E");  //infinity sign is BMP (3 UTF-8 bytes) non-private
       testObject.close();
-      final byte[] expected = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
+      final byte[] expected = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
             (byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals("*", bytesToString(fileContents, expected.length));
@@ -309,7 +300,7 @@ public class ObjectStreamWriter_UT
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       final String overhead = "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$EnumByName|*";
-      final byte[] data = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03,  //UTF-8 length (int)
+      final byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03,  //UTF-8 length (int)
             (byte) 79, (byte) 110, (byte) 101};  //"One"
       assertEquals(overhead, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
@@ -332,8 +323,7 @@ public class ObjectStreamWriter_UT
       }
       catch (final ClassCastException actual)
       {
-         assertEquals(
-               "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$1NotEnum cannot be cast to java.lang.Enum",
+         assertEquals("com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$1NotEnum cannot be cast to java.lang.Enum",
                actual.getMessage());
       }
 
@@ -356,7 +346,7 @@ public class ObjectStreamWriter_UT
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       final String overhead = "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$EnumByOrdinal|@";
-      final byte[] data = new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
+      final byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
       assertEquals(overhead, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
    }
@@ -378,8 +368,7 @@ public class ObjectStreamWriter_UT
       }
       catch (final ClassCastException actual)
       {
-         assertEquals(
-               "com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$2NotEnum cannot be cast to java.lang.Enum",
+         assertEquals("com.github.SkySpiral7.Java.serialization.ObjectStreamWriter_UT$2NotEnum cannot be cast to java.lang.Enum",
                actual.getMessage());
       }
 

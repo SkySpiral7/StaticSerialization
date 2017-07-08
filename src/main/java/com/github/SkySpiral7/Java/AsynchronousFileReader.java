@@ -1,6 +1,11 @@
 package com.github.SkySpiral7.Java;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -25,8 +30,8 @@ public final class AsynchronousFileReader implements Closeable
    private int remainingBytes;
 
    /**
-    * @param targetFile
-    *       the file that will be read from
+    * @param targetFile the file that will be read from
+    *
     * @see com.github.SkySpiral7.Java.util.FileIoUtil#readTextFile(File)
     * @see com.github.SkySpiral7.Java.util.FileIoUtil#readBinaryFile(File)
     */
@@ -37,8 +42,8 @@ public final class AsynchronousFileReader implements Closeable
       if (!targetFile.exists()) throw new IllegalArgumentException("File doesn't exist");
       //TODO: create FileIo methods: validateRead (reads 1 byte), validateWrite, validateMaxSize
 
-      if (targetFile.length() > Integer.MAX_VALUE) throw new IllegalArgumentException(
-            "File (length " + targetFile.length() + ") larger than supported size (max int)");
+      if (targetFile.length() > Integer.MAX_VALUE)
+         throw new IllegalArgumentException("File (length " + targetFile.length() + ") larger than supported size (max int)");
       remainingBytes = (int) targetFile.length();
       final int queueLength = (remainingBytes > 0) ? remainingBytes : 1;
 
