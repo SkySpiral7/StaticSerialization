@@ -1,6 +1,8 @@
 package com.github.SkySpiral7.Java.serialization;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +10,7 @@ import java.util.List;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -145,6 +148,34 @@ public class ClassUtil_UT
       catch (final IllegalArgumentException actual)
       {
          assertEquals("void isn't a primitive class or is void.class", actual.getMessage());
+      }
+   }
+
+   @Test
+   public void getType_ReturnsParameterizedType_GivenListOfString()
+   {
+      final Type actual = ClassUtil.getType(new ClassUtil.TypeReference<List<String>>(){});
+      assertThat(actual, is(instanceOf(ParameterizedType.class)));
+      assertEquals("java.util.List<java.lang.String>", actual.toString());
+   }
+
+   @Test
+   public void getType_ReturnsClass_GivenString()
+   {
+      assertEquals(String.class, ClassUtil.getType(new ClassUtil.TypeReference<String>(){}));
+   }
+
+   @Test
+   public void getType_Throws_GivenRawType()
+   {
+      try
+      {
+         ClassUtil.getType(new ClassUtil.TypeReference(){});
+         fail("Didn't throw");
+      }
+      catch (final IllegalArgumentException actual)
+      {
+         assertEquals("Must pass in a typed subclass", actual.getMessage());
       }
    }
 
