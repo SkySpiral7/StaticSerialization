@@ -20,6 +20,14 @@ public class ComparableSugar
    public static final byte THIS_EQUAL = 0;
    public static final byte THIS_GREATER = 1;  //aka you first
 
+   /**
+    * TODO Consider replacing this method with:
+    * {@code <dependency>
+    * <groupId>com.lordofthejars</groupId>
+    * <artifactId>bool</artifactId>
+    * <version>0.9.0</version>
+    * </dependency>}
+    */
    public static <T> boolean is(Comparable<T> left, Comparison operation, T right)
    {
       Objects.requireNonNull(right);
