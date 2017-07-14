@@ -2,6 +2,8 @@ package com.github.SkySpiral7.Java.numbers;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -566,7 +568,10 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
       }
    }
 
-   //takes more than 6 minutes
+   /**
+    * Takes less than a second to calculate but making a base 10 string took more than 40 minutes then crashed (OutOfMemoryError: Java
+    * heap space).
+    */
    public static BigInteger calculateMaxBigInteger()
    {
       BigInteger maxValue = BigInteger.ONE.shiftLeft(Integer.MAX_VALUE - 1).subtract(BigInteger.ONE);
@@ -574,7 +579,9 @@ public final class MutableInfiniteInteger extends AbstractInfiniteInteger<Mutabl
       return maxValue;
    }
 
-   //not sure if faster
+   /**
+    * Takes 21 seconds to calculate. Takes a total of 42 seconds to display as debugging string.
+    */
    public static MutableInfiniteInteger calculateMaxBigIntegerAsInfiniteInteger()
    {
       MutableInfiniteInteger bigIntMaxValue = MutableInfiniteInteger.valueOf(1).multiplyByPowerOf2(Integer.MAX_VALUE).subtract(1);
