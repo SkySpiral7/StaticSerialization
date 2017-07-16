@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.serialization;
+package com.github.SkySpiral7.Java.StaticSerialization;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;

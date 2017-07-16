@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.serialization;
+package com.github.SkySpiral7.Java.StaticSerialization;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.SkySpiral7.Java.AsynchronousFileAppender;
-import com.github.SkySpiral7.Java.exception.NotSerializableException;
-import com.github.SkySpiral7.Java.exception.StreamCorruptedException;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 

@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.serialization;
+package com.github.SkySpiral7.Java.StaticSerialization;
 
 public interface StaticSerializable
 {

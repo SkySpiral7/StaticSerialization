@@ -1,8 +1,8 @@
-package com.github.SkySpiral7.Java.serialization.testClasses;
+package com.github.SkySpiral7.Java.StaticSerialization.testClasses;
 
-import com.github.SkySpiral7.Java.serialization.ObjectStreamReader;
-import com.github.SkySpiral7.Java.serialization.ObjectStreamWriter;
-import com.github.SkySpiral7.Java.serialization.StaticSerializable;
+import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader;
+import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter;
+import com.github.SkySpiral7.Java.StaticSerialization.StaticSerializable;
 
 public final class SimpleHappy implements StaticSerializable
 {

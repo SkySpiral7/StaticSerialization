@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.serialization;
+package com.github.SkySpiral7.Java.StaticSerialization;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,11 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.github.SkySpiral7.Java.AsynchronousFileReader;
-import com.github.SkySpiral7.Java.exception.DeserializationException;
-import com.github.SkySpiral7.Java.exception.InvalidClassException;
 import com.github.SkySpiral7.Java.exception.NoMoreDataException;
-import com.github.SkySpiral7.Java.exception.NotSerializableException;
-import com.github.SkySpiral7.Java.exception.StreamCorruptedException;
 import com.github.SkySpiral7.Java.util.BitWiseUtil;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 
