@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.github.SkySpiral7.Java.util.ClassUtil;
-
 public class ObjectReaderRegistry
 {
    private final Map<String, Object> registry = new HashMap<>();
@@ -21,7 +19,18 @@ public class ObjectReaderRegistry
    public <T> T getRegisteredObject(final String id)
    {
       Objects.requireNonNull(id);
-      return ClassUtil.cast(registry.get(id));
+      return cast(registry.get(id));
+   }
+
+   /**
+    * Copied from ClassUtil to lessen dependency.
+    *
+    * @see com.github.SkySpiral7.Java.util.ClassUtil#cast(Object)
+    */
+   @SuppressWarnings("unchecked")
+   private <T> T cast(final Object anything)
+   {
+      return (T) anything;
    }
 
    /**
@@ -33,7 +42,7 @@ public class ObjectReaderRegistry
    {
       Objects.requireNonNull(reader);
       final String id = reader.readObject(String.class);
-      if (registry.containsKey(id)) return ClassUtil.cast(registry.get(id));
+      if (registry.containsKey(id)) return cast(registry.get(id));
       unclaimedId = id;
       return null;
    }

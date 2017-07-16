@@ -6,7 +6,6 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import com.github.SkySpiral7.Java.util.BitWiseUtil;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 import org.junit.Test;
 
@@ -417,9 +416,26 @@ public class ObjectStreamWriter_UT
 
       final byte[] bytesOfSize = new byte[4];
       System.arraycopy(fileContents, "java.math.BigInteger|".length(), bytesOfSize, 0, 4);
-      assertEquals(javaData.length, BitWiseUtil.bigEndianBytesToInteger(bytesOfSize));
+      assertEquals(javaData.length, bigEndianBytesToInteger(bytesOfSize));
 
       assertEquals(Arrays.toString(javaData), Arrays.toString(shortenBytes(fileContents, javaData.length)));
+   }
+
+   /**
+    * Copied from BitWiseUtil to lessen dependency.
+    *
+    * @see com.github.SkySpiral7.Java.util.BitWiseUtil#bigEndianBytesToLong(byte[])
+    */
+   private int bigEndianBytesToInteger(byte[] input)
+   {
+      if (input.length != 4) throw new IllegalArgumentException("expected length 4, got: " + input.length);
+      int result = (input[0] & 0xff);
+      for (int i = 1; i < input.length; ++i)
+      {
+         result <<= 8;
+         result |= (input[i] & 0xff);
+      }
+      return result;
    }
 
    @Test
@@ -466,7 +482,8 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(new ReflectiveLocal());
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$1ReflectiveLocal|@", bytesToString(fileContents, 4));
+      assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$1ReflectiveLocal|@",
+            bytesToString(fileContents, 4));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
    }
 
