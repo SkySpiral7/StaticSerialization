@@ -2,7 +2,7 @@
    <modelVersion>4.0.0</modelVersion>
 
    <groupId>com.github.SkySpiral7</groupId>
-   <artifactId>Java</artifactId>
+   <artifactId>Java.static-serialization</artifactId>
    <version>0.0.0-SNAPSHOT</version>
 
    <properties>
@@ -15,6 +15,12 @@
    </properties>
 
    <dependencies>
+      <dependency>
+         <groupId>com.github.SkySpiral7</groupId>
+         <artifactId>Java</artifactId>
+         <version>0.0.0-SNAPSHOT</version>
+      </dependency>
+
       <!--<dependency> I would like to use the latest but there's a breaking change
          <groupId>org.hamcrest</groupId>
          <artifactId>java-hamcrest</artifactId>
@@ -24,7 +30,7 @@
          <groupId>org.hamcrest</groupId>
          <artifactId>hamcrest-all</artifactId>
          <version>1.3</version>
-         <!-- Not test scope because I create a hamcrest matcher in prod code -->
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>junit</groupId>
