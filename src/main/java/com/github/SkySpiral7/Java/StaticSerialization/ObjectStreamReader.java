@@ -134,13 +134,6 @@ Even though elements will be serialized as primitives do not change [1java.lang.
          return cast(fileReader.readBytesAsString(stringByteLength));
       }
 
-      //enums ignore GenerateId because they have fixed instances anyway
-      if (expectedClass.isAnnotationPresent(GenerateId.class) && !expectedClass.isEnum())
-      {
-         final T registeredObject = registry.readObjectOrId(this);
-         if (registeredObject != null) return registeredObject;
-      }
-
       if (StaticSerializable.class.isAssignableFrom(expectedClass)){ return readCustomClass(expectedClass); }
 
       if (expectedClass.isEnum()){ return readEnumByOrdinal(expectedClass); }

@@ -74,63 +74,6 @@ public class ObjectStreamWriter_UT
    }
 
    @Test
-   public void writeObject_stops_GenerateId() throws IOException
-   {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_stops_GenerateId.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-
-      @GenerateId
-      class LocalWithGenerateId
-      {}
-
-      final String id = "f";
-      final Object data = new LocalWithGenerateId();
-      testObject.getObjectRegistry().registerObject(id, data);
-
-      testObject.writeObject(data);
-      testObject.close();
-      final byte[] expected = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
-            (byte) 0x66};
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$1LocalWithGenerateId|*";
-      assertEquals(overhead, bytesToString(fileContents, expected.length));
-      assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
-   }
-
-   @Test
-   public void writeObject_continues_GenerateId() throws IOException
-   {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_continues_GenerateId.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-
-      @GenerateId
-      class LocalWithGenerateIdAndWrite implements StaticSerializable
-      {
-         @Override
-         public void writeToStream(final ObjectStreamWriter writer)
-         {
-            writer.writeObject((byte) 5);
-         }
-      }
-
-      final Object data = new LocalWithGenerateIdAndWrite();
-      testObject.writeObject(data);
-      testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$1LocalWithGenerateIdAndWrite|*";
-      int offset = 0;
-      assertEquals(overhead, bytesToString(subArrayWithLength(fileContents, offset, overhead.length()), 0));
-      offset += overhead.length();
-      assertEquals(Arrays.toString(new byte[]{0, 0, 0, 36}), Arrays.toString(subArrayWithLength(fileContents, offset, 4)));
-      offset += 4;
-      offset += 36;
-      assertEquals("~", bytesToString(subArrayWithLength(fileContents, offset, 1), 0));
-      assertEquals("[5]", Arrays.toString(shortenBytes(fileContents, 1)));
-   }
-
-   @Test
    public void writeObject_byte() throws IOException
    {
       final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_byte.", ".txt");
@@ -325,8 +268,6 @@ public class ObjectStreamWriter_UT
       assertTrue(data.wasCalled);
    }
 
-   /** {@code @GenerateId} is ignored */
-   @GenerateId
    private static enum CustomEnum implements StaticSerializable
    {
       One, Two;

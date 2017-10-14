@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.github.SkySpiral7.Java.StaticSerialization.GenerateId;
+import com.github.SkySpiral7.Java.StaticSerialization.ObjectReaderRegistry;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter;
+import com.github.SkySpiral7.Java.StaticSerialization.ObjectWriterRegistry;
 import com.github.SkySpiral7.Java.StaticSerialization.StaticSerializable;
 import com.github.SkySpiral7.Java.dataStructures.IdentityHashSet;
 
@@ -90,7 +91,6 @@ public final class RootedGraph implements StaticSerializable
       return allNodes.toString();
    }
 
-   @GenerateId
    public static final class Node implements StaticSerializable
    {
       public final String data;
@@ -104,8 +104,12 @@ public final class RootedGraph implements StaticSerializable
 
       public static Node readFromStream(final ObjectStreamReader reader)
       {
+         final ObjectReaderRegistry registry = reader.getObjectRegistry();
+         final Node registeredObject = registry.readObjectOrId(reader);
+         if (registeredObject != null) return registeredObject;
+
          final Node result = new Node(reader.readObject(String.class));
-         reader.getObjectRegistry().claimId(result);
+         registry.claimId(result);
 
          final int linkSize = reader.readObject(int.class);
          for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
@@ -119,6 +123,18 @@ public final class RootedGraph implements StaticSerializable
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {
+         //TODO: if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
+         final ObjectWriterRegistry registry = writer.getObjectRegistry();
+         if (registry.getId(this) != null)
+         {
+            //if already exists then write the id and stop
+            registry.writeId(this, writer);
+            return;
+         }
+         //else create an id, write it, and continue writing the object
+         registry.registerObject(this);
+         registry.writeId(this, writer);
+
          writer.writeObject(data);
          writer.writeObject(links.size());
          links.forEach(writer::writeObject);

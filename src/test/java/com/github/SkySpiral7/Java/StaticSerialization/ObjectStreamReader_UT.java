@@ -1,7 +1,6 @@
 package com.github.SkySpiral7.Java.StaticSerialization;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -14,7 +13,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -346,73 +344,6 @@ public class ObjectStreamReader_UT
    }
 
    @Test
-   public void readObject_stops_GenerateId() throws Exception
-   {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_stops_GenerateId.", ".txt");
-      tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$1LocalWithGenerateId|*";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
-            (byte) 'f'};  //id is 'f'
-      FileIoUtil.writeToFile(tempFile, fileContents, true);
-
-      @GenerateId
-      class LocalWithGenerateId
-      {}
-      final Object data = new LocalWithGenerateId();
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      testObject.getObjectRegistry().registerObject("f", data);
-
-      assertSame(data, testObject.readObject());
-      testObject.close();
-   }
-
-   @GenerateId
-   private final static class ClassWithGenerateIdAndRead implements StaticSerializable
-   {
-      public final int data;
-
-      public ClassWithGenerateIdAndRead(final int data)
-      {
-         this.data = data;
-      }
-
-      public static ClassWithGenerateIdAndRead readFromStream(final ObjectStreamReader reader)
-            throws IOException, ClassNotFoundException, InvocationTargetException
-      {
-         final ClassWithGenerateIdAndRead result = new ClassWithGenerateIdAndRead(reader.readObject(int.class));
-         reader.getObjectRegistry().claimId(result);
-         return result;
-      }
-
-      @Override
-      public void writeToStream(final ObjectStreamWriter writer)
-      {
-         writer.writeObject(data);
-      }
-   }
-
-   @Test
-   public void readObject_continues_GenerateId() throws Exception
-   {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_continues_GenerateId.", ".txt");
-      tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$ClassWithGenerateIdAndRead|*";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
-            (byte) 'f', (byte) '@'};  //id is 'f', type is @ (int)
-      FileIoUtil.writeToFile(tempFile, fileContents, true);
-      FileIoUtil.writeToFile(tempFile, new byte[]{0, 0, 0, 12}, true);  //data to read
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-
-      assertEquals(12, testObject.readObject(ClassWithGenerateIdAndRead.class).data);
-      assertNotNull(testObject.getObjectRegistry().getRegisteredObject("f"));
-      testObject.close();
-   }
-
-   @Test
    public void readObject_Byte() throws Exception
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Byte.", ".txt");
@@ -644,8 +575,6 @@ public class ObjectStreamReader_UT
       testObject.close();
    }
 
-   /** {@code @GenerateId} is ignored */
-   @GenerateId
    private static enum CustomEnum implements StaticSerializable
    {
       One, Two;

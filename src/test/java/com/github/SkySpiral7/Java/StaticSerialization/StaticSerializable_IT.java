@@ -196,6 +196,24 @@ public class StaticSerializable_IT
    }
 
    @Test
+   public void custom_allowsDirectCalling() throws Exception
+   {
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.custom_allowsDirectCalling.", ".txt");
+      tempFile.deleteOnExit();
+      final SimpleHappy data = new SimpleHappy(4);
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      data.writeToStream(writer);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+
+      final SimpleHappy actual = SimpleHappy.readFromStream(reader);
+      assertNotSame(data, actual);
+      assertEquals(data, actual);
+      reader.close();
+   }
+
+   @Test
    public void normalEnum() throws Exception
    {
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.normalEnum.", ".txt");
@@ -210,8 +228,6 @@ public class StaticSerializable_IT
       reader.close();
    }
 
-   /** {@code @GenerateId} is ignored */
-   @GenerateId
    private static enum CustomEnum implements StaticSerializable
    {
       One, Two;
@@ -265,15 +281,18 @@ public class StaticSerializable_IT
       }
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
-      //shows that self-referencing is handled inside an object
+      //write both the graph and root to show that self-referencing is handled inside an object and as the root object being written
       writer.writeObject(graph);
+      writer.writeObject(root);
       writer.close();
 
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       final RootedGraph actualGraph = reader.readObject(RootedGraph.class);
+      final RootedGraph.Node actualRoot = reader.readObject(RootedGraph.Node.class);
       reader.close();
       assertNotSame(graph, actualGraph);
       assertEquals(graph, actualGraph);
+      assertSame(actualGraph.getRoot(), actualRoot);
    }
 
    @Test
@@ -300,6 +319,35 @@ public class StaticSerializable_IT
 
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       final Node actualRoot = reader.readObject();
+      reader.close();
+      assertNotSame(root, actualRoot);
+      assertEquals(root, actualRoot);
+   }
+
+   @Test
+   public void rootNode_allowsDirectCalling() throws Exception
+   {
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.rootNode_allowsDirectCalling.", ".txt");
+      tempFile.deleteOnExit();
+      final RootedGraph.Node root = new RootedGraph.Node("Alice");
+      {
+         final RootedGraph.Node bob = new RootedGraph.Node("Bob");
+         final RootedGraph.Node clark = new RootedGraph.Node("Clark");
+
+         root.links.add(bob);
+         bob.links.add(clark);
+         clark.links.add(bob);
+         clark.links.add(clark);
+         //a -> b <-> c -> c
+      }
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      //shows that self-referencing is handled as the root object being written
+      root.writeToStream(writer);
+      writer.close();
+
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final RootedGraph.Node actualRoot = RootedGraph.Node.readFromStream(reader);
       reader.close();
       assertNotSame(root, actualRoot);
       assertEquals(root, actualRoot);

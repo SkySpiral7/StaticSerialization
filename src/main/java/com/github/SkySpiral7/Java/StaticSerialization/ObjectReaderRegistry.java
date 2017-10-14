@@ -54,7 +54,6 @@ public class ObjectReaderRegistry
     * so that the same instance can be referenced again while reading.
     *
     * @throws NullPointerException if there is no id to claim or if input is null
-    * @see GenerateId
     */
    public void claimId(final Object input)
    {

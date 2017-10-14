@@ -115,20 +115,6 @@ public class ObjectStreamWriter implements Closeable, Flushable
          return;
       }
 
-      //enums ignore GenerateId because they have fixed instances anyway
-      if (dataClass.isAnnotationPresent(GenerateId.class) && !dataClass.isEnum())
-      {
-         if (registry.getId(data) != null)
-         {
-            registry.writeId(data, this);
-            //if already exists then write the id and stop
-            return;
-         }
-         //else create an id, write it, and continue writing the object
-         registry.registerObject(data);
-         registry.writeId(data, this);
-      }
-
       if (data instanceof StaticSerializable)
       {
          final StaticSerializable castedData = (StaticSerializable) data;
