@@ -4,6 +4,15 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
+ * <p>Goals of this class in order:</p>
+ * <ol>
+ * <li>Security</li>
+ * <li>Versatility</li>
+ * <li>Nice API</li>
+ * <li>Maintainability</li>
+ * <li>Small serialized size</li>
+ * </ol>
+ * <p>Efficiency is not a goal. I haven't bench marked and I don't care.</p>
  * <p>A header that contains the class will be included with each element for security.
  * Most classes don't need a version number so one is not included by default.
  * Most classes don't need an id so one is not included by default.</p>

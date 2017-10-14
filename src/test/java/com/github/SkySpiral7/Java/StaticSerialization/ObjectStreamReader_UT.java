@@ -59,6 +59,118 @@ public class ObjectStreamReader_UT
    }
 
    @Test
+   public void readObject_allowsCast_givenNoArg() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_allowsCast_givenNoArg.", ".txt");
+      tempFile.deleteOnExit();
+
+      final byte[] fileContents = {(byte) '~', (byte) 3};  //~ is byte
+      FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertEquals(Byte.valueOf((byte) 3), testObject.readObject());
+      testObject.close();
+   }
+
+   @Test
+   public void readObjectStrictly_happyPath() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_happyPath.", ".txt");
+      tempFile.deleteOnExit();
+
+      final byte[] fileContents = {(byte) '+', (byte) '-',  //+ is true, - is false
+            (byte) '~', (byte) 3};  //~ is byte
+      FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+      final String overhead = "java.math.RoundingMode|@";  //@ is int
+      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), true);
+      FileIoUtil.writeToFile(tempFile, new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01}, true);
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.readObjectStrictly(Boolean.class));
+      assertFalse(testObject.readObjectStrictly(Boolean.class));
+      assertEquals(Byte.valueOf((byte) 3), testObject.readObjectStrictly(Byte.class));
+      assertEquals(RoundingMode.DOWN, testObject.readObjectStrictly(RoundingMode.class));
+      testObject.close();
+   }
+
+   @Test
+   public void readObjectStrictly_throws_whenGotBoolean() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenGotBoolean.", ".txt");
+      tempFile.deleteOnExit();
+
+      final byte[] fileContents = {(byte) '+', (byte) '-'};  //+ is true, - is false
+      FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      try
+      {
+         testObject.readObjectStrictly(Object.class);
+         fail("Should've thrown");
+      }
+      catch (IllegalStateException actual)
+      {
+         assertEquals("Class doesn't match exactly. Expected: java.lang.Object Got: java.lang.Boolean", actual.getMessage());
+      }
+      try
+      {
+         testObject.readObjectStrictly(Object.class);
+         fail("Should've thrown");
+      }
+      catch (IllegalStateException actual)
+      {
+         assertEquals("Class doesn't match exactly. Expected: java.lang.Object Got: java.lang.Boolean", actual.getMessage());
+      }
+      testObject.close();
+   }
+
+   @Test
+   public void readObjectStrictly_throws_whenGotCompressedClass() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenGotCompressedClass.", ".txt");
+      tempFile.deleteOnExit();
+
+      final byte[] fileContents = {(byte) '*'};  //* is string. Don't need the rest since the overhead throws
+      FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      try
+      {
+         testObject.readObjectStrictly(CharSequence.class);
+         fail("Should've thrown");
+      }
+      catch (IllegalStateException actual)
+      {
+         assertEquals("Class doesn't match exactly. Expected: java.lang.CharSequence Got: java.lang.String", actual.getMessage());
+      }
+      testObject.close();
+   }
+
+   @Test
+   public void readObjectStrictly_throws_whenGotNormalClass() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenGotNormalClass.", ".txt");
+      tempFile.deleteOnExit();
+
+      //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
+      final byte[] fileContents = "f|".getBytes(StandardCharsets.UTF_8);
+      FileIoUtil.writeToFile(tempFile, fileContents, false);
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      try
+      {
+         testObject.readObjectStrictly(Object.class);
+         fail("Should've thrown");
+      }
+      catch (IllegalStateException actual)
+      {
+         assertEquals("Class doesn't match exactly. Expected: java.lang.Object Got: f", actual.getMessage());
+      }
+      testObject.close();
+   }
+
+   @Test
    public void readObject_throw_nullInput() throws Exception
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_throw_nullInput.", ".txt");
@@ -149,7 +261,7 @@ public class ObjectStreamReader_UT
    @Test
    public void readObject_BoxesClassArg_GivenPrimitive() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.autoBox_boolean.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_BoxesClassArg_GivenPrimitive.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, new byte[]{(byte) '-'}, false);
       FileIoUtil.writeToFile(tempFile, "java.lang.Boolean|".getBytes(StandardCharsets.UTF_8), true);

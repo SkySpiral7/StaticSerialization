@@ -37,7 +37,7 @@ public enum SerializationUtil
          final Class<?> type = field.getType();
          if (type.isPrimitive()) return true;  //pretty sure type.equals(void.class) isn't possible
          if (StaticSerializable.class.isAssignableFrom(type)) return true;
-         if (Serializable.class.isAssignableFrom(type)) return true;  //includes String and boxes
+         if (Serializable.class.isAssignableFrom(type)) return true;  //includes String, enums, and boxes
 
          return false;
       }).collect(Collectors.toList());

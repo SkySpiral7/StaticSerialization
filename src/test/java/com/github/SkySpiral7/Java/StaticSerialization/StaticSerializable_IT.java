@@ -402,7 +402,7 @@ public class StaticSerializable_IT
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
-      final BigInteger actual = (BigInteger) reader.readObject();
+      final BigInteger actual = reader.readObject();
       assertNotSame(data, actual);  //TEN is not a singleton and BigInteger won't readResolve it to be the same
       assertEquals(data, actual);
       reader.close();

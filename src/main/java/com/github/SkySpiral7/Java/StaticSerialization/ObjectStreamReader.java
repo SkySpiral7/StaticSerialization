@@ -22,6 +22,8 @@ import com.github.SkySpiral7.Java.AsynchronousFileReader;
 import com.github.SkySpiral7.Java.exception.NoMoreDataException;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 
+import static com.github.SkySpiral7.Java.util.ClassUtil.cast;
+
 public class ObjectStreamReader implements Closeable
 {
    private final ObjectReaderRegistry registry = new ObjectReaderRegistry();
@@ -96,9 +98,28 @@ Even though elements will be serialized as primitives do not change [1java.lang.
       return fileReader.remainingBytes();
    }
 
+   /**
+    * Reads the next object in the stream no matter what it is.
+    * For security this means that you either trust the stream or you trust all available classes.
+    *
+    * @see #readObject(Class)
+    */
    public <T> T readObject()
    {
       return cast(readObject(Object.class));
+   }
+
+   /**
+    * Reads an object from the stream and requires that the class must match exactly. While normally
+    * you could just call the class's readFromStream method, this method is useful if either the class
+    * implements Serializable rather than StaticSerializable (such as BigDecimal), or if you don't know the
+    * exact class at compile time and would like this method to do the reflection for you.
+    *
+    * @see #readObject(Class)
+    */
+   public <T> T readObjectStrictly(Class<T> expectedClass)
+   {
+      return readObjectInternal(expectedClass, false);
    }
 
    /* TODO: unfinished doc
@@ -110,6 +131,11 @@ Even though elements will be serialized as primitives do not change [1java.lang.
     */
    public <T> T readObject(Class<T> expectedClass)
    {
+      return readObjectInternal(expectedClass, true);
+   }
+
+   private <T> T readObjectInternal(Class<T> expectedClass, final boolean allowChildClass)
+   {
       Objects.requireNonNull(expectedClass);
       if (!hasData()) throw new NoMoreDataException();
 
@@ -119,18 +145,21 @@ Even though elements will be serialized as primitives do not change [1java.lang.
       //Class Overhead
       {
          final byte firstByte = fileReader.readBytes(1)[0];
-         if ('|' == firstByte) return null;  //the empty string class name means null, which can be cast to anything
+         if ('|' == firstByte) return null;  //the empty string class name means null, which can be cast to anything safely
+         if (('+' == firstByte || '-' == firstByte) && !allowChildClass && !Boolean.class.equals(expectedClass))
+            throw new IllegalStateException(
+                  "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: java.lang.Boolean");
          if ('+' == firstByte) return cast(Boolean.TRUE);
          if ('-' == firstByte) return cast(Boolean.FALSE);
          //TODO: for now it doesn't allow array
          if ('[' == firstByte) throw new UnsupportedOperationException("Arrays are not currently supported");
-         expectedClass = cast(readOverhead(expectedClass, firstByte));
+         expectedClass = cast(readOverhead(expectedClass, firstByte, allowChildClass));
       }
 
       if (ClassUtil.isBoxedPrimitive(expectedClass)) return readPrimitive(expectedClass);
       if (String.class.equals(expectedClass))
       {
-         final int stringByteLength = bigEndianBytesToInteger(fileReader.readBytes(4));
+         final int stringByteLength = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
          return cast(fileReader.readBytesAsString(stringByteLength));
       }
 
@@ -139,57 +168,12 @@ Even though elements will be serialized as primitives do not change [1java.lang.
       if (expectedClass.isEnum()){ return readEnumByOrdinal(expectedClass); }
       if (Serializable.class.isAssignableFrom(expectedClass))
       {
-         final int length = bigEndianBytesToInteger(fileReader.readBytes(4));
+         final int length = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
          final byte[] objectData = fileReader.readBytes(length);
          return javaDeserialize(objectData);
       }
 
       throw new NotSerializableException(expectedClass);
-   }
-
-   /**
-    * Copied from BitWiseUtil to lessen dependency.
-    *
-    * @see com.github.SkySpiral7.Java.util.BitWiseUtil#bigEndianBytesToLong(byte[])
-    */
-   private int bigEndianBytesToInteger(byte[] input)
-   {
-      if (input.length != 4) throw new IllegalArgumentException("expected length 4, got: " + input.length);
-      int result = (input[0] & 0xff);
-      for (int i = 1; i < input.length; ++i)
-      {
-         result <<= 8;
-         result |= (input[i] & 0xff);
-      }
-      return result;
-   }
-
-   /**
-    * Copied from BitWiseUtil to lessen dependency.
-    *
-    * @see com.github.SkySpiral7.Java.util.BitWiseUtil#bigEndianBytesToLong(byte[])
-    */
-   private long bigEndianBytesToLong(byte[] input)
-   {
-      if (input.length != 8) throw new IllegalArgumentException("expected length 8, got: " + input.length);
-      long result = (input[0] & 0xff);
-      for (int i = 1; i < input.length; ++i)
-      {
-         result <<= 8;
-         result |= (input[i] & 0xff);
-      }
-      return result;
-   }
-
-   /**
-    * Copied from ClassUtil to lessen dependency.
-    *
-    * @see ClassUtil#cast(Object)
-    */
-   @SuppressWarnings("unchecked")
-   private <T> T cast(final Object anything)
-   {
-      return (T) anything;
    }
 
    private <T> T javaDeserialize(final byte[] objectData)
@@ -209,9 +193,15 @@ Even though elements will be serialized as primitives do not change [1java.lang.
       }
    }
 
-   private Class<?> readOverhead(final Class<?> expectedClass, final byte firstByte)
+   private Class<?> readOverhead(final Class<?> expectedClass, final byte firstByte, final boolean allowChildClass)
    {
-      if (COMPRESSED_CLASSES.containsKey((char) firstByte)) return COMPRESSED_CLASSES.get((char) firstByte);
+      if (COMPRESSED_CLASSES.containsKey((char) firstByte))
+      {
+         final Class<?> actualClass = COMPRESSED_CLASSES.get((char) firstByte);
+         if (!allowChildClass && !actualClass.equals(expectedClass)) throw new IllegalStateException(
+               "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: " + actualClass.getName());
+         return actualClass;
+      }
       final ByteArrayOutputStream data = new ByteArrayOutputStream();
       data.write(firstByte);
       while (true)
@@ -222,6 +212,8 @@ Even though elements will be serialized as primitives do not change [1java.lang.
          data.write(thisByte);
       }
       final String actualClassName = new String(data.toByteArray(), StandardCharsets.UTF_8);
+      if (!allowChildClass && !actualClassName.equals(expectedClass.getName()))
+         throw new IllegalStateException("Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: " + actualClassName);
 
       try
       {
@@ -248,23 +240,23 @@ Even though elements will be serialized as primitives do not change [1java.lang.
       if (Integer.class.equals(expectedClass))
       {
          final byte[] data = fileReader.readBytes(4);
-         return cast(bigEndianBytesToInteger(data));
+         return cast(BitWiseUtil.bigEndianBytesToInteger(data));
       }
       if (Long.class.equals(expectedClass))
       {
          final byte[] data = fileReader.readBytes(8);
-         return cast(bigEndianBytesToLong(data));
+         return cast(BitWiseUtil.bigEndianBytesToLong(data));
       }
       if (Float.class.equals(expectedClass))
       {
          final byte[] data = fileReader.readBytes(4);
-         final int intData = bigEndianBytesToInteger(data);
+         final int intData = BitWiseUtil.bigEndianBytesToInteger(data);
          return cast(Float.intBitsToFloat(intData));
       }
       if (Double.class.equals(expectedClass))
       {
          final byte[] data = fileReader.readBytes(8);
-         final long longData = bigEndianBytesToLong(data);
+         final long longData = BitWiseUtil.bigEndianBytesToLong(data);
          return cast(Double.longBitsToDouble(longData));
       }
       if (Boolean.class.equals(expectedClass))

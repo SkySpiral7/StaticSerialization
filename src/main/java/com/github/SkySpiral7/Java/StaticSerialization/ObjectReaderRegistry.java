@@ -19,18 +19,7 @@ public class ObjectReaderRegistry
    public <T> T getRegisteredObject(final String id)
    {
       Objects.requireNonNull(id);
-      return cast(registry.get(id));
-   }
-
-   /**
-    * Copied from ClassUtil to lessen dependency.
-    *
-    * @see com.github.SkySpiral7.Java.util.ClassUtil#cast(Object)
-    */
-   @SuppressWarnings("unchecked")
-   private <T> T cast(final Object anything)
-   {
-      return (T) anything;
+      return ClassUtil.cast(registry.get(id));
    }
 
    /**
@@ -42,7 +31,7 @@ public class ObjectReaderRegistry
    {
       Objects.requireNonNull(reader);
       final String id = reader.readObject(String.class);
-      if (registry.containsKey(id)) return cast(registry.get(id));
+      if (registry.containsKey(id)) return ClassUtil.cast(registry.get(id));
       if (unclaimedId != null) throw new IllegalStateException("Failed to call claimId. Stopping gracefully.");
       unclaimedId = id;
       return null;
