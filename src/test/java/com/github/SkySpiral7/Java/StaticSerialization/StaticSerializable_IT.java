@@ -210,7 +210,7 @@ public class StaticSerializable_IT
       reader.close();
    }
 
-   /**{@code @GenerateId} is ignored*/
+   /** {@code @GenerateId} is ignored */
    @GenerateId
    private static enum CustomEnum implements StaticSerializable
    {

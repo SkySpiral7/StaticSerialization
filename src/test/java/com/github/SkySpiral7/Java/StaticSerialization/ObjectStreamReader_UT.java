@@ -7,13 +7,10 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 
-import javax.naming.OperationNotSupportedException;
-
 import com.github.SkySpiral7.Java.StaticSerialization.testClasses.SimpleHappy;
 import com.github.SkySpiral7.Java.exception.NoMoreDataException;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 import org.junit.Test;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -574,10 +571,10 @@ public class ObjectStreamReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.String|".getBytes(StandardCharsets.UTF_8), false);
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
-            (byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e,
+            (byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e,  //string 1
             (byte) '*',  //shorthand
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
-            (byte) 0x00};
+            (byte) 0x00};  //string 2
       FileIoUtil.writeToFile(tempFile, fileContents, true);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
@@ -647,7 +644,7 @@ public class ObjectStreamReader_UT
       testObject.close();
    }
 
-   /**{@code @GenerateId} is ignored*/
+   /** {@code @GenerateId} is ignored */
    @GenerateId
    private static enum CustomEnum implements StaticSerializable
    {

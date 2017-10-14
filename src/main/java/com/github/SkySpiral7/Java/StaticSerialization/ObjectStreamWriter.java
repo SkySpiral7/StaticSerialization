@@ -85,11 +85,11 @@ public class ObjectStreamWriter implements Closeable, Flushable
    /**
     * List of supported types:
     * <ul>
-    *    <li>null (not technically a Type.class)</li>
-    *    <li>Any primitive (except void.class obviously)</li>
-    *    <li>Any boxed primitive (java.lang.Void.class isn't a box)</li>
-    *    <li>Any type that extends StaticSerializable</li>
-    *    <li>Any type that extends Serializable (String and enum have better than normal compression)</li>
+    * <li>null (not technically a Type.class)</li>
+    * <li>Any primitive (except void.class obviously)</li>
+    * <li>Any boxed primitive (java.lang.Void.class isn't a box)</li>
+    * <li>Any type that extends StaticSerializable</li>
+    * <li>Any type that extends Serializable (String and enum have better than normal compression)</li>
     * </ul>
     */
    //for now ignore overloading for all primitives and array stuff

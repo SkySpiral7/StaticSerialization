@@ -325,11 +325,12 @@ public class ObjectStreamWriter_UT
       assertTrue(data.wasCalled);
    }
 
-   /**{@code @GenerateId} is ignored*/
+   /** {@code @GenerateId} is ignored */
    @GenerateId
    private static enum CustomEnum implements StaticSerializable
    {
       One, Two;
+
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {

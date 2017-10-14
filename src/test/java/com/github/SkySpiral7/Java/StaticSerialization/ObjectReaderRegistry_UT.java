@@ -121,7 +121,7 @@ public class ObjectReaderRegistry_UT
    {
       final File tempFile = File.createTempFile(prefix, ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{(byte)'*'}, false);
+      FileIoUtil.writeToFile(tempFile, new byte[]{(byte) '*'}, false);
       final byte[] idSize = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) id.length()};
       FileIoUtil.writeToFile(tempFile, idSize, true);
       FileIoUtil.writeToFile(tempFile, id.getBytes(StandardCharsets.UTF_8), true);
