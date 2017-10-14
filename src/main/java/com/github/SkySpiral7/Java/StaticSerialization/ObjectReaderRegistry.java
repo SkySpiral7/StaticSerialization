@@ -43,6 +43,8 @@ public class ObjectReaderRegistry
       Objects.requireNonNull(reader);
       final String id = reader.readObject(String.class);
       if (registry.containsKey(id)) return cast(registry.get(id));
+      //TODO: test failing to call claimId
+      if(unclaimedId != null) throw new IllegalStateException("Failed to call claimId. Stopping gracefully.");
       unclaimedId = id;
       return null;
    }
@@ -58,7 +60,6 @@ public class ObjectReaderRegistry
    {
       Objects.requireNonNull(input);
       Objects.requireNonNull(unclaimedId);
-      //TODO: if root element will throw NPE
       registry.put(unclaimedId, input);
       unclaimedId = null;
    }

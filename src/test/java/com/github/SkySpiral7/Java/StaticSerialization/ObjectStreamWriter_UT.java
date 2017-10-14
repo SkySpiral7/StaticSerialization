@@ -3,6 +3,7 @@ package com.github.SkySpiral7.Java.StaticSerialization;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -25,7 +26,7 @@ public class ObjectStreamWriter_UT
       }
       catch (final IllegalArgumentException actual)
       {
-         assertEquals("It is not possible to write to a directory", actual.getMessage());
+         assertEquals("It is not possible to write to a directory (.)", actual.getMessage());
       }
    }
 
@@ -282,95 +283,20 @@ public class ObjectStreamWriter_UT
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
    }
 
-   private static enum EnumByName implements StaticSerializableEnumByName
-   {
-      One, Two;
-   }
-
    @Test
-   public void writeObject_enumByName() throws IOException
+   public void writeObject_enum() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_enumByName.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_enum.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
-      testObject.writeObject(EnumByName.One);
+      testObject.writeObject(RoundingMode.DOWN);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$EnumByName|*";
-      final byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03,  //UTF-8 length (int)
-            (byte) 79, (byte) 110, (byte) 101};  //"One"
+      final String overhead = "java.math.RoundingMode|@";  //@ is int
+      final byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01};
       assertEquals(overhead, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
-   }
-
-   @Test
-   public void writeObject_enumByName_notEnum() throws IOException
-   {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_enumByName_notEnum.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-
-      class NotEnum implements StaticSerializableEnumByName
-      {}
-
-      try
-      {
-         testObject.writeObject(new NotEnum());
-         fail("Didn't throw");
-      }
-      catch (final ClassCastException actual)
-      {
-         assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$1NotEnum cannot be cast to java.lang.Enum",
-               actual.getMessage());
-      }
-
-      testObject.close();
-   }
-
-   private static enum EnumByOrdinal implements StaticSerializableEnumByOrdinal
-   {
-      One, Two, Three, Four;
-   }
-
-   @Test
-   public void writeObject_enumByOrdinal() throws IOException
-   {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_enumByOrdinal.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-
-      testObject.writeObject(EnumByOrdinal.Four);
-      testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$EnumByOrdinal|@";
-      final byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
-      assertEquals(overhead, bytesToString(fileContents, data.length));
-      assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
-   }
-
-   @Test
-   public void writeObject_enumByOrdinal_notEnum() throws IOException
-   {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_enumByOrdinal_notEnum.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-
-      class NotEnum implements StaticSerializableEnumByOrdinal
-      {}
-
-      try
-      {
-         testObject.writeObject(new NotEnum());
-         fail("Didn't throw");
-      }
-      catch (final ClassCastException actual)
-      {
-         assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$2NotEnum cannot be cast to java.lang.Enum",
-               actual.getMessage());
-      }
-
-      testObject.close();
    }
 
    @Test
@@ -397,6 +323,35 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(data);
       testObject.close();
       assertTrue(data.wasCalled);
+   }
+
+   /**{@code @GenerateId} is ignored*/
+   @GenerateId
+   private static enum CustomEnum implements StaticSerializable
+   {
+      One, Two;
+      @Override
+      public void writeToStream(final ObjectStreamWriter writer)
+      {
+         writer.writeObject(this.name());
+      }
+   }
+
+   @Test
+   public void writeObject_customEnum() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_customEnum.", ".txt");
+      tempFile.deleteOnExit();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+      testObject.writeObject(CustomEnum.One);
+      testObject.close();
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$CustomEnum|*";
+      final byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03,  //UTF-8 length (int)
+            (byte) 79, (byte) 110, (byte) 101};  //"One"
+      assertEquals(overhead, bytesToString(fileContents, data.length));
+      assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
    }
 
    @Test

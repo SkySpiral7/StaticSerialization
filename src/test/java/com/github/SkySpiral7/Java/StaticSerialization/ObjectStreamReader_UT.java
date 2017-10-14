@@ -4,12 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 
-import com.github.SkySpiral7.Java.exception.NoMoreDataException;
+import javax.naming.OperationNotSupportedException;
+
 import com.github.SkySpiral7.Java.StaticSerialization.testClasses.SimpleHappy;
+import com.github.SkySpiral7.Java.exception.NoMoreDataException;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 import org.junit.Test;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -40,9 +44,8 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readBytes_throw.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Short|".getBytes(StandardCharsets.UTF_8), false);
-      final byte[] fileContents = {(byte) 0x0a};
-      FileIoUtil.writeToFile(tempFile, fileContents, true);
+      final byte[] fileContents = {(byte) '!', (byte) 0x0a};
+      FileIoUtil.writeToFile(tempFile, fileContents, false);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
@@ -350,10 +353,10 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_stops_GenerateId.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$1LocalWithGenerateId|java.lang.String|";
+      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$1LocalWithGenerateId|*";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
-            (byte) 0x66};
+            (byte) 'f'};  //id is 'f'
       FileIoUtil.writeToFile(tempFile, fileContents, true);
 
       @GenerateId
@@ -398,12 +401,11 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_continues_GenerateId.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$ClassWithGenerateIdAndRead|java.lang.String|";
+      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$ClassWithGenerateIdAndRead|*";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
-            (byte) 0x66};  //id
+            (byte) 'f', (byte) '@'};  //id is 'f', type is @ (int)
       FileIoUtil.writeToFile(tempFile, fileContents, true);
-      FileIoUtil.writeToFile(tempFile, "java.lang.Integer|".getBytes(StandardCharsets.UTF_8), true);
       FileIoUtil.writeToFile(tempFile, new byte[]{0, 0, 0, 12}, true);  //data to read
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
@@ -547,7 +549,7 @@ public class ObjectStreamReader_UT
    }
 
    @Test
-   public void readObject_CharacterBox() throws Exception
+   public void readObject_Character() throws Exception
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Character.", ".txt");
       tempFile.deleteOnExit();
@@ -572,8 +574,9 @@ public class ObjectStreamReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.String|".getBytes(StandardCharsets.UTF_8), false);
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
-            (byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e, (byte) '*', (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,
-            //UTF-8 length (int)
+            (byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e,
+            (byte) '*',  //shorthand
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
             (byte) 0x00};
       FileIoUtil.writeToFile(tempFile, fileContents, true);
 
@@ -586,137 +589,28 @@ public class ObjectStreamReader_UT
       testObject.close();
    }
 
-   private static enum EnumByName implements StaticSerializableEnumByName
-   {
-      One, Two;
-   }
-
    @Test
-   public void readObject_enumByName() throws Exception
+   public void readObject_enum() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enumByName.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enum.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$EnumByName|*";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
-      FileIoUtil.writeToFile(tempFile, fileContents, true);
-      FileIoUtil.writeToFile(tempFile, "One".getBytes(StandardCharsets.UTF_8), true);
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      assertSame(EnumByName.One, testObject.readObject(EnumByName.class));
-
-      testObject.close();
-   }
-
-   @Test
-   public void readObject_enumByName_nameNotFound() throws Exception
-   {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enumByName_nameNotFound.", ".txt");
-      tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$EnumByName|*";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
-      FileIoUtil.writeToFile(tempFile, fileContents, true);
-      FileIoUtil.writeToFile(tempFile, "six".getBytes(StandardCharsets.UTF_8), true);
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      try
-      {
-         testObject.readObject(EnumByName.class);
-         fail("Didn't throw");
-      }
-      catch (final IllegalArgumentException actual)
-      {
-         assertEquals("No enum constant com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT.EnumByName.six",
-               actual.getMessage());
-      }
-
-      testObject.close();
-   }
-
-   @Test
-   public void readObject_enumByName_classNotEnum() throws Exception
-   {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enumByName_classNotEnum.", ".txt");
-      tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$1NotEnum|*";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
-      FileIoUtil.writeToFile(tempFile, fileContents, true);
-      FileIoUtil.writeToFile(tempFile, "One".getBytes(StandardCharsets.UTF_8), true);
-
-      class NotEnum implements StaticSerializableEnumByName
-      {}
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      try
-      {
-         testObject.readObject(NotEnum.class);
-         fail("Didn't throw");
-      }
-      catch (final IllegalArgumentException actual)
-      {
-         assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$1NotEnum is not an enum type", actual.getMessage());
-      }
-
-      testObject.close();
-   }
-
-   private static enum EnumByOrdinal implements StaticSerializableEnumByOrdinal
-   {
-      One, Two, Three, Four;
-   }
-
-   @Test
-   public void readObject_enumByOrdinal() throws Exception
-   {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enumByOrdinal.", ".txt");
-      tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$EnumByOrdinal|" + "java.lang.Integer|";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
-      FileIoUtil.writeToFile(tempFile, fileContents, true);
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      assertSame(EnumByOrdinal.Four, testObject.readObject(EnumByOrdinal.class));
-
-      testObject.close();
-   }
-
-   @Test
-   public void readObject_enumByOrdinal_classNotEnum() throws Exception
-   {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enumByOrdinal_classNotEnum.", ".txt");
-      tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$2NotEnum|" + "java.lang.Integer|";
+      final String overhead = "java.math.RoundingMode|@";  //@ is int
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01};
       FileIoUtil.writeToFile(tempFile, fileContents, true);
 
-      class NotEnum implements StaticSerializableEnumByOrdinal
-      {}
-
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      try
-      {
-         testObject.readObject(NotEnum.class);
-         fail("Didn't throw");
-      }
-      catch (final InvalidClassException actual)
-      {
-         assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$2NotEnum"
-                      + " implements StaticSerializableEnumByOrdinal but isn't an enum", actual.getMessage());
-      }
+      assertSame(RoundingMode.DOWN, testObject.readObject(RoundingMode.class));
 
       testObject.close();
    }
 
    @Test
-   public void readObject_enumByOrdinal_OrdinalNotFound() throws Exception
+   public void readObject_enum_OrdinalNotFound() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enumByOrdinal_OrdinalNotFound.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enum_OrdinalNotFound.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$EnumByOrdinal|" + "java.lang.Integer|";
+      final String overhead = "java.math.RoundingMode|@";  //@ is int
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x0a};
       FileIoUtil.writeToFile(tempFile, fileContents, true);
@@ -724,13 +618,12 @@ public class ObjectStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
       {
-         testObject.readObject(EnumByOrdinal.class);
+         testObject.readObject(RoundingMode.class);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
       {
-         assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$EnumByOrdinal[10] doesn't exist. Actual length: 4",
-               actual.getMessage());
+         assertEquals("java.math.RoundingMode.values()[10] doesn't exist. Actual length: 8", actual.getMessage());
       }
 
       testObject.close();
@@ -743,14 +636,49 @@ public class ObjectStreamReader_UT
       tempFile.deleteOnExit();
       final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.testClasses.SimpleHappy|";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
-      FileIoUtil.writeToFile(tempFile, "java.lang.Integer|".getBytes(StandardCharsets.UTF_8), true);
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
+      final byte[] fileContents = new byte[]{(byte) '@', (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
       FileIoUtil.writeToFile(tempFile, fileContents, true);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       final SimpleHappy readData = testObject.readObject(SimpleHappy.class);
       assertEquals(4, readData.smileyStickersCount);
       assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   /**{@code @GenerateId} is ignored*/
+   @GenerateId
+   private static enum CustomEnum implements StaticSerializable
+   {
+      One, Two;
+
+      public static CustomEnum readFromStream(final ObjectStreamReader reader)
+      {
+         final String name = reader.readObject(String.class);
+         return CustomEnum.valueOf(name);
+      }
+
+      @Override
+      public void writeToStream(final ObjectStreamWriter writer)
+      {
+         fail("Should not be called");
+      }
+   }
+
+   @Test
+   public void readObject_customEnum() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_customEnum.", ".txt");
+      tempFile.deleteOnExit();
+      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$CustomEnum|*";
+      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8), false);
+      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
+      FileIoUtil.writeToFile(tempFile, fileContents, true);
+      FileIoUtil.writeToFile(tempFile, "One".getBytes(StandardCharsets.UTF_8), true);
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertSame(CustomEnum.One, testObject.readObject(CustomEnum.class));
 
       testObject.close();
    }
@@ -810,9 +738,8 @@ public class ObjectStreamReader_UT
       }
       catch (final InvalidClassException actual)
       {
-         assertEquals(
-               "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$NonPublicReader.readFromStream" + " must be public static",
-               actual.getMessage());
+         assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$NonPublicReader.readFromStream"
+                      + " must be public static", actual.getMessage());
       }
 
       testObject.close();

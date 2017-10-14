@@ -2,6 +2,7 @@ package com.github.SkySpiral7.Java.StaticSerialization;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 import com.github.SkySpiral7.Java.StaticSerialization.testClasses.RootedGraph;
 import com.github.SkySpiral7.Java.StaticSerialization.testClasses.RootedGraph.Node;
@@ -194,50 +195,59 @@ public class StaticSerializable_IT
       reader.close();
    }
 
-   private static enum EnumByName implements StaticSerializableEnumByName
+   @Test
+   public void normalEnum() throws Exception
+   {
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.normalEnum.", ".txt");
+      tempFile.deleteOnExit();
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(RoundingMode.HALF_DOWN);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+
+      assertSame(RoundingMode.HALF_DOWN, reader.readObject(RoundingMode.class));
+      reader.close();
+   }
+
+   /**{@code @GenerateId} is ignored*/
+   @GenerateId
+   private static enum CustomEnum implements StaticSerializable
    {
       One, Two;
+
+      public static CustomEnum readFromStream(final ObjectStreamReader reader)
+      {
+         final String name = reader.readObject(String.class);
+         return CustomEnum.valueOf(name);
+      }
+
+      @Override
+      public void writeToStream(final ObjectStreamWriter writer)
+      {
+         writer.writeObject(this.name());
+      }
    }
 
    @Test
-   public void enumByName() throws Exception
+   public void customEnum() throws Exception
    {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.enumByName.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.customEnum.", ".txt");
       tempFile.deleteOnExit();
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
-      writer.writeObject(EnumByName.One);
+      writer.writeObject(CustomEnum.One);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
-      assertSame(EnumByName.One, reader.readObject(EnumByName.class));
-      reader.close();
-   }
-
-   private static enum EnumByOrdinal implements StaticSerializableEnumByOrdinal
-   {
-      One, Two, Three, Four;
-   }
-
-   @Test
-   public void enumByOrdinal() throws Exception
-   {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.enumByOrdinal.", ".txt");
-      tempFile.deleteOnExit();
-
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
-      writer.writeObject(EnumByOrdinal.Four);
-      writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
-
-      assertSame(EnumByOrdinal.Four, reader.readObject(EnumByOrdinal.class));
+      assertSame(CustomEnum.One, reader.readObject(CustomEnum.class));
       reader.close();
    }
 
    @Test
-   public void getObjectRegistry() throws Exception
+   public void rootedGraph() throws Exception
    {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.getObjectRegistry.", ".txt");
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.rootedGraph.", ".txt");
       tempFile.deleteOnExit();
       final RootedGraph graph;
       final Node root = new Node("Alice");
@@ -255,19 +265,44 @@ public class StaticSerializable_IT
       }
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
-      //write both the graph and root to show that self-referencing is handled inside an object and as the root object being written
+      //shows that self-referencing is handled inside an object
       writer.writeObject(graph);
-      writer.writeObject(root);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
 
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       final RootedGraph actualGraph = reader.readObject(RootedGraph.class);
+      reader.close();
       assertNotSame(graph, actualGraph);
       assertEquals(graph, actualGraph);
-      final Node actualRoot = (Node) reader.readObject();
+   }
+
+   @Test
+   public void rootNode() throws Exception
+   {
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.rootNode.", ".txt");
+      tempFile.deleteOnExit();
+      final Node root = new Node("Alice");
+      {
+         final Node bob = new Node("Bob");
+         final Node clark = new Node("Clark");
+
+         root.links.add(bob);
+         bob.links.add(clark);
+         clark.links.add(bob);
+         clark.links.add(clark);
+         //a -> b <-> c -> c
+      }
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      //shows that self-referencing is handled as the root object being written
+      writer.writeObject(root);
+      writer.close();
+
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final Node actualRoot = reader.readObject();
+      reader.close();
       assertNotSame(root, actualRoot);
       assertEquals(root, actualRoot);
-      reader.close();
    }
 
    private static final class ReflectiveClass implements StaticSerializable

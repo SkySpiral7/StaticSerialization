@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.github.SkySpiral7.Java.dataStructures.IdentityHashSet;
 import com.github.SkySpiral7.Java.StaticSerialization.GenerateId;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter;
 import com.github.SkySpiral7.Java.StaticSerialization.StaticSerializable;
+import com.github.SkySpiral7.Java.dataStructures.IdentityHashSet;
 
 public final class RootedGraph implements StaticSerializable
 {
@@ -31,6 +31,11 @@ public final class RootedGraph implements StaticSerializable
    public void writeToStream(final ObjectStreamWriter writer)
    {
       writer.writeObject(root);
+   }
+
+   public Node getRoot()
+   {
+      return root;
    }
 
    private List<Node> getAllNodes()

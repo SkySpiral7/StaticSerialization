@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * useless overhead.</p>
  * <p><strong>Implementation note:</strong> in order for this annotation to function you must also call
  * {@code ObjectReaderRegistry.claimId} in the readFromStream method after the object is created but before
- * it has any data will cause back-referencing.</p>
+ * it has any data that will cause back-referencing.</p>
  *
  * @see StaticSerializable
  * @see ObjectReaderRegistry#claimId(Object)
@@ -25,4 +25,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface GenerateId
-{}
+{
+/*
+TODO: implementation holes of GenerateId:
+Calling Node.readFromStream won't have an id unless the first line is optionallyReadId()
+   at which point using the annotation: won't call for matching reads and write is all handled
+Bug?: After writing the RootedGraph and the root Node they should read as the same object but don't
+*/
+}

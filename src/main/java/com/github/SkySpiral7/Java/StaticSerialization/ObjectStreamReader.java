@@ -29,6 +29,9 @@ public class ObjectStreamReader implements Closeable
 
 /*
 [x where x is unsigned byte which is the number of dimensions (JVM max is 255)
+[1~ is easy just the length (int) then elements
+Even though elements will be serialized as primitives do not change [1java.lang.Byte| to [1~
+   because the resulting array type will be different
 [2~ length. each one needs overhead since arrays maintain the component type ([2~ length has [1~ length)
    however if the base type is primitive then it can be only those in which case:
    length of root, length, length, length, flat data:
@@ -38,8 +41,13 @@ public class ObjectStreamReader implements Closeable
    [1]
    ] => 3, 2,3,1, 1,2,1,2,3,1
    sounds hard to manage for arbitrary depth
-[2java.lang.Object| length 2 contains [1java.lang.Byte| and [1java.lang.Double| (not the same as primitive arrays but can store elements
-as primitive)
+   works for any final class
+[2java.lang.Object| length 2 contains [1java.lang.Byte| and [1java.lang.Double|
+   not the same as primitive arrays but will serialize elements as primitive
+   true for any child array class
+   if held on to an indicator I could convert [1java.lang.Byte| => [1~ since Object[] can't have int[]
+   example: Object[Byte[2,3], Integer[4,5]] becomes
+   [2java.lang.Object|2[1java.lang.Byte|223[1java.lang.Integer|200040005
 */
    /**
     * Not in map:<br/>
@@ -88,9 +96,9 @@ as primitive)
       return fileReader.remainingBytes();
    }
 
-   public Object readObject()
+   public <T> T readObject()
    {
-      return readObject(Object.class);
+      return cast(readObject(Object.class));
    }
 
    /* TODO: unfinished doc
@@ -120,26 +128,22 @@ as primitive)
       }
 
       if (ClassUtil.isBoxedPrimitive(expectedClass)) return readPrimitive(expectedClass);
-      if (expectedClass.isAnnotationPresent(GenerateId.class))
-      {
-         final T registeredObject = registry.readObjectOrId(this);
-         if (registeredObject != null) return registeredObject;
-      }
-
       if (String.class.equals(expectedClass))
       {
          final int stringByteLength = bigEndianBytesToInteger(fileReader.readBytes(4));
          return cast(fileReader.readBytesAsString(stringByteLength));
       }
 
-      if (StaticSerializableEnumByName.class.isAssignableFrom(expectedClass))
+      //enums ignore GenerateId because they have fixed instances anyway
+      if (expectedClass.isAnnotationPresent(GenerateId.class) && !expectedClass.isEnum())
       {
-         final String name = readObject(String.class);
-         return cast(Enum.valueOf(cast(expectedClass), name));
+         final T registeredObject = registry.readObjectOrId(this);
+         if (registeredObject != null) return registeredObject;
       }
-      if (StaticSerializableEnumByOrdinal.class.isAssignableFrom(expectedClass)){ return readEnumByOrdinal(expectedClass); }
 
       if (StaticSerializable.class.isAssignableFrom(expectedClass)){ return readCustomClass(expectedClass); }
+
+      if (expectedClass.isEnum()){ return readEnumByOrdinal(expectedClass); }
       if (Serializable.class.isAssignableFrom(expectedClass))
       {
          final int length = bigEndianBytesToInteger(fileReader.readBytes(4));
@@ -290,14 +294,11 @@ as primitive)
 
    private <T> T readEnumByOrdinal(final Class<T> expectedClass)
    {
-      if (!expectedClass.isEnum())
-         throw new InvalidClassException(expectedClass.getName() + " implements StaticSerializableEnumByOrdinal but isn't an enum");
-
       final int ordinal = readObject(int.class);
       final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum
 
       if (values.length <= ordinal) throw new StreamCorruptedException(
-            String.format("%s[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
+            String.format("%s.values()[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
 
       return cast(values[ordinal]);
    }

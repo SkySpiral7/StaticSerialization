@@ -48,6 +48,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
    {
       //start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)
       FileIoUtil.writeToFile(destination, "");  //must do before fileAppender is created so that the file won't be locked
+      //TODO: prove AsynchronousFileAppender does more than BufferedOutputStream
       fileAppender = new AsynchronousFileAppender(destination);
    }
 
@@ -81,19 +82,41 @@ public class ObjectStreamWriter implements Closeable, Flushable
       fileAppender.append(writeMe);
    }
 
+   /**
+    * List of supported types:
+    * <ul>
+    *    <li>null (not technically a Type.class)</li>
+    *    <li>Any primitive (except void.class obviously)</li>
+    *    <li>Any boxed primitive (java.lang.Void.class isn't a box)</li>
+    *    <li>Any type that extends StaticSerializable</li>
+    *    <li>Any type that extends Serializable (String and enum have better than normal compression)</li>
+    * </ul>
+    */
    //for now ignore overloading for all primitives and array stuff
    public void writeObject(final Object data)
    {
       //TODO: for now it doesn't allow arrays
       writeOverhead(data);
+      //these cases are only overhead so I'm done
       if (data == null || Boolean.TRUE.equals(data) || Boolean.FALSE.equals(data)) return;
 
-      if (ClassUtil.isBoxedPrimitive(data.getClass()))
+      final Class<?> dataClass = data.getClass();
+      if (ClassUtil.isBoxedPrimitive(dataClass))
       {
          writePrimitive(data);
          return;
       }
-      if (data.getClass().isAnnotationPresent(GenerateId.class))
+      if (data instanceof String)
+      {
+         final String castedData = (String) data;
+         final byte[] writeMe = castedData.getBytes(StandardCharsets.UTF_8);
+         writeBytes(writeMe.length, 4);
+         fileAppender.append(writeMe);
+         return;
+      }
+
+      //enums ignore GenerateId because they have fixed instances anyway
+      if (dataClass.isAnnotationPresent(GenerateId.class) && !dataClass.isEnum())
       {
          if (registry.getId(data) != null)
          {
@@ -106,32 +129,17 @@ public class ObjectStreamWriter implements Closeable, Flushable
          registry.writeId(data, this);
       }
 
-      if (data instanceof String)
-      {
-         final String castedData = (String) data;
-         final byte[] writeMe = castedData.getBytes(StandardCharsets.UTF_8);
-         writeBytes(writeMe.length, 4);
-         fileAppender.append(writeMe);
-         return;
-      }
-
-      if (data instanceof StaticSerializableEnumByName)
-      {
-         final Enum<?> castedData = (Enum<?>) data;
-         writeObject(castedData.name());
-         return;
-      }
-      if (data instanceof StaticSerializableEnumByOrdinal)
-      {
-         final Enum<?> castedData = (Enum<?>) data;
-         writeObject(castedData.ordinal());
-         return;
-      }
-
       if (data instanceof StaticSerializable)
       {
          final StaticSerializable castedData = (StaticSerializable) data;
          castedData.writeToStream(this);
+         return;
+      }
+
+      if (dataClass.isEnum())
+      {
+         final Enum<?> castedData = (Enum<?>) data;
+         writeObject(castedData.ordinal());
          return;
       }
       if (data instanceof Serializable)
@@ -143,7 +151,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
          return;
       }
 
-      throw new NotSerializableException(data.getClass());
+      throw new NotSerializableException(dataClass);
    }
 
    static byte[] javaSerialize(final Serializable castedData)
