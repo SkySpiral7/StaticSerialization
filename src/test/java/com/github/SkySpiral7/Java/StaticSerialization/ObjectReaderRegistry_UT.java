@@ -9,8 +9,10 @@ import com.github.SkySpiral7.Java.util.FileIoUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 public class ObjectReaderRegistry_UT
 {
@@ -86,6 +88,31 @@ public class ObjectReaderRegistry_UT
 
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       assertNull(testObject.readObjectOrId(reader));
+
+      reader.close();
+   }
+
+   @Test
+   public void readObjectOrId_throws_whenUnclaimedIdAlreadyExists() throws IOException
+   {
+      final File tempFile = writeIdToFile("ObjectReaderRegistry_UT.TempFile.readObjectOrId_throws_whenUnclaimedIdAlreadyExists.",
+            UUID.randomUUID().toString());
+      FileIoUtil.writeToFile(tempFile, new byte[]{(byte) '*'}, true);
+      final byte[] idSize = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 36};
+      FileIoUtil.writeToFile(tempFile, idSize, true);
+      FileIoUtil.writeToFile(tempFile, UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8), true);
+
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      testObject.readObjectOrId(reader);
+      try
+      {
+         testObject.readObjectOrId(reader);
+         fail("Should've thrown");
+      }
+      catch (IllegalStateException actual)
+      {
+         assertEquals("Failed to call claimId. Stopping gracefully.", actual.getMessage());
+      }
 
       reader.close();
    }
