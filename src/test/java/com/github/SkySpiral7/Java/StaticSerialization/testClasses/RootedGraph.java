@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.github.SkySpiral7.Java.StaticSerialization.ObjectReaderRegistry;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter;
 import com.github.SkySpiral7.Java.StaticSerialization.StaticSerializable;
@@ -103,40 +102,22 @@ public final class RootedGraph implements StaticSerializable
 
       public static Node readFromStream(final ObjectStreamReader reader)
       {
-         final ObjectReaderRegistry registry = reader.getObjectRegistry();
-         final Node registeredObject = registry.readObjectOrId(reader);
-         if (registeredObject != null) return registeredObject;
+         return StaticSerializable.readFromStream(reader, Node::createEmpty, RootedGraph.Node::populate);
+      }
 
-         final Node result = new Node(reader.readObject(String.class));
-         registry.claimId(result);
+      private static Node createEmpty(final ObjectStreamReader reader)
+      {
+         return new Node(reader.readObject(String.class));
+      }
 
+      private static void populate(final ObjectStreamReader reader, final Node result)
+      {
          final int linkSize = reader.readObject(int.class);
          for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
          {
             result.links.add(reader.readObject(Node.class));
          }
-
-         return result;
       }
-
-      //      public static Node readFromStream2(final ObjectStreamReader reader)
-      //      {
-      //         return StaticSerializable.readFromStream(reader, Node::emptyCreate, RootedGraph.Node::populate);
-      //      }
-      //
-      //      public static Node emptyCreate(final ObjectStreamReader reader)
-      //      {
-      //         return new Node(reader.readObject(String.class));
-      //      }
-      //
-      //      public static void populate(final ObjectStreamReader reader, final Node result)
-      //      {
-      //         final int linkSize = reader.readObject(int.class);
-      //         for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
-      //         {
-      //            result.links.add(reader.readObject(Node.class));
-      //         }
-      //      }
 
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
