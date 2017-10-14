@@ -47,4 +47,25 @@ public class ObjectWriterRegistry
       writer.writeObject(id);
    }
 
+   /**
+    * Writes the id of instance to the stream, registers instance (if needed),
+    * then returns true if instance was already registered.
+    */
+   public boolean shouldNotWrite(final Object instance, final ObjectStreamWriter writer)
+   {
+      Objects.requireNonNull(instance);
+      Objects.requireNonNull(writer);
+      String id = registry.get(instance);
+      if (id != null)
+      {
+         //if already exists then write the id and stop
+         writer.writeObject(id);
+         return true;
+      }
+      //else create an id, write it, and continue writing the object
+      id = UUID.randomUUID().toString();
+      registry.put(instance, id);
+      writer.writeObject(id);
+      return false;
+   }
 }

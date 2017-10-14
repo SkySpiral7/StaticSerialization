@@ -10,7 +10,6 @@ import java.util.Set;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectReaderRegistry;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter;
-import com.github.SkySpiral7.Java.StaticSerialization.ObjectWriterRegistry;
 import com.github.SkySpiral7.Java.StaticSerialization.StaticSerializable;
 import com.github.SkySpiral7.Java.dataStructures.IdentityHashSet;
 
@@ -120,21 +119,29 @@ public final class RootedGraph implements StaticSerializable
          return result;
       }
 
+      //      public static Node readFromStream2(final ObjectStreamReader reader)
+      //      {
+      //         return StaticSerializable.readFromStream(reader, Node::emptyCreate, RootedGraph.Node::populate);
+      //      }
+      //
+      //      public static Node emptyCreate(final ObjectStreamReader reader)
+      //      {
+      //         return new Node(reader.readObject(String.class));
+      //      }
+      //
+      //      public static void populate(final ObjectStreamReader reader, final Node result)
+      //      {
+      //         final int linkSize = reader.readObject(int.class);
+      //         for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
+      //         {
+      //            result.links.add(reader.readObject(Node.class));
+      //         }
+      //      }
+
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {
-         //TODO: if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
-         final ObjectWriterRegistry registry = writer.getObjectRegistry();
-         if (registry.getId(this) != null)
-         {
-            //if already exists then write the id and stop
-            registry.writeId(this, writer);
-            return;
-         }
-         //else create an id, write it, and continue writing the object
-         registry.registerObject(this);
-         registry.writeId(this, writer);
-
+         if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
          writer.writeObject(data);
          writer.writeObject(links.size());
          links.forEach(writer::writeObject);
