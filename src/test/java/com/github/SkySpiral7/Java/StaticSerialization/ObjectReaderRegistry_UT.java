@@ -97,10 +97,10 @@ public class ObjectReaderRegistry_UT
    {
       final File tempFile = writeIdToFile("ObjectReaderRegistry_UT.TempFile.readObjectOrId_throws_whenUnclaimedIdAlreadyExists.",
             UUID.randomUUID().toString());
-      FileIoUtil.writeToFile(tempFile, new byte[]{(byte) '*'}, true);
+      FileIoUtil.appendToFile(tempFile, new byte[]{(byte) '*'});
       final byte[] idSize = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 36};
-      FileIoUtil.writeToFile(tempFile, idSize, true);
-      FileIoUtil.writeToFile(tempFile, UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8), true);
+      FileIoUtil.appendToFile(tempFile, idSize);
+      FileIoUtil.appendToFile(tempFile, UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8));
 
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       testObject.readObjectOrId(reader);
@@ -148,10 +148,10 @@ public class ObjectReaderRegistry_UT
    {
       final File tempFile = File.createTempFile(prefix, ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{(byte) '*'}, false);
+      FileIoUtil.writeToFile(tempFile, new byte[]{(byte) '*'});
       final byte[] idSize = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) id.length()};
-      FileIoUtil.writeToFile(tempFile, idSize, true);
-      FileIoUtil.writeToFile(tempFile, id.getBytes(StandardCharsets.UTF_8), true);
+      FileIoUtil.appendToFile(tempFile, idSize);
+      FileIoUtil.appendToFile(tempFile, id.getBytes(StandardCharsets.UTF_8));
       return tempFile;
    }
 
