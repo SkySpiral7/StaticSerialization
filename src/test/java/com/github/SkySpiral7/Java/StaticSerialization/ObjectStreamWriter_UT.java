@@ -68,7 +68,7 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(null);
       testObject.close();
-      final byte[] expected = new byte[]{(byte) '|'};
+      final byte[] expected = new byte[]{(byte) ';'};
       //don't use bytesToString since that assumes the header has UTF-8 encoding
       assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
    }
@@ -236,7 +236,7 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(RoundingMode.DOWN);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "java.math.RoundingMode|@";  //@ is int
+      final String overhead = "java.math.RoundingMode;@";  //@ is int
       final byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01};
       assertEquals(overhead, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
@@ -289,7 +289,7 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(CustomEnum.One);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$CustomEnum|*";
+      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$CustomEnum;*";
       final byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03,  //UTF-8 length (int)
             (byte) 79, (byte) 110, (byte) 101};  //"One"
       assertEquals(overhead, bytesToString(fileContents, data.length));
@@ -309,10 +309,10 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(data);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("java.math.BigInteger|", bytesToString(fileContents, (javaData.length + 4)));
+      assertEquals("java.math.BigInteger;", bytesToString(fileContents, (javaData.length + 4)));
 
       final byte[] bytesOfSize = new byte[4];
-      System.arraycopy(fileContents, "java.math.BigInteger|".length(), bytesOfSize, 0, 4);
+      System.arraycopy(fileContents, "java.math.BigInteger;".length(), bytesOfSize, 0, 4);
       assertEquals(javaData.length, BitWiseUtil.bigEndianBytesToInteger(bytesOfSize));
 
       assertEquals(Arrays.toString(javaData), Arrays.toString(shortenBytes(fileContents, javaData.length)));
@@ -362,7 +362,7 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(new ReflectiveLocal());
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$1ReflectiveLocal|@",
+      assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$1ReflectiveLocal;@",
             bytesToString(fileContents, 4));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
    }

@@ -27,7 +27,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
     * + boolean true<br/>
     * - boolean false<br/>
     * [2<br/>
-    * | null<br/>
+    * ; null<br/>
     */
    private static final Map<Class<?>, Character> COMPRESSED_CLASSES;
 
@@ -185,7 +185,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
    {
       if (Boolean.TRUE.equals(data)) writeBytes('+', 1);
       else if (Boolean.FALSE.equals(data)) writeBytes('-', 1);
-      else if (data == null) writeBytes('|', 1);  //if data is null then class name is the empty string
+      else if (data == null) writeBytes(';', 1);  //if data is null then class name is the empty string
       else if (COMPRESSED_CLASSES.containsKey(data.getClass())) writeBytes(COMPRESSED_CLASSES.get(data.getClass()), 1);
       else
       {
@@ -193,8 +193,8 @@ public class ObjectStreamWriter implements Closeable, Flushable
          //can't use recursion to write the string because that's endless and needs different format
          final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
          fileAppender.append(writeMe);
-         writeBytes('|', 1);
-         //instead of size then string have the string terminated by | since this saves 3 bytes and class names can't contain |
+         writeBytes(';', 1);
+         //instead of size then string have the string terminated by ; since this saves 3 bytes and class names can't contain ;
       }
    }
 

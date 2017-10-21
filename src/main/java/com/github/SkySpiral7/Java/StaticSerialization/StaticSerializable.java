@@ -20,6 +20,7 @@ import java.util.function.Function;
  * <p>Note that using this interface also requires the class to define a static method of this signature:</p>
  * <blockQuote>{@code public static YourClass readFromStream(final ObjectStreamReader reader)}</blockQuote>
  */
+//security holes: https://tersesystems.com/blog/2015/11/08/closing-the-open-door-of-java-object-serialization/
 public interface StaticSerializable
 {
    //public static T<this> readFromStream(final ObjectStreamReader reader)

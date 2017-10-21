@@ -22,7 +22,7 @@ import com.github.SkySpiral7.Java.AsynchronousFileReader;
 import com.github.SkySpiral7.Java.exception.NoMoreDataException;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 
-import static com.github.SkySpiral7.Java.util.ClassUtil.cast;
+import static com.github.SkySpiral7.Java.StaticSerialization.ClassUtil.cast;
 
 public class ObjectStreamReader implements Closeable
 {
@@ -32,7 +32,7 @@ public class ObjectStreamReader implements Closeable
 /*
 [x where x is unsigned byte which is the number of dimensions (JVM max is 255)
 [1~ is easy just the length (int) then elements
-Even though elements will be serialized as primitives do not change [1java.lang.Byte| to [1~
+Even though elements will be serialized as primitives do not change [1java.lang.Byte; to [1~
    because the resulting array type will be different
 [2~ length. each one needs overhead since arrays maintain the component type ([2~ length has [1~ length)
    however if the base type is primitive then it can be only those in which case:
@@ -44,19 +44,20 @@ Even though elements will be serialized as primitives do not change [1java.lang.
    ] => 3, 2,3,1, 1,2,1,2,3,1
    sounds hard to manage for arbitrary depth
    works for any final class
-[2java.lang.Object| length 2 contains [1java.lang.Byte| and [1java.lang.Double|
+[2java.lang.Object; length 2 contains [1java.lang.Byte; and [1java.lang.Double;
    not the same as primitive arrays but will serialize elements as primitive
    true for any child array class
-   if held on to an indicator I could convert [1java.lang.Byte| => [1~ since Object[] can't have int[]
+   if held on to an indicator I could convert [1java.lang.Byte; => [1~ since Object[] can't have int[]
    example: Object[Byte[2,3], Integer[4,5]] becomes
-   [2java.lang.Object|2[1java.lang.Byte|223[1java.lang.Integer|200040005
+   [2java.lang.Object;2[1java.lang.Byte;223[1java.lang.Integer;200040005
+   only include dimensions for the top because the rest is assumed
 */
    /**
     * Not in map:<br/>
     * + boolean true<br/>
     * - boolean false<br/>
     * [2<br/>
-    * | null<br/>
+    * ; null<br/>
     */
    private static final Map<Character, Class<?>> COMPRESSED_CLASSES;
 
@@ -145,14 +146,19 @@ Even though elements will be serialized as primitives do not change [1java.lang.
       //Class Overhead
       {
          final byte firstByte = fileReader.readBytes(1)[0];
-         if ('|' == firstByte) return null;  //the empty string class name means null, which can be cast to anything safely
+         if (';' == firstByte) return null;  //the empty string class name means null, which can be cast to anything safely
          if (('+' == firstByte || '-' == firstByte) && !allowChildClass && !Boolean.class.equals(expectedClass))
             throw new IllegalStateException(
                   "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: java.lang.Boolean");
          if ('+' == firstByte) return cast(Boolean.TRUE);
          if ('-' == firstByte) return cast(Boolean.FALSE);
          //TODO: for now it doesn't allow array
-         if ('[' == firstByte) throw new UnsupportedOperationException("Arrays are not currently supported");
+//         if ('[' == firstByte){
+//            for()
+//            {
+//               readObjectInternal(Object[][].class);
+//            }
+//         }
          expectedClass = cast(readOverhead(expectedClass, firstByte, allowChildClass));
       }
 
@@ -208,7 +214,7 @@ Even though elements will be serialized as primitives do not change [1java.lang.
       {
          if (!hasData()) throw new StreamCorruptedException("Incomplete header");
          final byte thisByte = fileReader.readBytes(1)[0];
-         if (thisByte == '|') break;
+         if (thisByte == ';') break;
          data.write(thisByte);
       }
       final String actualClassName = new String(data.toByteArray(), StandardCharsets.UTF_8);
