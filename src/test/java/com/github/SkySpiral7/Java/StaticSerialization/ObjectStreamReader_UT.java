@@ -437,7 +437,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_noHeaderThrows.", ".txt");
       tempFile.deleteOnExit();
-      final byte[] fileContents = {(byte) 2};
+      final byte[] fileContents = {(byte) 'j'};
       FileIoUtil.writeToFile(tempFile, fileContents);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);

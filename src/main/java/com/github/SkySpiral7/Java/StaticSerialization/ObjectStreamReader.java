@@ -1,7 +1,6 @@
 package com.github.SkySpiral7.Java.StaticSerialization;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -12,10 +11,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import com.github.SkySpiral7.Java.AsynchronousFileReader;
@@ -28,51 +24,6 @@ public class ObjectStreamReader implements Closeable
 {
    private final ObjectReaderRegistry registry = new ObjectReaderRegistry();
    private final AsynchronousFileReader fileReader;
-
-/*
-[x where x is unsigned byte which is the number of dimensions (JVM max is 255)
-[1~ is easy just the length (int) then elements
-Even though elements will be serialized as primitives do not change [1java.lang.Byte; to [1~
-   because the resulting array type will be different
-[2~ length. each one needs overhead since arrays maintain the component type ([2~ length has [1~ length)
-   however if the base type is primitive then it can be only those in which case:
-   length of root, length, length, length, flat data:
-   [
-   [1,2],
-   [1,2,3],
-   [1]
-   ] => 3, 2,3,1, 1,2,1,2,3,1
-   sounds hard to manage for arbitrary depth
-   works for any final class
-[2java.lang.Object; length 2 contains [1java.lang.Byte; and [1java.lang.Double;
-   not the same as primitive arrays but will serialize elements as primitive
-   true for any child array class
-   if held on to an indicator I could convert [1java.lang.Byte; => [1~ since Object[] can't have int[]
-   example: Object[Byte[2,3], Integer[4,5]] becomes
-   [2java.lang.Object;2[1java.lang.Byte;223[1java.lang.Integer;200040005
-   only include dimensions for the top because the rest is assumed
-*/
-   /**
-    * Not in map:<br/>
-    * + boolean true<br/>
-    * - boolean false<br/>
-    * [2<br/>
-    * ; null<br/>
-    */
-   private static final Map<Character, Class<?>> COMPRESSED_CLASSES;
-
-   static
-   {
-      COMPRESSED_CLASSES = new HashMap<>();
-      COMPRESSED_CLASSES.put('~', Byte.class);
-      COMPRESSED_CLASSES.put('!', Short.class);
-      COMPRESSED_CLASSES.put('@', Integer.class);
-      COMPRESSED_CLASSES.put('#', Long.class);
-      COMPRESSED_CLASSES.put('%', Float.class);
-      COMPRESSED_CLASSES.put('^', Double.class);
-      COMPRESSED_CLASSES.put('&', Character.class);
-      COMPRESSED_CLASSES.put('*', String.class);
-   }
 
    public ObjectStreamReader(final File sourceFile)
    {
@@ -91,6 +42,7 @@ Even though elements will be serialized as primitives do not change [1java.lang.
    //hasData(int) would be nice but would need to read and store the overhead
    public boolean hasData()
    {
+      //TODO: move hasData to AsynchronousFileReader
       return (remainingBytes() > 0);
    }
 
@@ -111,10 +63,14 @@ Even though elements will be serialized as primitives do not change [1java.lang.
    }
 
    /**
-    * Reads an object from the stream and requires that the class must match exactly. While normally
+    * <p>Reads an object from the stream and requires that the class must match exactly. While normally
     * you could just call the class's readFromStream method, this method is useful if either the class
     * implements Serializable rather than StaticSerializable (such as BigDecimal), or if you don't know the
-    * exact class at compile time and would like this method to do the reflection for you.
+    * exact class at compile time and would like this method to do the reflection for you.</p>
+    *
+    * <p>Security feature: if the expected class isn't the same as the class in this stream then an IllegalStateException
+    * is thrown without loading the class found. Thus untrusted classes will not be loaded (preventing static initializer
+    * blocks).</p>
     *
     * @see #readObject(Class)
     */
@@ -135,7 +91,11 @@ Even though elements will be serialized as primitives do not change [1java.lang.
       return readObjectInternal(expectedClass, true);
    }
 
-   private <T> T readObjectInternal(Class<T> expectedClass, final boolean allowChildClass)
+   /**
+    * @param allowChildClass true will throw if the class found isn't the exact same. false allows casting.
+    */
+   private <T_Expected, T_Actual extends T_Expected> T_Actual readObjectInternal(Class<T_Expected> expectedClass,
+                                                                                 final boolean allowChildClass)
    {
       Objects.requireNonNull(expectedClass);
       if (!hasData()) throw new NoMoreDataException();
@@ -143,43 +103,44 @@ Even though elements will be serialized as primitives do not change [1java.lang.
       //must check for void.class because ClassUtil.boxClass would throw something less helpful
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));
-      //Class Overhead
+
+      final HeaderInformation headerInformation = ObjectHeaderReader.readOverhead(fileReader);
+      if(headerInformation.getClassName() == null) return null;  //can be cast to anything safely
+      if (Boolean.class.getName().equals(headerInformation.getClassName()))
       {
-         final byte firstByte = fileReader.readBytes(1)[0];
-         if (';' == firstByte) return null;  //the empty string class name means null, which can be cast to anything safely
-         if (('+' == firstByte || '-' == firstByte) && !allowChildClass && !Boolean.class.equals(expectedClass))
-            throw new IllegalStateException(
-                  "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: java.lang.Boolean");
-         if ('+' == firstByte) return cast(Boolean.TRUE);
-         if ('-' == firstByte) return cast(Boolean.FALSE);
-         //TODO: for now it doesn't allow array
-//         if ('[' == firstByte){
-//            for()
-//            {
-//               readObjectInternal(Object[][].class);
-//            }
-//         }
-         expectedClass = cast(readOverhead(expectedClass, firstByte, allowChildClass));
+         if (!allowChildClass && !Boolean.class.equals(expectedClass)) throw new IllegalStateException(
+               "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: java.lang.Boolean");
+         //TODO: I think this is redundant?
+         if (!expectedClass.isAssignableFrom(Boolean.class))
+            throw new ClassCastException(Boolean.class.getName() + " can't be cast into " + expectedClass.getName());
+         if(headerInformation.getValue() != null) return cast(headerInformation.getValue());  //either true or false
+         //will be null if the header explicitly contained Boolean for some reason in which case will be read below
       }
 
-      if (ClassUtil.isBoxedPrimitive(expectedClass)) return readPrimitive(expectedClass);
-      if (String.class.equals(expectedClass))
+      final Class<T_Actual> actualClass = getClassFromOverhead(headerInformation.getClassName(), expectedClass, allowChildClass);
+      return readValue(actualClass);
+   }
+
+   private <T> T readValue(final Class<T> actualClass)
+   {
+      if (ClassUtil.isBoxedPrimitive(actualClass)) return readPrimitive(actualClass);
+      if (String.class.equals(actualClass))
       {
          final int stringByteLength = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
          return cast(fileReader.readBytesAsString(stringByteLength));
       }
 
-      if (StaticSerializable.class.isAssignableFrom(expectedClass)){ return readCustomClass(expectedClass); }
+      if (StaticSerializable.class.isAssignableFrom(actualClass)){ return readCustomClass(actualClass); }
 
-      if (expectedClass.isEnum()){ return readEnumByOrdinal(expectedClass); }
-      if (Serializable.class.isAssignableFrom(expectedClass))
+      if (actualClass.isEnum()){ return readEnumByOrdinal(actualClass); }
+      if (Serializable.class.isAssignableFrom(actualClass))
       {
          final int length = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
          final byte[] objectData = fileReader.readBytes(length);
          return javaDeserialize(objectData);
       }
 
-      throw new NotSerializableException(expectedClass);
+      throw new NotSerializableException(actualClass);
    }
 
    private <T> T javaDeserialize(final byte[] objectData)
@@ -199,38 +160,25 @@ Even though elements will be serialized as primitives do not change [1java.lang.
       }
    }
 
-   private Class<?> readOverhead(final Class<?> expectedClass, final byte firstByte, final boolean allowChildClass)
+   private <T_Expected, T_Actual extends T_Expected> Class<T_Actual> getClassFromOverhead(final String actualClassName,
+                                                                                          final Class<T_Expected> expectedClass,
+                                                                                          final boolean allowChildClass)
    {
-      if (COMPRESSED_CLASSES.containsKey((char) firstByte))
-      {
-         final Class<?> actualClass = COMPRESSED_CLASSES.get((char) firstByte);
-         if (!allowChildClass && !actualClass.equals(expectedClass)) throw new IllegalStateException(
-               "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: " + actualClass.getName());
-         return actualClass;
-      }
-      final ByteArrayOutputStream data = new ByteArrayOutputStream();
-      data.write(firstByte);
-      while (true)
-      {
-         if (!hasData()) throw new StreamCorruptedException("Incomplete header");
-         final byte thisByte = fileReader.readBytes(1)[0];
-         if (thisByte == ';') break;
-         data.write(thisByte);
-      }
-      final String actualClassName = new String(data.toByteArray(), StandardCharsets.UTF_8);
       if (!allowChildClass && !actualClassName.equals(expectedClass.getName()))
          throw new IllegalStateException("Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: " + actualClassName);
+      //it is important to validate here so that some nefarious static blocks won't be ran
+      //if casting is allowed then loading the class is unavoidable at this point
 
       try
       {
-         Class<?> actualClass = Class.forName(actualClassName);
+         final Class<?> actualClass = Class.forName(actualClassName);
          if (!expectedClass.isAssignableFrom(actualClass))
             throw new ClassCastException(actualClass.getName() + " can't be cast into " + expectedClass.getName());
-         return actualClass;
+         return cast(actualClass);
       }
-      catch (final ClassNotFoundException e)
+      catch (final ClassNotFoundException classNotFoundException)
       {
-         throw new DeserializationException(e);
+         throw new DeserializationException(classNotFoundException);
       }
    }
 

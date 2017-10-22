@@ -26,7 +26,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
     * Not in map:<br/>
     * + boolean true<br/>
     * - boolean false<br/>
-    * [2<br/>
+    * [2 arrays<br/>
     * ; null<br/>
     */
    private static final Map<Class<?>, Character> COMPRESSED_CLASSES;
@@ -125,6 +125,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
       if (dataClass.isEnum())
       {
          final Enum<?> castedData = (Enum<?>) data;
+         //TODO: recursion wastes 1 byte here
          writeObject(castedData.ordinal());
          return;
       }
