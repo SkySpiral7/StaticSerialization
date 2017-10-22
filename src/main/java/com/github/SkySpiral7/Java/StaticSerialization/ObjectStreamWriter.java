@@ -115,6 +115,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
          return;
       }
 
+      //TODO: future: move these into ObjectStreamStrategy. EnumStreamStrategy has read and write.
       if (data instanceof StaticSerializable)
       {
          final StaticSerializable castedData = (StaticSerializable) data;
@@ -125,8 +126,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
       if (dataClass.isEnum())
       {
          final Enum<?> castedData = (Enum<?>) data;
-         //TODO: recursion wastes 1 byte here
-         writeObject(castedData.ordinal());
+         writePrimitive(castedData.ordinal());
          return;
       }
       if (data instanceof Serializable)

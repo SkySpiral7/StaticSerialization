@@ -233,7 +233,7 @@ public class ObjectStreamReader implements Closeable
 
    private <T> T readEnumByOrdinal(final Class<T> expectedClass)
    {
-      final int ordinal = readObject(int.class);
+      final int ordinal = readPrimitive(Integer.class);
       final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum
 
       if (values.length <= ordinal) throw new StreamCorruptedException(

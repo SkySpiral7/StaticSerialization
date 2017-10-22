@@ -82,7 +82,7 @@ public class ObjectStreamReader_UT
             (byte) '~', (byte) 3};  //~ is byte
       FileIoUtil.writeToFile(tempFile, fileContents);
 
-      final String overhead = "java.math.RoundingMode;@";  //@ is int
+      final String overhead = "java.math.RoundingMode;";
       FileIoUtil.appendToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
       FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01});
 
@@ -634,7 +634,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enum.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "java.math.RoundingMode;@";  //@ is int
+      final String overhead = "java.math.RoundingMode;";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -650,7 +650,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enum_OrdinalNotFound.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "java.math.RoundingMode;@";  //@ is int
+      final String overhead = "java.math.RoundingMode;";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x0a};
       FileIoUtil.appendToFile(tempFile, fileContents);

@@ -236,7 +236,7 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(RoundingMode.DOWN);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "java.math.RoundingMode;@";  //@ is int
+      final String overhead = "java.math.RoundingMode;";
       final byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01};
       assertEquals(overhead, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
