@@ -14,7 +14,6 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Objects;
 
-import com.github.SkySpiral7.Java.AsynchronousFileReader;
 import com.github.SkySpiral7.Java.exception.NoMoreDataException;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 
@@ -39,11 +38,9 @@ public class ObjectStreamReader implements Closeable
       fileReader.close();
    }
 
-   //hasData(int) would be nice but would need to read and store the overhead
    public boolean hasData()
    {
-      //TODO: move hasData to AsynchronousFileReader
-      return (remainingBytes() > 0);
+      return fileReader.hasData();
    }
 
    public int remainingBytes()

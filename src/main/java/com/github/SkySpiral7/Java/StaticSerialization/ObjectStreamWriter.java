@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.SkySpiral7.Java.AsynchronousFileAppender;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 
@@ -48,7 +47,6 @@ public class ObjectStreamWriter implements Closeable, Flushable
    {
       //start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)
       FileIoUtil.writeToFile(destination, "");  //must do before fileAppender is created so that the file won't be locked
-      //TODO: prove AsynchronousFileAppender does more than BufferedOutputStream
       fileAppender = new AsynchronousFileAppender(destination);
    }
 
