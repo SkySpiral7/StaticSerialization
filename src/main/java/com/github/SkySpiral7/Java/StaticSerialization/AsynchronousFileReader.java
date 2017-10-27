@@ -104,29 +104,47 @@ public final class AsynchronousFileReader implements Closeable
     * Reads bytes from the file and converts them to a UTF-8 string.
     * This method will wait if the queue is empty.
     *
-    * @see #readBytesAsString(int, Charset)
+    * @param byteCount the number of bytes to read
+    *
+    * @see #readString(int, Charset)
     */
-   public String readBytesAsString(final int byteCount)
+   public String readString(final int byteCount)
    {
-      return readBytesAsString(byteCount, StandardCharsets.UTF_8);
+      return readString(byteCount, StandardCharsets.UTF_8);
    }
 
    /**
     * Reads bytes from the file and converts them to a string using the given encoding.
     * This method will wait if the queue is empty.
     *
+    * @param byteCount the number of bytes to read
+    * @param encoding the character set used to decode the bytes
+    *
     * @see #readBytes(int)
     */
-   public String readBytesAsString(final int byteCount, final Charset encoding)
+   public String readString(final int byteCount, final Charset encoding)
    {
       return new String(readBytes(byteCount), encoding);
+   }
+
+   /**
+    * Reads a single byte of binary data from the file.
+    * This method will wait if the queue is empty.
+    *
+    * @see #readBytes(int)
+    */
+   public byte readByte()
+   {
+      return readBytes(1)[0];
    }
 
    /**
     * Reads binary data from the file.
     * This method will wait if the queue is empty.
     *
-    * @see #readBytesAsString(int)
+    * @param byteCount the number of bytes to read
+    *
+    * @see #readString(int)
     */
    public byte[] readBytes(final int byteCount)
    {

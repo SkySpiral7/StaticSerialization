@@ -124,7 +124,7 @@ public class ObjectStreamReader implements Closeable
       if (String.class.equals(actualClass))
       {
          final int stringByteLength = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
-         return cast(fileReader.readBytesAsString(stringByteLength));
+         return cast(fileReader.readString(stringByteLength));
       }
 
       if (StaticSerializable.class.isAssignableFrom(actualClass)){ return readCustomClass(actualClass); }
@@ -181,7 +181,7 @@ public class ObjectStreamReader implements Closeable
 
    private <T> T readPrimitive(final Class<T> expectedClass)
    {
-      if (Byte.class.equals(expectedClass)) return cast(fileReader.readBytes(1)[0]);
+      if (Byte.class.equals(expectedClass)) return cast(fileReader.readByte());
       if (Short.class.equals(expectedClass))
       {
          final byte[] data = fileReader.readBytes(2);
@@ -213,7 +213,7 @@ public class ObjectStreamReader implements Closeable
       if (Boolean.class.equals(expectedClass))
       {
          //This code is obsolete but still permitted. It isn't normally reached due to the new boolean overhead.
-         final byte data = fileReader.readBytes(1)[0];
+         final byte data = fileReader.readByte();
          if (data == 1) return cast(Boolean.TRUE);
          return cast(Boolean.FALSE);
       }

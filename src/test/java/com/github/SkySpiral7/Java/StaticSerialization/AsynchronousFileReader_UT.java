@@ -21,7 +21,7 @@ public class AsynchronousFileReader_UT
       FileIoUtil.writeToFile(tempFile, "hi");
       final AsynchronousFileReader testObject = new AsynchronousFileReader(tempFile);
 
-      assertEquals("hi", testObject.readBytesAsString(2));
+      assertEquals("hi", testObject.readString(2));
       //the test can only assert that the payload was delivered
       //using breakpoints I think I fixed all deadlocks
 

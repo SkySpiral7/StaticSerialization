@@ -71,7 +71,7 @@ How does strict work? Only the top level wouldn't be safe enough
       Objects.nonNull(reader);
       if (reader.remainingBytes() == 0) throw new NoMoreDataException();
 
-      final byte firstByte = reader.readBytes(1)[0];
+      final byte firstByte = reader.readByte();
       //the empty string class name means null
       if (';' == firstByte) return new HeaderInformation(null);
       if ('+' == firstByte) return new HeaderInformation(Boolean.class.getName(), Boolean.TRUE);
@@ -83,7 +83,7 @@ How does strict work? Only the top level wouldn't be safe enough
       }
       //         if ('[' == firstByte)
       //         {
-      //            final byte dimensions = fileReader.readBytes(1)[0];
+      //            final byte dimensions = fileReader.readByte();
       //            final Class<?> componentType = readObjectInternal(expectedClass, allowChildClass, assumeDimensions);
       //            for()
       //            {
@@ -97,7 +97,7 @@ How does strict work? Only the top level wouldn't be safe enough
       while (true)
       {
          if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header");
-         final byte thisByte = reader.readBytes(1)[0];
+         final byte thisByte = reader.readByte();
          if (thisByte == ';') break;
          data.write(thisByte);
       }
