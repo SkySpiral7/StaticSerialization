@@ -20,9 +20,10 @@ import com.github.SkySpiral7.Java.StaticSerialization.exception.InvalidClassExce
 import com.github.SkySpiral7.Java.StaticSerialization.exception.NotSerializableException;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.StreamCorruptedException;
 import com.github.SkySpiral7.Java.exception.NoMoreDataException;
+import com.github.SkySpiral7.Java.util.BitWiseUtil;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 
-import static com.github.SkySpiral7.Java.StaticSerialization.ClassUtil.cast;
+import static com.github.SkySpiral7.Java.util.ClassUtil.cast;
 
 public class ObjectStreamReader implements Closeable
 {
