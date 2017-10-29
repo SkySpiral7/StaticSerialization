@@ -14,6 +14,7 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Objects;
 
+import com.github.SkySpiral7.Java.AsynchronousFileReader;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.DeserializationException;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.InvalidClassException;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.NotSerializableException;
