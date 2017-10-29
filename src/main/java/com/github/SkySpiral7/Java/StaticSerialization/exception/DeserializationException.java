@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.StaticSerialization;
+package com.github.SkySpiral7.Java.StaticSerialization.exception;
 
 /**
  * This exception is thrown when deserialization fails and there's no more specific exception to be thrown.

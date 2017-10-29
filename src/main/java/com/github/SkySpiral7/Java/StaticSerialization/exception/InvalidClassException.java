@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.StaticSerialization;
+package com.github.SkySpiral7.Java.StaticSerialization.exception;
 
 /**
  * This exception is thrown when a class violates a contract that can't be enforced by an interface, such as expecting a no-arg constructor

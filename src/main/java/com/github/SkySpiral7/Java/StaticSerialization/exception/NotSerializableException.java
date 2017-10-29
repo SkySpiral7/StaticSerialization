@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.StaticSerialization;
+package com.github.SkySpiral7.Java.StaticSerialization.exception;
 
 /**
  * This exception is thrown when attempting to serialize or deserialize an object that isn't Serializable.

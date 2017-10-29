@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import com.github.SkySpiral7.Java.StaticSerialization.exception.NotSerializableException;
 import com.github.SkySpiral7.Java.util.FileIoUtil;
 import org.junit.Test;
 

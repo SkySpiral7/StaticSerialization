@@ -6,6 +6,10 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 
+import com.github.SkySpiral7.Java.StaticSerialization.exception.DeserializationException;
+import com.github.SkySpiral7.Java.StaticSerialization.exception.InvalidClassException;
+import com.github.SkySpiral7.Java.StaticSerialization.exception.NotSerializableException;
+import com.github.SkySpiral7.Java.StaticSerialization.exception.StreamCorruptedException;
 import com.github.SkySpiral7.Java.StaticSerialization.testClasses.SimpleHappy;
 import com.github.SkySpiral7.Java.exception.NoMoreDataException;
 import com.github.SkySpiral7.Java.util.FileIoUtil;

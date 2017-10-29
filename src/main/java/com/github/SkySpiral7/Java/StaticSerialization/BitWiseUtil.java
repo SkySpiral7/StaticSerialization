@@ -5,7 +5,7 @@ package com.github.SkySpiral7.Java.StaticSerialization;
  *
  * @see com.github.SkySpiral7.Java.util.BitWiseUtil
  */
-enum BitWiseUtil
+public enum BitWiseUtil
 {
    ;  //no instances
 
@@ -14,7 +14,7 @@ enum BitWiseUtil
     *
     * @see com.github.SkySpiral7.Java.util.BitWiseUtil#bigEndianBytesToLong(byte[])
     */
-   static int bigEndianBytesToInteger(byte[] input)
+   public static int bigEndianBytesToInteger(byte[] input)
    {
       if (input.length != 4) throw new IllegalArgumentException("expected length 4, got: " + input.length);
       int result = (input[0] & 0xff);
@@ -31,7 +31,7 @@ enum BitWiseUtil
     *
     * @see com.github.SkySpiral7.Java.util.BitWiseUtil#bigEndianBytesToLong(byte[])
     */
-   static long bigEndianBytesToLong(byte[] input)
+   public static long bigEndianBytesToLong(byte[] input)
    {
       if (input.length != 8) throw new IllegalArgumentException("expected length 8, got: " + input.length);
       long result = (input[0] & 0xff);

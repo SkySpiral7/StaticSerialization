@@ -9,8 +9,7 @@ import java.util.stream.Collectors;
 import com.github.SkySpiral7.Java.util.ClassUtil;
 
 /**
- * This utility class is for helping StaticSerializable, not for Serialization in general which is
- * why it isn't in the general util package.
+ * This utility class is for helping StaticSerializable, not for Serialization in general.
  */
 public enum SerializationUtil
 {

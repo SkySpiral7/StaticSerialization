@@ -5,7 +5,7 @@ package com.github.SkySpiral7.Java.StaticSerialization;
  *
  * @see com.github.SkySpiral7.Java.util.ClassUtil
  */
-enum ClassUtil
+public enum ClassUtil
 {
    ;  //no instances
 
@@ -15,7 +15,7 @@ enum ClassUtil
     * @see com.github.SkySpiral7.Java.util.ClassUtil#cast(Object)
     */
    @SuppressWarnings("unchecked")
-   static <T> T cast(final Object anything)
+   public static <T> T cast(final Object anything)
    {
       return (T) anything;
    }
