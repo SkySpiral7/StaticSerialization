@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.github.SkySpiral7.Java.util.ClassUtil;
+import com.github.skySpiral7.java.util.ClassUtil;
 
 public class ObjectReaderRegistry
 {

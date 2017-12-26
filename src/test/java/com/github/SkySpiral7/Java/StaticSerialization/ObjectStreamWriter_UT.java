@@ -8,8 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.github.SkySpiral7.Java.StaticSerialization.exception.NotSerializableException;
-import com.github.SkySpiral7.Java.util.BitWiseUtil;
-import com.github.SkySpiral7.Java.util.FileIoUtil;
+import com.github.skySpiral7.java.util.BitWiseUtil;
+import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

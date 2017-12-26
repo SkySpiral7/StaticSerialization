@@ -3,10 +3,10 @@ package com.github.SkySpiral7.Java.StaticSerialization;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
-import com.github.SkySpiral7.Java.AsynchronousFileReader;
+import com.github.skySpiral7.java.AsynchronousFileReader;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.StreamCorruptedException;
-import com.github.SkySpiral7.Java.exception.NoMoreDataException;
-import com.github.SkySpiral7.Java.util.FileIoUtil;
+import com.github.skySpiral7.java.exception.NoMoreDataException;
+import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

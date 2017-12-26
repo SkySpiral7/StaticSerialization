@@ -6,7 +6,7 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.SkySpiral7.Java.util.ClassUtil;
+import com.github.skySpiral7.java.util.ClassUtil;
 
 /**
  * This utility class is for helping StaticSerializable, not for Serialization in general.

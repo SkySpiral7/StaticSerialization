@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-import com.github.SkySpiral7.Java.util.FileIoUtil;
+import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Before;
 import org.junit.Test;
 

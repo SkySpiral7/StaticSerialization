@@ -14,16 +14,16 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Objects;
 
-import com.github.SkySpiral7.Java.AsynchronousFileReader;
+import com.github.skySpiral7.java.AsynchronousFileReader;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.DeserializationException;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.InvalidClassException;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.NotSerializableException;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.StreamCorruptedException;
-import com.github.SkySpiral7.Java.exception.NoMoreDataException;
-import com.github.SkySpiral7.Java.util.BitWiseUtil;
-import com.github.SkySpiral7.Java.util.ClassUtil;
+import com.github.skySpiral7.java.exception.NoMoreDataException;
+import com.github.skySpiral7.java.util.BitWiseUtil;
+import com.github.skySpiral7.java.util.ClassUtil;
 
-import static com.github.SkySpiral7.Java.util.ClassUtil.cast;
+import static com.github.skySpiral7.java.util.ClassUtil.cast;
 
 public class ObjectStreamReader implements Closeable
 {

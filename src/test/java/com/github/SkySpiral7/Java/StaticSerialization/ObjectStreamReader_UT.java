@@ -11,8 +11,8 @@ import com.github.SkySpiral7.Java.StaticSerialization.exception.InvalidClassExce
 import com.github.SkySpiral7.Java.StaticSerialization.exception.NotSerializableException;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.StreamCorruptedException;
 import com.github.SkySpiral7.Java.StaticSerialization.testClasses.SimpleHappy;
-import com.github.SkySpiral7.Java.exception.NoMoreDataException;
-import com.github.SkySpiral7.Java.util.FileIoUtil;
+import com.github.skySpiral7.java.exception.NoMoreDataException;
+import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

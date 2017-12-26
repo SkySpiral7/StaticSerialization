@@ -13,11 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.SkySpiral7.Java.AsynchronousFileAppender;
+import com.github.skySpiral7.java.AsynchronousFileAppender;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.NotSerializableException;
 import com.github.SkySpiral7.Java.StaticSerialization.exception.StreamCorruptedException;
-import com.github.SkySpiral7.Java.util.ClassUtil;
-import com.github.SkySpiral7.Java.util.FileIoUtil;
+import com.github.skySpiral7.java.util.ClassUtil;
+import com.github.skySpiral7.java.util.FileIoUtil;
 
 public class ObjectStreamWriter implements Closeable, Flushable
 {

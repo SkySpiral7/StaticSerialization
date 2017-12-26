@@ -11,7 +11,7 @@ import com.github.SkySpiral7.Java.StaticSerialization.ObjectReaderRegistry;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader;
 import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter;
 import com.github.SkySpiral7.Java.StaticSerialization.StaticSerializable;
-import com.github.SkySpiral7.Java.dataStructures.IdentityHashSet;
+import com.github.skySpiral7.java.dataStructures.IdentityHashSet;
 
 public final class UnclaimedRootedGraph implements StaticSerializable
 {
