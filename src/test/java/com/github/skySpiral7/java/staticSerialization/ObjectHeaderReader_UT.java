@@ -1,10 +1,10 @@
-package com.github.SkySpiral7.Java.StaticSerialization;
+package com.github.skySpiral7.java.staticSerialization;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import com.github.skySpiral7.java.AsynchronousFileReader;
-import com.github.SkySpiral7.Java.StaticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;

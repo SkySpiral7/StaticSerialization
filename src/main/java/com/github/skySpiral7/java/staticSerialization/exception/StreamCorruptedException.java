@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.StaticSerialization.exception;
+package com.github.skySpiral7.java.staticSerialization.exception;
 
 /**
  * This exception is thrown when attempting to read invalid data in the stream's overhead.

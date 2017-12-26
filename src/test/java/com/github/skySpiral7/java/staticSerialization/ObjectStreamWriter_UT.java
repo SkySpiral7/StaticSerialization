@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.StaticSerialization;
+package com.github.skySpiral7.java.staticSerialization;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,7 +7,7 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import com.github.SkySpiral7.Java.StaticSerialization.exception.NotSerializableException;
+import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.util.BitWiseUtil;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
@@ -291,7 +291,7 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(CustomEnum.One);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$CustomEnum;*";
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter_UT$CustomEnum;*";
       final byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03,  //UTF-8 length (int)
             (byte) 79, (byte) 110, (byte) 101};  //"One"
       assertEquals(overhead, bytesToString(fileContents, data.length));
@@ -364,7 +364,7 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(new ReflectiveLocal());
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter_UT$1ReflectiveLocal;@",
+      assertEquals("com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter_UT$1ReflectiveLocal;@",
             bytesToString(fileContents, 4));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
    }

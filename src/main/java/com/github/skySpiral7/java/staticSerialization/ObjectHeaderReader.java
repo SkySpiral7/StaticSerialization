@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.StaticSerialization;
+package com.github.skySpiral7.java.staticSerialization;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.github.skySpiral7.java.AsynchronousFileReader;
-import com.github.SkySpiral7.Java.StaticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.exception.NoMoreDataException;
 
 public enum ObjectHeaderReader

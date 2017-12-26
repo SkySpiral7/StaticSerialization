@@ -1,12 +1,12 @@
-package com.github.SkySpiral7.Java.StaticSerialization;
+package com.github.skySpiral7.java.staticSerialization;
 
 import java.io.File;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
-import com.github.SkySpiral7.Java.StaticSerialization.testClasses.RootedGraph;
-import com.github.SkySpiral7.Java.StaticSerialization.testClasses.RootedGraph.Node;
-import com.github.SkySpiral7.Java.StaticSerialization.testClasses.SimpleHappy;
+import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph;
+import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph.Node;
+import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

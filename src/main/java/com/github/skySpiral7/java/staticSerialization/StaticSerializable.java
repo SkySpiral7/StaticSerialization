@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.StaticSerialization;
+package com.github.skySpiral7.java.staticSerialization;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;

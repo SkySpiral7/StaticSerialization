@@ -1,11 +1,11 @@
-package com.github.SkySpiral7.Java.StaticSerialization;
+package com.github.skySpiral7.java.staticSerialization;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.SkySpiral7.Java.StaticSerialization.testClasses.SimpleHappy;
+import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;

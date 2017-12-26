@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.StaticSerialization;
+package com.github.skySpiral7.java.staticSerialization;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -6,11 +6,11 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 
-import com.github.SkySpiral7.Java.StaticSerialization.exception.DeserializationException;
-import com.github.SkySpiral7.Java.StaticSerialization.exception.InvalidClassException;
-import com.github.SkySpiral7.Java.StaticSerialization.exception.NotSerializableException;
-import com.github.SkySpiral7.Java.StaticSerialization.exception.StreamCorruptedException;
-import com.github.SkySpiral7.Java.StaticSerialization.testClasses.SimpleHappy;
+import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
+import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
+import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
@@ -678,7 +678,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_happy.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.testClasses.SimpleHappy;";
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
       final byte[] fileContents = new byte[]{(byte) '@', (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -713,7 +713,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_customEnum.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$CustomEnum;*";
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$CustomEnum;*";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -730,7 +730,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_noReader.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$1NoReader;";
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$1NoReader;";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -746,7 +746,7 @@ public class ObjectStreamReader_UT
       }
       catch (final InvalidClassException actual)
       {
-         assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$1NoReader"
+         assertEquals("com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$1NoReader"
                       + " implements StaticSerializable but doesn't define readFromStream", actual.getMessage());
       }
 
@@ -767,7 +767,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_nonPublic.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$NonPublicReader;";
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$NonPublicReader;";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -780,7 +780,7 @@ public class ObjectStreamReader_UT
       }
       catch (final InvalidClassException actual)
       {
-         assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$NonPublicReader.readFromStream"
+         assertEquals("com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$NonPublicReader.readFromStream"
                       + " must be public static", actual.getMessage());
       }
 
@@ -792,7 +792,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_nonStatic.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$1LocalNonStaticReader;";
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$1LocalNonStaticReader;";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -814,7 +814,7 @@ public class ObjectStreamReader_UT
       }
       catch (final InvalidClassException actual)
       {
-         assertEquals("com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$1LocalNonStaticReader.readFromStream"
+         assertEquals("com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$1LocalNonStaticReader.readFromStream"
                       + " must be public static", actual.getMessage());
       }
 
@@ -835,7 +835,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_throwingReader.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$ThrowingReader;";
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$ThrowingReader;";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -893,7 +893,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readFieldsReflectively.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader_UT$ReflectiveClass;java.lang.Integer;";
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$ReflectiveClass;java.lang.Integer;";
       FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
       final byte[] fileContents = {(byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe};
       FileIoUtil.appendToFile(tempFile, fileContents);

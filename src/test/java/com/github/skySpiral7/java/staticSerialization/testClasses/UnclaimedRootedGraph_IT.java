@@ -1,9 +1,9 @@
-package com.github.SkySpiral7.Java.StaticSerialization.testClasses;
+package com.github.skySpiral7.java.staticSerialization.testClasses;
 
 import java.io.File;
 
-import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader;
-import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import org.junit.Ignore;
 import org.junit.Test;
 

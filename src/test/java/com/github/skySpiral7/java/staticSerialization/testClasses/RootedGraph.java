@@ -1,4 +1,4 @@
-package com.github.SkySpiral7.Java.StaticSerialization.testClasses;
+package com.github.skySpiral7.java.staticSerialization.testClasses;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamReader;
-import com.github.SkySpiral7.Java.StaticSerialization.ObjectStreamWriter;
-import com.github.SkySpiral7.Java.StaticSerialization.StaticSerializable;
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.dataStructures.IdentityHashSet;
 
 public final class RootedGraph implements StaticSerializable
