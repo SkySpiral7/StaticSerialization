@@ -239,7 +239,7 @@ public class StaticSerializable_IT
       //This test case exists because Arrays have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.array2D.", ".txt");
       tempFile.deleteOnExit();
-      final byte[][] data = new byte[][]{new byte[]{1}, null};
+      final byte[][] data = {{1}, null};
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       writer.writeObject(data);

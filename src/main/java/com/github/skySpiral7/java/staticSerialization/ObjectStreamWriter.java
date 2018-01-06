@@ -98,7 +98,6 @@ public class ObjectStreamWriter implements Closeable, Flushable
    //for now ignore overloading for all primitives and array stuff
    public void writeObject(final Object data)
    {
-      //TODO: for now it doesn't allow arrays
       writeOverhead(data);
       //these cases are only overhead so I'm done
       if (data == null || Boolean.TRUE.equals(data) || Boolean.FALSE.equals(data)) return;

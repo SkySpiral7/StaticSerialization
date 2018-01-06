@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.nio.charset.StandardCharsets;
 
 import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
@@ -89,9 +88,8 @@ public class ObjectStreamReader_UT
             (byte) '~', (byte) 3};  //~ is byte
       FileIoUtil.writeToFile(tempFile, fileContents);
 
-      final String overhead = "java.math.RoundingMode;";
-      FileIoUtil.appendToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
-      FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01});
+      FileIoUtil.appendToFile(tempFile, "java.math.RoundingMode;");
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.readObjectStrictly(Boolean.class));
@@ -107,8 +105,7 @@ public class ObjectStreamReader_UT
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenGotBoolean.", ".txt");
       tempFile.deleteOnExit();
 
-      final byte[] fileContents = {(byte) '+', (byte) '-'};  //+ is true, - is false
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, "+-");  //+ is true, - is false
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
@@ -305,9 +302,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_throw_unknownClass.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Object;".getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = {(byte) 2};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, "java.lang.Object;");
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
@@ -328,9 +323,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_throw_voidClass.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "void;".getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = {(byte) 2};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, "void;");
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
@@ -351,9 +344,8 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_BoxesClassArg_GivenPrimitive.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{(byte) '-'});
-      FileIoUtil.appendToFile(tempFile, "java.lang.Boolean;".getBytes(StandardCharsets.UTF_8));
-      FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x01});
+      FileIoUtil.writeToFile(tempFile, "-java.lang.Boolean;");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
@@ -369,17 +361,8 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_happy.", ".txt");
       tempFile.deleteOnExit();
-
-      //@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
-				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
-				(byte)';',
-				(byte)2  //the data
-		};
-		//@formatter:on
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
+      FileIoUtil.appendToFile(tempFile, new byte[]{2});
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
@@ -394,16 +377,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_noSuchClassThrows.", ".txt");
       tempFile.deleteOnExit();
-
-      //@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110,  //"lan"
-				(byte)';',
-				(byte)2  //the data
-		};
-		//@formatter:on
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, "java.lang.f;");
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
@@ -424,17 +398,8 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_upCast.", ".txt");
       tempFile.deleteOnExit();
-
-      //@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
-				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
-				(byte)';',
-				(byte)2  //the data
-		};
-		//@formatter:on
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
+      FileIoUtil.appendToFile(tempFile, new byte[]{2});
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertEquals(Byte.valueOf((byte) 2), testObject.readObject(Number.class));
@@ -447,9 +412,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_null.", ".txt");
       tempFile.deleteOnExit();
-
-      final byte[] fileContents = new byte[]{(byte) ';'};
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, ";");
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
@@ -464,15 +427,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_noClassThrows.", ".txt");
       tempFile.deleteOnExit();
-
-      //@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)';',
-				(byte)2  //the data
-		};
-		//@formatter:on
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, "java.;");
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
 
@@ -539,7 +494,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Byte.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;".getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
       final byte[] fileContents = {(byte) 2, (byte) '~', (byte) 3};
       FileIoUtil.appendToFile(tempFile, fileContents);
 
@@ -557,7 +512,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Short.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Short;".getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.writeToFile(tempFile, "java.lang.Short;");
       final byte[] fileContents = {(byte) 0x0a, (byte) 0xfe, (byte) '!', (byte) 0x2b, (byte) 0xf1};
       FileIoUtil.appendToFile(tempFile, fileContents);
 
@@ -575,7 +530,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Integer.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Integer;".getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.writeToFile(tempFile, "java.lang.Integer;");
       final byte[] fileContents = {(byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe, (byte) '@', (byte) 0x0a, (byte) 0x1e, (byte) 0xba,
             (byte) 0xb2};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -594,7 +549,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Long.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Long;".getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.writeToFile(tempFile, "java.lang.Long;");
       final byte[] fileContents = {(byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06, (byte) 0x07, (byte) 0x08,
             (byte) '#', (byte) 0x05, (byte) 0x04, (byte) 0x03, (byte) 0x02, (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x02};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -613,7 +568,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Float.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Float;".getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.writeToFile(tempFile, "java.lang.Float;");
       final byte[] fileContents = {(byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) '%', (byte) 0xc1, (byte) 0xd2, (byte) 0xe3,
             (byte) 0xf4};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -632,7 +587,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Double.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Double;".getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.writeToFile(tempFile, "java.lang.Double;");
       final byte[] fileContents = {(byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06, (byte) 0x07, (byte) 0x08,
             (byte) '^', (byte) 0xa1, (byte) 0xb2, (byte) 0xc3, (byte) 0xd4, (byte) 0xe5, (byte) 0xf6, (byte) 0x17, (byte) 0x08};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -651,10 +606,10 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Boolean.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.appendToFile(tempFile, "java.lang.Boolean;".getBytes(StandardCharsets.UTF_8));
-      FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x00});
-      FileIoUtil.appendToFile(tempFile, "java.lang.Boolean;".getBytes(StandardCharsets.UTF_8));
-      FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x01, (byte) '-', (byte) '+'});
+      FileIoUtil.appendToFile(tempFile, "java.lang.Boolean;");
+      FileIoUtil.appendToFile(tempFile, new byte[]{0});
+      FileIoUtil.appendToFile(tempFile, "java.lang.Boolean;");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1, '-', '+'});
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
@@ -672,10 +627,9 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Character.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Character;".getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.writeToFile(tempFile, "java.lang.Character;");
       FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x00, (byte) 0x66});
-      //TODO: single character byte[] should be string instead
-      FileIoUtil.appendToFile(tempFile, new byte[]{(byte) '&'});
+      FileIoUtil.appendToFile(tempFile, "&");
       FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x22, (byte) 0x1e});
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
@@ -692,14 +646,12 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_String.", ".txt");
       tempFile.deleteOnExit();
-      //TODO: .getBytes(StandardCharsets.UTF_8) is redundant with current FileIoUtil
-      FileIoUtil.writeToFile(tempFile, "java.lang.String;".getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
-            (byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e,  //string 1
-            (byte) '*',  //shorthand
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
-            (byte) 0x00};  //string 2
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, "java.lang.String;");
+      FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04});  //UTF-8 length (int));
+      FileIoUtil.appendToFile(tempFile, "f\u221E");
+      FileIoUtil.appendToFile(tempFile, "*");  //shorthand
+      FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01});  //UTF-8 length (int));
+      FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x00});
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
@@ -719,7 +671,7 @@ public class ObjectStreamReader_UT
       FileIoUtil.writeToFile(tempFile, "[");
       FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
       FileIoUtil.appendToFile(tempFile, "java.lang.Object;");
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
+      final byte[] fileContents = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
             (byte) '~', (byte) 0x01,  //each element has overhead
             (byte) '~', (byte) 0x02};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -741,7 +693,7 @@ public class ObjectStreamReader_UT
       FileIoUtil.writeToFile(tempFile, "[");
       FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
       FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
+      final byte[] fileContents = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
             (byte) '~', (byte) 0x01,  //each element has overhead
             (byte) '~', (byte) 0x02};
       FileIoUtil.appendToFile(tempFile, fileContents);
@@ -761,7 +713,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_primitiveArray.", ".txt");
       tempFile.deleteOnExit();
-      final byte[] fileContents = new byte[]{(byte) '[', (byte) 1,   //array indicator and dimensions
+      final byte[] fileContents = {(byte) '[', (byte) 1,   //array indicator and dimensions
             (byte) '~',  //byte
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
             (byte) '~', (byte) 0x01,  //each element has overhead
@@ -783,7 +735,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_2dArray.", ".txt");
       tempFile.deleteOnExit();
-      final byte[] fileContents = new byte[]{(byte) '[', (byte) 2,   //array indicator and dimensions
+      final byte[] fileContents = {(byte) '[', (byte) 2,   //array indicator and dimensions
             (byte) '~',  //byte
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
             (byte) '[', (byte) 1,   //first element
@@ -807,7 +759,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_primitiveBooleanArray.", ".txt");
       tempFile.deleteOnExit();
-      final byte[] fileContents = new byte[]{(byte) '[', (byte) 1,   //array indicator and dimensions
+      final byte[] fileContents = {(byte) '[', (byte) 1,   //array indicator and dimensions
             (byte) '+',  //boolean
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
             (byte) '+'};
@@ -830,7 +782,7 @@ public class ObjectStreamReader_UT
       FileIoUtil.writeToFile(tempFile, "[");
       FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
       FileIoUtil.appendToFile(tempFile, "java.lang.Boolean;");
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
+      final byte[] fileContents = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
             (byte) '-'};
       FileIoUtil.appendToFile(tempFile, fileContents);
       final Boolean[] expected = {false};
@@ -851,7 +803,7 @@ public class ObjectStreamReader_UT
       FileIoUtil.writeToFile(tempFile, "[");
       FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
       FileIoUtil.appendToFile(tempFile, "java.lang.Void;");
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};  //length (int)
+      final byte[] fileContents = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};  //length (int)
       FileIoUtil.appendToFile(tempFile, fileContents);
       final Void[] expected = new Void[0];
 
@@ -868,9 +820,8 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enum.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "java.math.RoundingMode;";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01};
+      FileIoUtil.writeToFile(tempFile, "java.math.RoundingMode;");
+      final byte[] fileContents = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01};
       FileIoUtil.appendToFile(tempFile, fileContents);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
@@ -884,9 +835,8 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_enum_OrdinalNotFound.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "java.math.RoundingMode;";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x0a};
+      FileIoUtil.writeToFile(tempFile, "java.math.RoundingMode;");
+      final byte[] fileContents = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 10};
       FileIoUtil.appendToFile(tempFile, fileContents);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
@@ -909,8 +859,8 @@ public class ObjectStreamReader_UT
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_happy.", ".txt");
       tempFile.deleteOnExit();
       final String overhead = "com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = new byte[]{(byte) '@', (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
+      FileIoUtil.writeToFile(tempFile, overhead);
+      final byte[] fileContents = {(byte) '@', (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
       FileIoUtil.appendToFile(tempFile, fileContents);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
@@ -943,11 +893,11 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_customEnum.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$CustomEnum;*";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$CustomEnum;";
+      FileIoUtil.writeToFile(tempFile, overhead);
+      final byte[] fileContents = {(byte) '*', (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03};
       FileIoUtil.appendToFile(tempFile, fileContents);
-      FileIoUtil.appendToFile(tempFile, "One".getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.appendToFile(tempFile, "One");
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertSame(CustomEnum.One, testObject.readObject(CustomEnum.class));
@@ -961,9 +911,7 @@ public class ObjectStreamReader_UT
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_noReader.", ".txt");
       tempFile.deleteOnExit();
       final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$1NoReader;";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, overhead);
 
       abstract class NoReader implements StaticSerializable
       {}  //abstract and no writer doesn't matter
@@ -998,9 +946,7 @@ public class ObjectStreamReader_UT
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_nonPublic.", ".txt");
       tempFile.deleteOnExit();
       final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$NonPublicReader;";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, overhead);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
@@ -1023,9 +969,7 @@ public class ObjectStreamReader_UT
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_nonStatic.", ".txt");
       tempFile.deleteOnExit();
       final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$1LocalNonStaticReader;";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, overhead);
 
       abstract class LocalNonStaticReader implements StaticSerializable
       {
@@ -1066,9 +1010,7 @@ public class ObjectStreamReader_UT
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_throwingReader.", ".txt");
       tempFile.deleteOnExit();
       final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$ThrowingReader;";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
-      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, overhead);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
@@ -1090,7 +1032,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_Serializable.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.math.BigInteger;".getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.writeToFile(tempFile, "java.math.BigInteger;");
       final BigInteger data = BigInteger.TEN;
       final byte[] javaData = ObjectStreamWriter.javaSerialize(data);
       assert (javaData.length < 256);  //currently 203. Possible for the length to change after a Java release
@@ -1123,8 +1065,8 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readFieldsReflectively.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$ReflectiveClass;java.lang.Integer;";
-      FileIoUtil.writeToFile(tempFile, overhead.getBytes(StandardCharsets.UTF_8));
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$ReflectiveClass;@";
+      FileIoUtil.writeToFile(tempFile, overhead);
       final byte[] fileContents = {(byte) 0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe};
       FileIoUtil.appendToFile(tempFile, fileContents);
 

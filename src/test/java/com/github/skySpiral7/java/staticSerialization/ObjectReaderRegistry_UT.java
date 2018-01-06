@@ -2,7 +2,6 @@ package com.github.skySpiral7.java.staticSerialization;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import com.github.skySpiral7.java.util.FileIoUtil;
@@ -97,10 +96,10 @@ public class ObjectReaderRegistry_UT
    {
       final File tempFile = writeIdToFile("ObjectReaderRegistry_UT.TempFile.readObjectOrId_throws_whenUnclaimedIdAlreadyExists.",
             UUID.randomUUID().toString());
-      FileIoUtil.appendToFile(tempFile, new byte[]{(byte) '*'});
-      final byte[] idSize = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 36};
+      FileIoUtil.appendToFile(tempFile, "*");
+      final byte[] idSize = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 36};
       FileIoUtil.appendToFile(tempFile, idSize);
-      FileIoUtil.appendToFile(tempFile, UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.appendToFile(tempFile, UUID.randomUUID().toString());
 
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       testObject.readObjectOrId(reader);
@@ -148,10 +147,10 @@ public class ObjectReaderRegistry_UT
    {
       final File tempFile = File.createTempFile(prefix, ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{(byte) '*'});
-      final byte[] idSize = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) id.length()};
+      FileIoUtil.writeToFile(tempFile, "*");
+      final byte[] idSize = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) id.length()};
       FileIoUtil.appendToFile(tempFile, idSize);
-      FileIoUtil.appendToFile(tempFile, id.getBytes(StandardCharsets.UTF_8));
+      FileIoUtil.appendToFile(tempFile, id);
       return tempFile;
    }
 
