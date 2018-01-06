@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.github.skySpiral7.java.dataStructures.IdentityHashSet;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
-import com.github.skySpiral7.java.dataStructures.IdentityHashSet;
 
 public final class RootedGraph implements StaticSerializable
 {

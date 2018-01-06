@@ -7,6 +7,7 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import java.util.Map;
 import com.github.skySpiral7.java.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.util.ArrayUtil;
 import com.github.skySpiral7.java.util.ClassUtil;
 import com.github.skySpiral7.java.util.FileIoUtil;
 
@@ -115,6 +117,16 @@ public class ObjectStreamWriter implements Closeable, Flushable
          fileAppender.append(writeMe);
          return;
       }
+      if (dataClass.isArray())
+      {
+         //length was written in writeOverhead
+         final int length = Array.getLength(data);
+         for (int i = 0; i < length; ++i)
+         {
+            writeObject(Array.get(data, i));
+         }
+         return;
+      }
 
       //TODO: future: move these into ObjectStreamStrategy. EnumStreamStrategy has read and write.
       if (data instanceof StaticSerializable)
@@ -189,6 +201,28 @@ public class ObjectStreamWriter implements Closeable, Flushable
       else if (Boolean.FALSE.equals(data)) writeBytes('-', 1);
       else if (data == null) writeBytes(';', 1);  //if data is null then class name is the empty string
       else if (COMPRESSED_CLASSES.containsKey(data.getClass())) writeBytes(COMPRESSED_CLASSES.get(data.getClass()), 1);
+      else if (data.getClass().isArray())
+      {
+         writeBytes('[', 1);
+         final int dimensionCount = ArrayUtil.countArrayDimensions(data.getClass());
+         //TODO: test and remove tests
+         if (dimensionCount > 1) throw new UnsupportedOperationException("Currently only 1d arrays are supported");
+         writeBytes(dimensionCount, 1);  //won't be 0, max: 255. Use unsigned byte
+         final Class<?> baseComponent = ArrayUtil.getBaseComponentType(data.getClass());
+         //array type can't be void or null
+         //TODO: support primitive arrays
+         //         if (baseComponent.equals(boolean.class)) writeBytes('+', 1);
+         //         else if (baseComponent.isPrimitive()) writeBytes(COMPRESSED_CLASSES.get(ClassUtil.boxClass(baseComponent)), 1);
+         //            //TODO: compress arrays of String and Boxes
+         //            //else if (ClassUtil.isBoxedPrimitive(baseComponent))
+         //         else
+         {
+            final byte[] writeMe = baseComponent.getName().getBytes(StandardCharsets.UTF_8);
+            fileAppender.append(writeMe);
+            writeBytes(';', 1);
+         }
+         writeBytes(Array.getLength(data), 4);
+      }
       else
       {
          final String className = data.getClass().getName();
@@ -203,8 +237,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
    public void writeFieldsReflectively(final Object data)
    {
       final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(data.getClass());
-      allSerializableFields.forEach(field ->
-      {
+      allSerializableFields.forEach(field -> {
          field.setAccessible(true);
          try
          {

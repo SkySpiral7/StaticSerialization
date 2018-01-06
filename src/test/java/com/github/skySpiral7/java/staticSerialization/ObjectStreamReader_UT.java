@@ -1,20 +1,23 @@
 package com.github.skySpiral7.java.staticSerialization;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 
+import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
-import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.util.FileIoUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -130,36 +133,93 @@ public class ObjectStreamReader_UT
    }
 
    @Test
-   public void readObjectStrictly_throws_whenGotCompressedClass() throws Exception
+   public void readObjectStrictly_throws_whenExpectedArrayGotNonArray() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenGotCompressedClass.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotNonArray.",
+            ".txt");
       tempFile.deleteOnExit();
 
-      final byte[] fileContents = {(byte) '*'};  //* is string. Don't need the rest since the overhead throws
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
+      //meaning that ClassNotFoundException is a failure.
+      FileIoUtil.writeToFile(tempFile, "f;");
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
       {
-         testObject.readObjectStrictly(CharSequence.class);
+         testObject.readObjectStrictly(Object[].class);
          fail("Should've thrown");
       }
-      catch (IllegalStateException actual)
+      catch (final IllegalStateException actual)
       {
-         assertEquals("Class doesn't match exactly. Expected: java.lang.CharSequence Got: java.lang.String", actual.getMessage());
+         assertEquals("Class doesn't match exactly. Expected: 1d array of java.lang.Object Got: f", actual.getMessage());
       }
       testObject.close();
    }
 
    @Test
-   public void readObjectStrictly_throws_whenGotNormalClass() throws Exception
+   public void readObjectStrictly_throws_whenExpectedArrayGotDifferentArrayType() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenGotNormalClass.", ".txt");
+      final File tempFile = File.createTempFile(
+            "ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotDifferentArrayType.", ".txt");
       tempFile.deleteOnExit();
 
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
-      final byte[] fileContents = "f;".getBytes(StandardCharsets.UTF_8);
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      //meaning that ClassNotFoundException is a failure.
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});
+      FileIoUtil.appendToFile(tempFile, "f;");
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      try
+      {
+         testObject.readObjectStrictly(Object[].class);
+         fail("Should've thrown");
+      }
+      catch (final IllegalStateException actual)
+      {
+         assertEquals("Class doesn't match exactly. Expected: 1d array of java.lang.Object Got: 1d array of f", actual.getMessage());
+      }
+      testObject.close();
+   }
+
+   @Test
+   @Ignore
+   public void readObjectStrictly_throws_whenExpectedArrayGotDifferentDimensions() throws Exception
+   {
+      final File tempFile = File.createTempFile(
+            "ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotDifferentDimensions.", ".txt");
+      tempFile.deleteOnExit();
+
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{2});
+      FileIoUtil.appendToFile(tempFile, "java.lang.Object;");
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      try
+      {
+         testObject.readObjectStrictly(Object[].class);
+         fail("Should've thrown");
+      }
+      catch (final IllegalStateException actual)
+      {
+         assertEquals("Class doesn't match exactly. Expected: 1d array of java.lang.Object Got: 2d array of java.lang.Object",
+               actual.getMessage());
+      }
+      testObject.close();
+   }
+
+   @Test
+   public void readObjectStrictly_throws_whenExpectedNonArrayGotArray() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedNonArrayGotArray.",
+            ".txt");
+      tempFile.deleteOnExit();
+
+      //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
+      //meaning that ClassNotFoundException is a failure.
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});
+      FileIoUtil.appendToFile(tempFile, "f;");
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
@@ -167,7 +227,31 @@ public class ObjectStreamReader_UT
          testObject.readObjectStrictly(Object.class);
          fail("Should've thrown");
       }
-      catch (IllegalStateException actual)
+      catch (final IllegalStateException actual)
+      {
+         assertEquals("Class doesn't match exactly. Expected: java.lang.Object Got: 1d array of f", actual.getMessage());
+      }
+      testObject.close();
+   }
+
+   @Test
+   public void readObjectStrictly_throws_whenExpectedNonArrayGotDifferentNonArray() throws Exception
+   {
+      final File tempFile = File.createTempFile(
+            "ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedNonArrayGotDifferentNonArray.", ".txt");
+      tempFile.deleteOnExit();
+
+      //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
+      //meaning that ClassNotFoundException is a failure.
+      FileIoUtil.writeToFile(tempFile, "f;");
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      try
+      {
+         testObject.readObjectStrictly(Object.class);
+         fail("Should've thrown");
+      }
+      catch (final IllegalStateException actual)
       {
          assertEquals("Class doesn't match exactly. Expected: java.lang.Object Got: f", actual.getMessage());
       }
@@ -306,6 +390,36 @@ public class ObjectStreamReader_UT
    }
 
    @Test
+   public void readObject_overHead_noSuchClassThrows() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_noSuchClassThrows.", ".txt");
+      tempFile.deleteOnExit();
+
+      //@formatter:off
+		final byte[] fileContents = new byte[] {
+				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
+				(byte)108, (byte)97, (byte)110,  //"lan"
+				(byte)';',
+				(byte)2  //the data
+		};
+		//@formatter:on
+      FileIoUtil.writeToFile(tempFile, fileContents);
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      try
+      {
+         testObject.readObject(String.class);
+         fail("Didn't throw");
+      }
+      catch (final DeserializationException actual)
+      {
+         assertEquals(ClassNotFoundException.class, actual.getCause().getClass());
+      }
+
+      testObject.close();
+   }
+
+   @Test
    public void readObject_overHead_upCast() throws Exception
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_upCast.", ".txt");
@@ -367,9 +481,33 @@ public class ObjectStreamReader_UT
          testObject.readObject(Object.class);
          fail("Didn't throw");
       }
-      catch (final RuntimeException actual)
+      catch (final DeserializationException actual)
       {
          assertEquals(ClassNotFoundException.class, actual.getCause().getClass());
+      }
+
+      testObject.close();
+   }
+
+   @Test
+   public void readObject_overHead_noArrayCastThrows() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_noArrayCastThrows.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});
+      FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 0});  //empty array to prove that the check is needed
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      try
+      {
+         testObject.readObject(String[].class);
+         fail("Didn't throw");
+      }
+      catch (final ClassCastException actual)
+      {
+         assertEquals("java.lang.Byte cannot be cast to java.lang.String", actual.getMessage());
       }
 
       testObject.close();
@@ -380,17 +518,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_noCastThrows.", ".txt");
       tempFile.deleteOnExit();
-
-      //@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110, (byte)103, (byte)46,  //"lang."
-				(byte)66, (byte)121, (byte)116, (byte)101,  //"Byte"
-				(byte)';',
-				(byte)2  //the data
-		};
-		//@formatter:on
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
@@ -400,60 +528,7 @@ public class ObjectStreamReader_UT
       }
       catch (final ClassCastException actual)
       {
-         assertEquals("java.lang.Byte can't be cast into java.lang.String", actual.getMessage());
-      }
-
-      testObject.close();
-   }
-
-   @Test
-   public void readObject_overHead_noSuchClassThrows() throws Exception
-   {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_noSuchClassThrows.", ".txt");
-      tempFile.deleteOnExit();
-
-      //@formatter:off
-		final byte[] fileContents = new byte[] {
-				(byte)106, (byte)97, (byte)118, (byte)97, (byte)46,  //"java."
-				(byte)108, (byte)97, (byte)110,  //"lan"
-				(byte)';',
-				(byte)2  //the data
-		};
-		//@formatter:on
-      FileIoUtil.writeToFile(tempFile, fileContents);
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      try
-      {
-         testObject.readObject(String.class);
-         fail("Didn't throw");
-      }
-      catch (final DeserializationException actual)
-      {
-         assertEquals(ClassNotFoundException.class, actual.getCause().getClass());
-      }
-
-      testObject.close();
-   }
-
-   @Test
-   public void readObject_overHead_noHeaderThrows() throws Exception
-   {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_overHead_noHeaderThrows.", ".txt");
-      tempFile.deleteOnExit();
-      final byte[] fileContents = {(byte) 'j'};
-      FileIoUtil.writeToFile(tempFile, fileContents);
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-
-      try
-      {
-         testObject.readObject(Byte.class);
-         fail("Didn't throw");
-      }
-      catch (final StreamCorruptedException actual)
-      {
-         assertEquals("Incomplete header", actual.getMessage());
+         assertEquals("java.lang.Byte cannot be cast to java.lang.String", actual.getMessage());
       }
 
       testObject.close();
@@ -599,13 +674,14 @@ public class ObjectStreamReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.Character;".getBytes(StandardCharsets.UTF_8));
       FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x00, (byte) 0x66});
+      //TODO: single character byte[] should be string instead
       FileIoUtil.appendToFile(tempFile, new byte[]{(byte) '&'});
       FileIoUtil.appendToFile(tempFile, new byte[]{(byte) 0x22, (byte) 0x1e});
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
       assertEquals('f', testObject.readObject(Character.class).charValue());
-      assertEquals(8734, testObject.readObject(char.class).charValue());  //infinity sign is BMP non-private
+      assertEquals(0x221e, testObject.readObject(char.class).charValue());  //infinity sign is BMP non-private
       assertFalse(testObject.hasData());
 
       testObject.close();
@@ -616,6 +692,7 @@ public class ObjectStreamReader_UT
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_String.", ".txt");
       tempFile.deleteOnExit();
+      //TODO: .getBytes(StandardCharsets.UTF_8) is redundant with current FileIoUtil
       FileIoUtil.writeToFile(tempFile, "java.lang.String;".getBytes(StandardCharsets.UTF_8));
       final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
             (byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e,  //string 1
@@ -626,8 +703,161 @@ public class ObjectStreamReader_UT
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
+      //TODO: use UTF-8 in Java files
       assertEquals("f\u221E", testObject.readObject(String.class));  //infinity sign is BMP (3 UTF-8 bytes) non-private
       assertEquals("\u0000", testObject.readObject(String.class));
+      assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   @Test
+   public void readObject_objectArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_objectArray.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
+      FileIoUtil.appendToFile(tempFile, "java.lang.Object;");
+      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
+            (byte) '~', (byte) 0x01,  //each element has overhead
+            (byte) '~', (byte) 0x02};
+      FileIoUtil.appendToFile(tempFile, fileContents);
+      final Object[] expected = {(byte) 1, (byte) 2};
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.hasData());
+      assertArrayEquals(expected, testObject.readObject(Object[].class));
+      assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   @Test
+   public void readObject_boxArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_boxArray.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
+      FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");
+      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
+            (byte) '~', (byte) 0x01,  //each element has overhead
+            (byte) '~', (byte) 0x02};
+      FileIoUtil.appendToFile(tempFile, fileContents);
+      final Byte[] expected = {1, 2};
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.hasData());
+      assertArrayEquals(expected, testObject.readObject(Byte[].class));
+      assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   @Test
+   @Ignore
+   public void readObject_primitiveArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_primitiveArray.", ".txt");
+      tempFile.deleteOnExit();
+      final byte[] fileContents = new byte[]{(byte) '[', (byte) 1,   //array indicator and dimensions
+            (byte) '~',  //byte
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
+            (byte) '~', (byte) 0x01,  //each element has overhead
+            (byte) '~', (byte) 0x02};
+      FileIoUtil.writeToFile(tempFile, fileContents);
+      final byte[] expected = {1, 2};
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.hasData());
+      assertArrayEquals(expected, testObject.readObject(byte[].class));
+      assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   @Test
+   @Ignore
+   public void readObject_2dArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_2dArray.", ".txt");
+      tempFile.deleteOnExit();
+      final byte[] fileContents = new byte[]{(byte) '[', (byte) 2,   //array indicator and dimensions
+            (byte) '~',  //byte
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
+            (byte) '[', (byte) 1,   //first element
+            (byte) '~',  //byte
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
+            (byte) '~', (byte) 0x01, (byte) ';'};   //second element
+      FileIoUtil.writeToFile(tempFile, fileContents);
+      final byte[][] expected = {{1}, null};
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.hasData());
+      assertArrayEquals(expected, testObject.readObject(byte[][].class));
+      assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   @Test
+   @Ignore
+   public void readObject_primitiveBooleanArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_primitiveBooleanArray.", ".txt");
+      tempFile.deleteOnExit();
+      final byte[] fileContents = new byte[]{(byte) '[', (byte) 1,   //array indicator and dimensions
+            (byte) '+',  //boolean
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
+            (byte) '+'};
+      FileIoUtil.writeToFile(tempFile, fileContents);
+      final boolean[] expected = {true};
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.hasData());
+      assertArrayEquals(expected, testObject.readObject(boolean[].class));
+      assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   @Test
+   public void readObject_boxBooleanArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_boxBooleanArray.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
+      FileIoUtil.appendToFile(tempFile, "java.lang.Boolean;");
+      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
+            (byte) '-'};
+      FileIoUtil.appendToFile(tempFile, fileContents);
+      final Boolean[] expected = {false};
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.hasData());
+      assertArrayEquals(expected, testObject.readObject(Boolean[].class));
+      assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   @Test
+   public void readObject_emptyArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_emptyArray.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
+      FileIoUtil.appendToFile(tempFile, "java.lang.Void;");
+      final byte[] fileContents = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};  //length (int)
+      FileIoUtil.appendToFile(tempFile, fileContents);
+      final Void[] expected = new Void[0];
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.hasData());
+      assertArrayEquals(expected, testObject.readObject(Void[].class));
       assertFalse(testObject.hasData());
 
       testObject.close();

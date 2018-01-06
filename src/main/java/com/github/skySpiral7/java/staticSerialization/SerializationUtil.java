@@ -26,8 +26,7 @@ public enum SerializationUtil
    public static List<Field> getAllSerializableFields(final Class<?> subject)
    {
       final List<Field> allFields = ClassUtil.getAllFields(subject);
-      return allFields.stream().filter(field ->
-      {
+      return allFields.stream().filter(field -> {
          final int modifiers = field.getModifiers();
          if (Modifier.isFinal(modifiers)) return false;  //can't be read from stream
          if (Modifier.isTransient(modifiers)) return false;  //shouldn't be touched

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.util.BitWiseUtil;
 import com.github.skySpiral7.java.util.FileIoUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -213,19 +214,150 @@ public class ObjectStreamWriter_UT
    }
 
    @Test
-   public void writeObject_String() throws IOException
+   public void writeObject_string() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_String.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_string.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
       testObject.writeObject("f\u221E");  //infinity sign is BMP (3 UTF-8 bytes) non-private
       testObject.close();
       final byte[] expected = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
-            (byte) 0x66, (byte) 0xe2, (byte) 0x88, (byte) 0x9e};
+            (byte) 'f', (byte) 0xe2, (byte) 0x88, (byte) 0x9e};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals("*", bytesToString(fileContents, expected.length));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
+   }
+
+   @Test
+   public void writeObject_objectArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_objectArray.", ".txt");
+      tempFile.deleteOnExit();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+      testObject.writeObject(new Object[]{(byte) 1, (byte) 2});
+      testObject.close();
+      final byte[] expected = new byte[]{(byte) '[', (byte) 1,   //array indicator and dimensions
+            (byte) 'j', (byte) 'a', (byte) 'v', (byte) 'a', (byte) '.', (byte) 'l', (byte) 'a', (byte) 'n', (byte) 'g', (byte) '.',
+            (byte) 'O', (byte) 'b', (byte) 'j', (byte) 'e', (byte) 'c', (byte) 't', (byte) ';',  //java.lang.Object
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
+            (byte) '~', (byte) 0x01,  //each element has overhead
+            (byte) '~', (byte) 0x02};
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
+   }
+
+   @Test
+   public void writeObject_boxArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_boxArray.", ".txt");
+      tempFile.deleteOnExit();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+      testObject.writeObject(new Byte[]{1, 2});
+      testObject.close();
+      final byte[] expected = new byte[]{(byte) '[', (byte) 1,   //array indicator and dimensions
+            (byte) 'j', (byte) 'a', (byte) 'v', (byte) 'a', (byte) '.', (byte) 'l', (byte) 'a', (byte) 'n', (byte) 'g', (byte) '.',
+            (byte) 'B', (byte) 'y', (byte) 't', (byte) 'e', (byte) ';',  //java.lang.Byte
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
+            (byte) '~', (byte) 0x01,  //each element has overhead
+            (byte) '~', (byte) 0x02};
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
+   }
+
+   @Test
+   @Ignore
+   public void writeObject_primitiveArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_primitiveArray.", ".txt");
+      tempFile.deleteOnExit();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+      testObject.writeObject(new byte[]{1, 2});
+      testObject.close();
+      final byte[] expected = new byte[]{(byte) '[', (byte) 1,   //array indicator and dimensions
+            (byte) '~',  //byte
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
+            (byte) '~', (byte) 0x01,  //each element has overhead
+            (byte) '~', (byte) 0x02};
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
+   }
+
+   @Test
+   @Ignore
+   public void writeObject_2dArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_2dArray.", ".txt");
+      tempFile.deleteOnExit();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+      testObject.writeObject(new byte[][]{new byte[]{1}, null});
+      testObject.close();
+      final byte[] expected = new byte[]{(byte) '[', (byte) 2,   //array indicator and dimensions
+            (byte) '~',  //byte
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
+            (byte) '[', (byte) 1,   //first element
+            (byte) '~',  //byte
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
+            (byte) '~', (byte) 0x01, (byte) ';'};   //second element
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
+   }
+
+   @Test
+   @Ignore
+   public void writeObject_primitiveBooleanArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_primitiveBooleanArray.", ".txt");
+      tempFile.deleteOnExit();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+      testObject.writeObject(new boolean[]{true});
+      testObject.close();
+      final byte[] expected = new byte[]{(byte) '[', (byte) 1,   //array indicator and dimensions
+            (byte) '+',  //boolean
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
+            (byte) '+'};
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
+   }
+
+   @Test
+   public void writeObject_boxBooleanArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_boxBooleanArray.", ".txt");
+      tempFile.deleteOnExit();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+      testObject.writeObject(new Boolean[]{false});
+      testObject.close();
+      final byte[] expected = new byte[]{(byte) '[', (byte) 1,   //array indicator and dimensions
+            (byte) 'j', (byte) 'a', (byte) 'v', (byte) 'a', (byte) '.', (byte) 'l', (byte) 'a', (byte) 'n', (byte) 'g', (byte) '.',
+            (byte) 'B', (byte) 'o', (byte) 'o', (byte) 'l', (byte) 'e', (byte) 'a', (byte) 'n', (byte) ';',  //java.lang.Boolean
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
+            (byte) '-'};
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
+   }
+
+   @Test
+   public void writeObject_emptyArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_emptyArray.", ".txt");
+      tempFile.deleteOnExit();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+      testObject.writeObject(new Void[0]);
+      testObject.close();
+      final byte[] expected = new byte[]{(byte) '[', (byte) 1,   //array indicator and dimensions
+            (byte) 'j', (byte) 'a', (byte) 'v', (byte) 'a', (byte) '.', (byte) 'l', (byte) 'a', (byte) 'n', (byte) 'g', (byte) '.',
+            (byte) 'V', (byte) 'o', (byte) 'i', (byte) 'd', (byte) ';',  //java.lang.Void
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};  //length (int)
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test

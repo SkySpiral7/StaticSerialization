@@ -5,12 +5,10 @@ import java.nio.charset.StandardCharsets;
 
 import com.github.skySpiral7.java.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class ObjectHeaderReader_UT
@@ -25,24 +23,104 @@ public class ObjectHeaderReader_UT
    }
 
    @Test
-   public void readOverhead_throws_whenNoData() throws Exception
+   public void readOverhead_throws_whenNoArrayDimensions() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_throws_whenNoData.", ".txt");
+      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_throws_whenNoArrayDimensions.", ".txt");
       tempFile.deleteOnExit();
-
+      FileIoUtil.writeToFile(tempFile, "[");
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
 
-      assertEquals(0, reader.remainingBytes());
       try
       {
          ObjectHeaderReader.readOverhead(reader);
          fail("Didn't throw");
       }
-      catch (final NoMoreDataException actual)
+      catch (final StreamCorruptedException actual)
       {
-         assertNull(actual.getMessage());
+         assertEquals("Incomplete header: no array dimensions", actual.getMessage());
       }
 
+      reader.close();
+   }
+
+   @Test
+   public void readOverhead_throws_whenNoArrayComponent() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_throws_whenNoArrayComponent.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "[a");  //'a' is a lot of dimensions
+      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+
+      try
+      {
+         ObjectHeaderReader.readOverhead(reader);
+         fail("Didn't throw");
+      }
+      catch (final StreamCorruptedException actual)
+      {
+         assertEquals("Incomplete header: no array component type", actual.getMessage());
+      }
+
+      reader.close();
+   }
+
+   @Test
+   public void readOverhead_throws_whenArrayComponentIsNull() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_throws_whenArrayComponentIsNull.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "[a;");  //'a' is a lot of dimensions
+      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+
+      try
+      {
+         ObjectHeaderReader.readOverhead(reader);
+         fail("Didn't throw");
+      }
+      catch (final StreamCorruptedException actual)
+      {
+         assertEquals("header's array component type can't be null or false", actual.getMessage());
+      }
+
+      reader.close();
+   }
+
+   @Test
+   public void readOverhead_throws_whenArrayComponentIsFalse() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_throws_whenArrayComponentIsFalse.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "[a-");  //'a' is a lot of dimensions
+      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+
+      try
+      {
+         ObjectHeaderReader.readOverhead(reader);
+         fail("Didn't throw");
+      }
+      catch (final StreamCorruptedException actual)
+      {
+         assertEquals("header's array component type can't be null or false", actual.getMessage());
+      }
+
+      reader.close();
+   }
+
+   @Test
+   public void readOverhead_returns_givenBooleanArrayInStream() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_returns_givenBooleanArrayInStream.", ".txt");
+      tempFile.deleteOnExit();
+
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});
+      FileIoUtil.appendToFile(tempFile, "+");
+      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final HeaderInformation expected = new HeaderInformation(Boolean.class.getName(), null, 1);
+
+      final HeaderInformation actual = ObjectHeaderReader.readOverhead(reader);
+
+      assertEquals(expected, actual);
       reader.close();
    }
 
@@ -55,7 +133,7 @@ public class ObjectHeaderReader_UT
       final byte[] fileContents = new byte[]{(byte) ';'};
       FileIoUtil.writeToFile(tempFile, fileContents);
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation(null, null);
+      final HeaderInformation expected = new HeaderInformation(null, null, 0);
 
       final HeaderInformation actual = ObjectHeaderReader.readOverhead(reader);
 
@@ -72,7 +150,7 @@ public class ObjectHeaderReader_UT
       final byte[] fileContents = new byte[]{(byte) '+'};
       FileIoUtil.writeToFile(tempFile, fileContents);
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.Boolean", Boolean.TRUE);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Boolean", Boolean.TRUE, 0);
 
       final HeaderInformation actual = ObjectHeaderReader.readOverhead(reader);
 
@@ -89,7 +167,7 @@ public class ObjectHeaderReader_UT
       final byte[] fileContents = new byte[]{(byte) '-'};
       FileIoUtil.writeToFile(tempFile, fileContents);
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.Boolean", Boolean.FALSE);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Boolean", Boolean.FALSE, 0);
 
       final HeaderInformation actual = ObjectHeaderReader.readOverhead(reader);
 
@@ -105,7 +183,7 @@ public class ObjectHeaderReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.appendToFile(tempFile, "java.lang.Boolean;".getBytes(StandardCharsets.UTF_8));
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.Boolean", null);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Boolean", null, 0);
 
       final HeaderInformation actual = ObjectHeaderReader.readOverhead(reader);
       assertEquals(expected, actual);
@@ -120,7 +198,7 @@ public class ObjectHeaderReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.Byte;~".getBytes(StandardCharsets.UTF_8));
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.Byte", null);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Byte", null, 0);
 
       final HeaderInformation actual1 = ObjectHeaderReader.readOverhead(reader);
       assertEquals(expected, actual1);
@@ -137,7 +215,7 @@ public class ObjectHeaderReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.Short;!".getBytes(StandardCharsets.UTF_8));
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.Short", null);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Short", null, 0);
 
       final HeaderInformation actual1 = ObjectHeaderReader.readOverhead(reader);
       assertEquals(expected, actual1);
@@ -155,7 +233,7 @@ public class ObjectHeaderReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.Integer;@".getBytes(StandardCharsets.UTF_8));
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.Integer", null);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Integer", null, 0);
 
       final HeaderInformation actual1 = ObjectHeaderReader.readOverhead(reader);
       assertEquals(expected, actual1);
@@ -172,7 +250,7 @@ public class ObjectHeaderReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.Long;#".getBytes(StandardCharsets.UTF_8));
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.Long", null);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Long", null, 0);
 
       final HeaderInformation actual1 = ObjectHeaderReader.readOverhead(reader);
       assertEquals(expected, actual1);
@@ -189,7 +267,7 @@ public class ObjectHeaderReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.Float;%".getBytes(StandardCharsets.UTF_8));
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.Float", null);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Float", null, 0);
 
       final HeaderInformation actual1 = ObjectHeaderReader.readOverhead(reader);
       assertEquals(expected, actual1);
@@ -207,7 +285,7 @@ public class ObjectHeaderReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.Double;^".getBytes(StandardCharsets.UTF_8));
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.Double", null);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Double", null, 0);
 
       final HeaderInformation actual1 = ObjectHeaderReader.readOverhead(reader);
       assertEquals(expected, actual1);
@@ -225,7 +303,7 @@ public class ObjectHeaderReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.Character;&".getBytes(StandardCharsets.UTF_8));
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.Character", null);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Character", null, 0);
 
       final HeaderInformation actual1 = ObjectHeaderReader.readOverhead(reader);
       assertEquals(expected, actual1);
@@ -243,7 +321,7 @@ public class ObjectHeaderReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.String;*".getBytes(StandardCharsets.UTF_8));
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
-      final HeaderInformation expected = new HeaderInformation("java.lang.String", null);
+      final HeaderInformation expected = new HeaderInformation("java.lang.String", null, 0);
 
       final HeaderInformation actual1 = ObjectHeaderReader.readOverhead(reader);
       assertEquals(expected, actual1);
@@ -254,12 +332,29 @@ public class ObjectHeaderReader_UT
    }
 
    @Test
-   public void readOverhead_throws_givenIncompleteHeader() throws Exception
+   public void readOverhead_returns_givenByteArrayInStream() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_throws_givenIncompleteHeader.", ".txt");
+      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_returns_givenByteArrayInStream.", ".txt");
       tempFile.deleteOnExit();
-      final byte[] fileContents = {(byte) 'j'};
-      FileIoUtil.writeToFile(tempFile, fileContents);
+
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});
+      FileIoUtil.appendToFile(tempFile, "~");
+      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final HeaderInformation expected = new HeaderInformation(Byte.class.getName(), null, 1);
+
+      final HeaderInformation actual = ObjectHeaderReader.readOverhead(reader);
+
+      assertEquals(expected, actual);
+      reader.close();
+   }
+
+   @Test
+   public void readOverhead_throws_whenHeaderNoTerminated() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_throws_whenHeaderNoTerminated.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "j");
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
 
       try
@@ -269,9 +364,43 @@ public class ObjectHeaderReader_UT
       }
       catch (final StreamCorruptedException actual)
       {
-         assertEquals("Incomplete header", actual.getMessage());
+         assertEquals("Incomplete header: class name not terminated", actual.getMessage());
       }
 
+      reader.close();
+   }
+
+   @Test
+   public void readOverhead_returnsObjectInfo_givenObjectInStream() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_returnsObjectInfo_givenObjectInStream.",
+            ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "java.lang.Object;");
+      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final HeaderInformation expected = new HeaderInformation("java.lang.Object", null, 0);
+
+      final HeaderInformation actual = ObjectHeaderReader.readOverhead(reader);
+      assertEquals(expected, actual);
+
+      reader.close();
+   }
+
+   @Test
+   public void readOverhead_returns_givenObjectArrayInStream() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectHeaderReader_UT.TempFile.readOverhead_returns_givenObjectArrayInStream.", ".txt");
+      tempFile.deleteOnExit();
+
+      FileIoUtil.writeToFile(tempFile, "[");
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});
+      FileIoUtil.appendToFile(tempFile, "java.lang.Object;");
+      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final HeaderInformation expected = new HeaderInformation(Object.class.getName(), null, 1);
+
+      final HeaderInformation actual = ObjectHeaderReader.readOverhead(reader);
+
+      assertEquals(expected, actual);
       reader.close();
    }
 }

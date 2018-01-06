@@ -1,14 +1,17 @@
 package com.github.skySpiral7.java.staticSerialization;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph;
 import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph.Node;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -26,8 +29,10 @@ public class StaticSerializable_IT
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       writer.writeObject(null);
+      writer.writeObject(null);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertNull(reader.readObject(String.class));
       assertNull(reader.readObject(byte.class));
       reader.close();
    }
@@ -35,7 +40,8 @@ public class StaticSerializable_IT
    @Test
    public void primitive_byte() throws Exception
    {
-      //This test case exists because primitives have a special format
+      //This test case exists because primitives have a special format.
+      //TODO: include boxes and arrays in these tests?
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_byte.", ".txt");
       tempFile.deleteOnExit();
       final byte data = (byte) 2;
@@ -51,7 +57,7 @@ public class StaticSerializable_IT
    @Test
    public void primitive_short() throws Exception
    {
-      //This test case exists because primitives have a special format
+      //This test case exists because primitives have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_short.", ".txt");
       tempFile.deleteOnExit();
       final short data = (short) 2;
@@ -67,7 +73,7 @@ public class StaticSerializable_IT
    @Test
    public void primitive_int() throws Exception
    {
-      //This test case exists because primitives have a special format
+      //This test case exists because primitives have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_int.", ".txt");
       tempFile.deleteOnExit();
       final int data = 2;
@@ -83,7 +89,7 @@ public class StaticSerializable_IT
    @Test
    public void primitive_long() throws Exception
    {
-      //This test case exists because primitives have a special format
+      //This test case exists because primitives have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_long.", ".txt");
       tempFile.deleteOnExit();
       final long data = 2L;
@@ -99,7 +105,7 @@ public class StaticSerializable_IT
    @Test
    public void primitive_float() throws Exception
    {
-      //This test case exists because primitives have a special format
+      //This test case exists because primitives have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_float.", ".txt");
       tempFile.deleteOnExit();
       final float data = 2.0F;
@@ -115,7 +121,7 @@ public class StaticSerializable_IT
    @Test
    public void primitive_double() throws Exception
    {
-      //This test case exists because primitives have a special format
+      //This test case exists because primitives have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_double.", ".txt");
       tempFile.deleteOnExit();
       final double data = 2.0D;
@@ -131,7 +137,7 @@ public class StaticSerializable_IT
    @Test
    public void primitive_boolean() throws Exception
    {
-      //This test case exists because primitives have a special format
+      //This test case exists because primitives have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_boolean.", ".txt");
       tempFile.deleteOnExit();
 
@@ -148,23 +154,23 @@ public class StaticSerializable_IT
    @Test
    public void primitive_char() throws Exception
    {
-      //This test case exists because primitives have a special format
+      //This test case exists because primitives have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_char.", ".txt");
       tempFile.deleteOnExit();
-      final byte data = (byte) 2;
+      final char data = 'f';
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       writer.writeObject(data);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
-      assertEquals(Byte.valueOf(data), reader.readObject(byte.class));
+      assertEquals(Character.valueOf(data), reader.readObject(char.class));
       reader.close();
    }
 
    @Test
    public void string() throws Exception
    {
-      //This test case exists because Strings have a special format
+      //This test case exists because Strings have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.string.", ".txt");
       tempFile.deleteOnExit();
       final String data = "\u0000\u221E > \uD83D\uDE22";  //control (null), BMP (infinity), ascii, non-BMP (Crying Face)
@@ -174,6 +180,121 @@ public class StaticSerializable_IT
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       assertEquals(data, reader.readObject(String.class));
+      reader.close();
+   }
+
+   @Test
+   public void objectArray() throws IOException
+   {
+      //This test case exists because Arrays have a special format.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.objectArray.", ".txt");
+      tempFile.deleteOnExit();
+      final Object[] data = {1, "joe"};
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertArrayEquals(data, reader.readObject(Object[].class));
+      reader.close();
+   }
+
+   @Test
+   public void boxArray() throws IOException
+   {
+      //This test case exists because Arrays have a special format.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.boxArray.", ".txt");
+      tempFile.deleteOnExit();
+      final Integer[] data = {1, 5};
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertArrayEquals(data, reader.readObject(Integer[].class));
+      reader.close();
+   }
+
+   @Test
+   @Ignore
+   public void primitiveArray() throws IOException
+   {
+      //This test case exists because Arrays have a special format.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitiveArray.", ".txt");
+      tempFile.deleteOnExit();
+      final int[] data = {1, 5};
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertArrayEquals(data, reader.readObject(int[].class));
+      reader.close();
+   }
+
+   @Test
+   @Ignore
+   public void array2D() throws IOException
+   {
+      //This test case exists because Arrays have a special format.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.array2D.", ".txt");
+      tempFile.deleteOnExit();
+      final byte[][] data = new byte[][]{new byte[]{1}, null};
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertArrayEquals(data, reader.readObject(byte[][].class));
+      reader.close();
+   }
+
+   @Test
+   @Ignore
+   public void primitiveBooleanArray() throws IOException
+   {
+      //This test case exists because boolean[] is an edge case.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitiveBooleanArray.", ".txt");
+      tempFile.deleteOnExit();
+      final boolean[] data = new boolean[]{true, false};
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertArrayEquals(data, reader.readObject(boolean[].class));
+      reader.close();
+   }
+
+   @Test
+   public void boxBooleanArray() throws IOException
+   {
+      //This test case exists because Boolean[] is an edge case.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.boxBooleanArray.", ".txt");
+      tempFile.deleteOnExit();
+      final Boolean[] data = new Boolean[]{true, false};
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertArrayEquals(data, reader.readObject(Boolean[].class));
+      reader.close();
+   }
+
+   @Test
+   public void emptyArray() throws IOException
+   {
+      //This test case exists because an empty array can be of a unsupported type.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.emptyArray.", ".txt");
+      tempFile.deleteOnExit();
+      final Void[] data = new Void[0];
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertArrayEquals(data, reader.readObject(Void[].class));
       reader.close();
    }
 

@@ -24,6 +24,11 @@ import java.util.function.Function;
 public interface StaticSerializable
 {
    //public static T<this> readFromStream(final ObjectStreamReader reader)
+
+   /**
+    * If for some reason your parent class implements this interface but you don't want to implement it then
+    * simply throw NotSerializableException here and don't define a readFromStream method.
+    */
    public void writeToStream(final ObjectStreamWriter writer);
 
    /**
