@@ -201,7 +201,7 @@ public class ObjectStreamWriter_UT
 
       FileIoUtil.writeToFile(tempFile, "");
 
-      testObject.writeObject('\u221E');  //infinity sign is BMP non-private
+      testObject.writeObject('∞');  //infinity sign is BMP non-private
       testObject.close();
       fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals("&", bytesToString(fileContents, 2));
@@ -215,7 +215,7 @@ public class ObjectStreamWriter_UT
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
-      testObject.writeObject("f\u221E");  //infinity sign is BMP (3 UTF-8 bytes) non-private
+      testObject.writeObject("f∞");  //infinity sign is BMP (3 UTF-8 bytes) non-private
       testObject.close();
       final byte[] expected = {0, 0, 0, 4,  //UTF-8 length (int)
             'f', (byte) 0xe2, (byte) 0x88, (byte) 0x9e};

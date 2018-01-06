@@ -173,7 +173,7 @@ public class StaticSerializable_IT
       //This test case exists because Strings have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.string.", ".txt");
       tempFile.deleteOnExit();
-      final String data = "\u0000\u221E > \uD83D\uDE22";  //control (null), BMP (infinity), ascii, non-BMP (Crying Face)
+      final String data = "\u0000∞ > 😢";  //control (null), BMP (infinity), ascii, non-BMP (Crying Face)
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       writer.writeObject(data);

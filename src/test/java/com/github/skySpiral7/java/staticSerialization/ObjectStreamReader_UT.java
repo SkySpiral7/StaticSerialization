@@ -645,15 +645,14 @@ public class ObjectStreamReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.String;");
       FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 4});  //UTF-8 length (int));
-      FileIoUtil.appendToFile(tempFile, "f\u221E");
+      FileIoUtil.appendToFile(tempFile, "f∞");
       FileIoUtil.appendToFile(tempFile, "*");  //shorthand
       FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});  //UTF-8 length (int));
       FileIoUtil.appendToFile(tempFile, new byte[]{0});
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
-      //TODO: use UTF-8 in Java files
-      assertEquals("f\u221E", testObject.readObject(String.class));  //infinity sign is BMP (3 UTF-8 bytes) non-private
+      assertEquals("f∞", testObject.readObject(String.class));  //infinity sign is BMP (3 UTF-8 bytes) non-private
       assertEquals("\u0000", testObject.readObject(String.class));
       assertFalse(testObject.hasData());
 
