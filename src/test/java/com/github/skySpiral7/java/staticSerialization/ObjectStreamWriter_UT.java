@@ -52,7 +52,7 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject((byte) 0xab);
       testObject.close();
-      final byte[] expected = {(byte) '~', (byte) 0xab};
+      final byte[] expected = {'~', (byte) 0xab};
       //don't use bytesToString since that assumes the header has UTF-8 encoding
       assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
    }
@@ -66,7 +66,7 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(null);
       testObject.close();
-      final byte[] expected = {(byte) ';'};
+      final byte[] expected = {';'};
       //don't use bytesToString since that assumes the header has UTF-8 encoding
       assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
    }
@@ -77,7 +77,7 @@ public class ObjectStreamWriter_UT
       final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_byte.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-      final Byte data = (byte) 2;
+      final Byte data = 2;
 
       testObject.writeObject(data);
       testObject.close();
@@ -125,7 +125,7 @@ public class ObjectStreamWriter_UT
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Long data = 0xdead_beef__b100_d123L;
-      final byte[] expected = {(byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, (byte) 0x00, (byte) 0xd1, (byte) 0x23};
+      final byte[] expected = {(byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, 0, (byte) 0xd1, 0x23};
 
       testObject.writeObject(data);
       testObject.close();
@@ -157,7 +157,7 @@ public class ObjectStreamWriter_UT
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Double data = Double.longBitsToDouble(0xdead_beef__b100_d123L);
-      final byte[] expected = {(byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, (byte) 0x00, (byte) 0xd1, (byte) 0x23};
+      final byte[] expected = {(byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, 0, (byte) 0xd1, 0x23};
 
       testObject.writeObject(data);
       testObject.close();
@@ -217,8 +217,8 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject("f\u221E");  //infinity sign is BMP (3 UTF-8 bytes) non-private
       testObject.close();
-      final byte[] expected = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x04,  //UTF-8 length (int)
-            (byte) 'f', (byte) 0xe2, (byte) 0x88, (byte) 0x9e};
+      final byte[] expected = {0, 0, 0, 4,  //UTF-8 length (int)
+            'f', (byte) 0xe2, (byte) 0x88, (byte) 0x9e};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals("*", bytesToString(fileContents, expected.length));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
@@ -233,12 +233,11 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(new Object[]{(byte) 1, (byte) 2});
       testObject.close();
-      final byte[] expected = {(byte) '[', (byte) 1,   //array indicator and dimensions
-            (byte) 'j', (byte) 'a', (byte) 'v', (byte) 'a', (byte) '.', (byte) 'l', (byte) 'a', (byte) 'n', (byte) 'g', (byte) '.',
-            (byte) 'O', (byte) 'b', (byte) 'j', (byte) 'e', (byte) 'c', (byte) 't', (byte) ';',  //java.lang.Object
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
-            (byte) '~', (byte) 0x01,  //each element has overhead
-            (byte) '~', (byte) 0x02};
+      final byte[] expected = {'[', 1,   //array indicator and dimensions
+            'j', 'a', 'v', 'a', '.', 'l', 'a', 'n', 'g', '.', 'O', 'b', 'j', 'e', 'c', 't', ';',  //java.lang.Object
+            0, 0, 0, 2,  //length (int)
+            '~', 1,  //each element has overhead
+            '~', 2};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
@@ -252,12 +251,11 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(new Byte[]{1, 2});
       testObject.close();
-      final byte[] expected = {(byte) '[', (byte) 1,   //array indicator and dimensions
-            (byte) 'j', (byte) 'a', (byte) 'v', (byte) 'a', (byte) '.', (byte) 'l', (byte) 'a', (byte) 'n', (byte) 'g', (byte) '.',
-            (byte) 'B', (byte) 'y', (byte) 't', (byte) 'e', (byte) ';',  //java.lang.Byte
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
-            (byte) '~', (byte) 0x01,  //each element has overhead
-            (byte) '~', (byte) 0x02};
+      final byte[] expected = {'[', 1,   //array indicator and dimensions
+            'j', 'a', 'v', 'a', '.', 'l', 'a', 'n', 'g', '.', 'B', 'y', 't', 'e', ';',  //java.lang.Byte
+            0, 0, 0, 2,  //length (int)
+            '~', 1,  //each element has overhead
+            '~', 2};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
@@ -272,11 +270,11 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(new byte[]{1, 2});
       testObject.close();
-      final byte[] expected = {(byte) '[', (byte) 1,   //array indicator and dimensions
-            (byte) '~',  //byte
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
-            (byte) '~', (byte) 0x01,  //each element has overhead
-            (byte) '~', (byte) 0x02};
+      final byte[] expected = {'[', 1,   //array indicator and dimensions
+            '~',  //byte
+            0, 0, 0, 2,  //length (int)
+            '~', 1,  //each element has overhead
+            '~', 2};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
@@ -291,13 +289,13 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(new byte[][]{{1}, null});
       testObject.close();
-      final byte[] expected = {(byte) '[', (byte) 2,   //array indicator and dimensions
-            (byte) '~',  //byte
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x02,  //length (int)
-            (byte) '[', (byte) 1,   //first element
-            (byte) '~',  //byte
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
-            (byte) '~', (byte) 0x01, (byte) ';'};   //second element
+      final byte[] expected = {'[', 2,   //array indicator and dimensions
+            '~',  //byte
+            0, 0, 0, 2,  //length (int)
+            '[', 1,   //first element
+            '~',  //byte
+            0, 0, 0, 1,  //length (int)
+            '~', 1, ';'};   //second element
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
@@ -312,10 +310,10 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(new boolean[]{true});
       testObject.close();
-      final byte[] expected = {(byte) '[', (byte) 1,   //array indicator and dimensions
-            (byte) '+',  //boolean
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
-            (byte) '+'};
+      final byte[] expected = {'[', 1,   //array indicator and dimensions
+            '+',  //boolean
+            0, 0, 0, 1,  //length (int)
+            '+'};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
@@ -329,11 +327,10 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(new Boolean[]{false});
       testObject.close();
-      final byte[] expected = {(byte) '[', (byte) 1,   //array indicator and dimensions
-            (byte) 'j', (byte) 'a', (byte) 'v', (byte) 'a', (byte) '.', (byte) 'l', (byte) 'a', (byte) 'n', (byte) 'g', (byte) '.',
-            (byte) 'B', (byte) 'o', (byte) 'o', (byte) 'l', (byte) 'e', (byte) 'a', (byte) 'n', (byte) ';',  //java.lang.Boolean
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //length (int)
-            (byte) '-'};
+      final byte[] expected = {'[', 1,   //array indicator and dimensions
+            'j', 'a', 'v', 'a', '.', 'l', 'a', 'n', 'g', '.', 'B', 'o', 'o', 'l', 'e', 'a', 'n', ';',  //java.lang.Boolean
+            0, 0, 0, 1,  //length (int)
+            '-'};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
@@ -347,10 +344,9 @@ public class ObjectStreamWriter_UT
 
       testObject.writeObject(new Void[0]);
       testObject.close();
-      final byte[] expected = {(byte) '[', (byte) 1,   //array indicator and dimensions
-            (byte) 'j', (byte) 'a', (byte) 'v', (byte) 'a', (byte) '.', (byte) 'l', (byte) 'a', (byte) 'n', (byte) 'g', (byte) '.',
-            (byte) 'V', (byte) 'o', (byte) 'i', (byte) 'd', (byte) ';',  //java.lang.Void
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};  //length (int)
+      final byte[] expected = {'[', 1,   //array indicator and dimensions
+            'j', 'a', 'v', 'a', '.', 'l', 'a', 'n', 'g', '.', 'V', 'o', 'i', 'd', ';',  //java.lang.Void
+            0, 0, 0, 0};  //length (int)
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
@@ -366,7 +362,7 @@ public class ObjectStreamWriter_UT
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       final String overhead = "java.math.RoundingMode;";
-      final byte[] data = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01};
+      final byte[] data = {0, 0, 0, 1};
       assertEquals(overhead, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
    }
@@ -419,8 +415,8 @@ public class ObjectStreamWriter_UT
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter_UT$CustomEnum;*";
-      final byte[] data = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03,  //UTF-8 length (int)
-            (byte) 79, (byte) 110, (byte) 101};  //"One"
+      final byte[] data = {0, 0, 0, 3,  //UTF-8 length (int)
+            79, 110, 101};  //"One"
       assertEquals(overhead, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
    }

@@ -96,9 +96,9 @@ public class ObjectWriterRegistry_UT
       testObject.writeId(instance, writer);
       writer.close();
 
-      final byte[] expected = {(byte) '*',  //type of id is string
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
-            (byte) 'f'};  //id
+      final byte[] expected = {'*',  //type of id is string
+            0, 0, 0, 1,  //UTF-8 length (int)
+            'f'};  //id
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertArrayEquals(expected, fileContents);
    }
@@ -140,9 +140,9 @@ public class ObjectWriterRegistry_UT
       assertTrue(testObject.shouldNotWrite(instance, writer));
       writer.close();
 
-      final byte[] expected = {(byte) '*',  //type of id is string
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,  //UTF-8 length (int)
-            (byte) 'f'};  //id
+      final byte[] expected = {'*',  //type of id is string
+            0, 0, 0, 1,  //UTF-8 length (int)
+            'f'};  //id
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertArrayEquals(expected, fileContents);
    }
@@ -163,8 +163,8 @@ public class ObjectWriterRegistry_UT
       assertNotNull(id);
 
       final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      final byte[] header = {(byte) '*',  //type of id is string
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 36};  //UTF-8 length (int)
+      final byte[] header = {'*',  //type of id is string
+            0, 0, 0, 36};  //UTF-8 length (int)
       baos.write(header);
       baos.write(id.getBytes(StandardCharsets.UTF_8));
       final byte[] expected = baos.toByteArray();

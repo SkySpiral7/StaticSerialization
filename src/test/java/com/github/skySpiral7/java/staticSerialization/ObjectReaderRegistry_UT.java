@@ -97,7 +97,7 @@ public class ObjectReaderRegistry_UT
       final File tempFile = writeIdToFile("ObjectReaderRegistry_UT.TempFile.readObjectOrId_throws_whenUnclaimedIdAlreadyExists.",
             UUID.randomUUID().toString());
       FileIoUtil.appendToFile(tempFile, "*");
-      final byte[] idSize = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 36};
+      final byte[] idSize = {0, 0, 0, 36};
       FileIoUtil.appendToFile(tempFile, idSize);
       FileIoUtil.appendToFile(tempFile, UUID.randomUUID().toString());
 
@@ -148,7 +148,7 @@ public class ObjectReaderRegistry_UT
       final File tempFile = File.createTempFile(prefix, ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "*");
-      final byte[] idSize = {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) id.length()};
+      final byte[] idSize = {0, 0, 0, (byte) id.length()};
       FileIoUtil.appendToFile(tempFile, idSize);
       FileIoUtil.appendToFile(tempFile, id);
       return tempFile;

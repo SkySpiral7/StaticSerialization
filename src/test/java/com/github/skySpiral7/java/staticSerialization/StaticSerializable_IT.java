@@ -44,7 +44,7 @@ public class StaticSerializable_IT
       //TODO: include boxes and arrays in these tests?
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_byte.", ".txt");
       tempFile.deleteOnExit();
-      final byte data = (byte) 2;
+      final byte data = 2;
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       writer.writeObject(data);
