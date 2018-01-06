@@ -9,44 +9,24 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.github.skySpiral7.java.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.util.ArrayUtil;
+import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.StringSerializableStrategy;
 import com.github.skySpiral7.java.util.ClassUtil;
 import com.github.skySpiral7.java.util.FileIoUtil;
+
+import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeByte;
+import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeBytes;
 
 public class ObjectStreamWriter implements Closeable, Flushable
 {
    private final ObjectWriterRegistry registry = new ObjectWriterRegistry();
    private final AsynchronousFileAppender fileAppender;
-
-   /**
-    * Not in map:<br/>
-    * + boolean true<br/>
-    * - boolean false<br/>
-    * [2 arrays<br/>
-    * ; null<br/>
-    */
-   private static final Map<Class<?>, Character> COMPRESSED_CLASSES;
-
-   static
-   {
-      COMPRESSED_CLASSES = new HashMap<>();
-      COMPRESSED_CLASSES.put(Byte.class, '~');
-      COMPRESSED_CLASSES.put(Short.class, '!');
-      COMPRESSED_CLASSES.put(Integer.class, '@');
-      COMPRESSED_CLASSES.put(Long.class, '#');
-      COMPRESSED_CLASSES.put(Float.class, '%');
-      COMPRESSED_CLASSES.put(Double.class, '^');
-      COMPRESSED_CLASSES.put(Character.class, '&');
-      COMPRESSED_CLASSES.put(String.class, '*');
-   }
 
    public ObjectStreamWriter(final File destination)
    {
@@ -59,31 +39,13 @@ public class ObjectStreamWriter implements Closeable, Flushable
     * @see AsynchronousFileAppender#flush()
     */
    @Override
-   public void flush()
-   {
-      fileAppender.flush();
-   }
+   public void flush(){fileAppender.flush();}
 
    /**
     * @see AsynchronousFileAppender#close()
     */
    @Override
-   public void close()
-   {
-      fileAppender.close();
-   }
-
-   private void writeBytes(long data, final int byteCount)
-   {
-      final byte[] writeMe = new byte[byteCount];
-      for (int i = (byteCount - 1); i >= 0; --i)
-      {
-         //the array is reversed so that it is in big endian
-         writeMe[i] = (byte) (data & 0xFF);
-         data >>>= 8;
-      }
-      fileAppender.append(writeMe);
-   }
+   public void close(){fileAppender.close();}
 
    /**
     * List of supported types:
@@ -98,7 +60,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
    //for now ignore overloading for all primitives and array stuff
    public void writeObject(final Object data)
    {
-      writeOverhead(data);
+      HeaderSerializableStrategy.writeOverhead(fileAppender, data);
       //these cases are only overhead so I'm done
       if (data == null || Boolean.TRUE.equals(data) || Boolean.FALSE.equals(data)) return;
 
@@ -110,10 +72,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
       }
       if (data instanceof String)
       {
-         final String castedData = (String) data;
-         final byte[] writeMe = castedData.getBytes(StandardCharsets.UTF_8);
-         writeBytes(writeMe.length, 4);
-         fileAppender.append(writeMe);
+         StringSerializableStrategy.writeWithLength(fileAppender, (String) data);
          return;
       }
       if (dataClass.isArray())
@@ -138,14 +97,14 @@ public class ObjectStreamWriter implements Closeable, Flushable
       if (dataClass.isEnum())
       {
          final Enum<?> castedData = (Enum<?>) data;
-         writePrimitive(castedData.ordinal());
+         IntegerSerializableStrategy.write(fileAppender, castedData.ordinal());
          return;
       }
       if (data instanceof Serializable)
       {
          final Serializable castedData = (Serializable) data;
          final byte[] serializedData = javaSerialize(castedData);
-         this.writeBytes(serializedData.length, 4);
+         writeBytes(fileAppender, serializedData.length, 4);
          fileAppender.append(serializedData);
          return;
       }
@@ -169,68 +128,29 @@ public class ObjectStreamWriter implements Closeable, Flushable
 
    private void writePrimitive(final Object data)
    {
-      if (data instanceof Byte) writeBytes((byte) data, 1);
-      else if (data instanceof Short) writeBytes((short) data, 2);
-      else if (data instanceof Integer) writeBytes((int) data, 4);
-      else if (data instanceof Long) writeBytes((long) data, 8);
+      if (data instanceof Byte) writeByte(fileAppender, (byte) data);
+      else if (data instanceof Short) writeBytes(fileAppender, (short) data, 2);
+      else if (data instanceof Integer) writeBytes(fileAppender, (int) data, 4);
+      else if (data instanceof Long) writeBytes(fileAppender, (long) data, 8);
       else if (data instanceof Float)
       {
          final int castedData = Float.floatToIntBits((float) data);
          //intentionally normalizes NaN
-         writeBytes(castedData, 4);
+         writeBytes(fileAppender, castedData, 4);
       }
       else if (data instanceof Double)
       {
          long castedData = Double.doubleToLongBits((double) data);
          //intentionally normalizes NaN
-         writeBytes(castedData, 8);
+         writeBytes(fileAppender, castedData, 8);
       }
       else if (data instanceof Boolean)
       {
-         if ((boolean) data) writeBytes(1, 1);  //write true
-         else writeBytes(0, 1);
+         if ((boolean) data) writeByte(fileAppender, 1);  //write true as 1
+         else writeByte(fileAppender, 0);
       }
-      else if (data instanceof Character) writeBytes((char) data, 2);
+      else if (data instanceof Character) writeBytes(fileAppender, (char) data, 2);
       else throw new AssertionError("Method shouldn't've been called");
-   }
-
-   private void writeOverhead(final Object data)
-   {
-      if (Boolean.TRUE.equals(data)) writeBytes('+', 1);
-      else if (Boolean.FALSE.equals(data)) writeBytes('-', 1);
-      else if (data == null) writeBytes(';', 1);  //if data is null then class name is the empty string
-      else if (COMPRESSED_CLASSES.containsKey(data.getClass())) writeBytes(COMPRESSED_CLASSES.get(data.getClass()), 1);
-      else if (data.getClass().isArray())
-      {
-         writeBytes('[', 1);
-         final int dimensionCount = ArrayUtil.countArrayDimensions(data.getClass());
-         //TODO: test and remove tests
-         if (dimensionCount > 1) throw new UnsupportedOperationException("Currently only 1d arrays are supported");
-         writeBytes(dimensionCount, 1);  //won't be 0, max: 255. Use unsigned byte
-         final Class<?> baseComponent = ArrayUtil.getBaseComponentType(data.getClass());
-         //array type can't be void or null
-         //TODO: support primitive arrays
-         //         if (baseComponent.equals(boolean.class)) writeBytes('+', 1);
-         //         else if (baseComponent.isPrimitive()) writeBytes(COMPRESSED_CLASSES.get(ClassUtil.boxClass(baseComponent)), 1);
-         //            //TODO: compress arrays of String and Boxes
-         //            //else if (ClassUtil.isBoxedPrimitive(baseComponent))
-         //         else
-         {
-            final byte[] writeMe = baseComponent.getName().getBytes(StandardCharsets.UTF_8);
-            fileAppender.append(writeMe);
-            writeBytes(';', 1);
-         }
-         writeBytes(Array.getLength(data), 4);
-      }
-      else
-      {
-         final String className = data.getClass().getName();
-         //can't use recursion to write the string because that's endless and needs different format
-         final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
-         fileAppender.append(writeMe);
-         writeBytes(';', 1);
-         //instead of size then string have the string terminated by ; since this saves 3 bytes and class names can't contain ;
-      }
    }
 
    public void writeFieldsReflectively(final Object data)

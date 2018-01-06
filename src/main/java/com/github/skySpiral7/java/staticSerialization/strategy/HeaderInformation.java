@@ -1,11 +1,11 @@
-package com.github.skySpiral7.java.staticSerialization;
+package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import java.util.Objects;
 
 /**
- * A bean to hold the information that the stream's header contains. It is returned by ObjectHeaderReader.
+ * A bean to hold the information that the stream's header contains. It is returned by HeaderSerializableStrategy.
  *
- * @see ObjectHeaderReader
+ * @see HeaderSerializableStrategy
  */
 public final class HeaderInformation
 {

@@ -21,6 +21,10 @@ import com.github.skySpiral7.java.staticSerialization.exception.DeserializationE
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.HeaderInformation;
+import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.StringSerializableStrategy;
 import com.github.skySpiral7.java.util.ArrayUtil;
 import com.github.skySpiral7.java.util.BitWiseUtil;
 import com.github.skySpiral7.java.util.ClassUtil;
@@ -41,20 +45,11 @@ public class ObjectStreamReader implements Closeable
     * @see AsynchronousFileReader#close()
     */
    @Override
-   public void close()
-   {
-      fileReader.close();
-   }
+   public void close(){fileReader.close();}
 
-   public boolean hasData()
-   {
-      return fileReader.hasData();
-   }
+   public boolean hasData(){return fileReader.hasData();}
 
-   public int remainingBytes()
-   {
-      return fileReader.remainingBytes();
-   }
+   public int remainingBytes(){return fileReader.remainingBytes();}
 
    /**
     * Reads the next object in the stream no matter what it is.
@@ -109,7 +104,7 @@ public class ObjectStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));
 
-      final HeaderInformation headerInformation = ObjectHeaderReader.readOverhead(fileReader);
+      final HeaderInformation headerInformation = HeaderSerializableStrategy.readOverhead(fileReader);
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
       //TODO: test
       if (headerInformation.getDimensionCount() > 1) throw new UnsupportedOperationException("Currently only 1d arrays are supported");
@@ -132,7 +127,7 @@ public class ObjectStreamReader implements Closeable
    private <T> T readValue(final Class<T> actualClass, final int dimensionCount)
    {
       if (0 == dimensionCount) return readNonArrayValue(actualClass);
-      final int arrayLength = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
+      final int arrayLength = IntegerSerializableStrategy.read(fileReader);
       final Object arrayValue = Array.newInstance(actualClass.getComponentType(), arrayLength);
       for (int readIndex = 0; readIndex < arrayLength; ++readIndex)
       {
@@ -146,8 +141,7 @@ public class ObjectStreamReader implements Closeable
       if (ClassUtil.isBoxedPrimitive(actualClass)) return readPrimitive(actualClass);
       if (String.class.equals(actualClass))
       {
-         final int stringByteLength = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
-         return cast(fileReader.readString(stringByteLength));
+         return cast(StringSerializableStrategy.readWithLength(fileReader));
       }
 
       if (StaticSerializable.class.isAssignableFrom(actualClass)){ return readCustomClass(actualClass); }
@@ -155,7 +149,7 @@ public class ObjectStreamReader implements Closeable
       if (actualClass.isEnum()){ return readEnumByOrdinal(actualClass); }
       if (Serializable.class.isAssignableFrom(actualClass))
       {
-         final int length = BitWiseUtil.bigEndianBytesToInteger(fileReader.readBytes(4));
+         final int length = IntegerSerializableStrategy.read(fileReader);
          final byte[] objectData = fileReader.readBytes(length);
          return javaDeserialize(objectData);
       }
@@ -246,8 +240,7 @@ public class ObjectStreamReader implements Closeable
       }
       if (Integer.class.equals(expectedClass))
       {
-         final byte[] data = fileReader.readBytes(4);
-         return cast(BitWiseUtil.bigEndianBytesToInteger(data));
+         return cast(IntegerSerializableStrategy.read(fileReader));
       }
       if (Long.class.equals(expectedClass))
       {
@@ -286,7 +279,7 @@ public class ObjectStreamReader implements Closeable
 
    private <T> T readEnumByOrdinal(final Class<T> expectedClass)
    {
-      final int ordinal = readPrimitive(Integer.class);
+      final int ordinal = IntegerSerializableStrategy.read(fileReader);
       final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum
 
       if (values.length <= ordinal) throw new StreamCorruptedException(
