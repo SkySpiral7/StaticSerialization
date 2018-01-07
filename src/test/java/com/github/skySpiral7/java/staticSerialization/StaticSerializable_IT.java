@@ -349,7 +349,7 @@ public class StaticSerializable_IT
       reader.close();
    }
 
-   private static enum CustomEnum implements StaticSerializable
+   public static enum CustomEnum implements StaticSerializable
    {
       One, Two;
 
@@ -474,7 +474,7 @@ public class StaticSerializable_IT
       assertEquals(root, actualRoot);
    }
 
-   private static final class ReflectiveClass implements StaticSerializable
+   public static final class ReflectiveClass implements StaticSerializable
    {
       private int field = 0xdead_beef;
 

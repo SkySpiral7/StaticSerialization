@@ -1,32 +1,26 @@
 package com.github.skySpiral7.java.staticSerialization;
 
-import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Objects;
 
 import com.github.skySpiral7.java.AsynchronousFileReader;
 import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
-import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.JavaSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.PrimitiveSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.StaticSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StringSerializableStrategy;
 import com.github.skySpiral7.java.util.ArrayUtil;
-import com.github.skySpiral7.java.util.BitWiseUtil;
 import com.github.skySpiral7.java.util.ClassUtil;
 
 import static com.github.skySpiral7.java.util.ClassUtil.cast;
@@ -138,40 +132,21 @@ public class ObjectStreamReader implements Closeable
 
    private <T> T readNonArrayValue(final Class<T> actualClass)
    {
-      if (ClassUtil.isBoxedPrimitive(actualClass)) return readPrimitive(actualClass);
+      if (ClassUtil.isBoxedPrimitive(actualClass)) return PrimitiveSerializableStrategy.read(fileReader, actualClass);
       if (String.class.equals(actualClass))
       {
          return cast(StringSerializableStrategy.readWithLength(fileReader));
       }
 
-      if (StaticSerializable.class.isAssignableFrom(actualClass)){ return readCustomClass(actualClass); }
+      if (StaticSerializable.class.isAssignableFrom(actualClass)){ return StaticSerializableStrategy.read(this, actualClass); }
 
       if (actualClass.isEnum()){ return readEnumByOrdinal(actualClass); }
       if (Serializable.class.isAssignableFrom(actualClass))
       {
-         final int length = IntegerSerializableStrategy.read(fileReader);
-         final byte[] objectData = fileReader.readBytes(length);
-         return javaDeserialize(objectData);
+         return JavaSerializableStrategy.read(fileReader);
       }
 
       throw new NotSerializableException(actualClass);
-   }
-
-   private <T> T javaDeserialize(final byte[] objectData)
-   {
-      final ByteArrayInputStream byteStream = new ByteArrayInputStream(objectData);
-      try (final ObjectInputStream in = new ObjectInputStream(byteStream))
-      {
-         return cast(in.readObject());
-      }
-      catch (final ObjectStreamException ex)
-      {
-         throw new StreamCorruptedException(ex);
-      }
-      catch (final ClassNotFoundException | IOException e)
-      {
-         throw new DeserializationException(e);
-      }
    }
 
    private <T_Expected, T_Actual extends T_Expected> Class<T_Actual> getClassFromOverhead(final HeaderInformation actualHeader,
@@ -229,54 +204,6 @@ public class ObjectStreamReader implements Closeable
       return cast(actualClass);
    }
 
-   private <T> T readPrimitive(final Class<T> expectedClass)
-   {
-      if (Byte.class.equals(expectedClass)) return cast(fileReader.readByte());
-      if (Short.class.equals(expectedClass))
-      {
-         final byte[] data = fileReader.readBytes(2);
-         final int result = ((data[0] & 0xff) << 8) | (data[1] & 0xff);
-         return cast((short) result);
-      }
-      if (Integer.class.equals(expectedClass))
-      {
-         return cast(IntegerSerializableStrategy.read(fileReader));
-      }
-      if (Long.class.equals(expectedClass))
-      {
-         final byte[] data = fileReader.readBytes(8);
-         return cast(BitWiseUtil.bigEndianBytesToLong(data));
-      }
-      if (Float.class.equals(expectedClass))
-      {
-         final byte[] data = fileReader.readBytes(4);
-         final int intData = BitWiseUtil.bigEndianBytesToInteger(data);
-         return cast(Float.intBitsToFloat(intData));
-      }
-      if (Double.class.equals(expectedClass))
-      {
-         final byte[] data = fileReader.readBytes(8);
-         final long longData = BitWiseUtil.bigEndianBytesToLong(data);
-         return cast(Double.longBitsToDouble(longData));
-      }
-      if (Boolean.class.equals(expectedClass))
-      {
-         //This code is obsolete but still permitted. It isn't normally reached due to the new boolean overhead.
-         final byte data = fileReader.readByte();
-         if (data == 1) return cast(Boolean.TRUE);
-         return cast(Boolean.FALSE);
-      }
-      if (Character.class.equals(expectedClass))
-      {
-         final byte[] data = fileReader.readBytes(2);
-         final int intData = ((data[0] & 0xff) << 8) | (data[1] & 0xff);
-         //TODO: either prove that casting to short isn't needed or write a test to enforce it
-         return cast((char) (short) intData);
-      }
-
-      throw new AssertionError("Method shouldn't've been called");
-   }
-
    private <T> T readEnumByOrdinal(final Class<T> expectedClass)
    {
       final int ordinal = IntegerSerializableStrategy.read(fileReader);
@@ -286,40 +213,6 @@ public class ObjectStreamReader implements Closeable
             String.format("%s.values()[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
 
       return cast(values[ordinal]);
-   }
-
-   private <T> T readCustomClass(final Class<T> expectedClass)
-   {
-      final Method method;
-      try
-      {
-         //public static T readFromStream(ObjectStreamReader reader)
-         method = expectedClass.getDeclaredMethod("readFromStream", ObjectStreamReader.class);
-      }
-      catch (final NoSuchMethodException e)
-      {
-         throw new InvalidClassException(expectedClass.getName() + " implements StaticSerializable but doesn't define readFromStream");
-      }
-
-      if (!Modifier.isPublic(method.getModifiers()) || !Modifier.isStatic(method.getModifiers()))
-      {
-         throw new InvalidClassException(expectedClass.getName() + ".readFromStream must be public static");
-      }
-
-      try
-      {
-         return cast(method.invoke(null, this));
-      }
-      catch (final IllegalAccessException | IllegalArgumentException e)
-      {
-         throw new AssertionError("This can't be thrown", e);
-         //since I already know it is public static and I know I'm giving it the right args
-         //(because otherwise it wouldn't have been found)
-      }
-      catch (final InvocationTargetException e)
-      {
-         throw new DeserializationException(e);
-      }
    }
 
    public void readFieldsReflectively(final Object instance)

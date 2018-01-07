@@ -11,6 +11,7 @@ import com.github.skySpiral7.java.staticSerialization.exception.DeserializationE
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.JavaSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Ignore;
@@ -867,7 +868,7 @@ public class ObjectStreamReader_UT
       testObject.close();
    }
 
-   private static enum CustomEnum implements StaticSerializable
+   public static enum CustomEnum implements StaticSerializable
    {
       One, Two;
 
@@ -901,16 +902,42 @@ public class ObjectStreamReader_UT
       testObject.close();
    }
 
+   private static abstract class CustomPrivateClass implements StaticSerializable
+   {}
+
+   @Test
+   public void readObject_custom_throw_privateClass() throws Exception
+   {
+      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_privateClass.", ".txt");
+      tempFile.deleteOnExit();
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$CustomPrivateClass;";
+      FileIoUtil.writeToFile(tempFile, overhead);
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      try
+      {
+         testObject.readObject(CustomPrivateClass.class);
+         fail("Didn't throw");
+      }
+      catch (final InvalidClassException actual)
+      {
+         assertEquals("com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$CustomPrivateClass"
+                      + " must be public for me to use it", actual.getMessage());
+      }
+
+      testObject.close();
+   }
+
+   public abstract class NoReader implements StaticSerializable
+   {}  //abstract and no writer doesn't matter
+
    @Test
    public void readObject_custom_throw_noReader() throws Exception
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_noReader.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$1NoReader;";
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$NoReader;";
       FileIoUtil.writeToFile(tempFile, overhead);
-
-      abstract class NoReader implements StaticSerializable
-      {}  //abstract and no writer doesn't matter
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
@@ -920,14 +947,14 @@ public class ObjectStreamReader_UT
       }
       catch (final InvalidClassException actual)
       {
-         assertEquals("com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$1NoReader"
+         assertEquals("com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$NoReader"
                       + " implements StaticSerializable but doesn't define readFromStream", actual.getMessage());
       }
 
       testObject.close();
    }
 
-   private abstract static class NonPublicReader implements StaticSerializable
+   public abstract static class NonPublicReader implements StaticSerializable
    {
       @SuppressWarnings("unused")
       protected static NonPublicReader readFromStream(final ObjectStreamReader in)
@@ -959,22 +986,22 @@ public class ObjectStreamReader_UT
       testObject.close();
    }
 
+   public abstract class LocalNonStaticReader implements StaticSerializable
+   {
+      @SuppressWarnings("unused")
+      public LocalNonStaticReader readFromStream(final ObjectStreamReader in)
+      {
+         return null;
+      }
+   }
+
    @Test
    public void readObject_custom_throw_nonStatic() throws Exception
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_custom_throw_nonStatic.", ".txt");
       tempFile.deleteOnExit();
-      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$1LocalNonStaticReader;";
+      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$LocalNonStaticReader;";
       FileIoUtil.writeToFile(tempFile, overhead);
-
-      abstract class LocalNonStaticReader implements StaticSerializable
-      {
-         @SuppressWarnings("unused")
-         public LocalNonStaticReader readFromStream(final ObjectStreamReader in)
-         {
-            return null;
-         }
-      }
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
@@ -984,14 +1011,14 @@ public class ObjectStreamReader_UT
       }
       catch (final InvalidClassException actual)
       {
-         assertEquals("com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$1LocalNonStaticReader.readFromStream"
+         assertEquals("com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$LocalNonStaticReader.readFromStream"
                       + " must be public static", actual.getMessage());
       }
 
       testObject.close();
    }
 
-   private abstract static class ThrowingReader implements StaticSerializable
+   public abstract static class ThrowingReader implements StaticSerializable
    {
       @SuppressWarnings("unused")
       public static ThrowingReader readFromStream(final ObjectStreamReader in)
@@ -1030,7 +1057,7 @@ public class ObjectStreamReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.math.BigInteger;");
       final BigInteger data = BigInteger.TEN;
-      final byte[] javaData = ObjectStreamWriter.javaSerialize(data);
+      final byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
       assertTrue(javaData.length < 256);  //currently 203. Possible for the length to change after a Java release
       FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, (byte) javaData.length});
       FileIoUtil.appendToFile(tempFile, javaData);
@@ -1041,7 +1068,7 @@ public class ObjectStreamReader_UT
       testObject.close();
    }
 
-   private static final class ReflectiveClass implements StaticSerializable
+   public static final class ReflectiveClass implements StaticSerializable
    {
       private int field = 0xdead_beef;
 

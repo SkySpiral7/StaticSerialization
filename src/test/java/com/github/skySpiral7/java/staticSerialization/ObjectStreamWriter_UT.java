@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
+import com.github.skySpiral7.java.staticSerialization.strategy.JavaSerializableStrategy;
 import com.github.skySpiral7.java.util.BitWiseUtil;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Ignore;
@@ -429,7 +430,7 @@ public class ObjectStreamWriter_UT
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
       final BigInteger data = BigInteger.TEN;
-      final byte[] javaData = ObjectStreamWriter.javaSerialize(data);
+      final byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
 
       testObject.writeObject(data);
       testObject.close();
