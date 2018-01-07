@@ -47,8 +47,8 @@ public class ObjectStreamWriter implements Closeable, Flushable
    //for now ignore overloading for all primitives and array stuff
    public void writeObject(final Object data)
    {
-      HeaderSerializableStrategy.writeOverhead(fileAppender, data);
-      //these cases are only overhead so I'm done
+      HeaderSerializableStrategy.writeHeader(fileAppender, data);
+      //these cases are only header so I'm done
       if (data == null || Boolean.TRUE.equals(data) || Boolean.FALSE.equals(data)) return;
       AllSerializableStrategy.write(this, fileAppender, data);
    }

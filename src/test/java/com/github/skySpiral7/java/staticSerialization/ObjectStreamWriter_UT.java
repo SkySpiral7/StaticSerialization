@@ -45,9 +45,9 @@ public class ObjectStreamWriter_UT
    }
 
    @Test
-   public void writeObject_overHead() throws IOException
+   public void writeObject_header() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_overHead.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_header.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -59,9 +59,9 @@ public class ObjectStreamWriter_UT
    }
 
    @Test
-   public void writeObject_overHead_null() throws IOException
+   public void writeObject_header_null() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_overHead_null.", ".txt");
+      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_header_null.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -237,7 +237,7 @@ public class ObjectStreamWriter_UT
       final byte[] expected = {'[', 1,   //array indicator and dimensions
             'j', 'a', 'v', 'a', '.', 'l', 'a', 'n', 'g', '.', 'O', 'b', 'j', 'e', 'c', 't', ';',  //java.lang.Object
             0, 0, 0, 2,  //length (int)
-            '~', 1,  //each element has overhead
+            '~', 1,  //each element has header
             '~', 2};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
@@ -255,7 +255,7 @@ public class ObjectStreamWriter_UT
       final byte[] expected = {'[', 1,   //array indicator and dimensions
             'j', 'a', 'v', 'a', '.', 'l', 'a', 'n', 'g', '.', 'B', 'y', 't', 'e', ';',  //java.lang.Byte
             0, 0, 0, 2,  //length (int)
-            '~', 1,  //each element has overhead
+            '~', 1,  //each element has header
             '~', 2};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
@@ -274,7 +274,7 @@ public class ObjectStreamWriter_UT
       final byte[] expected = {'[', 1,   //array indicator and dimensions
             '~',  //byte
             0, 0, 0, 2,  //length (int)
-            '~', 1,  //each element has overhead
+            '~', 1,  //each element has header
             '~', 2};
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
@@ -362,9 +362,9 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(RoundingMode.DOWN);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "java.math.RoundingMode;";
+      final String header = "java.math.RoundingMode;";
       final byte[] data = {0, 0, 0, 1};
-      assertEquals(overhead, bytesToString(fileContents, data.length));
+      assertEquals(header, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
    }
 
@@ -415,10 +415,10 @@ public class ObjectStreamWriter_UT
       testObject.writeObject(CustomEnum.One);
       testObject.close();
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      final String overhead = "com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter_UT$CustomEnum;*";
+      final String header = "com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter_UT$CustomEnum;*";
       final byte[] data = {0, 0, 0, 3,  //UTF-8 length (int)
             79, 110, 101};  //"One"
-      assertEquals(overhead, bytesToString(fileContents, data.length));
+      assertEquals(header, bytesToString(fileContents, data.length));
       assertEquals(Arrays.toString(data), Arrays.toString(shortenBytes(fileContents, data.length)));
    }
 

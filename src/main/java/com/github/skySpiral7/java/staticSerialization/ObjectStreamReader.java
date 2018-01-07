@@ -88,7 +88,7 @@ public class ObjectStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));
 
-      final HeaderInformation headerInformation = HeaderSerializableStrategy.readOverhead(fileReader);
+      final HeaderInformation headerInformation = HeaderSerializableStrategy.readHeader(fileReader);
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
       //TODO: test
       if (headerInformation.getDimensionCount() > 1) throw new UnsupportedOperationException("Currently only 1d arrays are supported");
@@ -99,7 +99,7 @@ public class ObjectStreamReader implements Closeable
          //will be null if the header explicitly contained Boolean for some reason in which case will be read below
       }
 
-      final Class<T_Actual> actualClass = ReaderValidationStrategy.getClassFromOverhead(headerInformation, expectedClass, allowChildClass);
+      final Class<T_Actual> actualClass = ReaderValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
       return AllSerializableStrategy.read(this, fileReader, actualClass);
    }
 

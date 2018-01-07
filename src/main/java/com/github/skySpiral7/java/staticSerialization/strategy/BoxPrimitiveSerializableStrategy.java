@@ -67,7 +67,7 @@ public enum BoxPrimitiveSerializableStrategy
       }
       if (Boolean.class.equals(expectedClass))
       {
-         //This code is obsolete but still permitted. It isn't normally reached due to the new boolean overhead.
+         //This code is obsolete but still permitted. It isn't normally reached due to the new boolean header.
          final byte data = reader.readByte();
          if (data == 1) return cast(Boolean.TRUE);
          return cast(Boolean.FALSE);

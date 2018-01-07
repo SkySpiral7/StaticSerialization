@@ -21,9 +21,9 @@ public enum ReaderValidationStrategy
          throw new ClassCastException(Boolean.class.getName() + " cannot be cast to " + expectedClass.getName());
    }
 
-   public static <T_Expected, T_Actual extends T_Expected> Class<T_Actual> getClassFromOverhead(final HeaderInformation actualHeader,
-                                                                                                final Class<T_Expected> expectedClass,
-                                                                                                final boolean allowChildClass)
+   public static <T_Expected, T_Actual extends T_Expected> Class<T_Actual> getClassFromHeader(final HeaderInformation actualHeader,
+                                                                                              final Class<T_Expected> expectedClass,
+                                                                                              final boolean allowChildClass)
    {
       final int expectedDimensions = ArrayUtil.countArrayDimensions(expectedClass);
       final Class<?> expectedBaseComponentType = ArrayUtil.getBaseComponentType(expectedClass);

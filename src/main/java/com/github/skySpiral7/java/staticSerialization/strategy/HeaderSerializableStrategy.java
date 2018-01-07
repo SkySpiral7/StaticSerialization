@@ -59,7 +59,7 @@ public enum HeaderSerializableStrategy
       CLASS_TO_COMPRESSED_HEADER.put(String.class, '*');
    }
 
-   public static HeaderInformation readOverhead(final AsynchronousFileReader reader)
+   public static HeaderInformation readHeader(final AsynchronousFileReader reader)
    {
       byte firstByte = reader.readByte();
 
@@ -89,7 +89,7 @@ public enum HeaderSerializableStrategy
       return new HeaderInformation(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount);
    }
 
-   public static void writeOverhead(final AsynchronousFileAppender appender, final Object data)
+   public static void writeHeader(final AsynchronousFileAppender appender, final Object data)
    {
       if (Boolean.TRUE.equals(data)) writeByte(appender, '+');
       else if (Boolean.FALSE.equals(data)) writeByte(appender, '-');
