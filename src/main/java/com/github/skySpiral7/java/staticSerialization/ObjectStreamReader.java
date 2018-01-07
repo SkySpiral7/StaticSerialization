@@ -2,24 +2,16 @@ package com.github.skySpiral7.java.staticSerialization;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Objects;
 
 import com.github.skySpiral7.java.AsynchronousFileReader;
 import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
-import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
-import com.github.skySpiral7.java.staticSerialization.strategy.ArraySerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.BoxPrimitiveSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.EnumSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.JavaSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.StaticSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.StringSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.util.ArrayUtil;
 import com.github.skySpiral7.java.util.ClassUtil;
 
@@ -115,19 +107,7 @@ public class ObjectStreamReader implements Closeable
       }
 
       final Class<T_Actual> actualClass = getClassFromOverhead(headerInformation, expectedClass, allowChildClass);
-
-      if (0 != headerInformation.getDimensionCount())
-         return ArraySerializableStrategy.read(this, fileReader, actualClass.getComponentType());
-
-      if (ClassUtil.isBoxedPrimitive(actualClass)) return BoxPrimitiveSerializableStrategy.read(fileReader, actualClass);
-      if (String.class.equals(actualClass)) return cast(StringSerializableStrategy.readWithLength(fileReader));
-
-      if (StaticSerializable.class.isAssignableFrom(actualClass)) return StaticSerializableStrategy.read(this, actualClass);
-
-      if (actualClass.isEnum()) return EnumSerializableStrategy.read(fileReader, actualClass);
-      if (Serializable.class.isAssignableFrom(actualClass)) return JavaSerializableStrategy.read(fileReader);
-
-      throw new NotSerializableException(actualClass);
+      return AllSerializableStrategy.read(this, fileReader, actualClass);
    }
 
    private <T_Expected, T_Actual extends T_Expected> Class<T_Actual> getClassFromOverhead(final HeaderInformation actualHeader,
@@ -187,19 +167,7 @@ public class ObjectStreamReader implements Closeable
 
    public void readFieldsReflectively(final Object instance)
    {
-      final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(instance.getClass());
-      allSerializableFields.forEach(field -> {
-         field.setAccessible(true);
-         try
-         {
-            field.set(instance, this.readObject());  //will auto-cast
-         }
-         catch (final IllegalAccessException e)
-         {
-            throw new AssertionError("This can't be thrown.", e);
-            //since I would've gotten SecurityException from setAccessible(true)
-         }
-      });
+      ReflectionSerializableStrategy.read(this, instance);
    }
 
    public ObjectReaderRegistry getObjectRegistry()

@@ -3,20 +3,11 @@ package com.github.skySpiral7.java.staticSerialization;
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.List;
 
 import com.github.skySpiral7.java.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
-import com.github.skySpiral7.java.staticSerialization.strategy.ArraySerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.BoxPrimitiveSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.EnumSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.JavaSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.StaticSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.StringSerializableStrategy;
-import com.github.skySpiral7.java.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.util.FileIoUtil;
 
 public class ObjectStreamWriter implements Closeable, Flushable
@@ -59,59 +50,12 @@ public class ObjectStreamWriter implements Closeable, Flushable
       HeaderSerializableStrategy.writeOverhead(fileAppender, data);
       //these cases are only overhead so I'm done
       if (data == null || Boolean.TRUE.equals(data) || Boolean.FALSE.equals(data)) return;
-
-      final Class<?> dataClass = data.getClass();
-      if (ClassUtil.isBoxedPrimitive(dataClass))
-      {
-         BoxPrimitiveSerializableStrategy.write(fileAppender, data);
-         return;
-      }
-      if (data instanceof String)
-      {
-         StringSerializableStrategy.writeWithLength(fileAppender, (String) data);
-         return;
-      }
-      if (dataClass.isArray())
-      {
-         ArraySerializableStrategy.write(this, data);
-         return;
-      }
-
-      if (data instanceof StaticSerializable)
-      {
-         StaticSerializableStrategy.write(this, (StaticSerializable) data);
-         return;
-      }
-
-      if (dataClass.isEnum())
-      {
-         EnumSerializableStrategy.write(fileAppender, (Enum<?>) data);
-         return;
-      }
-      if (data instanceof Serializable)
-      {
-         JavaSerializableStrategy.write(fileAppender, (Serializable) data);
-         return;
-      }
-
-      throw new NotSerializableException(dataClass);
+      AllSerializableStrategy.write(this, fileAppender, data);
    }
 
    public void writeFieldsReflectively(final Object data)
    {
-      final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(data.getClass());
-      allSerializableFields.forEach(field -> {
-         field.setAccessible(true);
-         try
-         {
-            this.writeObject(field.get(data));
-         }
-         catch (final IllegalAccessException e)
-         {
-            throw new AssertionError("This can't be thrown.", e);
-            //since I would've gotten SecurityException from setAccessible(true)
-         }
-      });
+      ReflectionSerializableStrategy.write(this, data);
    }
 
    public ObjectWriterRegistry getObjectRegistry()
