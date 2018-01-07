@@ -5,6 +5,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
 
@@ -13,6 +15,11 @@ import static com.github.skySpiral7.java.util.ClassUtil.cast;
 public enum StaticSerializableStrategy
 {
    ;  //no instances
+
+   public static void write(final ObjectStreamWriter writer, final StaticSerializable data)
+   {
+      data.writeToStream(writer);
+   }
 
    public static <T> T read(final ObjectStreamReader reader, final Class<T> expectedClass)
    {

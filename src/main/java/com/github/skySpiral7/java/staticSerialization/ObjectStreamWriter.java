@@ -4,16 +4,17 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.List;
 
 import com.github.skySpiral7.java.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
+import com.github.skySpiral7.java.staticSerialization.strategy.ArraySerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.BoxPrimitiveSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.EnumSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.JavaSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.PrimitiveSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.StaticSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StringSerializableStrategy;
 import com.github.skySpiral7.java.util.ClassUtil;
 import com.github.skySpiral7.java.util.FileIoUtil;
@@ -62,7 +63,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
       final Class<?> dataClass = data.getClass();
       if (ClassUtil.isBoxedPrimitive(dataClass))
       {
-         PrimitiveSerializableStrategy.write(fileAppender, data);
+         BoxPrimitiveSerializableStrategy.write(fileAppender, data);
          return;
       }
       if (data instanceof String)
@@ -72,27 +73,19 @@ public class ObjectStreamWriter implements Closeable, Flushable
       }
       if (dataClass.isArray())
       {
-         //length was written in writeOverhead
-         final int length = Array.getLength(data);
-         for (int i = 0; i < length; ++i)
-         {
-            writeObject(Array.get(data, i));
-         }
+         ArraySerializableStrategy.write(this, data);
          return;
       }
 
-      //TODO: future: move these into ObjectStreamStrategy. EnumStreamStrategy has read and write.
       if (data instanceof StaticSerializable)
       {
-         final StaticSerializable castedData = (StaticSerializable) data;
-         castedData.writeToStream(this);
+         StaticSerializableStrategy.write(this, (StaticSerializable) data);
          return;
       }
 
       if (dataClass.isEnum())
       {
-         final Enum<?> castedData = (Enum<?>) data;
-         IntegerSerializableStrategy.write(fileAppender, castedData.ordinal());
+         EnumSerializableStrategy.write(fileAppender, (Enum<?>) data);
          return;
       }
       if (data instanceof Serializable)

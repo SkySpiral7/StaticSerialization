@@ -7,7 +7,7 @@ import com.github.skySpiral7.java.util.BitWiseUtil;
 import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeBytes;
 import static com.github.skySpiral7.java.util.ClassUtil.cast;
 
-public enum PrimitiveSerializableStrategy
+public enum BoxPrimitiveSerializableStrategy
 {
    ;  //no instances
 

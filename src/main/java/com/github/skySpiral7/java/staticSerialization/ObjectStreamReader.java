@@ -12,12 +12,12 @@ import com.github.skySpiral7.java.AsynchronousFileReader;
 import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
-import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.ArraySerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.BoxPrimitiveSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.EnumSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.JavaSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.PrimitiveSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StaticSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StringSerializableStrategy;
 import com.github.skySpiral7.java.util.ArrayUtil;
@@ -115,36 +115,17 @@ public class ObjectStreamReader implements Closeable
       }
 
       final Class<T_Actual> actualClass = getClassFromOverhead(headerInformation, expectedClass, allowChildClass);
-      return readValue(actualClass, headerInformation.getDimensionCount());
-   }
 
-   private <T> T readValue(final Class<T> actualClass, final int dimensionCount)
-   {
-      if (0 == dimensionCount) return readNonArrayValue(actualClass);
-      final int arrayLength = IntegerSerializableStrategy.read(fileReader);
-      final Object arrayValue = Array.newInstance(actualClass.getComponentType(), arrayLength);
-      for (int readIndex = 0; readIndex < arrayLength; ++readIndex)
-      {
-         Array.set(arrayValue, readIndex, readObject(actualClass.getComponentType()));
-      }
-      return cast(arrayValue);
-   }
+      if (0 != headerInformation.getDimensionCount())
+         return ArraySerializableStrategy.read(this, fileReader, actualClass.getComponentType());
 
-   private <T> T readNonArrayValue(final Class<T> actualClass)
-   {
-      if (ClassUtil.isBoxedPrimitive(actualClass)) return PrimitiveSerializableStrategy.read(fileReader, actualClass);
-      if (String.class.equals(actualClass))
-      {
-         return cast(StringSerializableStrategy.readWithLength(fileReader));
-      }
+      if (ClassUtil.isBoxedPrimitive(actualClass)) return BoxPrimitiveSerializableStrategy.read(fileReader, actualClass);
+      if (String.class.equals(actualClass)) return cast(StringSerializableStrategy.readWithLength(fileReader));
 
-      if (StaticSerializable.class.isAssignableFrom(actualClass)){ return StaticSerializableStrategy.read(this, actualClass); }
+      if (StaticSerializable.class.isAssignableFrom(actualClass)) return StaticSerializableStrategy.read(this, actualClass);
 
-      if (actualClass.isEnum()){ return readEnumByOrdinal(actualClass); }
-      if (Serializable.class.isAssignableFrom(actualClass))
-      {
-         return JavaSerializableStrategy.read(fileReader);
-      }
+      if (actualClass.isEnum()) return EnumSerializableStrategy.read(fileReader, actualClass);
+      if (Serializable.class.isAssignableFrom(actualClass)) return JavaSerializableStrategy.read(fileReader);
 
       throw new NotSerializableException(actualClass);
    }
@@ -202,17 +183,6 @@ public class ObjectStreamReader implements Closeable
          //TODO: make sure that this throws when actualClass is primitive void
          throw new ClassCastException(actualClass.getName() + " cannot be cast to " + expectedClass.getName());
       return cast(actualClass);
-   }
-
-   private <T> T readEnumByOrdinal(final Class<T> expectedClass)
-   {
-      final int ordinal = IntegerSerializableStrategy.read(fileReader);
-      final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum
-
-      if (values.length <= ordinal) throw new StreamCorruptedException(
-            String.format("%s.values()[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
-
-      return cast(values[ordinal]);
    }
 
    public void readFieldsReflectively(final Object instance)
