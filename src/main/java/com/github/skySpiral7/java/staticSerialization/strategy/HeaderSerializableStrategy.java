@@ -1,6 +1,5 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -100,8 +99,6 @@ public enum HeaderSerializableStrategy
       {
          writeByte(appender, '[');
          final int dimensionCount = ArrayUtil.countArrayDimensions(data.getClass());
-         //TODO: test and remove tests
-         if (dimensionCount > 1) throw new UnsupportedOperationException("Currently only 1d arrays are supported");
          writeByte(appender, dimensionCount);  //won't be 0, max: 255. Use unsigned byte
          final Class<?> baseComponent = ArrayUtil.getBaseComponentType(data.getClass());
          //array type can't be void or null
@@ -114,7 +111,6 @@ public enum HeaderSerializableStrategy
          {
             StringSerializableStrategy.writeClassName(appender, baseComponent.getName());
          }
-         IntegerSerializableStrategy.write(appender, Array.getLength(data));
       }
       else
       {

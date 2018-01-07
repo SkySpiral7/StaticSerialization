@@ -233,19 +233,18 @@ public class StaticSerializable_IT
    }
 
    @Test
-   @Ignore
    public void array2D() throws IOException
    {
       //This test case exists because Arrays have a special format.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.array2D.", ".txt");
       tempFile.deleteOnExit();
-      final byte[][] data = {{1}, null};
+      final Byte[][] data = {{1}, null};
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       writer.writeObject(data);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
-      assertArrayEquals(data, reader.readObject(byte[][].class));
+      assertArrayEquals(data, reader.readObject(Byte[][].class));
       reader.close();
    }
 

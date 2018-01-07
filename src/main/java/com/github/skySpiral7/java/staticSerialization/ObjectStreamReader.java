@@ -90,8 +90,6 @@ public class ObjectStreamReader implements Closeable
 
       final HeaderInformation headerInformation = HeaderSerializableStrategy.readHeader(fileReader);
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
-      //TODO: test
-      if (headerInformation.getDimensionCount() > 1) throw new UnsupportedOperationException("Currently only 1d arrays are supported");
       if (headerInformation.getDimensionCount() == 0 && Boolean.class.getName().equals(headerInformation.getClassName()))
       {
          ReaderValidationStrategy.validateBoolean(expectedClass, allowChildClass);

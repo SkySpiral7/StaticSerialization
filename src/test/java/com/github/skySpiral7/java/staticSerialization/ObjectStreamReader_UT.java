@@ -181,7 +181,6 @@ public class ObjectStreamReader_UT
    }
 
    @Test
-   @Ignore
    public void readObjectStrictly_throws_whenExpectedArrayGotDifferentDimensions() throws Exception
    {
       final File tempFile = File.createTempFile(
@@ -727,24 +726,23 @@ public class ObjectStreamReader_UT
    }
 
    @Test
-   @Ignore
    public void readObject_2dArray() throws IOException
    {
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_2dArray.", ".txt");
       tempFile.deleteOnExit();
-      final byte[] fileContents = {'[', 2,   //array indicator and dimensions
-            '~',  //byte
-            0, 0, 0, 2,  //length (int)
-            '[', 1,   //first element
-            '~',  //byte
-            0, 0, 0, 1,  //length (int)
-            '~', 1, ';'};   //second element
-      FileIoUtil.writeToFile(tempFile, fileContents);
-      final byte[][] expected = {{1}, null};
+      FileIoUtil.writeToFile(tempFile, new byte[]{'[', 2});   //root array indicator and dimensions
+      FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");  //root component
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 2});   //root length (int)
+      FileIoUtil.appendToFile(tempFile, new byte[]{'[', 1});   //root[0] array indicator and dimensions
+      FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");  //root[0] component
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});   //root[0] length (int)
+      FileIoUtil.appendToFile(tempFile, new byte[]{'~', 1});   //root[0][0] data with header
+      FileIoUtil.appendToFile(tempFile, ";");   //root[1] is null
+      final Byte[][] expected = {{1}, null};
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
-      assertArrayEquals(expected, testObject.readObject(byte[][].class));
+      assertArrayEquals(expected, testObject.readObject(Byte[][].class));
       assertFalse(testObject.hasData());
 
       testObject.close();

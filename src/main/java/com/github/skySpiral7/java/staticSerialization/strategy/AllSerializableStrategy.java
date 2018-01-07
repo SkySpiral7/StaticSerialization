@@ -31,7 +31,7 @@ public enum AllSerializableStrategy
       }
       if (dataClass.isArray())
       {
-         ArraySerializableStrategy.write(streamWriter, data);
+         ArraySerializableStrategy.write(streamWriter, fileAppender, data);
          return;
       }
 
