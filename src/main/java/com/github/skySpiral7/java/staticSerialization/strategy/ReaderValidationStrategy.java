@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.util.ArrayUtil;
+import com.github.skySpiral7.java.util.ClassUtil;
 
 import static com.github.skySpiral7.java.util.ClassUtil.cast;
 
@@ -15,8 +16,8 @@ public enum ReaderValidationStrategy
    {
       if (!allowChildClass && !Boolean.class.equals(expectedClass))
          throw new IllegalStateException("Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: java.lang.Boolean");
-      //TODO: I think this is redundant?
       if (!expectedClass.isAssignableFrom(Boolean.class))
+         //Not redundant because it needs to fail based on expectedClass after type erasure before getting to the client.
          //Same message as JVM.
          throw new ClassCastException(Boolean.class.getName() + " cannot be cast to " + expectedClass.getName());
    }
@@ -31,7 +32,11 @@ public enum ReaderValidationStrategy
       {
          if (expectedClass.isArray())
          {
-            final HeaderInformation expectedHeader = new HeaderInformation(expectedBaseComponentType.getName(), expectedDimensions);
+            final HeaderInformation expectedHeader;
+            if (expectedBaseComponentType.isPrimitive())
+               expectedHeader = new HeaderInformation(ClassUtil.boxClass(expectedBaseComponentType).getName(), expectedDimensions, true);
+            else expectedHeader = new HeaderInformation(expectedBaseComponentType.getName(), expectedDimensions, false);
+
             if (0 == actualHeader.getDimensionCount()) throw new IllegalStateException(
                   "Class doesn't match exactly. Expected: " + expectedHeader + " Got: " + actualHeader.getClassName());
             if (!expectedHeader.equals(actualHeader))
@@ -48,9 +53,11 @@ public enum ReaderValidationStrategy
       //it is important to validate here so that some nefarious static initialization blocks won't be ran
       //if casting is allowed then loading the class is unavoidable at this point
 
-      final Class<?> actualClass;
+      Class<?> actualClass;
       try
       {
+         //No support for "int" etc. primitives can only reach here by someone else writing "int" in the stream.
+         //Since Class.forName doesn't support primitives it likewise won't allow primitive void.
          actualClass = Class.forName(actualHeader.getClassName());
       }
       catch (final ClassNotFoundException classNotFoundException)
@@ -59,10 +66,12 @@ public enum ReaderValidationStrategy
       }
       if (expectedClass.isArray())
       {
+         if (actualHeader.isPrimitiveArray()) actualClass = ClassUtil.unboxClass(actualClass);
          if (!expectedBaseComponentType.isAssignableFrom(actualClass))
             //Not redundant because this is the only check for empty arrays
             //and checking here is better than waiting for failing to set an element in the array.
             //Same message as JVM.
+            //TODO: consider: I could add code to allow primitive array to be cast into box. But what about widening etc?
             throw new ClassCastException(actualClass.getName() + " cannot be cast to " + expectedBaseComponentType.getName());
          final int[] arrayOfLengths = new int[expectedDimensions];  //they are filled with 0 by default
          //It is easier to create an empty array then a string that would match the class name.
@@ -71,7 +80,6 @@ public enum ReaderValidationStrategy
       if (!expectedClass.isAssignableFrom(actualClass))
          //Not redundant because it needs to fail based on expectedClass after type erasure before getting to the client.
          //Same message as JVM.
-         //TODO: make sure that this throws when actualClass is primitive void
          throw new ClassCastException(actualClass.getName() + " cannot be cast to " + expectedClass.getName());
       return cast(actualClass);
    }

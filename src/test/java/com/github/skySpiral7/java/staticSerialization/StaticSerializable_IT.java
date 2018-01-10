@@ -8,7 +8,6 @@ import java.math.RoundingMode;
 import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph;
 import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph.Node;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -216,7 +215,6 @@ public class StaticSerializable_IT
    }
 
    @Test
-   @Ignore
    public void primitiveArray() throws IOException
    {
       //This test case exists because Arrays have a special format.
@@ -249,7 +247,6 @@ public class StaticSerializable_IT
    }
 
    @Test
-   @Ignore
    public void primitiveBooleanArray() throws IOException
    {
       //This test case exists because boolean[] is an edge case.

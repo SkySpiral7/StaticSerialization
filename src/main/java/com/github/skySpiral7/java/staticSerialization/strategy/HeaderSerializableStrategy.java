@@ -7,6 +7,7 @@ import com.github.skySpiral7.java.AsynchronousFileAppender;
 import com.github.skySpiral7.java.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.util.ArrayUtil;
+import com.github.skySpiral7.java.util.ClassUtil;
 
 import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeByte;
 
@@ -19,7 +20,8 @@ public enum HeaderSerializableStrategy
     * <ul>
     * <li>+ boolean true</li>
     * <li>- boolean false</li>
-    * <li>[2 arrays</li>
+    * <li>[2 object arrays</li>
+    * <li>]2 primitive arrays</li>
     * <li>; null</li>
     * </ul>
     */
@@ -29,7 +31,8 @@ public enum HeaderSerializableStrategy
     * <ul>
     * <li>+ boolean true</li>
     * <li>- boolean false</li>
-    * <li>[2 arrays</li>
+    * <li>[2 object arrays</li>
+    * <li>]2 primitive arrays</li>
     * <li>; null</li>
     * </ul>
     */
@@ -63,7 +66,8 @@ public enum HeaderSerializableStrategy
       byte firstByte = reader.readByte();
 
       final int dimensionCount;
-      if ('[' == firstByte)
+      final boolean primitiveArray = (']' == firstByte);
+      if ('[' == firstByte || ']' == firstByte)
       {
          if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array dimensions");
          dimensionCount = Byte.toUnsignedInt(reader.readByte());
@@ -71,21 +75,22 @@ public enum HeaderSerializableStrategy
          firstByte = reader.readByte();
          if (';' == firstByte || '-' == firstByte)
             throw new StreamCorruptedException("header's array component type can't be null or false");
-         if ('+' == firstByte) return new HeaderInformation(Boolean.class.getName(), dimensionCount);
+         if ('+' == firstByte) return new HeaderInformation(Boolean.class.getName(), dimensionCount, primitiveArray);
       }
       else dimensionCount = 0;
 
+      //TODO: add assumed type '?' for arrays (see notes)
       if (';' == firstByte) return new HeaderInformation();  //the empty string class name means null
       if ('+' == firstByte) return new HeaderInformation(Boolean.TRUE);
       if ('-' == firstByte) return new HeaderInformation(Boolean.FALSE);
       if (COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte))
       {
          final Class<?> compressedClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);
-         return new HeaderInformation(compressedClass.getName(), dimensionCount);
+         return new HeaderInformation(compressedClass.getName(), dimensionCount, primitiveArray);
       }
 
       //else firstByte is part of a class name
-      return new HeaderInformation(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount);
+      return new HeaderInformation(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount, primitiveArray);
    }
 
    public static void writeHeader(final AsynchronousFileAppender appender, final Object data)
@@ -97,17 +102,21 @@ public enum HeaderSerializableStrategy
          writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(data.getClass()));
       else if (data.getClass().isArray())
       {
-         writeByte(appender, '[');
+         Class<?> baseComponent = ArrayUtil.getBaseComponentType(data.getClass());
+         //array type can't be void or null
+         if (baseComponent.isPrimitive())
+         {
+            writeByte(appender, ']');
+            baseComponent = ClassUtil.boxClass(baseComponent);
+         }
+         else writeByte(appender, '[');
+
          final int dimensionCount = ArrayUtil.countArrayDimensions(data.getClass());
          writeByte(appender, dimensionCount);  //won't be 0, max: 255. Use unsigned byte
-         final Class<?> baseComponent = ArrayUtil.getBaseComponentType(data.getClass());
-         //array type can't be void or null
-         //TODO: support primitive arrays
-         //         if (baseComponent.equals(boolean.class)) writeByte(appender, '+');
-         //         else if (baseComponent.isPrimitive()) writeByte(COMPRESSED_CLASSES.get(ClassUtil.boxClass(baseComponent)));
-         //            //TODO: compress arrays of String and Boxes
-         //            //else if (ClassUtil.isBoxedPrimitive(baseComponent))
-         //         else
+
+         if (baseComponent.equals(Boolean.class)) writeByte(appender, '+');
+         else if (ClassUtil.isBoxedPrimitive(baseComponent)) writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
+         else
          {
             StringSerializableStrategy.writeClassName(appender, baseComponent.getName());
          }

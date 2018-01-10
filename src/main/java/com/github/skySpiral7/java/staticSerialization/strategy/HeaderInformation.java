@@ -12,6 +12,7 @@ public final class HeaderInformation
    private final String className;
    private final Boolean value;
    private final int dimensionCount;
+   private final boolean primitiveArray;
 
    /**
     * Constructed to represent a header with a null value.
@@ -21,16 +22,18 @@ public final class HeaderInformation
       this.className = null;
       this.value = null;
       dimensionCount = 0;
+      primitiveArray = false;
    }
 
    /**
     * Constructed with a null value (which is the norm).
     */
-   public HeaderInformation(final String baseComponentClassName, final int dimensionCount)
+   public HeaderInformation(final String baseComponentClassName, final int dimensionCount, final boolean primitiveArray)
    {
       this.className = baseComponentClassName;
       value = null;
       this.dimensionCount = dimensionCount;
+      this.primitiveArray = primitiveArray;
    }
 
    /**
@@ -41,16 +44,18 @@ public final class HeaderInformation
       this.className = Boolean.class.getName();
       this.value = value;
       dimensionCount = 0;
+      primitiveArray = false;
    }
 
    /**
     * For testing only. Takes every value as-is.
     */
-   HeaderInformation(final String className, final Boolean value, final int dimensionCount)
+   HeaderInformation(final String className, final Boolean value, final int dimensionCount, final boolean primitiveArray)
    {
       this.className = className;
       this.value = value;
       this.dimensionCount = dimensionCount;
+      this.primitiveArray = primitiveArray;
    }
 
    /**
@@ -71,6 +76,14 @@ public final class HeaderInformation
     */
    public int getDimensionCount(){return dimensionCount;}
 
+   /**
+    * @return true if isArray and base component is a primitive class
+    */
+   public boolean isPrimitiveArray()
+   {
+      return primitiveArray;
+   }
+
    @Override
    public boolean equals(final Object other)
    {
@@ -78,13 +91,13 @@ public final class HeaderInformation
       if (other == null || getClass() != other.getClass()) return false;
       final HeaderInformation that = (HeaderInformation) other;
       return Objects.equals(className, that.className) && Objects.equals(value, that.value) && Objects.equals(dimensionCount,
-            that.dimensionCount);
+            that.dimensionCount) && Objects.equals(primitiveArray, that.primitiveArray);
    }
 
    @Override
    public int hashCode()
    {
-      return Objects.hash(className, value, dimensionCount);
+      return Objects.hash(className, value, dimensionCount, primitiveArray);
    }
 
    @Override
@@ -94,6 +107,7 @@ public final class HeaderInformation
       if (Boolean.TRUE.equals(value)) return "true";
       if (Boolean.FALSE.equals(value)) return "false";
       if (0 == dimensionCount) return className;
+      if (primitiveArray) return dimensionCount + "d array of primitive " + className;
       return dimensionCount + "d array of " + className;
    }
 }

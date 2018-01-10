@@ -56,9 +56,14 @@ public class ObjectStreamReader implements Closeable
     * is thrown without loading the class found. Thus untrusted classes will not be loaded (preventing static initializer
     * blocks).</p>
     *
+    * <p>Security limitation: for multidimensional arrays only the topmost is matched exactly. Therefore if the
+    * base component is not a final class (or primitive) then you must trust all possible children. In the case
+    * of an Object array (not supported) this means trusting all classes which makes this method nearly pointless
+    * (failing only if the root is different).</p>
+    *
     * @see #readObject(Class)
     */
-   public <T> T readObjectStrictly(Class<T> expectedClass)
+   public <T> T readObjectStrictly(final Class<T> expectedClass)
    {
       return readObjectInternal(expectedClass, false);
    }
@@ -70,7 +75,7 @@ public class ObjectStreamReader implements Closeable
     *       only thrown when Java's deserialization is used and "Any of the usual Input/Output related exceptions." occurs.
     * @see ObjectInputStream#readObject()
     */
-   public <T> T readObject(Class<T> expectedClass)
+   public <T> T readObject(final Class<T> expectedClass)
    {
       return readObjectInternal(expectedClass, true);
    }

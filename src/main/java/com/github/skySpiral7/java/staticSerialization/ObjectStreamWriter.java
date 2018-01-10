@@ -40,11 +40,14 @@ public class ObjectStreamWriter implements Closeable, Flushable
     * <li>null (not technically a Type.class)</li>
     * <li>Any primitive (except void.class obviously)</li>
     * <li>Any boxed primitive (java.lang.Void.class isn't a box)</li>
-    * <li>Any type that extends StaticSerializable</li>
-    * <li>Any type that extends Serializable (String and enum have better than normal compression)</li>
+    * <li>String</li>
+    * <li>Any type that implements StaticSerializable</li>
+    * <li>Any enum</li>
+    * <li>Any type that implements Serializable</li>
+    * <li>Primitive Arrays (any number of dimensions)</li>
+    * <li>Arrays with a base component of a supported type (any number of dimensions)</li>
     * </ul>
     */
-   //for now ignore overloading for all primitives and array stuff
    public void writeObject(final Object data)
    {
       HeaderSerializableStrategy.writeHeader(fileAppender, data);
