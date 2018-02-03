@@ -20,6 +20,7 @@ public class HeaderSerializableStrategy_UT
    @Test(expected = NullPointerException.class)
    public void readHeader_throws_givenNullInput() throws Exception
    {
+      //TODO: organize tests in some way. ideally every test would be doubled for IT and UT versions (named by UT)
       final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_givenNullInput.", ".txt");
       tempFile.deleteOnExit();
 

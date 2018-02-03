@@ -24,6 +24,7 @@ public class SerializationUtil_UT
       public String fieldString = "1";
       public SimpleHappy fieldStaticSerializable = new SimpleHappy(1);
       public BigInteger fieldSerializable = BigInteger.ONE;
+      public int[] fieldArray = {1};
       public Object fieldOther = 1;
    }
 
@@ -36,6 +37,7 @@ public class SerializationUtil_UT
       expected.add(Class_getAllSerializableFields.class.getField("fieldString"));
       expected.add(Class_getAllSerializableFields.class.getField("fieldStaticSerializable"));
       expected.add(Class_getAllSerializableFields.class.getField("fieldSerializable"));
+      expected.add(Class_getAllSerializableFields.class.getField("fieldArray"));
 
       final List<Field> actual = SerializationUtil.getAllSerializableFields(Class_getAllSerializableFields.class);
 
