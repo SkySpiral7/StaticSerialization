@@ -68,21 +68,15 @@ public enum ReaderValidationStrategy
       if (0 != actualHeader.getDimensionCount())
       {
          if (actualHeader.isPrimitiveArray()) actualClass = ClassUtil.unboxClass(actualClass);
-         if (Object.class.equals(expectedClass))
-         {
-            final int[] arrayOfLengths = new int[actualHeader.getDimensionCount()];  //they are filled with 0 by default
-            //It is easier to create an empty array then a string that would match the class name.
-            return cast(Array.newInstance(actualClass, arrayOfLengths).getClass());
-         }
-         if (!expectedBaseComponentType.isAssignableFrom(actualClass))
+         if (!Object.class.equals(expectedClass) && !expectedBaseComponentType.isAssignableFrom(actualClass))
             //Not redundant because this is the only check for empty arrays
             //and checking here is better than waiting for failing to set an element in the array.
             //Same message as JVM.
             //TODO: consider: I could add code to allow primitive array to be cast into box. But what about widening etc?
             throw new ClassCastException(actualClass.getName() + " cannot be cast to " + expectedBaseComponentType.getName());
-         final int[] arrayOfLengths = new int[expectedDimensions];  //they are filled with 0 by default
+         final int[] arrayOfLengths = new int[actualHeader.getDimensionCount()];  //they are filled with 0 by default
          //It is easier to create an empty array then a string that would match the class name.
-         return cast(Array.newInstance(expectedBaseComponentType, arrayOfLengths).getClass());
+         return cast(Array.newInstance(actualClass, arrayOfLengths).getClass());
       }
       if (!expectedClass.isAssignableFrom(actualClass))
          //Not redundant because it needs to fail based on expectedClass after type erasure before getting to the client.

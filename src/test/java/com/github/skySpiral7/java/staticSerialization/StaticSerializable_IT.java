@@ -1,13 +1,17 @@
 package com.github.skySpiral7.java.staticSerialization;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph;
 import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph.Node;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
+import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -243,6 +247,107 @@ public class StaticSerializable_IT
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
       assertArrayEquals(data, reader.readObject(Byte[][].class));
+      reader.close();
+   }
+
+   @Test
+   public void arrayStressTest() throws IOException
+   {
+      //This test case exists to prove that the complexities of arrays are all handled correctly.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.arrayStressTest.", ".txt");
+      tempFile.deleteOnExit();
+      final Object[][][] data = new Object[3][][];
+      data[0] = new CharSequence[][]{new String[]{"hi"}};
+      data[1] = new Number[][]{new Integer[]{1, 2}, new Long[]{4L, 5L}};
+      data[2] = new Object[1][1];
+      data[2][0][0] = new Object[]{null, "joe", new int[]{6}};
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+
+      /*
+Object graph (using non compressed names):
+[3java.lang.Object;3
+   java.lang.CharSequence;1
+      java.lang.String;1
+         ? 0002 hi
+   java.lang.Number;2
+      java.lang.Integer;2
+         ? 0001
+         ? 0002
+      java.lang.Long;2
+         ? 00000004
+         ? 00000005
+   ?1
+      ?1
+         [1java.lang.Object;2
+            ;
+            java.lang.String; 0003 joe
+            [1int;1
+               0006
+       */
+      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      baos.write(new byte[]{'[', 3});   //data array indicator and dimensions
+      baos.write("java.lang.Object;".getBytes(StandardCharsets.UTF_8));   //data component
+      baos.write(new byte[]{0, 0, 0, 3});   //data length
+      baos.write(new byte[]{'[', 2});   //data[0] array indicator and dimensions
+      //TODO: even without using '?' the array indicator and dimensions can be assumed
+      baos.write("java.lang.CharSequence;".getBytes(StandardCharsets.UTF_8));   //data[0] component
+      baos.write(new byte[]{0, 0, 0, 1});   //data[0] length
+      baos.write(new byte[]{'[', 1, '*'});   //data[0][0] array indicator, dimensions, component (String)
+      baos.write(new byte[]{0, 0, 0, 1});   //data[0][0] length
+      baos.write(new byte[]{'?', 0, 0, 0, 2});   //data[0][0][0] inherited type and UTF-8 length
+      baos.write("hi".getBytes(StandardCharsets.UTF_8));   //data[0][0][0] value
+      baos.write(new byte[]{'[', 2});   //data[1] array indicator and dimensions
+      baos.write("java.lang.Number;".getBytes(StandardCharsets.UTF_8));   //data[1] component
+      baos.write(new byte[]{0, 0, 0, 2});   //data[1] length
+      baos.write(new byte[]{'[', 1, '@'});   //data[1][0] array indicator, dimensions, component (Int)
+      baos.write(new byte[]{0, 0, 0, 2});   //data[1][0] length
+      baos.write(new byte[]{'?', 0, 0, 0, 1});   //data[1][0][0] inherited type and value
+      baos.write(new byte[]{'?', 0, 0, 0, 2});   //data[1][0][1] inherited type and value
+      baos.write(new byte[]{'[', 1, '#'});   //data[1][1] array indicator, dimensions, component (Long)
+      baos.write(new byte[]{0, 0, 0, 2});   //data[1][1] length
+      baos.write(new byte[]{'?', 0, 0, 0, 0, 0, 0, 0, 4});   //data[1][1][0] inherited type and value
+      baos.write(new byte[]{'?', 0, 0, 0, 0, 0, 0, 0, 5});   //data[1][1][1] inherited type and value
+      baos.write(new byte[]{'?'});   //data[2] inherited type
+      baos.write(new byte[]{0, 0, 0, 1});   //data[2] length
+      baos.write(new byte[]{'?'});   //data[2][0] inherited type
+      baos.write(new byte[]{0, 0, 0, 1});   //data[2][0] length
+      baos.write(new byte[]{'[', 1});   //data[2][0][0] array indicator and dimensions
+      baos.write("java.lang.Object;".getBytes(StandardCharsets.UTF_8));   //data[2][0][0] component
+      baos.write(new byte[]{0, 0, 0, 3});   //data[2][0][0] length
+      baos.write(new byte[]{';'});   //data[2][0][0][0]=null
+      baos.write(new byte[]{'*', 0, 0, 0, 3});   //data[2][0][0][1] type (String) and UTF-8 length
+      baos.write("joe".getBytes(StandardCharsets.UTF_8));   //data[2][0][0][1] value
+      baos.write(new byte[]{']', 1, '@'});   //data[2][0][0][2] array indicator, dimensions, component (int)
+      baos.write(new byte[]{0, 0, 0, 1});   //data[2][0][0][2] length
+      baos.write(new byte[]{0, 0, 0, 6});   //data[2][0][0][2] value (no header)
+
+      final byte[] expectedInFile = baos.toByteArray();
+      final byte[] actualInFile = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(new String(expectedInFile, StandardCharsets.UTF_8), new String(actualInFile, StandardCharsets.UTF_8));
+      assertEquals(Arrays.toString(expectedInFile).replace(", ", ",\n"), Arrays.toString(actualInFile).replace(", ", ",\n"));
+
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertEquals(Arrays.deepToString(data), Arrays.deepToString(reader.readObject(Object[][][].class)));
+      reader.close();
+   }
+
+   @Test
+   public void objectArrayOfSupported() throws IOException
+   {
+      //This test case exists to validate and edge case since Object.class isn't supported.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.objectArrayOfSupported.", ".txt");
+      tempFile.deleteOnExit();
+      final Object[] data = {1};
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      assertEquals(Arrays.deepToString(data), Arrays.deepToString(reader.readObject(Object[].class)));
       reader.close();
    }
 

@@ -717,6 +717,22 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
+   public void writeObject_stringArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_stringArray.", ".txt");
+      tempFile.deleteOnExit();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+      testObject.writeObject(new String[0]);
+      testObject.close();
+      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      baos.write(new byte[]{'[', 1, '*'});   //array indicator, dimensions, component
+      baos.write(new byte[]{0, 0, 0, 0});   //length (int)
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(Arrays.toString(baos.toByteArray()), Arrays.toString(fileContents));
+   }
+
+   @Test
    public void writeObject_primitiveArray() throws IOException
    {
       final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_primitiveArray.", ".txt");

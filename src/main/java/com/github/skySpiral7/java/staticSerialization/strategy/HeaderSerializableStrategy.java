@@ -144,7 +144,7 @@ public enum HeaderSerializableStrategy
          writeByte(appender, dimensionCount);  //won't be 0, max: 255. Use unsigned byte
 
          if (baseComponent.equals(Boolean.class)) writeByte(appender, '+');
-         else if (ClassUtil.isBoxedPrimitive(baseComponent)) writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
+         else if (CLASS_TO_COMPRESSED_HEADER.containsKey(baseComponent)) writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
          else
          {
             StringSerializableStrategy.writeClassName(appender, baseComponent.getName());
