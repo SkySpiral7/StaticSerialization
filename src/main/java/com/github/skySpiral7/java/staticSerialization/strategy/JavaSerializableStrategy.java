@@ -20,7 +20,7 @@ public enum JavaSerializableStrategy
 {
    ;  //no instances
 
-   public static void write(final AsynchronousFileAppender appender, final Serializable data)
+   public static void writeWithLength(final AsynchronousFileAppender appender, final Serializable data)
    {
       final byte[] serializedData = javaSerialize(data);
       writeBytes(appender, serializedData.length, 4);
@@ -29,6 +29,7 @@ public enum JavaSerializableStrategy
 
    public static byte[] javaSerialize(final Serializable data)
    {
+      //TODO: double check default size after doing some size compares
       final ByteArrayOutputStream byteStream = new ByteArrayOutputStream(512);
       try (final ObjectOutputStream out = new ObjectOutputStream(byteStream))
       {
@@ -41,7 +42,7 @@ public enum JavaSerializableStrategy
       return byteStream.toByteArray();
    }
 
-   public static <T> T read(final AsynchronousFileReader reader)
+   public static <T> T readWithLength(final AsynchronousFileReader reader)
    {
       final int length = IntegerSerializableStrategy.read(reader);
       final byte[] objectData = reader.readBytes(length);

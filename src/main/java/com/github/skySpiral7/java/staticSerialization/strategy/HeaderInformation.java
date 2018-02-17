@@ -26,6 +26,19 @@ public final class HeaderInformation
    }
 
    /**
+    * Constructed to represent an element within a primitive array (which has no header).
+    *
+    * @param boxClassName must be the class name of the box not the primitive
+    */
+   public HeaderInformation(final String boxClassName)
+   {
+      this.className = boxClassName;
+      value = null;
+      this.dimensionCount = 0;
+      this.primitiveArray = false;
+   }
+
+   /**
     * Constructed with a null value (which is the norm).
     */
    public HeaderInformation(final String baseComponentClassName, final int dimensionCount, final boolean primitiveArray)

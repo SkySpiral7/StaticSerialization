@@ -23,6 +23,7 @@ public enum HeaderSerializableStrategy
     * <li>[2 object arrays</li>
     * <li>]2 primitive arrays</li>
     * <li>; null</li>
+    * <li>? inherit type from containing array</li>
     * </ul>
     */
    private static final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
@@ -34,6 +35,7 @@ public enum HeaderSerializableStrategy
     * <li>[2 object arrays</li>
     * <li>]2 primitive arrays</li>
     * <li>; null</li>
+    * <li>? inherit type from containing array</li>
     * </ul>
     */
    private static final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
@@ -45,6 +47,7 @@ public enum HeaderSerializableStrategy
       COMPRESSED_HEADER_TO_CLASS.put('!', Short.class);
       COMPRESSED_HEADER_TO_CLASS.put('@', Integer.class);
       COMPRESSED_HEADER_TO_CLASS.put('#', Long.class);
+      //$ is allowed to be in class names
       COMPRESSED_HEADER_TO_CLASS.put('%', Float.class);
       COMPRESSED_HEADER_TO_CLASS.put('^', Double.class);
       COMPRESSED_HEADER_TO_CLASS.put('&', Character.class);
@@ -55,37 +58,58 @@ public enum HeaderSerializableStrategy
       CLASS_TO_COMPRESSED_HEADER.put(Short.class, '!');
       CLASS_TO_COMPRESSED_HEADER.put(Integer.class, '@');
       CLASS_TO_COMPRESSED_HEADER.put(Long.class, '#');
+      //$ is allowed to be in class names
       CLASS_TO_COMPRESSED_HEADER.put(Float.class, '%');
       CLASS_TO_COMPRESSED_HEADER.put(Double.class, '^');
       CLASS_TO_COMPRESSED_HEADER.put(Character.class, '&');
       CLASS_TO_COMPRESSED_HEADER.put(String.class, '*');
    }
 
-   public static HeaderInformation readHeader(final AsynchronousFileReader reader)
+   /**
+    * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
+    */
+   public static HeaderInformation readHeader(final AsynchronousFileReader reader, final Class<?> inheritFromClass)
    {
-      byte firstByte = reader.readByte();
+      byte firstByte;
+
+      if (null != inheritFromClass)
+      {
+         //inheritFromClass is never primitive void.class.
+         //It is only primitive if contained in a primitive array in which case there is no header
+         //since it can't be null or any other class.
+         if (inheritFromClass.isPrimitive()) return new HeaderInformation(ClassUtil.boxClass(inheritFromClass).getName());
+         firstByte = reader.readByte();
+         if ('?' == firstByte)
+         {
+            final int dimensionCount = ArrayUtil.countArrayDimensions(inheritFromClass);
+            final Class<?> baseComponent = inheritFromClass.isArray() ? ArrayUtil.getBaseComponentType(inheritFromClass) : inheritFromClass;
+            return new HeaderInformation(baseComponent.getName(), dimensionCount, false);
+         }
+         //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
+      }
+      else firstByte = reader.readByte();
+      if (null == inheritFromClass && '?' == firstByte) throw new StreamCorruptedException("Only array elements can inherit type");
 
       final int dimensionCount;
-      final boolean primitiveArray = (']' == firstByte);
+      final boolean primitiveArray = (']' == firstByte);  //is false if not an array at all
       if ('[' == firstByte || ']' == firstByte)
       {
          if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array dimensions");
          dimensionCount = Byte.toUnsignedInt(reader.readByte());
          if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array component type");
          firstByte = reader.readByte();
-         if (';' == firstByte || '-' == firstByte)
-            throw new StreamCorruptedException("header's array component type can't be null or false");
+         if (';' == firstByte) throw new StreamCorruptedException("header's array component type can't be null");
+         if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
          if ('+' == firstByte) return new HeaderInformation(Boolean.class.getName(), dimensionCount, primitiveArray);
       }
       else dimensionCount = 0;
 
-      //TODO: add assumed type '?' for arrays (see notes)
       if (';' == firstByte) return new HeaderInformation();  //the empty string class name means null
       if ('+' == firstByte) return new HeaderInformation(Boolean.TRUE);
       if ('-' == firstByte) return new HeaderInformation(Boolean.FALSE);
-      if (COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte))
+      if (COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte))  //safe cast because map contains only ASCII
       {
-         final Class<?> compressedClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);
+         final Class<?> compressedClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
          return new HeaderInformation(compressedClass.getName(), dimensionCount, primitiveArray);
       }
 
@@ -93,11 +117,16 @@ public enum HeaderSerializableStrategy
       return new HeaderInformation(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount, primitiveArray);
    }
 
-   public static void writeHeader(final AsynchronousFileAppender appender, final Object data)
+   public static void writeHeader(final AsynchronousFileAppender appender, final Class<?> inheritFromClass, final Object data)
    {
+      //boolean[] and Boolean[] use only headers for elements (primitive doesn't allow null)
       if (Boolean.TRUE.equals(data)) writeByte(appender, '+');
       else if (Boolean.FALSE.equals(data)) writeByte(appender, '-');
       else if (data == null) writeByte(appender, ';');  //if data is null then class name is the empty string
+      else if (null != inheritFromClass && inheritFromClass.isPrimitive()) ;  //do nothing
+         //because non-boolean primitive array elements have no header
+         //(below) if class matches containing array exactly then inherit type.
+      else if (null != inheritFromClass && inheritFromClass.equals(data.getClass())) writeByte(appender, '?');
       else if (CLASS_TO_COMPRESSED_HEADER.containsKey(data.getClass()))
          writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(data.getClass()));
       else if (data.getClass().isArray())

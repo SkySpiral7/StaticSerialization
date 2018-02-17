@@ -2,6 +2,7 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.AsynchronousFileAppender;
 import com.github.skySpiral7.java.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.util.BitWiseUtil;
 
 import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeBytes;
@@ -29,11 +30,7 @@ public enum BoxPrimitiveSerializableStrategy
          //intentionally normalizes NaN
          writeBytes(appender, castedData, 8);
       }
-      else if (data instanceof Boolean)
-      {
-         if ((boolean) data) ByteSerializableStrategy.writeByte(appender, 1);  //write true as 1
-         else ByteSerializableStrategy.writeByte(appender, 0);
-      }
+      //Boolean won't come here because the value is header only
       else if (data instanceof Character) writeBytes(appender, (char) data, 2);
       else throw new AssertionError("Method shouldn't've been called");
    }
@@ -67,10 +64,13 @@ public enum BoxPrimitiveSerializableStrategy
       }
       if (Boolean.class.equals(expectedClass))
       {
-         //This code is obsolete but still permitted. It isn't normally reached due to the new boolean header.
+         //Code is only reachable through primitive boolean arrays, else the header contains the value.
+         //Also reachable if a custom written stream uses a header of Boolean.class.
          final byte data = reader.readByte();
-         if (data == 1) return cast(Boolean.TRUE);
-         return cast(Boolean.FALSE);
+         if ('+' == data) return cast(Boolean.TRUE);
+         if ('-' == data) return cast(Boolean.FALSE);
+         if (';' == data) return null;
+         throw new StreamCorruptedException(data + " is not a boolean value");
       }
       if (Character.class.equals(expectedClass))
       {

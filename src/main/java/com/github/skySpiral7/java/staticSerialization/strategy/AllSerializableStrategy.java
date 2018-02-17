@@ -16,7 +16,7 @@ public enum AllSerializableStrategy
 {
    ;  //no instances
 
-   public static void write(final ObjectStreamWriter streamWriter, final AsynchronousFileAppender fileAppender, final Object data)
+   public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter, final AsynchronousFileAppender fileAppender, final Object data)
    {
       final Class<?> dataClass = data.getClass();
       if (ClassUtil.isBoxedPrimitive(dataClass))
@@ -31,7 +31,7 @@ public enum AllSerializableStrategy
       }
       if (dataClass.isArray())
       {
-         ArraySerializableStrategy.write(streamWriter, fileAppender, data);
+         ArraySerializableStrategy.write(streamWriter, internalStreamWriter, fileAppender, data);
          return;
       }
 
@@ -48,23 +48,25 @@ public enum AllSerializableStrategy
       }
       if (data instanceof Serializable)
       {
-         JavaSerializableStrategy.write(fileAppender, (Serializable) data);
+         JavaSerializableStrategy.writeWithLength(fileAppender, (Serializable) data);
          return;
       }
 
       throw new NotSerializableException(dataClass);
    }
 
-   public static <T> T read(final ObjectStreamReader streamReader, final AsynchronousFileReader fileReader, final Class<T> actualClass)
+   public static <T> T read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
+                            final AsynchronousFileReader fileReader, final Class<T> actualClass)
    {
       if (ClassUtil.isBoxedPrimitive(actualClass)) return BoxPrimitiveSerializableStrategy.read(fileReader, actualClass);
       if (String.class.equals(actualClass)) return cast(StringSerializableStrategy.readWithLength(fileReader));
-      if (actualClass.isArray()) return ArraySerializableStrategy.read(streamReader, fileReader, actualClass.getComponentType());
+      if (actualClass.isArray()) return ArraySerializableStrategy.read(streamReader, internalStreamReader, fileReader, actualClass
+            .getComponentType());
 
       if (StaticSerializable.class.isAssignableFrom(actualClass)) return StaticSerializableStrategy.read(streamReader, actualClass);
 
       if (actualClass.isEnum()) return EnumSerializableStrategy.read(fileReader, actualClass);
-      if (Serializable.class.isAssignableFrom(actualClass)) return JavaSerializableStrategy.read(fileReader);
+      if (Serializable.class.isAssignableFrom(actualClass)) return JavaSerializableStrategy.readWithLength(fileReader);
 
       throw new NotSerializableException(actualClass);
    }

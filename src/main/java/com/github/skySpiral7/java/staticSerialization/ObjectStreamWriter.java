@@ -5,34 +5,31 @@ import java.io.File;
 import java.io.Flushable;
 
 import com.github.skySpiral7.java.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
-import com.github.skySpiral7.java.util.FileIoUtil;
 
 public class ObjectStreamWriter implements Closeable, Flushable
 {
-   private final ObjectWriterRegistry registry = new ObjectWriterRegistry();
-   private final AsynchronousFileAppender fileAppender;
+   private final ObjectWriterRegistry registry;
+   private final InternalStreamWriter internalStreamWriter;
 
    public ObjectStreamWriter(final File destination)
    {
-      //start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)
-      FileIoUtil.writeToFile(destination, "");  //must do before fileAppender is created so that the file won't be locked
-      fileAppender = new AsynchronousFileAppender(destination);
+      registry = new ObjectWriterRegistry();
+      internalStreamWriter = new InternalStreamWriter(destination);
    }
 
    /**
     * @see AsynchronousFileAppender#flush()
     */
    @Override
-   public void flush(){fileAppender.flush();}
+   public void flush(){internalStreamWriter.getFileAppender().flush();}
 
    /**
     * @see AsynchronousFileAppender#close()
     */
    @Override
-   public void close(){fileAppender.close();}
+   public void close(){internalStreamWriter.getFileAppender().close();}
 
    /**
     * List of supported types:
@@ -45,15 +42,13 @@ public class ObjectStreamWriter implements Closeable, Flushable
     * <li>Any enum</li>
     * <li>Any type that implements Serializable</li>
     * <li>Primitive Arrays (any number of dimensions)</li>
-    * <li>Arrays with a base component of a supported type (any number of dimensions)</li>
+    * <li>Empty Arrays (any number of dimensions)</li>
+    * <li>Arrays (any number of dimensions) which only contain supported elements (the base component need not be supported)</li>
     * </ul>
     */
    public void writeObject(final Object data)
    {
-      HeaderSerializableStrategy.writeHeader(fileAppender, data);
-      //these cases are only header so I'm done
-      if (data == null || Boolean.TRUE.equals(data) || Boolean.FALSE.equals(data)) return;
-      AllSerializableStrategy.write(this, fileAppender, data);
+      internalStreamWriter.writeObjectInternal(this, null, data);
    }
 
    public void writeFieldsReflectively(final Object data)

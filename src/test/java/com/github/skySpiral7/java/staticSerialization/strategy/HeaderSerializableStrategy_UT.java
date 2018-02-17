@@ -7,24 +7,95 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.github.skySpiral7.java.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class HeaderSerializableStrategy_UT
 {
-   @Test(expected = NullPointerException.class)
-   public void readHeader_throws_givenNullInput() throws Exception
-   {
-      //TODO: organize tests in some way. ideally every test would be doubled for IT and UT versions (named by UT)
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_givenNullInput.", ".txt");
-      tempFile.deleteOnExit();
+   //TODO: organize tests. make almost everything an IT but named as UT
 
-      HeaderSerializableStrategy.readHeader(null);
+   @Test
+   public void readHeader_primitiveArrayElementsHaveNoHeader() throws Exception
+   {
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_primitiveArrayElementsHaveNoHeader.",
+            ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, new byte[]{']', 1, '~'});  //header
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 2});  //length
+      final byte[] expectedData = {2, 5};
+      FileIoUtil.appendToFile(tempFile, expectedData);
+      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+
+      final byte[] actual = streamReader.readObject(byte[].class);
+
+      assertEquals(Arrays.toString(expectedData), Arrays.toString(actual));
+      streamReader.close();
+   }
+
+   @Test
+   public void readHeader_inheritType() throws IOException
+   {
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_inheritType.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, new byte[]{'[', 2, '~'});   //root array indicator, dimensions, component
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});   //root length (int)
+      FileIoUtil.appendToFile(tempFile, new byte[]{'?'});  //root[0] inherits type
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 2});   //root[0] length (int)
+      FileIoUtil.appendToFile(tempFile, new byte[]{'?', 1, ';'});   //root[0][0] data inherits type, root[0][1] is null (not same type)
+      final Byte[][] expected = {{1, null}};
+      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+
+      final Byte[][] actual = streamReader.readObject(Byte[][].class);
+
+      assertArrayEquals(expected, actual);
+      streamReader.close();
+   }
+
+   @Test
+   public void readHeader_inheritTypeIsNotRequired() throws IOException
+   {
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_inheritTypeIsNotRequired.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, new byte[]{'[', 1});   //array indicator, dimensions
+      FileIoUtil.appendToFile(tempFile, "java.lang.Object;".getBytes(StandardCharsets.UTF_8));   //component
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});   //length (int)
+      FileIoUtil.appendToFile(tempFile, new byte[]{'~', 1});   //data with header (inherit wouldn't be a supported type here)
+      final Object[] expected = {(byte) 1};
+      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+
+      final Object[] actual = streamReader.readObject(Object[].class);
+
+      assertArrayEquals(expected, actual);
+      streamReader.close();
+   }
+
+   @Test
+   public void readHeader_throws_whenInheritOutsideOfArray() throws Exception
+   {
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenInheritOutsideOfArray.",
+            ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "?1");
+      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+
+      try
+      {
+         streamReader.readObject();
+         fail("Didn't throw");
+      }
+      catch (final StreamCorruptedException actual)
+      {
+         assertEquals("Only array elements can inherit type", actual.getMessage());
+      }
+
+      streamReader.close();
    }
 
    @Test
@@ -37,7 +108,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         HeaderSerializableStrategy.readHeader(reader);
+         HeaderSerializableStrategy.readHeader(reader, null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -58,7 +129,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         HeaderSerializableStrategy.readHeader(reader);
+         HeaderSerializableStrategy.readHeader(reader, null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -75,20 +146,20 @@ public class HeaderSerializableStrategy_UT
       final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenArrayComponentIsNull.",
             ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[a;");  //'a' is a lot of dimensions
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      FileIoUtil.writeToFile(tempFile, "[a;");  //'a' is 97 dimensions
+      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
 
       try
       {
-         HeaderSerializableStrategy.readHeader(reader);
+         streamReader.readObject();
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
       {
-         assertEquals("header's array component type can't be null or false", actual.getMessage());
+         assertEquals("header's array component type can't be null", actual.getMessage());
       }
 
-      reader.close();
+      streamReader.close();
    }
 
    @Test
@@ -97,20 +168,20 @@ public class HeaderSerializableStrategy_UT
       final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenArrayComponentIsFalse.",
             ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[a-");  //'a' is a lot of dimensions
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      FileIoUtil.writeToFile(tempFile, "[a-");  //'a' is 97 dimensions
+      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
 
       try
       {
-         HeaderSerializableStrategy.readHeader(reader);
+         streamReader.readObject();
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
       {
-         assertEquals("header's array component type can't be null or false", actual.getMessage());
+         assertEquals("header's array component type can't be false", actual.getMessage());
       }
 
-      reader.close();
+      streamReader.close();
    }
 
    @Test
@@ -120,13 +191,11 @@ public class HeaderSerializableStrategy_UT
             ".txt");
       tempFile.deleteOnExit();
 
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});
-      FileIoUtil.appendToFile(tempFile, "+");
+      FileIoUtil.writeToFile(tempFile, new byte[]{'[', 1, '+'});
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation(Boolean.class.getName(), null, 1, false);
 
-      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader, null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -145,7 +214,7 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation(Boolean.class.getName(), null, 1, true);
 
-      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader, null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -161,7 +230,7 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation(null, null, 0, false);
 
-      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader, null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -177,7 +246,7 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Boolean", Boolean.TRUE, 0, false);
 
-      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader, null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -193,7 +262,7 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Boolean", Boolean.FALSE, 0, false);
 
-      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader, null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -209,7 +278,7 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Boolean", null, 0, false);
 
-      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual);
 
       reader.close();
@@ -225,9 +294,9 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Byte", null, 0, false);
 
-      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual1);
-      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -243,9 +312,9 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Short", null, 0, false);
 
-      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual1);
-      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -261,9 +330,9 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Integer", null, 0, false);
 
-      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual1);
-      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -279,9 +348,9 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Long", null, 0, false);
 
-      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual1);
-      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -297,9 +366,9 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Float", null, 0, false);
 
-      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual1);
-      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -315,9 +384,9 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Double", null, 0, false);
 
-      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual1);
-      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -333,9 +402,9 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Character", null, 0, false);
 
-      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual1);
-      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -351,9 +420,9 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.String", null, 0, false);
 
-      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual1 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual1);
-      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual2 = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -372,7 +441,7 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation(Byte.class.getName(), null, 1, false);
 
-      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader, null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -388,7 +457,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         HeaderSerializableStrategy.readHeader(reader);
+         HeaderSerializableStrategy.readHeader(reader, null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -409,7 +478,7 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation("java.lang.Object", null, 0, false);
 
-      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader, null);
       assertEquals(expected, actual);
 
       reader.close();
@@ -428,7 +497,7 @@ public class HeaderSerializableStrategy_UT
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
       final HeaderInformation expected = new HeaderInformation(Object.class.getName(), null, 1, false);
 
-      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader);
+      final HeaderInformation actual = HeaderSerializableStrategy.readHeader(reader, null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -437,7 +506,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_header() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_header.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_header.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -451,7 +520,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_header_null() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_header_null.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_header_null.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -465,7 +534,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_byte() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_byte.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_byte.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Byte data = 2;
@@ -480,7 +549,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_short() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_short.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_short.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Short data = (short) 0xcafe;
@@ -496,7 +565,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_int() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_int.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_int.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Integer data = 0xcafe_bead;
@@ -512,7 +581,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_long() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_long.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_long.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Long data = 0xdead_beef__b100_d123L;
@@ -528,7 +597,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_float() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_float.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_float.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Float data = Float.intBitsToFloat(0xcafe_bead);
@@ -544,7 +613,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_double() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_double.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_double.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
       final Double data = Double.longBitsToDouble(0xdead_beef__b100_d123L);
@@ -558,29 +627,24 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void writeObject_boolean() throws IOException
+   public void writeHeader_boolean() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_boolean.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeHeader_boolean.", ".txt");
       tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ObjectStreamWriter streamWriter = new ObjectStreamWriter(tempFile);
 
-      testObject.writeObject(true);
-      testObject.flush();
-      byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("+", bytesToString(fileContents, 0));
-
-      FileIoUtil.writeToFile(tempFile, "");
-
-      testObject.writeObject(false);
-      testObject.close();
-      fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals("-", bytesToString(fileContents, 0));
+      streamWriter.writeObject(true);
+      streamWriter.writeObject(false);
+      streamWriter.close();
+      final byte[] expected = {'+', '-'};
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test
    public void writeObject_char() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_char.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_char.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -602,7 +666,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_string() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_string.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_string.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -618,7 +682,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_objectArray() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_objectArray.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_objectArray.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -637,7 +701,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_boxArray() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_boxArray.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_boxArray.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -646,8 +710,8 @@ public class HeaderSerializableStrategy_UT
       final ByteArrayOutputStream baos = new ByteArrayOutputStream();
       baos.write(new byte[]{'[', 1, '~'});   //array indicator, dimensions, component
       baos.write(new byte[]{0, 0, 0, 2});   //length (int)
-      baos.write(new byte[]{'~', 1});
-      baos.write(new byte[]{'~', 2});
+      baos.write(new byte[]{'?', 1});
+      baos.write(new byte[]{'?', 2});
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(baos.toByteArray()), Arrays.toString(fileContents));
    }
@@ -655,7 +719,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_primitiveArray() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_primitiveArray.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_primitiveArray.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -664,8 +728,7 @@ public class HeaderSerializableStrategy_UT
       final byte[] expected = {']', 1,   //array indicator and dimensions
             '~',  //byte
             0, 0, 0, 2,  //length (int)
-            '~', 1,  //each element has header
-            '~', 2};
+            1, 2};  //primitive elements have no header
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
@@ -673,7 +736,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_2dArray() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_2dArray.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_2dArray.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -682,9 +745,9 @@ public class HeaderSerializableStrategy_UT
       final ByteArrayOutputStream baos = new ByteArrayOutputStream();
       baos.write(new byte[]{'[', 2, '~'});   //root array indicator, dimensions, component
       baos.write(new byte[]{0, 0, 0, 2});   //root length (int)
-      baos.write(new byte[]{'[', 1, '~'});   //root[0] array indicator, dimensions, component
+      baos.write(new byte[]{'?'});   //root[0] inherits type, dimensions, and component
       baos.write(new byte[]{0, 0, 0, 1});   //root[0] length (int)
-      baos.write(new byte[]{'~', 1});   //root[0][0] data with header
+      baos.write(new byte[]{'?', 1});   //root[0][0] data with header
       baos.write(';');   //root[1] is null
       final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
       assertEquals(Arrays.toString(baos.toByteArray()), Arrays.toString(fileContents));
@@ -693,7 +756,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_primitiveBooleanArray() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_primitiveBooleanArray.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_primitiveBooleanArray.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -710,7 +773,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_boxBooleanArray() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_boxBooleanArray.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_boxBooleanArray.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 
@@ -727,7 +790,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void writeObject_emptyArray() throws IOException
    {
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeObject_emptyArray.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_emptyArray.", ".txt");
       tempFile.deleteOnExit();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
 

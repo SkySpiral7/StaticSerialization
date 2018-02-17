@@ -28,6 +28,7 @@ public enum ReaderValidationStrategy
    {
       final int expectedDimensions = ArrayUtil.countArrayDimensions(expectedClass);
       final Class<?> expectedBaseComponentType = ArrayUtil.getBaseComponentType(expectedClass);
+      //TODO: dimension count must always match except for Object
       if (!allowChildClass)
       {
          if (expectedClass.isArray())
@@ -64,9 +65,15 @@ public enum ReaderValidationStrategy
       {
          throw new DeserializationException(classNotFoundException);
       }
-      if (expectedClass.isArray())
+      if (0 != actualHeader.getDimensionCount())
       {
          if (actualHeader.isPrimitiveArray()) actualClass = ClassUtil.unboxClass(actualClass);
+         if (Object.class.equals(expectedClass))
+         {
+            final int[] arrayOfLengths = new int[actualHeader.getDimensionCount()];  //they are filled with 0 by default
+            //It is easier to create an empty array then a string that would match the class name.
+            return cast(Array.newInstance(actualClass, arrayOfLengths).getClass());
+         }
          if (!expectedBaseComponentType.isAssignableFrom(actualClass))
             //Not redundant because this is the only check for empty arrays
             //and checking here is better than waiting for failing to set an element in the array.

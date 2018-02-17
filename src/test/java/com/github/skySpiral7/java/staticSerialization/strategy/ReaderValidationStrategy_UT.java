@@ -1,6 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import java.io.File;
+import java.util.Arrays;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
@@ -16,7 +17,7 @@ public class ReaderValidationStrategy_UT
    @Test
    public void readObjectStrictly_throws_whenGotBoolean() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenGotBoolean.", ".txt");
+      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenGotBoolean.", ".txt");
       tempFile.deleteOnExit();
 
       FileIoUtil.writeToFile(tempFile, "+-");  //+ is true, - is false
@@ -44,9 +45,9 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObject_throws_noCastToBoolean() throws Exception
+   public void getClassFromHeader_throws_noCastToBoolean() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_throws_noCastToBoolean.", ".txt");
+      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_throws_noCastToBoolean.", ".txt");
       tempFile.deleteOnExit();
 
       FileIoUtil.writeToFile(tempFile, "+");  //+ is true
@@ -54,8 +55,7 @@ public class ReaderValidationStrategy_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try
       {
-         final Object myThing = testObject.readObject(String.class);
-         System.out.println(myThing);
+         testObject.readObject(String.class);
          fail("Should've thrown");
       }
       catch (final ClassCastException actual)
@@ -66,9 +66,10 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObject_header_noSuchClassThrows() throws Exception
+   public void getClassFromHeader_header_noSuchClassThrows() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_header_noSuchClassThrows.", ".txt");
+      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_header_noSuchClassThrows.",
+            ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.f;");
 
@@ -87,9 +88,9 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObject_header_InvalidClassThrows() throws Exception
+   public void getClassFromHeader_header_InvalidClassThrows() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_header_noClassThrows.", ".txt");
+      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_header_noClassThrows.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.;");
 
@@ -109,9 +110,28 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObject_throws_noArrayCast() throws Exception
+   public void getClassFromHeader_returnsArray_whenExpectObject() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_header_noArrayCastThrows.", ".txt");
+      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_returnsArray_whenExpectObject.",
+            ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, new byte[]{']', 1, '+'});  //array indicator, dimensions, component
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});  //length (int)
+      FileIoUtil.appendToFile(tempFile, "+");  //data
+      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+      final boolean[] expected = {true};
+
+      final boolean[] actual = streamReader.readObject();
+
+      assertEquals(Arrays.toString(expected), Arrays.toString(actual));
+      streamReader.close();
+   }
+
+   @Test
+   public void getClassFromHeader_throws_noArrayCast() throws Exception
+   {
+      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_header_noArrayCastThrows.",
+            ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "[");
       FileIoUtil.appendToFile(tempFile, new byte[]{1});
@@ -133,9 +153,10 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObject_throws_primitiveArrayDoesNotCastToBox() throws Exception
+   public void getClassFromHeader_throws_primitiveArrayDoesNotCastToBox() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_throws_primitiveArrayDoesNotCastToBox.", ".txt");
+      final File tempFile = File.createTempFile(
+            "ReaderValidationStrategy_UT.TempFile.getClassFromHeader_throws_primitiveArrayDoesNotCastToBox.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "]");
       FileIoUtil.appendToFile(tempFile, new byte[]{1});
@@ -157,14 +178,14 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObject_returns_primitiveArray() throws Exception
+   public void getClassFromHeader_returns_primitiveArray() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_returns_primitiveArray.", ".txt");
+      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_returns_primitiveArray.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "]");
       FileIoUtil.appendToFile(tempFile, new byte[]{1});
       FileIoUtil.appendToFile(tempFile, "~");
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1, '~', 2});  //length, [0]=2
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1, 2});  //length, [0]=2
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertArrayEquals(new byte[]{2}, testObject.readObject(byte[].class));
@@ -172,9 +193,10 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObject_throws_whenStreamHasPrimitiveVoid() throws Exception
+   public void getClassFromHeader_throws_whenStreamHasPrimitiveVoid() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_throws_whenStreamHasPrimitiveVoid.", ".txt");
+      final File tempFile = File.createTempFile(
+            "ReaderValidationStrategy_UT.TempFile.getClassFromHeader_throws_whenStreamHasPrimitiveVoid.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "void;");
 
@@ -193,9 +215,9 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObject_header_noCastThrows() throws Exception
+   public void getClassFromHeader_header_noCastThrows() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_header_noCastThrows.", ".txt");
+      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_header_noCastThrows.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
 
@@ -216,8 +238,8 @@ public class ReaderValidationStrategy_UT
    @Test
    public void readObjectStrictly_throws_whenExpectedArrayGotNonArray() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotNonArray.",
-            ".txt");
+      final File tempFile = File.createTempFile(
+            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotNonArray.", ".txt");
       tempFile.deleteOnExit();
 
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
@@ -240,8 +262,8 @@ public class ReaderValidationStrategy_UT
    @Test
    public void readObjectStrictly_throws_whenExpectedPrimitiveArrayGotBox() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotNonArray.",
-            ".txt");
+      final File tempFile = File.createTempFile(
+            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotNonArray.", ".txt");
       tempFile.deleteOnExit();
 
       FileIoUtil.writeToFile(tempFile, "[");
@@ -266,7 +288,7 @@ public class ReaderValidationStrategy_UT
    public void readObjectStrictly_throws_whenExpectedArrayGotDifferentArrayType() throws Exception
    {
       final File tempFile = File.createTempFile(
-            "ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotDifferentArrayType.", ".txt");
+            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotDifferentArrayType.", ".txt");
       tempFile.deleteOnExit();
 
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
@@ -292,7 +314,7 @@ public class ReaderValidationStrategy_UT
    public void readObjectStrictly_throws_whenExpectedArrayGotDifferentDimensions() throws Exception
    {
       final File tempFile = File.createTempFile(
-            "ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotDifferentDimensions.", ".txt");
+            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotDifferentDimensions.", ".txt");
       tempFile.deleteOnExit();
 
       FileIoUtil.writeToFile(tempFile, "[");
@@ -316,8 +338,8 @@ public class ReaderValidationStrategy_UT
    @Test
    public void readObjectStrictly_throws_whenExpectedNonArrayGotArray() throws Exception
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedNonArrayGotArray.",
-            ".txt");
+      final File tempFile = File.createTempFile(
+            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedNonArrayGotArray.", ".txt");
       tempFile.deleteOnExit();
 
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
@@ -343,7 +365,7 @@ public class ReaderValidationStrategy_UT
    public void readObjectStrictly_throws_whenExpectedNonArrayGotDifferentNonArray() throws Exception
    {
       final File tempFile = File.createTempFile(
-            "ObjectStreamReader_UT.TempFile.readObjectStrictly_throws_whenExpectedNonArrayGotDifferentNonArray.", ".txt");
+            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedNonArrayGotDifferentNonArray.", ".txt");
       tempFile.deleteOnExit();
 
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class

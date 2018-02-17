@@ -9,6 +9,7 @@ import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.util.ClassUtil;
@@ -17,23 +18,24 @@ import static com.github.skySpiral7.java.util.ClassUtil.cast;
 
 public class ObjectStreamReader implements Closeable
 {
-   private final ObjectReaderRegistry registry = new ObjectReaderRegistry();
-   private final AsynchronousFileReader fileReader;
+   private final ObjectReaderRegistry registry;
+   private final InternalStreamReader internalStreamReader;
 
    public ObjectStreamReader(final File sourceFile)
    {
-      fileReader = new AsynchronousFileReader(sourceFile);
+      registry = new ObjectReaderRegistry();
+      internalStreamReader = new InternalStreamReader(sourceFile);
    }
 
    /**
     * @see AsynchronousFileReader#close()
     */
    @Override
-   public void close(){fileReader.close();}
+   public void close(){internalStreamReader.close();}
 
-   public boolean hasData(){return fileReader.hasData();}
+   public boolean hasData(){return internalStreamReader.getFileReader().hasData();}
 
-   public int remainingBytes(){return fileReader.remainingBytes();}
+   public int remainingBytes(){return internalStreamReader.getFileReader().remainingBytes();}
 
    /**
     * Reads the next object in the stream no matter what it is.
@@ -83,27 +85,11 @@ public class ObjectStreamReader implements Closeable
    /**
     * @param allowChildClass true will throw if the class found isn't the exact same. false allows casting.
     */
-   private <T_Expected, T_Actual extends T_Expected> T_Actual readObjectInternal(Class<T_Expected> expectedClass,
+   private <T_Expected, T_Actual extends T_Expected> T_Actual readObjectInternal(final Class<T_Expected> expectedClass,
                                                                                  final boolean allowChildClass)
    {
       Objects.requireNonNull(expectedClass);
-      if (!hasData()) throw new NoMoreDataException();
-
-      //must check for void.class because ClassUtil.boxClass would throw something less helpful
-      if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
-      if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));
-
-      final HeaderInformation headerInformation = HeaderSerializableStrategy.readHeader(fileReader);
-      if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
-      if (headerInformation.getDimensionCount() == 0 && Boolean.class.getName().equals(headerInformation.getClassName()))
-      {
-         ReaderValidationStrategy.validateBoolean(expectedClass, allowChildClass);
-         if (headerInformation.getValue() != null) return cast(headerInformation.getValue());  //either true or false
-         //will be null if the header explicitly contained Boolean for some reason in which case will be read below
-      }
-
-      final Class<T_Actual> actualClass = ReaderValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
-      return AllSerializableStrategy.read(this, fileReader, actualClass);
+      return internalStreamReader.readObjectInternal(this, null, expectedClass, allowChildClass);
    }
 
    public void readFieldsReflectively(final Object instance)
