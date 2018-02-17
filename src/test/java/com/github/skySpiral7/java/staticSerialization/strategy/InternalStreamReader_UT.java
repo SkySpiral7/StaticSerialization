@@ -426,7 +426,6 @@ public class InternalStreamReader_UT
       FileIoUtil.writeToFile(tempFile, new byte[]{'[', 2});   //root array indicator and dimensions
       FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");  //root component
       FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 2});   //root length (int)
-      FileIoUtil.appendToFile(tempFile, new byte[]{'[', 1});   //root[0] array indicator and dimensions
       FileIoUtil.appendToFile(tempFile, "~");  //root[0] component
       FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});   //root[0] length (int)
       FileIoUtil.appendToFile(tempFile, new byte[]{'~', 1});   //root[0][0] data with header
@@ -436,6 +435,28 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
       assertArrayEquals(expected, testObject.readObject(Byte[][].class));
+      assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   @Test
+   public void readObject_2dPrimitiveArray() throws IOException
+   {
+      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_2dPrimitiveArray.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, new byte[]{']', 2});   //root array indicator and dimensions
+      FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");  //root component
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 2});   //root length (int)
+      FileIoUtil.appendToFile(tempFile, "~");  //root[0] component
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});   //root[0] length (int)
+      FileIoUtil.appendToFile(tempFile, new byte[]{1});   //root[0][0] data (no header)
+      FileIoUtil.appendToFile(tempFile, ";");  //root[1]=null
+      final byte[][] expected = {{1}, null};
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.hasData());
+      assertArrayEquals(expected, testObject.readObject(byte[][].class));
       assertFalse(testObject.hasData());
 
       testObject.close();

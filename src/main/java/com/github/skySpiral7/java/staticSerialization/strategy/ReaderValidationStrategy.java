@@ -68,6 +68,7 @@ public enum ReaderValidationStrategy
       if (0 != actualHeader.getDimensionCount())
       {
          if (actualHeader.isPrimitiveArray()) actualClass = ClassUtil.unboxClass(actualClass);
+         //TODO: tests are likely thin
          if (!Object.class.equals(expectedClass) && !expectedBaseComponentType.isAssignableFrom(actualClass))
             //Not redundant because this is the only check for empty arrays
             //and checking here is better than waiting for failing to set an element in the array.

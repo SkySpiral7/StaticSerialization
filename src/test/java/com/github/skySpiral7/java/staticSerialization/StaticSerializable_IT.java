@@ -281,7 +281,7 @@ Object graph (using non compressed names):
          ? 00000005
    ?1
       ?1
-         [1java.lang.Object;2
+         [1java.lang.Object;3
             ;
             java.lang.String; 0003 joe
             [1int;1
@@ -291,22 +291,19 @@ Object graph (using non compressed names):
       baos.write(new byte[]{'[', 3});   //data array indicator and dimensions
       baos.write("java.lang.Object;".getBytes(StandardCharsets.UTF_8));   //data component
       baos.write(new byte[]{0, 0, 0, 3});   //data length
-      baos.write(new byte[]{'[', 2});   //data[0] array indicator and dimensions
-      //TODO: even without using '?' the array indicator and dimensions can be assumed
       baos.write("java.lang.CharSequence;".getBytes(StandardCharsets.UTF_8));   //data[0] component
       baos.write(new byte[]{0, 0, 0, 1});   //data[0] length
-      baos.write(new byte[]{'[', 1, '*'});   //data[0][0] array indicator, dimensions, component (String)
+      baos.write(new byte[]{'*'});   //data[0][0] component (String)
       baos.write(new byte[]{0, 0, 0, 1});   //data[0][0] length
       baos.write(new byte[]{'?', 0, 0, 0, 2});   //data[0][0][0] inherited type and UTF-8 length
       baos.write("hi".getBytes(StandardCharsets.UTF_8));   //data[0][0][0] value
-      baos.write(new byte[]{'[', 2});   //data[1] array indicator and dimensions
       baos.write("java.lang.Number;".getBytes(StandardCharsets.UTF_8));   //data[1] component
       baos.write(new byte[]{0, 0, 0, 2});   //data[1] length
-      baos.write(new byte[]{'[', 1, '@'});   //data[1][0] array indicator, dimensions, component (Int)
+      baos.write(new byte[]{'@'});   //data[1][0] array component (Integer)
       baos.write(new byte[]{0, 0, 0, 2});   //data[1][0] length
       baos.write(new byte[]{'?', 0, 0, 0, 1});   //data[1][0][0] inherited type and value
       baos.write(new byte[]{'?', 0, 0, 0, 2});   //data[1][0][1] inherited type and value
-      baos.write(new byte[]{'[', 1, '#'});   //data[1][1] array indicator, dimensions, component (Long)
+      baos.write(new byte[]{'#'});   //data[1][1] array component (Long)
       baos.write(new byte[]{0, 0, 0, 2});   //data[1][1] length
       baos.write(new byte[]{'?', 0, 0, 0, 0, 0, 0, 0, 4});   //data[1][1][0] inherited type and value
       baos.write(new byte[]{'?', 0, 0, 0, 0, 0, 0, 0, 5});   //data[1][1][1] inherited type and value

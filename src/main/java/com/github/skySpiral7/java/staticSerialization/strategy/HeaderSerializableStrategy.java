@@ -71,38 +71,44 @@ public enum HeaderSerializableStrategy
    public static HeaderInformation readHeader(final AsynchronousFileReader reader, final Class<?> inheritFromClass)
    {
       byte firstByte;
+      final int dimensionCount;
+      final boolean primitiveArray;
 
-      if (null != inheritFromClass)
+      if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
       {
+         //TODO: tests are likely thin
          //inheritFromClass is never primitive void.class.
          //It is only primitive if contained in a primitive array in which case there is no header
          //since it can't be null or any other class.
          if (inheritFromClass.isPrimitive()) return new HeaderInformation(ClassUtil.boxClass(inheritFromClass).getName());
+         //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or ';')
          firstByte = reader.readByte();
+         dimensionCount = ArrayUtil.countArrayDimensions(inheritFromClass);
+         final Class<?> baseComponent = inheritFromClass.isArray() ? ArrayUtil.getBaseComponentType(inheritFromClass) : inheritFromClass;
+         primitiveArray = baseComponent.isPrimitive();
          if ('?' == firstByte)
          {
-            final int dimensionCount = ArrayUtil.countArrayDimensions(inheritFromClass);
-            final Class<?> baseComponent = inheritFromClass.isArray() ? ArrayUtil.getBaseComponentType(inheritFromClass) : inheritFromClass;
-            return new HeaderInformation(baseComponent.getName(), dimensionCount, false);
+            return new HeaderInformation(baseComponent.getName(), dimensionCount, primitiveArray);
          }
          //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
       }
-      else firstByte = reader.readByte();
-      if (null == inheritFromClass && '?' == firstByte) throw new StreamCorruptedException("Only array elements can inherit type");
-
-      final int dimensionCount;
-      final boolean primitiveArray = (']' == firstByte);  //is false if not an array at all
-      if ('[' == firstByte || ']' == firstByte)
+      else
       {
-         if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array dimensions");
-         dimensionCount = Byte.toUnsignedInt(reader.readByte());
-         if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array component type");
          firstByte = reader.readByte();
-         if (';' == firstByte) throw new StreamCorruptedException("header's array component type can't be null");
-         if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
-         if ('+' == firstByte) return new HeaderInformation(Boolean.class.getName(), dimensionCount, primitiveArray);
+         if ('?' == firstByte) throw new StreamCorruptedException("Only array elements can inherit type");
+         primitiveArray = (']' == firstByte);  //is false if not an array at all
+         if ('[' == firstByte || ']' == firstByte)
+         {
+            if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array dimensions");
+            dimensionCount = Byte.toUnsignedInt(reader.readByte());
+            if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array component type");
+            firstByte = reader.readByte();
+            if (';' == firstByte) throw new StreamCorruptedException("header's array component type can't be null");
+            if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
+            if ('+' == firstByte) return new HeaderInformation(Boolean.class.getName(), dimensionCount, primitiveArray);
+         }
+         else dimensionCount = 0;
       }
-      else dimensionCount = 0;
 
       if (';' == firstByte) return new HeaderInformation();  //the empty string class name means null
       if ('+' == firstByte) return new HeaderInformation(Boolean.TRUE);
@@ -132,16 +138,21 @@ public enum HeaderSerializableStrategy
       else if (data.getClass().isArray())
       {
          Class<?> baseComponent = ArrayUtil.getBaseComponentType(data.getClass());
-         //array type can't be void or null
-         if (baseComponent.isPrimitive())
+         if (Object.class.equals(inheritFromClass) || null == inheritFromClass)
          {
-            writeByte(appender, ']');
-            baseComponent = ClassUtil.boxClass(baseComponent);
-         }
-         else writeByte(appender, '[');
+            //array indicator and dimension count can be derived from containing array so don't populate it
+            //unless I'm inside Object[] in which case I could have new arrays.
+            //baseComponent can't be void or null
+            if (baseComponent.isPrimitive())
+            {
+               writeByte(appender, ']');
+               baseComponent = ClassUtil.boxClass(baseComponent);
+            }
+            else writeByte(appender, '[');
 
-         final int dimensionCount = ArrayUtil.countArrayDimensions(data.getClass());
-         writeByte(appender, dimensionCount);  //won't be 0, max: 255. Use unsigned byte
+            final int dimensionCount = ArrayUtil.countArrayDimensions(data.getClass());
+            writeByte(appender, dimensionCount);  //won't be 0, max: 255. Use unsigned byte
+         }
 
          if (baseComponent.equals(Boolean.class)) writeByte(appender, '+');
          else if (CLASS_TO_COMPRESSED_HEADER.containsKey(baseComponent)) writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
