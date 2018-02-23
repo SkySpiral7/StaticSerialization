@@ -1,6 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import com.github.skySpiral7.java.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
 
 public enum ShortSerializableStrategy
 {

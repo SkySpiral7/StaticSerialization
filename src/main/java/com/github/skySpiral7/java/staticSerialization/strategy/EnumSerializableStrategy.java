@@ -1,10 +1,10 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import com.github.skySpiral7.java.AsynchronousFileAppender;
-import com.github.skySpiral7.java.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
+import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
 
-import static com.github.skySpiral7.java.util.ClassUtil.cast;
+import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public enum EnumSerializableStrategy
 {

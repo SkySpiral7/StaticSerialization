@@ -10,7 +10,7 @@ import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
 
-import static com.github.skySpiral7.java.util.ClassUtil.cast;
+import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public enum StaticSerializableStrategy
 {

@@ -3,10 +3,10 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 import java.lang.reflect.Array;
 
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
-import com.github.skySpiral7.java.util.ArrayUtil;
-import com.github.skySpiral7.java.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 
-import static com.github.skySpiral7.java.util.ClassUtil.cast;
+import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public enum ReaderValidationStrategy
 {

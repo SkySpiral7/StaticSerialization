@@ -1,6 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import com.github.skySpiral7.java.AsynchronousFileAppender;
+import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
 
 public enum ByteSerializableStrategy
 {

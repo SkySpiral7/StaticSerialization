@@ -4,17 +4,11 @@ import java.io.Closeable;
 import java.io.File;
 import java.util.Objects;
 
-import com.github.skySpiral7.java.AsynchronousFileReader;
-import com.github.skySpiral7.java.exception.NoMoreDataException;
-import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderInformation;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
-import com.github.skySpiral7.java.util.ClassUtil;
 
-import static com.github.skySpiral7.java.util.ClassUtil.cast;
+import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public class ObjectStreamReader implements Closeable
 {

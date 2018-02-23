@@ -6,12 +6,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
-import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
+import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;

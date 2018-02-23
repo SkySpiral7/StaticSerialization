@@ -2,21 +2,22 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import java.io.Serializable;
 
-import com.github.skySpiral7.java.AsynchronousFileAppender;
-import com.github.skySpiral7.java.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
-import com.github.skySpiral7.java.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
+import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 
-import static com.github.skySpiral7.java.util.ClassUtil.cast;
+import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public enum AllSerializableStrategy
 {
    ;  //no instances
 
-   public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter, final AsynchronousFileAppender fileAppender, final Object data)
+   public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
+                            final AsynchronousFileAppender fileAppender, final Object data)
    {
       final Class<?> dataClass = data.getClass();
       if (ClassUtil.isBoxedPrimitive(dataClass))
@@ -60,8 +61,8 @@ public enum AllSerializableStrategy
    {
       if (ClassUtil.isBoxedPrimitive(actualClass)) return BoxPrimitiveSerializableStrategy.read(fileReader, actualClass);
       if (String.class.equals(actualClass)) return cast(StringSerializableStrategy.readWithLength(fileReader));
-      if (actualClass.isArray()) return ArraySerializableStrategy.read(streamReader, internalStreamReader, fileReader, actualClass
-            .getComponentType());
+      if (actualClass.isArray())
+         return ArraySerializableStrategy.read(streamReader, internalStreamReader, fileReader, actualClass.getComponentType());
 
       if (StaticSerializable.class.isAssignableFrom(actualClass)) return StaticSerializableStrategy.read(streamReader, actualClass);
 

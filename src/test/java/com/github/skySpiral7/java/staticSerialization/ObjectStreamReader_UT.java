@@ -3,7 +3,7 @@ package com.github.skySpiral7.java.staticSerialization;
 import java.io.File;
 import java.math.RoundingMode;
 
-import com.github.skySpiral7.java.exception.NoMoreDataException;
+import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 

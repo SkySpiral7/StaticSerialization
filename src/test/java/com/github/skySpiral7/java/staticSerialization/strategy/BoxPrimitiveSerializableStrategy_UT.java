@@ -15,8 +15,7 @@ public class BoxPrimitiveSerializableStrategy_UT
    @Test
    public void read_throws_givenANonBooleanValue() throws Exception
    {
-      final File tempFile = File.createTempFile("BoxPrimitiveSerializableStrategy_UT.TempFile.read_throws_givenANonBooleanValue.",
-            ".txt");
+      final File tempFile = File.createTempFile("BoxPrimitiveSerializableStrategy_UT.TempFile.read_throws_givenANonBooleanValue.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, new byte[]{']', 1, '+'});  //array indicator, dimensions, component
       FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});  //length (int)

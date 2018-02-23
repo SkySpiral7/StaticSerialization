@@ -2,13 +2,13 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import java.lang.reflect.Array;
 
-import com.github.skySpiral7.java.AsynchronousFileAppender;
-import com.github.skySpiral7.java.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
+import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
 
-import static com.github.skySpiral7.java.util.ClassUtil.cast;
+import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public enum ArraySerializableStrategy
 {
@@ -36,8 +36,8 @@ public enum ArraySerializableStrategy
       {
          final T_Component element = internalStreamReader.readObjectInternal(streamReader, componentType, componentType, true);
          //boolean is the only primitive that could return null
-         if(null == element && componentType.isPrimitive()) throw new StreamCorruptedException("Primitive boolean array can't contain "
-                                                                                               + "null");
+         if (null == element && componentType.isPrimitive())
+            throw new StreamCorruptedException("Primitive boolean array can't contain " + "null");
          Array.set(arrayValue, readIndex, element);
       }
       return arrayValue;

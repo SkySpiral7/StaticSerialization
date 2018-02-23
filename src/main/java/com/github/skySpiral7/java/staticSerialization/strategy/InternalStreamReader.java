@@ -2,14 +2,13 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import java.io.Closeable;
 import java.io.File;
-import java.util.Objects;
 
-import com.github.skySpiral7.java.AsynchronousFileReader;
-import com.github.skySpiral7.java.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
-import com.github.skySpiral7.java.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
+import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 
-import static com.github.skySpiral7.java.util.ClassUtil.cast;
+import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public class InternalStreamReader implements Closeable
 {
