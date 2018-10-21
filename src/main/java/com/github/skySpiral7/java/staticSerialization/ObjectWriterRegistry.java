@@ -13,6 +13,7 @@ public class ObjectWriterRegistry
    {
       Objects.requireNonNull(instance);
       final String id = UUID.randomUUID().toString();
+      //TODO: getLeastSignificantBits etc would save space
       registry.put(instance, id);
       return id;
    }

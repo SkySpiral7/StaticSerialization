@@ -16,6 +16,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
    public ObjectStreamWriter(final File destination)
    {
       registry = new ObjectWriterRegistry();
+      //TODO: allow other streams
       internalStreamWriter = new InternalStreamWriter(destination);
    }
 

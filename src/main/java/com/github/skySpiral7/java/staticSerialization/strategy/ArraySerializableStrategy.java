@@ -17,6 +17,7 @@ public enum ArraySerializableStrategy
    public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
                             final AsynchronousFileAppender fileAppender, final Object data)
    {
+      //TODO: Object[] should always include a UUID because it can reference itself
       final int length = Array.getLength(data);
       IntegerSerializableStrategy.write(fileAppender, length);
       final Class<?> componentType = data.getClass().getComponentType();
@@ -36,8 +37,9 @@ public enum ArraySerializableStrategy
       {
          final T_Component element = internalStreamReader.readObjectInternal(streamReader, componentType, componentType, true);
          //boolean is the only primitive that could return null
+         //TODO: I don't remember why. make sure there's an IT for this
          if (null == element && componentType.isPrimitive())
-            throw new StreamCorruptedException("Primitive boolean array can't contain " + "null");
+            throw new StreamCorruptedException("Primitive boolean array can't contain null");
          Array.set(arrayValue, readIndex, element);
       }
       return arrayValue;

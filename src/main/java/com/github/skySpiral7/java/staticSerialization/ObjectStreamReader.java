@@ -76,6 +76,13 @@ public class ObjectStreamReader implements Closeable
       return readObjectInternal(expectedClass, true);
    }
 
+   private <T> T readRawObject(final Class<?> rawType)
+   {
+      //TODO: readRawObject same header validation. easier to use. no compile time check. also needs strict version
+      //don't change normal methods since taking <T> is better than <?> and this needs warning JavaDoc about erasure
+      return cast(readObjectInternal(rawType, true));
+   }
+
    /**
     * @param allowChildClass true will throw if the class found isn't the exact same. false allows casting.
     */
