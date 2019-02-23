@@ -334,7 +334,7 @@ Object graph (using non compressed names):
    @Test
    public void objectArrayOfSupported() throws IOException
    {
-      //This test case exists to validate and edge case since Object.class isn't supported.
+      //This test case exists to validate an edge case since Object.class isn't supported.
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.objectArrayOfSupported.", ".txt");
       tempFile.deleteOnExit();
       final Object[] data = {1};

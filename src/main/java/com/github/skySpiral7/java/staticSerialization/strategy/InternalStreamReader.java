@@ -40,6 +40,7 @@ public class InternalStreamReader implements Closeable
       if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));
 
       final HeaderInformation headerInformation = HeaderSerializableStrategy.readHeader(fileReader, inheritFromClass);
+      //TODO: throw new StreamCorruptedException("Expected: int, Actual: null, Consider using Integer")
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
       if (headerInformation.getDimensionCount() == 0 && Boolean.class.getName().equals(headerInformation.getClassName()))
       {

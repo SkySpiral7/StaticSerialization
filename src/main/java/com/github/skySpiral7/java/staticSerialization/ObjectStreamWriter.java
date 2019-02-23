@@ -46,6 +46,12 @@ public class ObjectStreamWriter implements Closeable, Flushable
     * <li>Empty Arrays (any number of dimensions)</li>
     * <li>Arrays (any number of dimensions) which only contain supported elements (the base component need not be supported)</li>
     * </ul>
+    *
+    * <p>An example of the last item: {@code new Object[]{"Str", 1}} is supported because each of the elements are supported even though
+    * Object is not directly supported. But {@code new Object[]{1, new Object()}} is not supported.</p>
+    *
+    * <p>An Object[] is allowed to contain itself without causing infinite recursion. The self reference is a supported element and the
+    * array can be serialized if all other elements are also supported.</p>
     */
    public void writeObject(final Object data)
    {
