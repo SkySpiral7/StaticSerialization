@@ -21,6 +21,7 @@ import java.util.function.Function;
  * <blockQuote>{@code public static YourClass readFromStream(final ObjectStreamReader reader)}</blockQuote>
  */
 //Java's security holes: https://tersesystems.com/blog/2015/11/08/closing-the-open-door-of-java-object-serialization/
+//TODO: is it possible to have readFromStream return a child? in the case of EnumSet's proxy. doc the answer
 public interface StaticSerializable
 {
    //public static T<this> readFromStream(final ObjectStreamReader reader)

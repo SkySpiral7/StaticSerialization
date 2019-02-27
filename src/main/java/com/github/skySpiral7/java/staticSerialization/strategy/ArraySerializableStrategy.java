@@ -9,6 +9,7 @@ import com.github.skySpiral7.java.staticSerialization.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -19,8 +20,7 @@ public enum ArraySerializableStrategy
    public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
                             final AsynchronousFileAppender fileAppender, final Object data)
    {
-      final Class<?> componentType = data.getClass().getComponentType();
-      if (Object.class.equals(componentType))
+      if (Object.class.equals(ArrayUtil.getBaseComponentType(data.getClass())))
       {
          final ObjectWriterRegistry registry = streamWriter.getObjectRegistry();
          //shouldNotWrite has a side effect so it shouldn't be && to above if
@@ -28,6 +28,7 @@ public enum ArraySerializableStrategy
       }
       final int length = Array.getLength(data);
       IntegerSerializableStrategy.write(fileAppender, length);
+      final Class<?> componentType = data.getClass().getComponentType();
       for (int writeIndex = 0; writeIndex < length; ++writeIndex)
       {
          final Object element = Array.get(data, writeIndex);
@@ -38,8 +39,10 @@ public enum ArraySerializableStrategy
    public static <T_Array, T_Component> T_Array read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
                                                      final AsynchronousFileReader fileReader, final Class<T_Component> componentType)
    {
+      //not calling StaticSerializable.readFromStream because this requires so many custom args
+      //it was possible to call that but was easier to understand a copy/paste of boilerplate
       final ObjectReaderRegistry registry = streamReader.getObjectRegistry();
-      if (Object.class.equals(componentType))
+      if (Object.class.equals(ArrayUtil.getBaseComponentType(componentType)) || Object.class.equals(componentType))
       {
          final T_Array registeredObject = registry.readObjectOrId(streamReader);
          if (registeredObject != null) return registeredObject;

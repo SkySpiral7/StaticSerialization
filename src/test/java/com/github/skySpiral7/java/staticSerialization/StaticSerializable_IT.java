@@ -260,7 +260,9 @@ public class StaticSerializable_IT
       data[0] = new CharSequence[][]{new String[]{"hi"}};
       data[1] = new Number[][]{new Integer[]{1, 2}, new Long[]{4L, 5L}};
       data[2] = new Object[1][1];
-      data[2][0][0] = new Object[]{null, "joe", new int[]{6}};
+      data[2][0][0] = new Object[]{null, "joe", new int[]{6}, data};
+      //TODO: make ids non-random int then rebase this. question: should all arrays have ids? is both options possible?
+      //idea: keep list of objects so far when writing, new type of id, id is list index, now full auto no waste!
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       writer.writeObject(data);
@@ -268,7 +270,7 @@ public class StaticSerializable_IT
 
       /*
 Object graph (using non compressed names):
-[3java.lang.Object;3
+[3java.lang.Object;<id 1>3
    java.lang.CharSequence;1
       java.lang.String;1
          ? 0002 hi
@@ -279,13 +281,14 @@ Object graph (using non compressed names):
       java.lang.Long;2
          ? 00000004
          ? 00000005
-   ?1
-      ?1
-         [1java.lang.Object;3
+   ?<id>1
+      ?<id>1
+         [1java.lang.Object;<id>3
             ;
             java.lang.String; 0003 joe
             [1int;1
                0006
+            [3java.lang.Object;<id 1>
        */
       final ByteArrayOutputStream baos = new ByteArrayOutputStream();
       baos.write(new byte[]{'[', 3});   //data array indicator and dimensions
