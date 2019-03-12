@@ -16,6 +16,7 @@ public enum ByteSerializableStrategy
       appender.append(ByteSerializableStrategy.toBigEndianBytes(data, byteCount));
    }
 
+   //TODO: this is outside of util
    public static byte[] toBigEndianBytes(long data, final int byteCount)
    {
       final byte[] result = new byte[byteCount];

@@ -5,7 +5,6 @@ import java.lang.reflect.Array;
 import com.github.skySpiral7.java.staticSerialization.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
@@ -20,12 +19,6 @@ public enum ArraySerializableStrategy
    public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
                             final AsynchronousFileAppender fileAppender, final Object data)
    {
-      if (Object.class.equals(ArrayUtil.getBaseComponentType(data.getClass())))
-      {
-         final ObjectWriterRegistry registry = streamWriter.getObjectRegistry();
-         //shouldNotWrite has a side effect so it shouldn't be && to above if
-         if (registry.shouldNotWrite(data, streamWriter)) return;
-      }
       final int length = Array.getLength(data);
       IntegerSerializableStrategy.write(fileAppender, length);
       final Class<?> componentType = data.getClass().getComponentType();
@@ -39,17 +32,12 @@ public enum ArraySerializableStrategy
    public static <T_Array, T_Component> T_Array read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
                                                      final AsynchronousFileReader fileReader, final Class<T_Component> componentType)
    {
-      //not calling StaticSerializable.readFromStream because this requires so many custom args
-      //it was possible to call that but was easier to understand a copy/paste of boilerplate
-      final ObjectReaderRegistry registry = streamReader.getObjectRegistry();
-      if (Object.class.equals(ArrayUtil.getBaseComponentType(componentType)) || Object.class.equals(componentType))
-      {
-         final T_Array registeredObject = registry.readObjectOrId(streamReader);
-         if (registeredObject != null) return registeredObject;
-      }
       final int arrayLength = IntegerSerializableStrategy.read(fileReader);
       final T_Array arrayValue = cast(Array.newInstance(componentType, arrayLength));
-      if (Object.class.equals(componentType)) registry.claimId(arrayValue);
+      //this is only safe because creating an empty array only requires reading a primitive from stream
+      //any constructor that reads objects would register those and mess up the registry order
+      //the only reason this needs to be registered at all is because the elements are objects
+      streamReader.getObjectRegistry().registerObject(arrayValue);
 
       for (int readIndex = 0; readIndex < arrayLength; ++readIndex)
       {

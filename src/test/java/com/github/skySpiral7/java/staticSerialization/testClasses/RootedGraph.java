@@ -101,7 +101,7 @@ public final class RootedGraph implements StaticSerializable
 
       public static Node readFromStream(final ObjectStreamReader reader)
       {
-         return StaticSerializable.readFromStream(reader, Node::createEmpty, RootedGraph.Node::populate);
+         return null;//StaticSerializable.readFromStream(reader, Node::createEmpty, RootedGraph.Node::populate);
       }
 
       private static Node createEmpty(final ObjectStreamReader reader)
@@ -121,7 +121,7 @@ public final class RootedGraph implements StaticSerializable
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {
-         if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
+         //if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
          writer.writeObject(data);
          writer.writeObject(links.size());
          links.forEach(writer::writeObject);

@@ -1,6 +1,8 @@
 package com.github.skySpiral7.java.staticSerialization;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -8,48 +10,32 @@ import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 
 public class ObjectReaderRegistry
 {
-   private final Map<String, Object> registry = new HashMap<>();
-   private String unclaimedId;
+   private final List<Object> registry = new ArrayList<>();
+   private final Map<Object, Boolean> uniqueness = new IdentityHashMap<>();
+   //TODO: doc: do not combine
 
-   public void registerObject(final String id, final Object instance)
+   public void registerObject(final Object instance)
    {
-      Objects.requireNonNull(id);
       Objects.requireNonNull(instance);
-      registry.put(id, instance);
+      //need to check if exists because arrays may have already been registered by the time internal read is done
+      if (uniqueness.put(instance, Boolean.TRUE) == null) registry.add(instance);
    }
 
-   public <T> T getRegisteredObject(final String id)
+   public int getIdForLater()
    {
-      Objects.requireNonNull(id);
+      registry.add(null);
+      return registry.size() - 1;
+   }
+
+   public void registerLateObject(final Object instance, final int id)
+   {
+      Objects.requireNonNull(instance);
+      registry.set(id, instance);
+      uniqueness.put(instance, Boolean.TRUE);
+   }
+
+   public <T> T getRegisteredObject(final int id)
+   {
       return ClassUtil.cast(registry.get(id));
-   }
-
-   /**
-    * This method reads an id then returns an object registered with that id.
-    * If there is no object with that id then the id becomes unclaimed and null is returned.
-    * Note that there can only be 1 unclaimed id at a time.
-    */
-   public <T> T readObjectOrId(final ObjectStreamReader reader)
-   {
-      Objects.requireNonNull(reader);
-      final String id = reader.readObject(String.class);
-      if (registry.containsKey(id)) return ClassUtil.cast(registry.get(id));
-      if (unclaimedId != null) throw new IllegalStateException("Failed to call claimId. Stopping gracefully.");
-      unclaimedId = id;
-      return null;
-   }
-
-   /**
-    * Call this method to associate the most recent generated id to the instance given
-    * so that the same instance can be referenced again while reading.
-    *
-    * @throws NullPointerException if there is no id to claim or if input is null
-    */
-   public void claimId(final Object input)
-   {
-      Objects.requireNonNull(input);
-      Objects.requireNonNull(unclaimedId);
-      registry.put(unclaimedId, input);
-      unclaimedId = null;
    }
 }

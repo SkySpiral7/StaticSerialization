@@ -102,26 +102,26 @@ public final class UnclaimedRootedGraph implements StaticSerializable
 
       public static Node readFromStream(final ObjectStreamReader reader)
       {
-         final ObjectReaderRegistry registry = reader.getObjectRegistry();
-         final Node registeredObject = registry.readObjectOrId(reader);
-         if (registeredObject != null) return registeredObject;
-
-         final Node result = new Node(reader.readObject(String.class));
-         //registry.claimId(result);
-
-         final int linkSize = reader.readObject(int.class);
-         for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
-         {
-            result.links.add(reader.readObject(Node.class));
-         }
-
-         return result;
+//         final ObjectReaderRegistry registry = reader.getObjectRegistry();
+//         final Node registeredObject = registry.readObjectOrId(reader);
+//         if (registeredObject != null) return registeredObject;
+//
+//         final Node result = new Node(reader.readObject(String.class));
+//         //registry.claimId(result);
+//
+//         final int linkSize = reader.readObject(int.class);
+//         for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
+//         {
+//            result.links.add(reader.readObject(Node.class));
+//         }
+//
+         return null;
       }
 
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {
-         if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
+//         if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
          writer.writeObject(data);
          writer.writeObject(links.size());
          links.forEach(writer::writeObject);

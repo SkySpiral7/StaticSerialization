@@ -203,6 +203,50 @@ public class StaticSerializable_IT
    }
 
    @Test
+   public void sameObject() throws IOException
+   {
+      //This test case exists because Arrays have a special format.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.sameObject.", ".txt");
+      tempFile.deleteOnExit();
+      final BigInteger same = new BigInteger("10");
+      final BigInteger bigOne = new BigInteger("1");
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(same);
+      writer.writeObject(bigOne);
+      writer.writeObject(same);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final BigInteger actualSame = reader.readObject(BigInteger.class);
+      final BigInteger actualOne = reader.readObject(BigInteger.class);
+      assertSame(actualSame, reader.readObject(BigInteger.class));
+      assertNotSame(same, actualSame);
+      reader.close();
+   }
+
+   @Test
+   public void sameObjectInArray() throws IOException
+   {
+      //This test case exists because Arrays have a special format.
+      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.sameObjectInArray.", ".txt");
+      tempFile.deleteOnExit();
+      final BigInteger same = new BigInteger("10");
+      final BigInteger bigOne = new BigInteger("1");
+      final Object[] data = {same, bigOne, same};
+      assertSame(data[0], data[2]);
+
+      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      writer.writeObject(data);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final Object[] actual = reader.readObject(Object[].class);
+      assertArrayEquals(data, actual);
+      assertSame(actual[0], actual[2]);
+      assertNotSame(data[0], actual[2]);
+      reader.close();
+   }
+
+   @Test
    public void boxArray() throws IOException
    {
       //This test case exists because Arrays have a special format.

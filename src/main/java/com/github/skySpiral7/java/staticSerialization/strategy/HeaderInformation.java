@@ -7,10 +7,11 @@ import java.util.Objects;
  *
  * @see HeaderSerializableStrategy
  */
-public final class HeaderInformation
+public final class HeaderInformation<T>
+//TODO: confirm no raw types
 {
    private final String className;
-   private final Boolean value;
+   private final T value;
    private final int dimensionCount;
    private final boolean primitiveArray;
 
@@ -49,12 +50,14 @@ public final class HeaderInformation
       this.primitiveArray = primitiveArray;
    }
 
+   //TODO: update docs and var names
+   //TODO: make static factories instead of knowing which constructor
    /**
     * Constructed with a Boolean class, the given value, and 0 array dimensions (ie not an array).
     */
-   public HeaderInformation(final Boolean value)
+   public HeaderInformation(final String boxClassName, final T value)
    {
-      this.className = Boolean.class.getName();
+      this.className = boxClassName;
       this.value = value;
       dimensionCount = 0;
       primitiveArray = false;
@@ -63,7 +66,7 @@ public final class HeaderInformation
    /**
     * For testing only. Takes every value as-is.
     */
-   HeaderInformation(final String className, final Boolean value, final int dimensionCount, final boolean primitiveArray)
+   HeaderInformation(final String className, final T value, final int dimensionCount, final boolean primitiveArray)
    {
       this.className = className;
       this.value = value;
@@ -82,7 +85,7 @@ public final class HeaderInformation
     *
     * @return the value of the stream's object if any (most likely null)
     */
-   public Boolean getValue(){return value;}
+   public T getValue(){return value;}
 
    /**
     * @return the number of array dimensions (0 if not an array)

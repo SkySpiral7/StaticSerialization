@@ -46,13 +46,48 @@ public interface StaticSerializable
    public static <T> T readFromStream(final ObjectStreamReader reader, final Function<ObjectStreamReader, T> createEmpty,
                                       final BiConsumer<ObjectStreamReader, T> populate)
    {
-      final ObjectReaderRegistry registry = reader.getObjectRegistry();
-      final T registeredObject = registry.readObjectOrId(reader);
-      if (registeredObject != null) return registeredObject;
+      //TODO: wouldn't need readObjectOrId but must always registerObject after create empty. is that ok?
+      //at that point have 2 static methods for createEmpty and populate
+      //does that even work? since another object may be written.
+      //master works only if createEmpty doesn't call readObjectOrId (which should be allowed)
+      //if an id is created before calling createEmpty then it would work as long as createEmpty is correct
+      //reg: pull null in list and give #, var = #, serial, set #
+      //if createEmpty vs populate are correctly separated can createEmpty ruin the id?
+      //is it possible to package data so that there only needs to be 1 method?
 
+      //what about calling the static methods directly?
+      //there's no way to return before create empty since id is in header.
+      //I can't have these static read header because the header is read in order to know which static to call
+
+      final ObjectReaderRegistry registry = reader.getObjectRegistry();
+      final int id = registry.getIdForLater();
       final T result = createEmpty.apply(reader);
-      registry.claimId(result);
+      registry.registerLateObject(result, id);
       populate.accept(reader, result);
       return result;
+
+      /*
+      Pro/con of uuid vs index for most vs circle for each call
+      UUID:
+         Both:
+            Con: Calling static directly means no overhead which is bad for null
+         Most:
+            Pro: Have no id
+            Pro: simple readFromStream without registry
+            Con: Object[] have lots of ids for no reason even though Number[] etc don't
+         Circle:
+            Con: ids are large and exist as data after header
+            Con: boilerplate important since there are a few steps
+      Index:
+         Both:
+            Con: Calling static directly means no overhead which is bad for null and id
+         Most:
+            Pro: Have no id (even Object[]!)
+            Pro: simple readFromStream without registry
+         Circle:
+            Pro: ids are small and exist as a header
+            Pro: ids are rare
+            Con: boilerplate exists but is simple
+      */
    }
 }
