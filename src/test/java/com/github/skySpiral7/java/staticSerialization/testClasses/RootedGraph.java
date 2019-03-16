@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.github.skySpiral7.java.staticSerialization.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
@@ -22,7 +23,11 @@ public final class RootedGraph implements StaticSerializable
 
    public static RootedGraph readFromStream(final ObjectStreamReader reader)
    {
-      return new RootedGraph(reader.readObject(Node.class));
+      final ObjectReaderRegistry registry = reader.getObjectRegistry();
+      final int id = registry.getIdForLater();
+      final RootedGraph result = new RootedGraph(reader.readObject(Node.class));
+      registry.registerLateObject(result, id);
+      return result;
    }
 
    @Override
@@ -91,17 +96,18 @@ public final class RootedGraph implements StaticSerializable
    public static final class Node implements StaticSerializable
    {
       public final String data;
-      public final List<Node> links = new ArrayList<>();
+      public final List<Node> links;
 
       public Node(final String data)
       {
          Objects.requireNonNull(data);
          this.data = data;
+         links = new ArrayList<>();
       }
 
       public static Node readFromStream(final ObjectStreamReader reader)
       {
-         return null;//StaticSerializable.readFromStream(reader, Node::createEmpty, RootedGraph.Node::populate);
+         return StaticSerializable.readFromStream(reader, Node::createEmpty, RootedGraph.Node::populate);
       }
 
       private static Node createEmpty(final ObjectStreamReader reader)
@@ -121,7 +127,7 @@ public final class RootedGraph implements StaticSerializable
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {
-         //if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
+         //TODO: is root node registered too late?
          writer.writeObject(data);
          writer.writeObject(links.size());
          links.forEach(writer::writeObject);

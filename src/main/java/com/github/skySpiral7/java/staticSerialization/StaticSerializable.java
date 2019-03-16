@@ -89,5 +89,9 @@ public interface StaticSerializable
             Pro: ids are rare
             Con: boilerplate exists but is simple
       */
+      //current state: index works (missing tests and doc) but RootedGraph.readFromStream shouldn't need getIdForLater
+      //TODO: see if header can always getIdForLater
+
+      //TODO: once non-spiky make tests for more scenarios to show that master have an issue
    }
 }

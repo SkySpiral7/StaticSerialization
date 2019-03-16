@@ -64,7 +64,6 @@ public enum AllSerializableStrategy
       if (actualClass.isArray())
          return ArraySerializableStrategy.read(streamReader, internalStreamReader, fileReader, actualClass.getComponentType());
 
-      //TODO: has exact same issue: must create empty, register, populate
       if (StaticSerializable.class.isAssignableFrom(actualClass)) return StaticSerializableStrategy.read(streamReader, actualClass);
 
       if (actualClass.isEnum()) return EnumSerializableStrategy.read(fileReader, actualClass);

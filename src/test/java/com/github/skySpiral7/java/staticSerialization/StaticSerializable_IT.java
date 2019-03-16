@@ -12,6 +12,8 @@ import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph;
 import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph.Node;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import com.github.skySpiral7.java.util.FileIoUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -24,6 +26,8 @@ import static org.junit.Assert.assertTrue;
 
 public class StaticSerializable_IT
 {
+   private static final Logger LOG = LogManager.getLogger();
+
    @Test
    public void value_null() throws Exception
    {
@@ -548,14 +552,20 @@ Object graph (using non compressed names):
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       //write both the graph and root to show that self-referencing is handled inside an object and as the root object being written
+      LOG.debug("writeObject(graph)");
       writer.writeObject(graph);
+      LOG.debug("writeObject(root)");
       writer.writeObject(root);
       writer.close();
+      LOG.debug("writer.close()\n");
 
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      LOG.debug("readObject(RootedGraph.class)");
       final RootedGraph actualGraph = reader.readObject(RootedGraph.class);
+      LOG.debug("readObject(RootedGraph.Node.class)");
       final RootedGraph.Node actualRoot = reader.readObject(RootedGraph.Node.class);
       reader.close();
+      LOG.debug("reader.close()");
       assertNotSame(graph, actualGraph);
       assertEquals(graph, actualGraph);
       assertSame(actualGraph.getRoot(), actualRoot);
@@ -588,35 +598,7 @@ Object graph (using non compressed names):
       reader.close();
       assertNotSame(root, actualRoot);
       assertEquals(root, actualRoot);
-   }
-
-   @Test
-   public void rootNode_allowsDirectCalling() throws Exception
-   {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.rootNode_allowsDirectCalling.", ".txt");
-      tempFile.deleteOnExit();
-      final RootedGraph.Node root = new RootedGraph.Node("Alice");
-      {
-         final RootedGraph.Node bob = new RootedGraph.Node("Bob");
-         final RootedGraph.Node clark = new RootedGraph.Node("Clark");
-
-         root.links.add(bob);
-         bob.links.add(clark);
-         clark.links.add(bob);
-         clark.links.add(clark);
-         //a -> b <-> c -> c
-      }
-
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
-      //shows that self-referencing is handled as the root object being written
-      root.writeToStream(writer);
-      writer.close();
-
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
-      final RootedGraph.Node actualRoot = RootedGraph.Node.readFromStream(reader);
-      reader.close();
-      assertNotSame(root, actualRoot);
-      assertEquals(root, actualRoot);
+      //TODO: assert that clark is linked to self
    }
 
    public static final class ReflectiveClass implements StaticSerializable

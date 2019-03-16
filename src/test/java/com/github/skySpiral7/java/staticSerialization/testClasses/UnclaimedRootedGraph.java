@@ -114,14 +114,13 @@ public final class UnclaimedRootedGraph implements StaticSerializable
 //         {
 //            result.links.add(reader.readObject(Node.class));
 //         }
-//
+//TODO: the idea is to show failures for a bad impl
          return null;
       }
 
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {
-//         if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
          writer.writeObject(data);
          writer.writeObject(links.size());
          links.forEach(writer::writeObject);

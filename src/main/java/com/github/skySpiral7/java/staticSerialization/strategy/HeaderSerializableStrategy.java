@@ -10,12 +10,15 @@ import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFi
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeByte;
 
 public enum HeaderSerializableStrategy
 {
    ;  //no instances
+   private static final Logger LOG = LogManager.getLogger();
 
    /**
     * Not in map:
@@ -71,7 +74,7 @@ public enum HeaderSerializableStrategy
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
    public static HeaderInformation<?> readHeader(final AsynchronousFileReader reader, final Class<?> inheritFromClass,
-                                              final ObjectReaderRegistry registry)
+                                                 final ObjectReaderRegistry registry)
    {
       byte firstByte;
       final int dimensionCount;
@@ -114,16 +117,6 @@ public enum HeaderSerializableStrategy
          }
          else dimensionCount = 0;
       }
-      //no overhead can be checked until after the primitive array check
-      if('\\' == firstByte){
-         //TODO: test
-         //TODO: long gets id, other primitives don't, else do
-         final int id = IntegerSerializableStrategy.read(reader);
-         final Object registeredObject = registry.getRegisteredObject(id);
-         //null value will not have an id
-         if(registeredObject == null) throw new StreamCorruptedException("id not found");
-         return new HeaderInformation<>(registeredObject.getClass().getName(), registeredObject);
-      }
 
       if (';' == firstByte) return new HeaderInformation<>();  //the empty string class name means null
       if ('+' == firstByte) return new HeaderInformation<>(Boolean.class.getName(), Boolean.TRUE);
@@ -133,29 +126,65 @@ public enum HeaderSerializableStrategy
          final Class<?> compressedClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
          return new HeaderInformation<>(compressedClass.getName(), dimensionCount, primitiveArray);
       }
+      if ('\\' == firstByte)
+      {
+         //TODO: test
+         if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: id type but no id");
+         final int id = IntegerSerializableStrategy.read(reader);
+         final Object registeredObject = registry.getRegisteredObject(id);
+         //null value will not have an id
+         if (registeredObject == null) throw new StreamCorruptedException("id not found");
+//         LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
+         LOG.debug("id: " + id + " (" + registeredObject + " " + registeredObject.getClass().getSimpleName() + ")");
+         return new HeaderInformation<>(registeredObject.getClass().getName(), registeredObject);
+      }
 
       //else firstByte is part of a class name
       return new HeaderInformation<>(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount, primitiveArray);
    }
 
    //TODO: rename since true also for null, bool
+
    /**
     * @return true if an id was used and no value should be written
     */
    public static boolean writeHeaderReturnIsId(final AsynchronousFileAppender appender, final Class<?> inheritFromClass, final Object data,
                                                final ObjectWriterRegistry registry)
    {
-      if(data != null && !data.getClass().isPrimitive() && !ClassUtil.isBoxedPrimitive(data.getClass())){
+      if (data != null && !data.getClass().isPrimitive() && !ClassUtil.isBoxedPrimitive(data.getClass()))
+      {
+         //TODO: long gets id, other primitives don't, else do
          //TODO: test
          final Integer id = registry.getId(data);
-         if(id != null){writeByte(appender, '\\'); IntegerSerializableStrategy.write(appender, id); return true;}
+         //LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data + " id=" + id);
+         if (id != null)
+         {
+            LOG.debug("id: " + id + " (" + data + " " + data.getClass().getSimpleName() + ")");
+            writeByte(appender, '\\');
+            IntegerSerializableStrategy.write(appender, id);
+            return true;
+         }
          registry.registerObject(data);
       }
+//      else if(data==null) LOG.debug("data.class=null");
+//      else LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data);
 
       //boolean[] and Boolean[] use only headers for elements (primitive doesn't allow null)
-      if (Boolean.TRUE.equals(data)){writeByte(appender, '+'); return true;}
-      else if (Boolean.FALSE.equals(data)){writeByte(appender, '-'); return true;}
-      else if (data == null){writeByte(appender, ';'); return true;}  //if data is null then class name is the empty string
+      if (Boolean.TRUE.equals(data))
+      {
+         writeByte(appender, '+');
+         return true;
+      }
+      else if (Boolean.FALSE.equals(data))
+      {
+         writeByte(appender, '-');
+         return true;
+      }
+      else if (data == null)
+      {
+         writeByte(appender, ';');
+         return true;
+      }  //if data is null then class name is the empty string
       else if (null != inheritFromClass && inheritFromClass.isPrimitive()) ;  //do nothing
          //because non-boolean primitive array elements have no header
          //(below) if class matches containing array exactly then inherit type.
