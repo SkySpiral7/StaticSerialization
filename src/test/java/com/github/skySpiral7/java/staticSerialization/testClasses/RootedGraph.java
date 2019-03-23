@@ -23,11 +23,7 @@ public final class RootedGraph implements StaticSerializable
 
    public static RootedGraph readFromStream(final ObjectStreamReader reader)
    {
-      final ObjectReaderRegistry registry = reader.getObjectRegistry();
-      final int id = registry.getIdForLater();
-      final RootedGraph result = new RootedGraph(reader.readObject(Node.class));
-      registry.registerLateObject(result, id);
-      return result;
+      return new RootedGraph(reader.readObject(Node.class));
    }
 
    @Override

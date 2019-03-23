@@ -59,10 +59,8 @@ public interface StaticSerializable
       //there's no way to return before create empty since id is in header.
       //I can't have these static read header because the header is read in order to know which static to call
 
-      final ObjectReaderRegistry registry = reader.getObjectRegistry();
-      final int id = registry.getIdForLater();
       final T result = createEmpty.apply(reader);
-      registry.registerLateObject(result, id);
+      reader.getObjectRegistry().registerObject(result);
       populate.accept(reader, result);
       return result;
 
@@ -89,8 +87,7 @@ public interface StaticSerializable
             Pro: ids are rare
             Con: boilerplate exists but is simple
       */
-      //current state: index works (missing tests and doc) but RootedGraph.readFromStream shouldn't need getIdForLater
-      //TODO: see if header can always getIdForLater
+      //current state: index works (missing tests and doc)
 
       //TODO: once non-spiky make tests for more scenarios to show that master have an issue
    }

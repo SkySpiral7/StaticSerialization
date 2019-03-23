@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,30 +18,25 @@ public class ObjectReaderRegistry
    private final Map<Object, Boolean> uniqueness = new IdentityHashMap<>();
    //TODO: doc: do not combine
 
-   public void registerObject(final Object instance)
-   {
-      Objects.requireNonNull(instance);
-      //need to check if exists because arrays may have already been registered by the time internal read is done
-      if (uniqueness.put(instance, Boolean.TRUE) == null)
-      {
-         registry.add(instance);
-         LOG.debug((registry.size() - 1) + ": " + instance + " " + instance.getClass().getSimpleName());
-      }
-   }
-
-   public int getIdForLater()
+   public void reserveIdForLater()
    {
       registry.add(null);
       LOG.debug(registry.size() - 1);
-      return registry.size() - 1;
    }
 
-   public void registerLateObject(final Object instance, final int id)
+   //TODO: I could make both registry internal and only have a method for ObjectStreamReader.registerObject
+   public void registerObject(final Object instance)
    {
       Objects.requireNonNull(instance);
-      registry.set(id, instance);
-      LOG.debug(id + ": " + instance + " " + instance.getClass().getSimpleName());
-      uniqueness.put(instance, Boolean.TRUE);
+      //uniqueness is needed because of ArraySerializableStrategy
+      if (uniqueness.put(instance, Boolean.TRUE) == null)
+      {
+         final int id = registry.lastIndexOf(null);
+         if (id == -1) throw new StreamCorruptedException("id not found");
+         registry.set(id, instance);
+         LOG.debug(id + ": " + instance + " " + instance.getClass().getSimpleName());
+         uniqueness.put(instance, Boolean.TRUE);
+      }
    }
 
    public <T> T getRegisteredObject(final int id)

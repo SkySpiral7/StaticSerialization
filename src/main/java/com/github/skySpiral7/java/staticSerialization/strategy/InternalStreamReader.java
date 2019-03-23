@@ -59,11 +59,15 @@ public class InternalStreamReader implements Closeable
       }
 
       final Class<T_Actual> actualClass = ReaderValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+      if (!actualClass.isPrimitive() && !ClassUtil.isBoxedPrimitive(actualClass))
+      {
+         streamReader.getObjectRegistry().reserveIdForLater();
+      }
       final T_Actual returnValue = AllSerializableStrategy.read(streamReader, this, fileReader, actualClass);
       //null, boolean, and id don't reach here
       //TODO: test
       //TODO: make util for should register since long should
-      if (returnValue != null && !returnValue.getClass().isPrimitive() && !ClassUtil.isBoxedPrimitive(returnValue.getClass()))
+      if (!returnValue.getClass().isPrimitive() && !ClassUtil.isBoxedPrimitive(returnValue.getClass()))
       streamReader.getObjectRegistry().registerObject(returnValue);
       return returnValue;
    }
