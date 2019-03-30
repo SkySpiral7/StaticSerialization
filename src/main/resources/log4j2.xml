@@ -13,6 +13,7 @@
       <Root level="debug">
          <AppenderRef ref="Console"/>
          <!--<AppenderRef ref="File" />-->
+         <!--TODO: should be test scope json-->
       </Root>
    </Loggers>
 </Configuration>

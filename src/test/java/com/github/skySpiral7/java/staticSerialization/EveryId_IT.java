@@ -375,11 +375,11 @@ public class EveryId_IT
    {
       final File tempFile = File.createTempFile("EveryId_IT.TempFile.deepFailedToRegister.", ".txt");
       tempFile.deleteOnExit();
-      final GraphCallsRegister graph;
-      final GraphCallsRegister.Node root = new GraphCallsRegister.Node("Alice");
+      final GraphUnregistered graph;
+      final GraphUnregistered.Node root = new GraphUnregistered.Node("Alice");
       {
-         final GraphCallsRegister.Node bob = new GraphCallsRegister.Node("Bob");
-         final GraphCallsRegister.Node clark = new GraphCallsRegister.Node("Clark");
+         final GraphUnregistered.Node bob = new GraphUnregistered.Node("Bob");
+         final GraphUnregistered.Node clark = new GraphUnregistered.Node("Clark");
 
          root.links.add(bob);
          bob.links.add(clark);
@@ -387,18 +387,24 @@ public class EveryId_IT
          clark.links.add(clark);
          //a -> b <-> c -> c
 
-         graph = new GraphCallsRegister(root);
+         graph = new GraphUnregistered(root);
       }
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       writer.writeObject(graph);
       writer.close();
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
-      final GraphCallsRegister actualGraph = reader.readObject(GraphCallsRegister.class);
-      reader.close();
-      assertNotSame(graph, actualGraph);
-      assertEquals(graph, actualGraph);
+      try (ObjectStreamReader reader = new ObjectStreamReader(tempFile))
+      {
+         reader.readObject();
+         fail("Should've thrown");
+      }
+      catch (Exception actual)
+      {
+         final Throwable actualRootCause = getRootCause(actual);
+         assertEquals(StreamCorruptedException.class, actualRootCause.getClass());
+         assertEquals("id not found", actualRootCause.getMessage());
+      }
    }
 
    /**

@@ -13,7 +13,8 @@ import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
  */
 public enum SerializationUtil
 {
-   ;  //no instances
+   //no instances
+   ;
 
    /**
     * @param subject the class to inspect

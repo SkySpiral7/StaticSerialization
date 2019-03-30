@@ -68,7 +68,7 @@ public class InternalStreamReader implements Closeable
       //TODO: test
       //TODO: make util for should register since long should
       if (!returnValue.getClass().isPrimitive() && !ClassUtil.isBoxedPrimitive(returnValue.getClass()))
-      streamReader.getObjectRegistry().registerObject(returnValue);
+         streamReader.getObjectRegistry().registerObject(returnValue);
       return returnValue;
    }
 
