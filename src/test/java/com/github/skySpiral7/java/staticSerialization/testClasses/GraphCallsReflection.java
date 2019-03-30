@@ -3,27 +3,27 @@ package com.github.skySpiral7.java.staticSerialization.testClasses;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
-import com.github.skySpiral7.java.staticSerialization.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 
-public final class UnclaimedRootedGraph implements StaticSerializable
+public final class GraphCallsReflection implements StaticSerializable
 {
    private final Node root;
 
-   public UnclaimedRootedGraph(final Node root)
+   public GraphCallsReflection(final Node root)
    {
       this.root = root;
    }
 
-   public static UnclaimedRootedGraph readFromStream(final ObjectStreamReader reader)
+   public static GraphCallsReflection readFromStream(final ObjectStreamReader reader)
    {
-      return new UnclaimedRootedGraph(reader.readObject(Node.class));
+      return new GraphCallsReflection(reader.readObject(Node.class));
    }
 
    @Override
@@ -39,18 +39,18 @@ public final class UnclaimedRootedGraph implements StaticSerializable
 
    private List<Node> getAllNodes()
    {
-      //I can't use IdentityHashSet alone because I must retain order
+      //I can't use IdentityHashMap alone because I must retain order
       final List<Node> result = new ArrayList<>();
-      final Set<Node> visited = new IdentityHashSet<>();
+      final Map<Node, Boolean> visited = new IdentityHashMap<>();
       final Deque<Node> unexplored = new ArrayDeque<>();
       unexplored.add(root);
       while (!unexplored.isEmpty())
       {
          final Node cursor = unexplored.removeLast();
-         if (visited.contains(cursor)) continue;
+         if (visited.containsKey(cursor)) continue;
          result.add(cursor);
-         visited.add(cursor);
-         unexplored.addAll(cursor.links);
+         visited.put(cursor, Boolean.TRUE);
+         unexplored.add(cursor.next);
       }
       return result;
    }
@@ -58,8 +58,8 @@ public final class UnclaimedRootedGraph implements StaticSerializable
    @Override
    public boolean equals(final Object obj)
    {
-      if (!(obj instanceof UnclaimedRootedGraph)) return false;
-      final UnclaimedRootedGraph other = (UnclaimedRootedGraph) obj;
+      if (!(obj instanceof GraphCallsReflection)) return false;
+      final GraphCallsReflection other = (GraphCallsReflection) obj;
       final List<Node> allOtherNodes = other.getAllNodes();
       final List<Node> allMyNodes = this.getAllNodes();
       if (allOtherNodes.size() != allMyNodes.size()) return false;
@@ -92,7 +92,7 @@ public final class UnclaimedRootedGraph implements StaticSerializable
    public static final class Node implements StaticSerializable
    {
       public final String data;
-      public final List<Node> links = new ArrayList<>();
+      public Node next;
 
       public Node(final String data)
       {
@@ -102,28 +102,16 @@ public final class UnclaimedRootedGraph implements StaticSerializable
 
       public static Node readFromStream(final ObjectStreamReader reader)
       {
-//         final ObjectReaderRegistry registry = reader.getObjectRegistry();
-//         final Node registeredObject = registry.readObjectOrId(reader);
-//         if (registeredObject != null) return registeredObject;
-//
-//         final Node result = new Node(reader.readObject(String.class));
-//         //registry.claimId(result);
-//
-//         final int linkSize = reader.readObject(int.class);
-//         for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
-//         {
-//            result.links.add(reader.readObject(Node.class));
-//         }
-//TODO: the idea is to show failures for a bad impl
-         return null;
+         final Node result = new Node(reader.readObject(String.class));
+         reader.readFieldsReflectively(result);
+         return result;
       }
 
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {
          writer.writeObject(data);
-         writer.writeObject(links.size());
-         links.forEach(writer::writeObject);
+         writer.writeFieldsReflectively(this);
       }
 
       @Override

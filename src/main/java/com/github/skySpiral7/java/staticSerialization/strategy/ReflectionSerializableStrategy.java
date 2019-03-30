@@ -6,19 +6,25 @@ import java.util.List;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.SerializationUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public enum ReflectionSerializableStrategy
 {
    ;  //no instances
+   private static final Logger LOG = LogManager.getLogger();
 
    public static void write(final ObjectStreamWriter writer, final Object data)
    {
       final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(data.getClass());
+      LOG.debug("size: " + allSerializableFields.size());
       allSerializableFields.forEach(field -> {
          field.setAccessible(true);
          try
          {
-            writer.writeObject(field.get(data));
+            final Object fieldValue = field.get(data);
+            LOG.debug(field.getDeclaringClass().getName() + "." + field.getName() + ": " + fieldValue);
+            writer.writeObject(fieldValue);
          }
          catch (final IllegalAccessException impossible)
          {
@@ -31,11 +37,14 @@ public enum ReflectionSerializableStrategy
    public static void read(final ObjectStreamReader reader, final Object instance)
    {
       final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(instance.getClass());
+      LOG.debug("size: " + allSerializableFields.size());
       allSerializableFields.forEach(field -> {
          field.setAccessible(true);
          try
          {
-            field.set(instance, reader.readObject());  //will auto-cast
+            final Object fieldValue = reader.readObject();
+            field.set(instance, fieldValue);  //will auto-cast
+            LOG.debug(field.getDeclaringClass().getName() + "." + field.getName() + ": " + fieldValue);
          }
          catch (final IllegalAccessException impossible)
          {

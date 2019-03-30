@@ -95,6 +95,7 @@ public class ObjectStreamReader implements Closeable
 
    public void readFieldsReflectively(final Object instance)
    {
+      registry.registerObject(instance);
       ReflectionSerializableStrategy.read(this, instance);
    }
 

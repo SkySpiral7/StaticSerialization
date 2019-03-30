@@ -33,13 +33,14 @@ public enum SerializationUtil
          if (Modifier.isTransient(modifiers)) return false;  //shouldn't be touched
          if (Modifier.isStatic(modifiers)) return false;  //not related to the instance
          //TODO: should return true here an attempt the rest
+         return true;
 
-         final Class<?> type = field.getType();
-         if (type.isPrimitive()) return true;  //pretty sure type.equals(void.class) isn't possible
-         if (StaticSerializable.class.isAssignableFrom(type)) return true;
-         if (Serializable.class.isAssignableFrom(type)) return true;  //includes String, enums, boxes, arrays
-
-         return false;
+//         final Class<?> type = field.getType();
+//         if (type.isPrimitive()) return true;  //pretty sure type.equals(void.class) isn't possible
+//         if (StaticSerializable.class.isAssignableFrom(type)) return true;
+//         if (Serializable.class.isAssignableFrom(type)) return true;  //includes String, enums, boxes, arrays
+//
+//         return false;
       }).collect(Collectors.toList());
    }
 }

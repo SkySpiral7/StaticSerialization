@@ -92,6 +92,9 @@
                   <include>**/*_UT.java</include>
                   <include>**/*_IT.java</include>
                </includes>
+               <excludes>
+                  <exclude>**/DoNotDo_IT.java</exclude>
+               </excludes>
             </configuration>
          </plugin>
          <plugin>

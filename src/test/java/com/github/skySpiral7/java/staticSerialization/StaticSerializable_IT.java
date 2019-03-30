@@ -8,8 +8,8 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph;
-import com.github.skySpiral7.java.staticSerialization.testClasses.RootedGraph.Node;
+import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister;
+import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister.Node;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.apache.logging.log4j.LogManager;
@@ -466,24 +466,6 @@ Object graph (using non compressed names):
    }
 
    @Test
-   public void custom_allowsDirectCalling() throws Exception
-   {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.custom_allowsDirectCalling.", ".txt");
-      tempFile.deleteOnExit();
-      final SimpleHappy data = new SimpleHappy(4);
-
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
-      data.writeToStream(writer);
-      writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
-
-      final SimpleHappy actual = SimpleHappy.readFromStream(reader);
-      assertNotSame(data, actual);
-      assertEquals(data, actual);
-      reader.close();
-   }
-
-   @Test
    public void normalEnum() throws Exception
    {
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.normalEnum.", ".txt");
@@ -535,7 +517,7 @@ Object graph (using non compressed names):
    {
       final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.rootedGraph.", ".txt");
       tempFile.deleteOnExit();
-      final RootedGraph graph;
+      final GraphCallsRegister graph;
       final Node root = new Node("Alice");
       {
          final Node bob = new Node("Bob");
@@ -547,7 +529,7 @@ Object graph (using non compressed names):
          clark.links.add(clark);
          //a -> b <-> c -> c
 
-         graph = new RootedGraph(root);
+         graph = new GraphCallsRegister(root);
       }
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
@@ -560,10 +542,10 @@ Object graph (using non compressed names):
       LOG.debug("writer.close()\n");
 
       final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
-      LOG.debug("readObject(RootedGraph.class)");
-      final RootedGraph actualGraph = reader.readObject(RootedGraph.class);
-      LOG.debug("readObject(RootedGraph.Node.class)");
-      final RootedGraph.Node actualRoot = reader.readObject(RootedGraph.Node.class);
+      LOG.debug("readObject(GraphCallsRegister.class)");
+      final GraphCallsRegister actualGraph = reader.readObject(GraphCallsRegister.class);
+      LOG.debug("readObject(GraphCallsRegister.Node.class)");
+      final GraphCallsRegister.Node actualRoot = reader.readObject(GraphCallsRegister.Node.class);
       reader.close();
       LOG.debug("reader.close()");
       assertNotSame(graph, actualGraph);

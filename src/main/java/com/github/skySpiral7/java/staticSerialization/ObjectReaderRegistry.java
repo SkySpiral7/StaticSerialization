@@ -29,7 +29,7 @@ public class ObjectReaderRegistry
    {
       Objects.requireNonNull(instance);
       //uniqueness is needed because of ArraySerializableStrategy
-      if (uniqueness.put(instance, Boolean.TRUE) == null)
+      if (!uniqueness.containsKey(instance))
       {
          final int id = registry.lastIndexOf(null);
          if (id == -1) throw new StreamCorruptedException("id not found");

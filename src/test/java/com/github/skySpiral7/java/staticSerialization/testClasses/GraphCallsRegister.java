@@ -3,27 +3,27 @@ package com.github.skySpiral7.java.staticSerialization.testClasses;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
-import com.github.skySpiral7.java.staticSerialization.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 
-public final class RootedGraph implements StaticSerializable
+public final class GraphCallsRegister implements StaticSerializable
 {
    private final Node root;
 
-   public RootedGraph(final Node root)
+   public GraphCallsRegister(final Node root)
    {
       this.root = root;
    }
 
-   public static RootedGraph readFromStream(final ObjectStreamReader reader)
+   public static GraphCallsRegister readFromStream(final ObjectStreamReader reader)
    {
-      return new RootedGraph(reader.readObject(Node.class));
+      return new GraphCallsRegister(reader.readObject(Node.class));
    }
 
    @Override
@@ -39,17 +39,17 @@ public final class RootedGraph implements StaticSerializable
 
    private List<Node> getAllNodes()
    {
-      //I can't use IdentityHashSet alone because I must retain order
+      //I can't use IdentityHashMap alone because I must retain order
       final List<Node> result = new ArrayList<>();
-      final Set<Node> visited = new IdentityHashSet<>();
+      final Map<Node, Boolean> visited = new IdentityHashMap<>();
       final Deque<Node> unexplored = new ArrayDeque<>();
       unexplored.add(root);
       while (!unexplored.isEmpty())
       {
          final Node cursor = unexplored.removeLast();
-         if (visited.contains(cursor)) continue;
+         if (visited.containsKey(cursor)) continue;
          result.add(cursor);
-         visited.add(cursor);
+         visited.put(cursor, Boolean.TRUE);
          unexplored.addAll(cursor.links);
       }
       return result;
@@ -58,8 +58,8 @@ public final class RootedGraph implements StaticSerializable
    @Override
    public boolean equals(final Object obj)
    {
-      if (!(obj instanceof RootedGraph)) return false;
-      final RootedGraph other = (RootedGraph) obj;
+      if (!(obj instanceof GraphCallsRegister)) return false;
+      final GraphCallsRegister other = (GraphCallsRegister) obj;
       final List<Node> allOtherNodes = other.getAllNodes();
       final List<Node> allMyNodes = this.getAllNodes();
       if (allOtherNodes.size() != allMyNodes.size()) return false;
@@ -103,21 +103,16 @@ public final class RootedGraph implements StaticSerializable
 
       public static Node readFromStream(final ObjectStreamReader reader)
       {
-         return StaticSerializable.readFromStream(reader, Node::createEmpty, RootedGraph.Node::populate);
-      }
+         final Node result = new Node(reader.readObject(String.class));
 
-      private static Node createEmpty(final ObjectStreamReader reader)
-      {
-         return new Node(reader.readObject(String.class));
-      }
+         reader.getObjectRegistry().registerObject(result);
 
-      private static void populate(final ObjectStreamReader reader, final Node result)
-      {
          final int linkSize = reader.readObject(int.class);
          for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
          {
             result.links.add(reader.readObject(Node.class));
          }
+         return result;
       }
 
       @Override

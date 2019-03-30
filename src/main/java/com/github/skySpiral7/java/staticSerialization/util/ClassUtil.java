@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public enum ClassUtil
 {
@@ -55,10 +54,12 @@ public enum ClassUtil
 
       final List<Field> result = new ArrayList<>();
       allClasses.forEach(clazz -> result.addAll(Arrays.asList(clazz.getDeclaredFields())));
-      return result.stream().filter(field -> {
-         //exclude generated fields. TODO: no longer works with certainty
-         return !field.getName().contains("$");
-      }).collect(Collectors.toList());
+      return result;
+      //java.lang.reflect.Modifier.isSynthetic is not public and $ is now allowed so I can't know but this$0 is final
+      //      .stream().filter(field -> {
+      //         //exclude generated fields. TODO: no longer works with certainty
+      //         return !field.getName().contains("$");
+      //      }).collect(Collectors.toList());
    }
 
    /**

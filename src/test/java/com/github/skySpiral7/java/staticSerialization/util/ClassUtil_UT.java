@@ -34,7 +34,7 @@ public class ClassUtil_UT
       class ClassA
       {
          @SuppressWarnings("unused")
-         public int fieldA = 1;
+         public int field$A = 1;
       }
       class ClassB extends ClassA
       {
@@ -45,7 +45,7 @@ public class ClassUtil_UT
 
       final List<Field> expected = new ArrayList<>();
       expected.add(ClassB.class.getField("fieldB"));
-      expected.add(ClassA.class.getField("fieldA"));
+      expected.add(ClassA.class.getField("field$A"));
 
       assertThat(ClassUtil.getAllFields(ClassB.class), is(expected));
    }

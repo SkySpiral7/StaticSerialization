@@ -87,8 +87,7 @@ public interface StaticSerializable
             Pro: ids are rare
             Con: boilerplate exists but is simple
       */
-      //current state: index works (missing tests and doc)
-
-      //TODO: once non-spiky make tests for more scenarios to show that master have an issue
+      //current state: index works
+      //TODO: make non spiky: check todos, fix all tests, clean up (eg reflection), update docs
    }
 }
