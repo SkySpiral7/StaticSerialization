@@ -1,9 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.util;
 
-import java.lang.reflect.Field;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Test;
 
@@ -26,28 +23,6 @@ public class ClassUtil_UT
 
       assertThat(Enum.valueOf(unchecked, "UP"), is(RoundingMode.UP));
       assertThat(Enum.valueOf(ClassUtil.cast(questionable), "UP"), is(RoundingMode.UP));
-   }
-
-   @Test
-   public void getAllFields() throws Exception
-   {
-      class ClassA
-      {
-         @SuppressWarnings("unused")
-         public int field$A = 1;
-      }
-      class ClassB extends ClassA
-      {
-         @SuppressWarnings("unused")
-         public int fieldB = 2;
-      }
-      //by virtue of being non-static these local classes contain a generated field (this$0) which references ClassUtil_UT
-
-      final List<Field> expected = new ArrayList<>();
-      expected.add(ClassB.class.getField("fieldB"));
-      expected.add(ClassA.class.getField("field$A"));
-
-      assertThat(ClassUtil.getAllFields(ClassB.class), is(expected));
    }
 
    @Test

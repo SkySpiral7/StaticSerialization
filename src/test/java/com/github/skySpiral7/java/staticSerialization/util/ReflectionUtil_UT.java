@@ -1,4 +1,4 @@
-package com.github.skySpiral7.java.staticSerialization;
+package com.github.skySpiral7.java.staticSerialization.util;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
@@ -9,9 +9,10 @@ import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
-public class SerializationUtil_UT
+public class ReflectionUtil_UT
 {
 
    private static class Class_getAllSerializableFields
@@ -29,7 +30,7 @@ public class SerializationUtil_UT
    }
 
    @Test
-   public void getAllSerializableFields() throws Exception
+   public void getAllSerializableFields_excludesBasedOnModifier() throws Exception
    {
       final List<Field> expected = new ArrayList<>();
       expected.add(Class_getAllSerializableFields.class.getField("fieldPrimitive"));
@@ -38,10 +39,34 @@ public class SerializationUtil_UT
       expected.add(Class_getAllSerializableFields.class.getField("fieldStaticSerializable"));
       expected.add(Class_getAllSerializableFields.class.getField("fieldSerializable"));
       expected.add(Class_getAllSerializableFields.class.getField("fieldArray"));
+      expected.add(Class_getAllSerializableFields.class.getField("fieldOther"));
 
-      final List<Field> actual = SerializationUtil.getAllSerializableFields(Class_getAllSerializableFields.class);
+      final List<Field> actual = ReflectionUtil.getAllSerializableFields(Class_getAllSerializableFields.class);
 
       assertThat(actual, is(expected));
+      assertFalse(actual.contains(Class_getAllSerializableFields.class.getField("fieldFinal")));
+      assertFalse(actual.contains(Class_getAllSerializableFields.class.getField("fieldTransient")));
+      assertFalse(actual.contains(Class_getAllSerializableFields.class.getField("fieldStatic")));
    }
 
+   @Test
+   public void getAllSerializableFields_includesInheritedFields() throws Exception
+   {
+      class ClassA
+      {
+         public int field$A = 1;
+      }
+      class ClassB extends ClassA
+      {
+         public int fieldB = 2;
+      }
+      //by virtue of being non-static these local classes contain a generated field (this$0) which references ReflectionUtil_UT
+      //this$0 is final and thus excluded
+
+      final List<Field> expected = new ArrayList<>();
+      expected.add(ClassB.class.getField("fieldB"));
+      expected.add(ClassA.class.getField("field$A"));
+
+      assertThat(ReflectionUtil.getAllSerializableFields(ClassB.class), is(expected));
+   }
 }

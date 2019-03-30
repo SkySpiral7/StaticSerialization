@@ -88,6 +88,6 @@ public interface StaticSerializable
             Con: boilerplate exists but is simple
       */
       //current state: index works
-      //TODO: make non spiky: check todos, fix all tests, clean up (eg reflection), update docs
+      //TODO: make non spiky: check todos, fix all tests, clean up, update docs
    }
 }

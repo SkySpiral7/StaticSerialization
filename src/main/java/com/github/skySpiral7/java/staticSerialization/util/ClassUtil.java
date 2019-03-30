@@ -1,9 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.util;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public enum ClassUtil
 {
@@ -32,38 +29,7 @@ public enum ClassUtil
    }
 
    /**
-    * This method returns the List of all Fields for a class.
-    * All fields are included regardless of scope (eg private, public),
-    * and regardless of modifiers (eg static, transient).
-    * All fields are included in the base class and all parent class,
-    * however enclosing classes are excluding because such Fields can't be used directly on an object of class anyClass.
-    * Additionally generated fields are excluded because you usually don't want to touch them.
-    *
-    * @return a List of every possible Field that can be used by any object of the given anyClass
-    * except generated ones
-    */
-   public static List<Field> getAllFields(final Class<?> anyClass)  //TODO: either include interface fields or exclude static
-   {
-      final List<Class<?>> allClasses = new ArrayList<>();
-      Class<?> cursor = anyClass;
-      while (cursor != null)
-      {
-         allClasses.add(cursor);
-         cursor = cursor.getSuperclass();
-      }
-
-      final List<Field> result = new ArrayList<>();
-      allClasses.forEach(clazz -> result.addAll(Arrays.asList(clazz.getDeclaredFields())));
-      return result;
-      //java.lang.reflect.Modifier.isSynthetic is not public and $ is now allowed so I can't know but this$0 is final
-      //      .stream().filter(field -> {
-      //         //exclude generated fields. TODO: no longer works with certainty
-      //         return !field.getName().contains("$");
-      //      }).collect(Collectors.toList());
-   }
-
-   /**
-    * @return true if an instance of classInQuestion could be auto-unboxed (excludes Void.class).
+    * @return true if an instance of classInQuestion could be auto-unboxed (Void.class is false).
     *
     * @see Class#isPrimitive()
     */

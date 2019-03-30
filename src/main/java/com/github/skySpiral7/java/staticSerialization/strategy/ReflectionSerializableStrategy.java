@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.SerializationUtil;
+import com.github.skySpiral7.java.staticSerialization.util.ReflectionUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +16,7 @@ public enum ReflectionSerializableStrategy
 
    public static void write(final ObjectStreamWriter writer, final Object data)
    {
-      final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(data.getClass());
+      final List<Field> allSerializableFields = ReflectionUtil.getAllSerializableFields(data.getClass());
       LOG.debug("size: " + allSerializableFields.size());
       allSerializableFields.forEach(field -> {
          field.setAccessible(true);
@@ -36,7 +36,7 @@ public enum ReflectionSerializableStrategy
 
    public static void read(final ObjectStreamReader reader, final Object instance)
    {
-      final List<Field> allSerializableFields = SerializationUtil.getAllSerializableFields(instance.getClass());
+      final List<Field> allSerializableFields = ReflectionUtil.getAllSerializableFields(instance.getClass());
       LOG.debug("size: " + allSerializableFields.size());
       allSerializableFields.forEach(field -> {
          field.setAccessible(true);
