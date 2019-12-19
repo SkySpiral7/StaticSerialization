@@ -31,6 +31,7 @@ public enum BoxPrimitiveSerializableStrategy
          writeBytes(appender, castedData, 8);
       }
       //Boolean won't come here because the value is header only
+      //TODO: can a null Boolean[] get here?
       else if (data instanceof Character) writeBytes(appender, (char) data, 2);
       else throw new AssertionError("Method shouldn't've been called");
    }
@@ -64,6 +65,7 @@ public enum BoxPrimitiveSerializableStrategy
       }
       if (Boolean.class.equals(expectedClass))
       {
+         //TODO: should be reachable through Boolean[] as well. else forbid null here
          //Code is only reachable through primitive boolean arrays, else the header contains the value.
          //Also reachable if a custom written stream uses a header of Boolean.class.
          final byte data = reader.readByte();

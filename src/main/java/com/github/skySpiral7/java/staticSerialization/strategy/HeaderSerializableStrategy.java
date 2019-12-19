@@ -23,24 +23,26 @@ public enum HeaderSerializableStrategy
    /**
     * Not in map:
     * <ul>
-    * <li>+ boolean true</li>
-    * <li>- boolean false</li>
+    * <li>+ boolean true (header only). and component used for boolean arrays</li>
+    * <li>- boolean false (header only. not valid array component)</li>
     * <li>[2 object arrays</li>
     * <li>]2 primitive arrays</li>
-    * <li>; null</li>
+    * <li>; null (header only. not valid array component)</li>
     * <li>? inherit type from containing array</li>
+    * <li>\id reference existing object (header only)</li>
     * </ul>
     */
    private static final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
    /**
     * Not in map:
     * <ul>
-    * <li>+ boolean true</li>
-    * <li>- boolean false</li>
+    * <li>+ boolean true (header only). and component used for boolean arrays</li>
+    * <li>- boolean false (header only. not valid array component)</li>
     * <li>[2 object arrays</li>
     * <li>]2 primitive arrays</li>
-    * <li>; null</li>
+    * <li>; null (header only. not valid array component)</li>
     * <li>? inherit type from containing array</li>
+    * <li>\id reference existing object (header only)</li>
     * </ul>
     */
    private static final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
@@ -134,7 +136,7 @@ public enum HeaderSerializableStrategy
          final Object registeredObject = registry.getRegisteredObject(id);
          //null value will not have an id
          if (registeredObject == null) throw new StreamCorruptedException("id not found");
-//         LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
+         //LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
          LOG.debug("id: " + id + " (" + registeredObject + " " + registeredObject.getClass().getSimpleName() + ")");
          return new HeaderInformation<>(registeredObject.getClass().getName(), registeredObject);
       }
@@ -166,8 +168,8 @@ public enum HeaderSerializableStrategy
          }
          registry.registerObject(data);
       }
-//      else if(data==null) LOG.debug("data.class=null");
-//      else LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data);
+      //else if(data==null) LOG.debug("data.class=null");
+      //else LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data);
 
       //boolean[] and Boolean[] use only headers for elements (primitive doesn't allow null)
       if (Boolean.TRUE.equals(data))
@@ -182,11 +184,12 @@ public enum HeaderSerializableStrategy
       }
       else if (data == null)
       {
+         //if data is null then class name is the empty string
          writeByte(appender, ';');
          return true;
-      }  //if data is null then class name is the empty string
-      else if (null != inheritFromClass && inheritFromClass.isPrimitive()) ;  //do nothing
-         //because non-boolean primitive array elements have no header
+      }
+      //do nothing because non-boolean primitive array elements have no header
+      else if (null != inheritFromClass && inheritFromClass.isPrimitive()) ;
          //(below) if class matches containing array exactly then inherit type.
       else if (null != inheritFromClass && inheritFromClass.equals(data.getClass())) writeByte(appender, '?');
       else if (CLASS_TO_COMPRESSED_HEADER.containsKey(data.getClass()))

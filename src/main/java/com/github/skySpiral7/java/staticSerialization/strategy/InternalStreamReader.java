@@ -67,6 +67,7 @@ public class InternalStreamReader implements Closeable
       //null, boolean, and id don't reach here
       //TODO: test
       //TODO: make util for should register since long should
+      if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: confirm
       if (!returnValue.getClass().isPrimitive() && !ClassUtil.isBoxedPrimitive(returnValue.getClass()))
          streamReader.getObjectRegistry().registerObject(returnValue);
       return returnValue;
