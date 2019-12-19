@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
@@ -13,7 +12,6 @@ import com.github.skySpiral7.java.staticSerialization.exception.DeserializationE
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
 import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
-import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
@@ -519,44 +517,6 @@ public class InternalStreamReader_UT
       assertTrue(testObject.hasData());
       assertArrayEquals(expected, testObject.readObject(Void[].class));
       assertFalse(testObject.hasData());
-
-      testObject.close();
-   }
-
-   @Test
-   public void readObject_enum() throws Exception
-   {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_enum.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.math.RoundingMode;");
-      final byte[] fileContents = {0, 0, 0, 1};
-      FileIoUtil.appendToFile(tempFile, fileContents);
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      assertSame(RoundingMode.DOWN, testObject.readObject(RoundingMode.class));
-
-      testObject.close();
-   }
-
-   @Test
-   public void readObject_enum_OrdinalNotFound() throws Exception
-   {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_enum_OrdinalNotFound.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.math.RoundingMode;");
-      final byte[] fileContents = {0, 0, 0, 10};
-      FileIoUtil.appendToFile(tempFile, fileContents);
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      try
-      {
-         testObject.readObject(RoundingMode.class);
-         fail("Didn't throw");
-      }
-      catch (final StreamCorruptedException actual)
-      {
-         assertEquals("java.math.RoundingMode.values()[10] doesn't exist. Actual length: 8", actual.getMessage());
-      }
 
       testObject.close();
    }

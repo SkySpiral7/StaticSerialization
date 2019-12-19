@@ -18,7 +18,6 @@ public enum EnumSerializableStrategy
    public static <T> T read(final AsynchronousFileReader reader, final Class<T> expectedClass)
    {
       final int ordinal = IntegerSerializableStrategy.read(reader);
-      //TODO: test
       if (ordinal < 0) throw new StreamCorruptedException("expected array index. Actual: " + ordinal);
 
       final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum

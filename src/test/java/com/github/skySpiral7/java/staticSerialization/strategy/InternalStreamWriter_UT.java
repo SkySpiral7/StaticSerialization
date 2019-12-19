@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -42,23 +41,6 @@ public class InternalStreamWriter_UT
       FileIoUtil.writeToFile(tempFile, "test");
       new ObjectStreamWriter(tempFile).close();
       assertEquals("", FileIoUtil.readTextFile(tempFile));
-   }
-
-   @Test
-   public void writeObject_enum() throws IOException
-   {
-      final File tempFile = File.createTempFile("InternalStreamWriter_UT.TempFile.writeObject_enum.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write("java.math.RoundingMode;".getBytes(StandardCharsets.UTF_8));
-      baos.write(new byte[]{0, 0, 0, 1});
-      final byte[] expected = baos.toByteArray();
-
-      testObject.writeObject(RoundingMode.DOWN);
-      testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test
