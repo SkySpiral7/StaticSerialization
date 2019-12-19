@@ -39,6 +39,7 @@ public enum ReflectionUtil
       //this does include Synthetic but I have no way to exclude
       //java.lang.reflect.Modifier.isSynthetic is not public and $ is now allowed so I can't know
       //but this$0 is final and is the only synthetic field I know of (synthetic classes don't matter)
+      //TODO: is a synthetic class possible? eg annon class. even for non reflection?
 
       //TODO: sort by class then name to allow ensure function and ignore declared order
       return allFields.stream().filter(field -> {
