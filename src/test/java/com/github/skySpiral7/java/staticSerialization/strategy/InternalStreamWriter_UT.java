@@ -10,6 +10,7 @@ import java.util.Arrays;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
+import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
@@ -110,7 +111,7 @@ public class InternalStreamWriter_UT
       final byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
       final ByteArrayOutputStream baos = new ByteArrayOutputStream();
       baos.write("java.math.BigInteger;".getBytes(StandardCharsets.UTF_8));
-      baos.write(ByteSerializableStrategy.toBigEndianBytes(javaData.length, 4));
+      baos.write(BitWiseUtil.toBigEndianBytes(javaData.length, 4));
       baos.write(javaData);
       final byte[] expected = baos.toByteArray();
 

@@ -1,6 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
+import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 
 public enum ByteSerializableStrategy
 {
@@ -13,19 +14,6 @@ public enum ByteSerializableStrategy
 
    public static void writeBytes(final AsynchronousFileAppender appender, long data, final int byteCount)
    {
-      appender.append(ByteSerializableStrategy.toBigEndianBytes(data, byteCount));
-   }
-
-   //TODO: this is outside of util
-   public static byte[] toBigEndianBytes(long data, final int byteCount)
-   {
-      final byte[] result = new byte[byteCount];
-      for (int i = (byteCount - 1); i >= 0; --i)
-      {
-         //the array is reversed so that it is in big endian
-         result[i] = (byte) (data & 0xFF);
-         data >>>= 8;
-      }
-      return result;
+      appender.append(BitWiseUtil.toBigEndianBytes(data, byteCount));
    }
 }

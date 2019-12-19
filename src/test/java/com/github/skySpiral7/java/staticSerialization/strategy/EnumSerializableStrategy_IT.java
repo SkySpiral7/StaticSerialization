@@ -9,6 +9,7 @@ import java.util.Arrays;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
@@ -56,7 +57,7 @@ public class EnumSerializableStrategy_IT
       final File tempFile = File.createTempFile("EnumSerializableStrategy_IT.TempFile.read_throws_WhenOrdinalInvalid.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.math.RoundingMode;");
-      FileIoUtil.appendToFile(tempFile, ByteSerializableStrategy.toBigEndianBytes(-1, 4));
+      FileIoUtil.appendToFile(tempFile, BitWiseUtil.toBigEndianBytes(-1, 4));
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       try

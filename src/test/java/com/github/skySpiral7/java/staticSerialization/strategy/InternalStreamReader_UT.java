@@ -13,6 +13,7 @@ import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassExce
 import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
+import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
@@ -180,24 +181,6 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
       assertNull(testObject.readObject(Byte.class));
-      assertFalse(testObject.hasData());
-
-      testObject.close();
-   }
-
-   @Test
-   public void readObject_Byte() throws Exception
-   {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Byte.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
-      final byte[] fileContents = {2, '~', 3};
-      FileIoUtil.appendToFile(tempFile, fileContents);
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      assertTrue(testObject.hasData());
-      assertEquals(2L, testObject.readObject(Byte.class).longValue());
-      assertEquals(3L, testObject.readObject(byte.class).longValue());
       assertFalse(testObject.hasData());
 
       testObject.close();
@@ -727,7 +710,7 @@ public class InternalStreamReader_UT
       FileIoUtil.writeToFile(tempFile, "java.math.BigInteger;");
       final BigInteger data = BigInteger.TEN;
       final byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
-      FileIoUtil.appendToFile(tempFile, ByteSerializableStrategy.toBigEndianBytes(javaData.length, 4));
+      FileIoUtil.appendToFile(tempFile, BitWiseUtil.toBigEndianBytes(javaData.length, 4));
       FileIoUtil.appendToFile(tempFile, javaData);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
