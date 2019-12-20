@@ -14,7 +14,6 @@ import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -300,8 +299,6 @@ public class StaticSerializable_IT
    }
 
    @Test
-   @Ignore
-   //TODO: @Ignore d because it doesn't expect ids in file
    public void arrayStressTest() throws IOException
    {
       //This test case exists to prove that the complexities of arrays are all handled correctly.
@@ -312,8 +309,6 @@ public class StaticSerializable_IT
       data[1] = new Number[][]{new Integer[]{1, 2}, new Long[]{4L, 5L}};
       data[2] = new Object[1][1];
       data[2][0][0] = new Object[]{null, "joe", new int[]{6}, data};
-      //TODO: make ids non-random int then rebase this. question: should all arrays have ids? is both options possible?
-      //idea: keep list of objects so far when writing, new type of id, id is list index, now full auto no waste!
 
       final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
       writer.writeObject(data);
@@ -321,7 +316,7 @@ public class StaticSerializable_IT
 
       /*
 Object graph (using non compressed names):
-[3java.lang.Object;<id 1>3
+[3java.lang.Object;<id 0>3
    java.lang.CharSequence;1
       java.lang.String;1
          ? 0002 hi
@@ -332,14 +327,14 @@ Object graph (using non compressed names):
       java.lang.Long;2
          ? 00000004
          ? 00000005
-   ?<id>1
-      ?<id>1
-         [1java.lang.Object;<id>3
+   ?
+      ?
+         [1java.lang.Object;4
             ;
             java.lang.String; 0003 joe
             [1int;1
                0006
-            [3java.lang.Object;<id 1>
+            \<id 0>
        */
       final ByteArrayOutputStream baos = new ByteArrayOutputStream();
       baos.write(new byte[]{'[', 3});   //data array indicator and dimensions
@@ -367,13 +362,14 @@ Object graph (using non compressed names):
       baos.write(new byte[]{0, 0, 0, 1});   //data[2][0] length
       baos.write(new byte[]{'[', 1});   //data[2][0][0] array indicator and dimensions
       baos.write("java.lang.Object;".getBytes(StandardCharsets.UTF_8));   //data[2][0][0] component
-      baos.write(new byte[]{0, 0, 0, 3});   //data[2][0][0] length
+      baos.write(new byte[]{0, 0, 0, 4});   //data[2][0][0] length
       baos.write(new byte[]{';'});   //data[2][0][0][0]=null
       baos.write(new byte[]{'*', 0, 0, 0, 3});   //data[2][0][0][1] type (String) and UTF-8 length
       baos.write("joe".getBytes(StandardCharsets.UTF_8));   //data[2][0][0][1] value
       baos.write(new byte[]{']', 1, '@'});   //data[2][0][0][2] array indicator, dimensions, component (int)
       baos.write(new byte[]{0, 0, 0, 1});   //data[2][0][0][2] length
       baos.write(new byte[]{0, 0, 0, 6});   //data[2][0][0][2] value (no header)
+      baos.write(new byte[]{'\\', 0, 0, 0, 0});   //data[2][0][0][3] id of data
 
       final byte[] expectedInFile = baos.toByteArray();
       final byte[] actualInFile = FileIoUtil.readBinaryFile(tempFile);
