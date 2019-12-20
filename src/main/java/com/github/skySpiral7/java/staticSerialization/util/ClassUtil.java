@@ -35,6 +35,7 @@ public enum ClassUtil
     */
    public static boolean isBoxedPrimitive(final Class<?> classInQuestion)
    {
+      //TODO: add method isPrimitiveOrBox
       return Arrays.asList(Byte.class, Short.class, Integer.class, Long.class,  //integers
             Float.class, Double.class, Boolean.class, Character.class).contains(classInQuestion);
    }

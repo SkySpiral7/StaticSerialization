@@ -135,7 +135,8 @@ public enum HeaderSerializableStrategy
          if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: id type but no id");
          final int id = IntegerSerializableStrategy.read(reader);
          final Object registeredObject = registry.getRegisteredObject(id);
-         //null value will not have an id
+         //null value will not have an id. null is only possible if id was reserved but not registered
+         //TODO: StreamCorruptedException if id is out of bounds
          if (registeredObject == null) throw new StreamCorruptedException("id not found");
          //LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
          LOG.debug("id: " + id + " (" + registeredObject + " " + registeredObject.getClass().getSimpleName() + ")");
