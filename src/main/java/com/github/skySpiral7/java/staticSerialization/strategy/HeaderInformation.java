@@ -3,15 +3,16 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 import java.util.Objects;
 
 /**
- * A bean to hold the information that the stream's header contains. It is returned by HeaderSerializableStrategy.
+ * An immutable bean to hold the information that the stream's header contains. It is returned by HeaderSerializableStrategy.
  *
+ * @param <T_Value> The type whose name is className.
  * @see HeaderSerializableStrategy
  */
-public final class HeaderInformation<T>
-//TODO: confirm no raw types
+public final class HeaderInformation<T_Value>
+      //TODO: confirm no raw types
 {
    private final String className;
-   private final T value;
+   private final T_Value value;
    private final int dimensionCount;
    private final boolean primitiveArray;
 
@@ -50,12 +51,12 @@ public final class HeaderInformation<T>
       this.primitiveArray = primitiveArray;
    }
 
-   //TODO: update docs and var names
    //TODO: make static factories instead of knowing which constructor
+
    /**
-    * Constructed with a Boolean class, the given value, and 0 array dimensions (ie not an array).
+    * Constructed with the given value and 0 array dimensions (ie not an array).
     */
-   public HeaderInformation(final String boxClassName, final T value)
+   public HeaderInformation(final String boxClassName, final T_Value value)
    {
       this.className = boxClassName;
       this.value = value;
@@ -66,7 +67,7 @@ public final class HeaderInformation<T>
    /**
     * For testing only. Takes every value as-is.
     */
-   HeaderInformation(final String className, final T value, final int dimensionCount, final boolean primitiveArray)
+   HeaderInformation(final String className, final T_Value value, final int dimensionCount, final boolean primitiveArray)
    {
       this.className = className;
       this.value = value;
@@ -75,17 +76,19 @@ public final class HeaderInformation<T>
    }
 
    /**
-    * @return the class name of the stream's object. Will never be a primitive class or void.
-    * Will be null if the stream's object was null. Arrays return the base component class name.
+    * @return the class name of the stream's object. Will never be a primitive class or void. Will be null if the stream's object was null.
+    * Arrays return the base component class name. Primitive classes will be boxed (even for arrays).
+    * @see #isPrimitiveArray()
     */
    public String getClassName(){return className;}
 
    /**
-    * The only possible values that are in the header are true, false, (and null which isn't a exactly a value).
+    * If {@link #getClassName()} is null then the header represents null. Else null means there is no value. There will be a value for true,
+    * false, null, or an existing id.
     *
-    * @return the value of the stream's object if any (most likely null)
+    * @return the value of the stream's object if any (most doesn't have a value)
     */
-   public T getValue(){return value;}
+   public T_Value getValue(){return value;}
 
    /**
     * @return the number of array dimensions (0 if not an array)
@@ -93,7 +96,7 @@ public final class HeaderInformation<T>
    public int getDimensionCount(){return dimensionCount;}
 
    /**
-    * @return true if isArray and base component is a primitive class
+    * @return true if isArray AND base component is a primitive class
     */
    public boolean isPrimitiveArray()
    {
@@ -105,7 +108,7 @@ public final class HeaderInformation<T>
    {
       if (this == other) return true;
       if (other == null || getClass() != other.getClass()) return false;
-      final HeaderInformation that = (HeaderInformation) other;
+      final HeaderInformation<?> that = (HeaderInformation<?>) other;
       return Objects.equals(className, that.className) && Objects.equals(value, that.value) && Objects.equals(dimensionCount,
             that.dimensionCount) && Objects.equals(primitiveArray, that.primitiveArray);
    }
