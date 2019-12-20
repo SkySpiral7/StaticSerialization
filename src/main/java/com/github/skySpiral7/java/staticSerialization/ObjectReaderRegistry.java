@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,9 +15,10 @@ public class ObjectReaderRegistry
    private static final Logger LOG = LogManager.getLogger();
    private final List<Object> registry = new ArrayList<>();
    /**
-    * Used to tell if an object is already registered. Key: objects registered. Value: always true
+    * Used to tell if an object is already registered. This could be used as the registry but ArrayList.get is faster than
+    * IdentityHashMap.get. Key: objects registered. Value: id
     */
-   private final Map<Object, Boolean> uniqueness = new IdentityHashMap<>();
+   private final Map<Object, Integer> uniqueness = new IdentityHashMap<>();
    //TODO: doc: do not combine
 
    public void reserveIdForLater()
@@ -27,21 +27,42 @@ public class ObjectReaderRegistry
       LOG.debug(registry.size() - 1);
    }
 
-   //TODO: I could make both registry internal and only have a method for ObjectStreamReader.registerObject
+   public boolean isRegistered(final Object instance)
+   {
+      Objects.requireNonNull(instance);
+      return uniqueness.containsKey(instance);
+   }
+
+   //TODO: make ObjectReaderRegistry internal and have methods ObjectStreamReader.registerObject, isRegistered
    public void registerObject(final Object instance)
    {
-      //TODO: how does this work? it looks like reserving is required but it isn't always done? trace each flow
       Objects.requireNonNull(instance);
-      //uniqueness is needed because of ArraySerializableStrategy
-      //TODO: how is ArraySerializableStrategy the only case? add test
-      if (!uniqueness.containsKey(instance))
+      /*
+      reserveIdForLater is always called first since entry point is ObjectStreamReader.readObject
+      1) ObjectStreamReader.readFieldsReflectively
+      2) StaticSerializable.readFromStream
+      3) ArraySerializableStrategy.read
+      4) GraphCallsRegister.Node.readFromStream
+      These are all cases where registerObject is called outside of InternalStreamReader.readObjectInternal.
+      The info will not be logged if using the library correctly however it isn't a warn since it's no harm.
+      */
+      if (uniqueness.containsKey(instance))
+         LOG.info("Already registered with id " + uniqueness.get(instance) + ": " + instance + " " + instance.getClass().getSimpleName());
+      else
       {
-         //last index acts as a stack
+         //last index in order to make list LIFO
          final int id = registry.lastIndexOf(null);
-         if (id == -1) throw new StreamCorruptedException("id not found");
+         /*
+         since reserveIdForLater is always called the only 2 ways this is possible:
+         1) registerObject was manually called too many times
+         2) Class's readFromStream was called directly
+         */
+         if (id == -1) throw new IllegalStateException("id not found. Make sure registerObject is only called for the "
+                                                       + "root object and that ObjectStreamReader.readObject etc are used as an "
+                                                       + "entry point for reading the stream.");
          registry.set(id, instance);
          LOG.debug(id + ": " + instance + " " + instance.getClass().getSimpleName());
-         uniqueness.put(instance, Boolean.TRUE);
+         uniqueness.put(instance, id);
       }
    }
 

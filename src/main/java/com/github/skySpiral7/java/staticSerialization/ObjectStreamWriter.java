@@ -63,6 +63,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
       ReflectionSerializableStrategy.write(this, data);
    }
 
+   //TODO: make internal package for ObjectWriterRegistry, Header info, internal*
    public ObjectWriterRegistry getObjectRegistry()
    {
       return registry;
