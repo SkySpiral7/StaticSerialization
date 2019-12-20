@@ -17,55 +17,43 @@ public final class HeaderInformation<T_Value>
    private final boolean primitiveArray;
 
    /**
-    * Constructed to represent a header with a null value.
+    * @return HeaderInformation to represent a header with a null value.
     */
-   public HeaderInformation()
+   public static HeaderInformation<?> forNull()
    {
-      this.className = null;
-      this.value = null;
-      dimensionCount = 0;
-      primitiveArray = false;
+      return new HeaderInformation<>(null, null, 0, false);
    }
 
    /**
-    * Constructed to represent an element within a primitive array (which has no header).
-    *
     * @param boxClassName must be the class name of the box not the primitive
+    * @return HeaderInformation to represent an element within a primitive array (which has no header).
     */
-   public HeaderInformation(final String boxClassName)
+   public static HeaderInformation<?> forPrimitiveArrayValue(final String boxClassName)
    {
-      this.className = boxClassName;
-      value = null;
-      this.dimensionCount = 0;
-      this.primitiveArray = false;
+      //TODO: isn't this only possible with 2d+? in which case rename forInheritedPrimitiveArray
+      return new HeaderInformation<>(boxClassName, null, 0, false);
    }
 
    /**
-    * Constructed with a null value (which is the norm).
+    * @param dimensionCount the number of array dimensions (0 if not an array)
+    * @return a HeaderInformation without a value (this is the norm)
     */
-   public HeaderInformation(final String baseComponentClassName, final int dimensionCount, final boolean primitiveArray)
+   public static HeaderInformation<?> forPossibleArray(final String baseComponentClassName, final int dimensionCount,
+                                                       final boolean primitiveArray)
    {
-      this.className = baseComponentClassName;
-      value = null;
-      this.dimensionCount = dimensionCount;
-      this.primitiveArray = primitiveArray;
-   }
-
-   //TODO: make static factories instead of knowing which constructor
-
-   /**
-    * Constructed with the given value and 0 array dimensions (ie not an array).
-    */
-   public HeaderInformation(final String boxClassName, final T_Value value)
-   {
-      this.className = boxClassName;
-      this.value = value;
-      dimensionCount = 0;
-      primitiveArray = false;
+      return new HeaderInformation<>(baseComponentClassName, null, dimensionCount, primitiveArray);
    }
 
    /**
-    * For testing only. Takes every value as-is.
+    * @return HeaderInformation with the given value and 0 array dimensions (ie not an array).
+    */
+   public static <T_Value> HeaderInformation<T_Value> forValue(final String boxClassName, final T_Value value)
+   {
+      return new HeaderInformation<>(boxClassName, value, 0, false);
+   }
+
+   /**
+    * For private use and testing only. Takes every value as-is.
     */
    HeaderInformation(final String className, final T_Value value, final int dimensionCount, final boolean primitiveArray)
    {

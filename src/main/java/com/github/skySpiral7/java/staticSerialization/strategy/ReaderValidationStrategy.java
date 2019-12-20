@@ -33,10 +33,11 @@ public enum ReaderValidationStrategy
       {
          if (expectedClass.isArray())
          {
-            final HeaderInformation expectedHeader;
+            final HeaderInformation<?> expectedHeader;
             if (expectedBaseComponentType.isPrimitive())
-               expectedHeader = new HeaderInformation(ClassUtil.boxClass(expectedBaseComponentType).getName(), expectedDimensions, true);
-            else expectedHeader = new HeaderInformation(expectedBaseComponentType.getName(), expectedDimensions, false);
+               expectedHeader = HeaderInformation.forPossibleArray(ClassUtil.boxClass(expectedBaseComponentType).getName(),
+                     expectedDimensions, true);
+            else expectedHeader = HeaderInformation.forPossibleArray(expectedBaseComponentType.getName(), expectedDimensions, false);
 
             if (0 == actualHeader.getDimensionCount()) throw new IllegalStateException(
                   "Class doesn't match exactly. Expected: " + expectedHeader + " Got: " + actualHeader.getClassName());

@@ -89,7 +89,8 @@ public enum HeaderSerializableStrategy
          //inheritFromClass is never primitive void.class.
          //It is only primitive if contained in a primitive array in which case there is no header
          //since it can't be null or any other class.
-         if (inheritFromClass.isPrimitive()) return new HeaderInformation<>(ClassUtil.boxClass(inheritFromClass).getName());
+         if (inheritFromClass.isPrimitive())
+            return HeaderInformation.forPrimitiveArrayValue(ClassUtil.boxClass(inheritFromClass).getName());
          //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or ';')
          firstByte = reader.readByte();
          dimensionCount = ArrayUtil.countArrayDimensions(inheritFromClass);
@@ -97,7 +98,7 @@ public enum HeaderSerializableStrategy
          primitiveArray = baseComponent.isPrimitive();
          if ('?' == firstByte)
          {
-            return new HeaderInformation<>(baseComponent.getName(), dimensionCount, primitiveArray);
+            return HeaderInformation.forPossibleArray(baseComponent.getName(), dimensionCount, primitiveArray);
          }
          //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
       }
@@ -115,18 +116,18 @@ public enum HeaderSerializableStrategy
             firstByte = reader.readByte();
             if (';' == firstByte) throw new StreamCorruptedException("header's array component type can't be null");
             if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
-            if ('+' == firstByte) return new HeaderInformation<>(Boolean.class.getName(), dimensionCount, primitiveArray);
+            if ('+' == firstByte) return HeaderInformation.forPossibleArray(Boolean.class.getName(), dimensionCount, primitiveArray);
          }
          else dimensionCount = 0;
       }
 
-      if (';' == firstByte) return new HeaderInformation<>();  //the empty string class name means null
-      if ('+' == firstByte) return new HeaderInformation<>(Boolean.class.getName(), Boolean.TRUE);
-      if ('-' == firstByte) return new HeaderInformation<>(Boolean.class.getName(), Boolean.FALSE);
+      if (';' == firstByte) return HeaderInformation.forNull();  //the empty string class name means null
+      if ('+' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.TRUE);
+      if ('-' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.FALSE);
       if (COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte))  //safe cast because map contains only ASCII
       {
          final Class<?> compressedClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
-         return new HeaderInformation<>(compressedClass.getName(), dimensionCount, primitiveArray);
+         return HeaderInformation.forPossibleArray(compressedClass.getName(), dimensionCount, primitiveArray);
       }
       if ('\\' == firstByte)
       {
@@ -138,11 +139,12 @@ public enum HeaderSerializableStrategy
          if (registeredObject == null) throw new StreamCorruptedException("id not found");
          //LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
          LOG.debug("id: " + id + " (" + registeredObject + " " + registeredObject.getClass().getSimpleName() + ")");
-         return new HeaderInformation<>(registeredObject.getClass().getName(), registeredObject);
+         return HeaderInformation.forValue(registeredObject.getClass().getName(), registeredObject);
       }
 
       //else firstByte is part of a class name
-      return new HeaderInformation<>(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount, primitiveArray);
+      return HeaderInformation.forPossibleArray(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount,
+            primitiveArray);
    }
 
    //TODO: rename since true also for null, bool
