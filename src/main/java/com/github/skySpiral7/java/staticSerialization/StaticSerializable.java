@@ -64,7 +64,7 @@ public interface StaticSerializable
       //I can't have these static read header because the header is read in order to know which static to call
 
       final T result = createEmpty.apply(reader);
-      reader.getObjectRegistry().registerObject(result);
+      reader.registerObject(result);
       populate.accept(reader, result);
       return result;
 

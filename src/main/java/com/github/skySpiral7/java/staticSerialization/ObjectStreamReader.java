@@ -12,12 +12,10 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 
 public class ObjectStreamReader implements Closeable
 {
-   private final ObjectReaderRegistry registry;
    private final InternalStreamReader internalStreamReader;
 
    public ObjectStreamReader(final File sourceFile)
    {
-      registry = new ObjectReaderRegistry();
       internalStreamReader = new InternalStreamReader(sourceFile);
    }
 
@@ -93,12 +91,17 @@ public class ObjectStreamReader implements Closeable
 
    public void readFieldsReflectively(final Object instance)
    {
-      registry.registerObject(instance);
+      internalStreamReader.registerObject(instance);
       ReflectionSerializableStrategy.read(this, instance);
    }
 
-   public ObjectReaderRegistry getObjectRegistry()
+   public boolean isRegistered(final Object instance)
    {
-      return registry;
+      return internalStreamReader.isRegistered(instance);
+   }
+
+   public void registerObject(final Object instance)
+   {
+      internalStreamReader.registerObject(instance);
    }
 }

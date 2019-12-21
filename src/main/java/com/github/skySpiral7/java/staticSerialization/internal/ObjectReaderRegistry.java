@@ -1,4 +1,4 @@
-package com.github.skySpiral7.java.staticSerialization;
+package com.github.skySpiral7.java.staticSerialization.internal;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -33,7 +33,6 @@ public class ObjectReaderRegistry
       return uniqueness.containsKey(instance);
    }
 
-   //TODO: make ObjectReaderRegistry internal and have methods ObjectStreamReader.registerObject, isRegistered
    public void registerObject(final Object instance)
    {
       Objects.requireNonNull(instance);

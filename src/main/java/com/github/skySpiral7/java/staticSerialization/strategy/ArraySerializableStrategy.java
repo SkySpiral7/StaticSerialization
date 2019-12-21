@@ -38,7 +38,7 @@ public enum ArraySerializableStrategy
       //this is only safe because creating an empty array only requires reading a primitive from stream
       //any constructor that reads objects would register those and mess up the registry order
       //the only reason this needs to be registered at all is because the elements are objects
-      streamReader.getObjectRegistry().registerObject(arrayValue);
+      streamReader.registerObject(arrayValue);
 
       for (int readIndex = 0; readIndex < arrayLength; ++readIndex)
       {

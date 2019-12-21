@@ -15,10 +15,12 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 
 public class InternalStreamReader implements Closeable
 {
+   private final ObjectReaderRegistry registry;
    private final AsynchronousFileReader fileReader;
 
    public InternalStreamReader(final File sourceFile)
    {
+      registry = new ObjectReaderRegistry();
       fileReader = new AsynchronousFileReader(sourceFile);
    }
 
@@ -42,8 +44,7 @@ public class InternalStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));
 
-      final HeaderInformation<?> headerInformation = HeaderSerializableStrategy.readHeader(fileReader, inheritFromClass,
-            streamReader.getObjectRegistry());
+      final HeaderInformation<?> headerInformation = HeaderSerializableStrategy.readHeader(fileReader, inheritFromClass, registry);
       //TODO: throw new StreamCorruptedException("Expected: int, Actual: null, Consider using Integer")
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
       if (headerInformation.getDimensionCount() == 0 && Boolean.class.getName().equals(headerInformation.getClassName()))
@@ -64,22 +65,30 @@ public class InternalStreamReader implements Closeable
       final Class<T_Actual> actualClass = ReaderValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
       if (!actualClass.isPrimitive() && !ClassUtil.isBoxedPrimitive(actualClass))
       {
-         streamReader.getObjectRegistry().reserveIdForLater();
+         registry.reserveIdForLater();
       }
       final T_Actual returnValue = AllSerializableStrategy.read(streamReader, this, fileReader, actualClass);
       //null, boolean, and id don't reach here
       //TODO: test
       //TODO: make util for should register since long should
       if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: confirm
-      if (!returnValue.getClass().isPrimitive() && !ClassUtil.isBoxedPrimitive(returnValue.getClass()) && !streamReader.getObjectRegistry()
-                                                                                                                       .isRegistered(
-                                                                                                                             returnValue))
-         streamReader.getObjectRegistry().registerObject(returnValue);
+      if (!returnValue.getClass().isPrimitive() && !ClassUtil.isBoxedPrimitive(returnValue.getClass()) && !streamReader.isRegistered(
+            returnValue)) streamReader.registerObject(returnValue);
       return returnValue;
    }
 
    public AsynchronousFileReader getFileReader()
    {
       return fileReader;
+   }
+
+   public boolean isRegistered(final Object instance)
+   {
+      return registry.isRegistered(instance);
+   }
+
+   public void registerObject(final Object instance)
+   {
+      registry.registerObject(instance);
    }
 }

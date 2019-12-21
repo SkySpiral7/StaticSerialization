@@ -105,7 +105,7 @@ public final class GraphCallsRegister implements StaticSerializable
       {
          final Node result = new Node(reader.readObject(String.class));
 
-         reader.getObjectRegistry().registerObject(result);
+         reader.registerObject(result);
 
          final int linkSize = reader.readObject(int.class);
          for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
