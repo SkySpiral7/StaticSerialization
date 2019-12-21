@@ -22,31 +22,37 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 /**
- * every id related scenario:
- * no ids needed or present: all normal tests eg a String
- * same object twice: uses id to save space even though there's no circle
- * no ids for Number[]: as a happy path for arrays
- * no ids for Object[]: to show index is better
- * Object[] with ids: to auto-handle circles
- * RootedGraph: ids are handled deeply
- * Node: ids are handled for the root object
- * readFromStream calling StaticSerializable.readFromStream: to show boilerplate works
- * readFromStream calling registerObject: happy path for expected implementation
- * catch Node: readFromStream failing to call registerObject: to make sure user failure message is useful for you class
- * catch RootedGraph: readFromStream failing to call registerObject: to make sure user failure message is useful for deep
- * RootedGraph reflection: easy enough
- * Node reflection: have reflection method call registerObject for you
+ * <h2>every id related scenario</h2>
+ * <ul>
+ * <li>no ids needed or present: all normal tests eg a String</li>
+ * <li>same object twice: uses id to save space even though there's no circle</li>
+ * <li>no ids for Number[]: as a happy path for arrays</li>
+ * <li>no ids for Object[]: to show index is better</li>
+ * <li>Object[] with ids: to auto-handle circles</li>
+ * <li>RootedGraph: ids are handled deeply</li>
+ * <li>Node: ids are handled for the root object</li>
+ * <li>readFromStream calling StaticSerializable.readFromStream: to show boilerplate works</li>
+ * <li>readFromStream calling registerObject: happy path for expected implementation</li>
+ * <li>catch Node: readFromStream failing to call registerObject: to make sure user failure message is useful for you class</li>
+ * <li>catch RootedGraph: readFromStream failing to call registerObject: to make sure user failure message is useful for deep</li>
+ * <li>RootedGraph reflection: easy enough</li>
+ * <li>Node reflection: have reflection method call registerObject for you</li>
+ * </ul>
  *
- * do not do:
- * calling readFromStream directly when null/id: pretty sure there's no error message I can give
- * calling RootedGraph.readFromStream would work: no possible error message
- * calling Node.readFromStream won't work: might be able to do error message
+ * <h2>do not do</h2>
+ * <ul>
+ * <li>calling readFromStream directly when null/id: pretty sure there's no error message I can give</li>
+ * <li>calling RootedGraph.readFromStream would work: no possible error message</li>
+ * <li>calling Node.readFromStream won't work: might be able to do error message</li>
+ * </ul>
  *
- * test classes:
- * used for most: calls registerObject
- * calls StaticSerializable.readFromStream
- * does not call registerObject
- * reflection
+ * <h2>test classes</h2>
+ * <ul>
+ * <li>used for most: calls registerObject</li>
+ * <li>calls StaticSerializable.readFromStream</li>
+ * <li>does not call registerObject</li>
+ * <li>reflection</li>
+ * </ul>
  */
 public class EveryId_IT
 {
@@ -189,8 +195,8 @@ public class EveryId_IT
    }
 
    /**
-    * Object[] with ids: to auto-handle circles
-    * This test case exists to validate an edge case since Object[] is the only array that can contain itself
+    * <p>Object[] with ids: to auto-handle circles</p>
+    * <p>This test case exists to validate an edge case since Object[] is the only array that can contain itself</p>
     */
    @Test
    public void objectArrayOfSelf() throws IOException
@@ -212,8 +218,8 @@ public class EveryId_IT
    }
 
    /**
-    * RootedGraph: ids are handled deeply
-    * readFromStream calling registerObject: happy path for expected implementation
+    * <p>RootedGraph: ids are handled deeply</p>
+    * <p>readFromStream calling registerObject: happy path for expected implementation</p>
     */
    @Test
    public void handlesDeepIds() throws Exception
@@ -251,8 +257,8 @@ public class EveryId_IT
    }
 
    /**
-    * Node: ids are handled for the root object
-    * readFromStream calling registerObject: happy path for expected implementation
+    * <p>Node: ids are handled for the root object</p>
+    * <p>readFromStream calling registerObject: happy path for expected implementation</p>
     */
    @Test
    public void rootNode() throws Exception

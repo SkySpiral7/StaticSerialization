@@ -16,7 +16,6 @@ public enum ArrayUtil
 
    /**
     * @return the inner most ComponentType of the given array class (may return a primitive class). null if not an array class.
-    *
     * @see Class#getComponentType()
     */
    public static Class<?> getBaseComponentType(final Class<?> arrayClass)

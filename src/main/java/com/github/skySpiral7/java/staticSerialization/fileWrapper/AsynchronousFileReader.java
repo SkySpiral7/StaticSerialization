@@ -16,9 +16,9 @@ import com.github.skySpiral7.java.util.FileIoUtil;
 
 /**
  * <p>Creating this class will start reading the file in another thread and placing the results in a queue.
- * Therefore the other thread will be waiting on the disk instead of the main thread.
- * The main thread can create this object, do other stuff, and hopefully not need to wait when calling the read methods.
- * Note that if creation, reading, and closing happen in quick succession then using this class was pointless.</p>
+ * Therefore the other thread will be waiting on the disk instead of the main thread. The main thread can create this object, do other
+ * stuff, and hopefully not need to wait when calling the read methods. Note that if creation, reading, and closing happen in quick
+ * succession then using this class was pointless.</p>
  * <p><b>Warning:</b> this is the second Java class I've made with multiple threads.</p>
  *
  * @see #close()
@@ -32,7 +32,6 @@ public final class AsynchronousFileReader implements Closeable
 
    /**
     * @param targetFile the file that will be read from
-    *
     * @see FileIoUtil#readTextFile(File)
     * @see FileIoUtil#readBinaryFile(File)
     */
@@ -102,11 +101,9 @@ public final class AsynchronousFileReader implements Closeable
    }
 
    /**
-    * Reads bytes from the file and converts them to a UTF-8 string.
-    * This method will wait if the queue is empty.
+    * Reads bytes from the file and converts them to a UTF-8 string. This method will wait if the queue is empty.
     *
     * @param byteCount the number of bytes to read
-    *
     * @see #readString(int, Charset)
     */
    public String readString(final int byteCount)
@@ -115,12 +112,10 @@ public final class AsynchronousFileReader implements Closeable
    }
 
    /**
-    * Reads bytes from the file and converts them to a string using the given encoding.
-    * This method will wait if the queue is empty.
+    * Reads bytes from the file and converts them to a string using the given encoding. This method will wait if the queue is empty.
     *
     * @param byteCount the number of bytes to read
     * @param encoding  the character set used to decode the bytes
-    *
     * @see #readBytes(int)
     */
    public String readString(final int byteCount, final Charset encoding)
@@ -129,8 +124,7 @@ public final class AsynchronousFileReader implements Closeable
    }
 
    /**
-    * Reads a single byte of binary data from the file.
-    * This method will wait if the queue is empty.
+    * Reads a single byte of binary data from the file. This method will wait if the queue is empty.
     *
     * @see #readBytes(int)
     */
@@ -140,11 +134,9 @@ public final class AsynchronousFileReader implements Closeable
    }
 
    /**
-    * Reads binary data from the file.
-    * This method will wait if the queue is empty.
+    * Reads binary data from the file. This method will wait if the queue is empty.
     *
     * @param byteCount the number of bytes to read
-    *
     * @see #readString(int)
     */
    public byte[] readBytes(final int byteCount)
@@ -174,8 +166,8 @@ public final class AsynchronousFileReader implements Closeable
    {
       public final InputStream inputStream;
       /**
-       * I don't know enough about concurrency to make a simple disruptor.
-       * And the fact that each queue entry holds 1 byte makes me think I could be doing this better.
+       * I don't know enough about concurrency to make a simple disruptor. And the fact that each queue entry holds 1 byte makes me think I
+       * could be doing this better.
        */
       public final ArrayBlockingQueue<Byte> queue;
       /**

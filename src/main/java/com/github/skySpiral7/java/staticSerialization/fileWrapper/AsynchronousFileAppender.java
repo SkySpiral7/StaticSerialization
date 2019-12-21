@@ -17,10 +17,9 @@ import com.github.skySpiral7.java.util.FileIoUtil;
 
 /**
  * <p>This class lets you send data into a queue that another thread will write to the file.
- * Therefore the other thread will be waiting on the disk instead of the main thread.
- * The main thread can build up a queue, do other stuff, and hopefully not need to wait when calling close.
- * Note that calling append then immediately calling close will force you to wait for the disk and
- * thus using this class was pointless.</p>
+ * Therefore the other thread will be waiting on the disk instead of the main thread. The main thread can build up a queue, do other stuff,
+ * and hopefully not need to wait when calling close. Note that calling append then immediately calling close will force you to wait for the
+ * disk and thus using this class was pointless.</p>
  * <p><b>Warning:</b> this is the first Java class I've made with multiple threads.</p>
  *
  * @see #close()
@@ -32,13 +31,11 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
    private boolean amOpen = true;
 
    /**
-    * Note that this class only appends to the file (not write). If appending is not desired then you must
-    * clear the file yourself beforehand.
+    * Note that this class only appends to the file (not write). If appending is not desired then you must clear the file yourself
+    * beforehand.
     *
     * @param targetFile the file that will be appended to
-    *
-    * @see FileIoUtil#writeToFile(File, String)
-    * use FileIoUtil.writeToFile(targetFile, "") to clear the file
+    * @see FileIoUtil#writeToFile(File, String) use FileIoUtil.writeToFile(targetFile, "") to clear the file
     */
    public AsynchronousFileAppender(final File targetFile)
    {
@@ -58,8 +55,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
    }
 
    /**
-    * Waits until the entire current queue is written to the file.
-    * If the queue is already empty then this method does nothing.
+    * Waits until the entire current queue is written to the file. If the queue is already empty then this method does nothing.
     */
    @Override
    public void flush()
@@ -107,8 +103,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
    }
 
    /**
-    * Appends a UTF-8 string to the file.
-    * This method will wait if the queue is full.
+    * Appends a UTF-8 string to the file. This method will wait if the queue is full.
     *
     * @see #append(String, Charset)
     */
@@ -118,8 +113,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
    }
 
    /**
-    * Appends a string to the file using the given character encoding.
-    * This method will wait if the queue is full.
+    * Appends a string to the file using the given character encoding. This method will wait if the queue is full.
     *
     * @see #append(byte[])
     */
@@ -129,8 +123,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
    }
 
    /**
-    * Appends binary data to the file.
-    * This method will wait if the queue is full.
+    * Appends binary data to the file. This method will wait if the queue is full.
     *
     * @see #append(String)
     */
@@ -157,8 +150,8 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
    {
       public final OutputStream outputStream;
       /**
-       * I don't know enough about concurrency to make a simple disruptor.
-       * And the fact that each queue entry holds 1 byte makes me think I could be doing this better.
+       * I don't know enough about concurrency to make a simple disruptor. And the fact that each queue entry holds 1 byte makes me think I
+       * could be doing this better.
        */
       public final ArrayBlockingQueue<Byte> queue = new ArrayBlockingQueue<>(1024000);
       /**

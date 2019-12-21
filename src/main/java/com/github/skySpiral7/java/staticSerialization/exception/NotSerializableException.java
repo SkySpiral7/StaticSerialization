@@ -1,8 +1,8 @@
 package com.github.skySpiral7.java.staticSerialization.exception;
 
 /**
- * This exception is thrown when attempting to serialize or deserialize an object that isn't Serializable.
- * This is an unchecked version of {@link java.io.NotSerializableException} and can be used for any type of Serialization.
+ * This exception is thrown when attempting to serialize or deserialize an object that isn't Serializable. This is an unchecked version of
+ * {@link java.io.NotSerializableException} and can be used for any type of Serialization.
  */
 public class NotSerializableException extends RuntimeException
 {

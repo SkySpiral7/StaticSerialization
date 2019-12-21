@@ -13,18 +13,16 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
 /**
- * This test covers reasons why the user shouldn't call the public methods directly.
- * Useful validation messages are not possible and it won't do what you want or will fail.
- * Therefore this test is junit ignored and excluded from maven-surefire-plugin.
+ * This test covers reasons why the user shouldn't call the public methods directly. Useful validation messages are not possible and it
+ * won't do what you want or will fail. Therefore this test is junit ignored and excluded from maven-surefire-plugin.
  */
 @Ignore
 public class DoNotDo_IT
 {
    /**
-    * This is the most dangerous test of all because it appears to work. It does not read/write a header which means that it won't be
-    * able to handle null or ids (see other tests). It also means that you must read and write directly so that the overhead is
-    * symmetrically missing. Doing so would require your own book keeping and an avoidance of null and ids which is not practical or
-    * intended.
+    * This is the most dangerous test of all because it appears to work. It does not read/write a header which means that it won't be able
+    * to handle null or ids (see other tests). It also means that you must read and write directly so that the overhead is symmetrically
+    * missing. Doing so would require your own book keeping and an avoidance of null and ids which is not practical or intended.
     */
    @Test
    public void doNotCallDirectlyEvenIfSeemsToWork() throws Exception
@@ -67,8 +65,8 @@ public class DoNotDo_IT
    }
 
    /**
-    * Calling writeToStream directly does not write the header thus creating an invalid stream. Reading the stream correctly will fail
-    * (when it tries to read the overhead).
+    * Calling writeToStream directly does not write the header thus creating an invalid stream. Reading the stream correctly will fail (when
+    * it tries to read the overhead).
     */
    @Test
    public void doNotCallWriteDirectly() throws Exception

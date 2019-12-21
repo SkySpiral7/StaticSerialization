@@ -17,9 +17,7 @@ public enum ReflectionUtil
 
    /**
     * @param subject the class to inspect
-    *
-    * @return all fields that can and should be written with ObjectStreamWriter.
-    * Note that it doesn't consider field type (only modifiers).
+    * @return all fields that can and should be written with ObjectStreamWriter. Note that it doesn't consider field type (only modifiers).
     */
    public static List<Field> getAllSerializableFields(final Class<?> subject)
    {

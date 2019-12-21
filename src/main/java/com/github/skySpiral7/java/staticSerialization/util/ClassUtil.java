@@ -8,18 +8,17 @@ public enum ClassUtil
 
    /**
     * <p>
-    * This method will do an unchecked cast to T (the captured return type). The idea is that calling this method allows
-    * you to avoid raw types and unchecked casting warnings. Since T will be erased, calling this method won't throw. If
-    * the return type of this method is ambiguous, it may take the first choice instead of the desired class. And since
-    * overloading is determined at compile time you should double check that you got what you intended.
+    * This method will do an unchecked cast to T (the captured return type). The idea is that calling this method allows you to avoid raw
+    * types and unchecked casting warnings. Since T will be erased, calling this method won't throw. If the return type of this method is
+    * ambiguous, it may take the first choice instead of the desired class. And since overloading is determined at compile time you should
+    * double check that you got what you intended.
     * </p>
     * <p>
-    * If you have a {@code Class<T> clazz} then instead call clazz.cast which is unchecked and might throw (which is
-    * good). clazz.cast also avoids ambiguities mentioned above.
+    * If you have a {@code Class<T> clazz} then instead call clazz.cast which is unchecked and might throw (which is good). clazz.cast also
+    * avoids ambiguities mentioned above.
     * </p>
     *
     * @param anything will cast this to T
-    *
     * @return anything as T
     */
    @SuppressWarnings("unchecked")
@@ -30,7 +29,6 @@ public enum ClassUtil
 
    /**
     * @return true if an instance of classInQuestion could be auto-unboxed (Void.class is false).
-    *
     * @see Class#isPrimitive()
     */
    public static boolean isBoxedPrimitive(final Class<?> classInQuestion)
@@ -42,7 +40,6 @@ public enum ClassUtil
 
    /**
     * @return the primitive class that matches the passed in boxedClass
-    *
     * @throws IllegalArgumentException if boxedClass isn't a boxed class. Note that java.lang.Void isn't a boxed class.
     */
    public static Class<?> unboxClass(final Class<?> boxedClass)
@@ -62,7 +59,6 @@ public enum ClassUtil
 
    /**
     * @return the boxed class that matches the passed in primitiveClass
-    *
     * @throws IllegalArgumentException if primitiveClass isn't a primitive class
     * @throws IllegalArgumentException if primitiveClass is primitive void.class since java.lang.Void.class isn't a boxed class.
     */
