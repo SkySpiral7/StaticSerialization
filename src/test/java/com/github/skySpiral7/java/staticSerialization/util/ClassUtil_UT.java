@@ -28,15 +28,28 @@ public class ClassUtil_UT
    @Test
    public void isBoxedPrimitive()
    {
-      assertFalse(ClassUtil.isBoxedPrimitive(String.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Byte.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Short.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Integer.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Long.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Float.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Double.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Boolean.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Character.class));
+      assertFalse(ClassUtil.isPrimitiveOrBox(String.class));
+
+      assertTrue(ClassUtil.isPrimitiveOrBox(Byte.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Short.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Integer.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Long.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Float.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Double.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Boolean.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Character.class));
+
+      assertTrue(ClassUtil.isPrimitiveOrBox(byte.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(short.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(int.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(long.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(float.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(double.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(boolean.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(char.class));
+
+      assertFalse(ClassUtil.isPrimitiveOrBox(Void.class));
+      assertFalse(ClassUtil.isPrimitiveOrBox(void.class));
    }
 
    @Test

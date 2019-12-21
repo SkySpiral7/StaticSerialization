@@ -22,7 +22,7 @@ public enum AllSerializableStrategy
                             final AsynchronousFileAppender fileAppender, final Object data)
    {
       final Class<?> dataClass = data.getClass();
-      if (ClassUtil.isBoxedPrimitive(dataClass))
+      if (ClassUtil.isPrimitiveOrBox(dataClass))
       {
          BoxPrimitiveSerializableStrategy.write(fileAppender, data);
          return;
@@ -61,7 +61,7 @@ public enum AllSerializableStrategy
    public static <T> T read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
                             final AsynchronousFileReader fileReader, final Class<T> actualClass)
    {
-      if (ClassUtil.isBoxedPrimitive(actualClass)) return BoxPrimitiveSerializableStrategy.read(fileReader, actualClass);
+      if (ClassUtil.isPrimitiveOrBox(actualClass)) return BoxPrimitiveSerializableStrategy.read(fileReader, actualClass);
       if (String.class.equals(actualClass)) return cast(StringSerializableStrategy.readWithLength(fileReader));
       if (actualClass.isArray())
          return ArraySerializableStrategy.read(streamReader, internalStreamReader, fileReader, actualClass.getComponentType());

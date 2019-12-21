@@ -15,8 +15,7 @@ public class ObjectReaderRegistry
    private static final Logger LOG = LogManager.getLogger();
    private final List<Object> registry = new ArrayList<>();
    /**
-    * Used to tell if an object is already registered. This could be used as the registry but ArrayList.get is faster than
-    * IdentityHashMap.get. Key: objects registered. Value: id
+    * Used to tell if an object is already registered. This is the reverse of the registry. Key: objects registered. Value: id
     */
    private final Map<Object, Integer> uniqueness = new IdentityHashMap<>();
    //TODO: doc: do not combine

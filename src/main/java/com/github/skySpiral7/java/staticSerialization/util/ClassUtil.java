@@ -1,10 +1,16 @@
 package com.github.skySpiral7.java.staticSerialization.util;
 
 import java.util.Arrays;
+import java.util.List;
 
 public enum ClassUtil
 {
    ;  //no instances
+   /**
+    * This constant isn't immutable but shouldn't be mutated.
+    */
+   private static final List<?> BOX_CLASS_LIST = Arrays.asList(Byte.class, Short.class, Integer.class, Long.class,  //integers
+         Float.class, Double.class, Boolean.class, Character.class);
 
    /**
     * <p>
@@ -28,14 +34,16 @@ public enum ClassUtil
    }
 
    /**
-    * @return true if an instance of classInQuestion could be auto-unboxed (Void.class is false).
+    * @return true if an instance of classInQuestion is a non-void primitive or could be auto-unboxed into one (Void.class and void.class
+    * return false). This method is not null safe (throws NPE).
     * @see Class#isPrimitive()
     */
-   public static boolean isBoxedPrimitive(final Class<?> classInQuestion)
+   public static boolean isPrimitiveOrBox(final Class<?> classInQuestion)
    {
-      //TODO: add method isPrimitiveOrBox
-      return Arrays.asList(Byte.class, Short.class, Integer.class, Long.class,  //integers
-            Float.class, Double.class, Boolean.class, Character.class).contains(classInQuestion);
+      //void.class is a primitive but this method ignores that
+      final boolean isPrimitive = classInQuestion.isPrimitive() && !void.class.equals(classInQuestion);
+      final boolean isBox = BOX_CLASS_LIST.contains(classInQuestion);
+      return isPrimitive || isBox;
    }
 
    /**
@@ -44,7 +52,7 @@ public enum ClassUtil
     */
    public static Class<?> unboxClass(final Class<?> boxedClass)
    {
-      //isBoxedPrimitive(boxedClass) is pointless: just let it fall through
+      //boxClassList.contains is pointless: just let it fall through
       if (Byte.class.equals(boxedClass)) return byte.class;
       if (Short.class.equals(boxedClass)) return short.class;
       if (Integer.class.equals(boxedClass)) return int.class;

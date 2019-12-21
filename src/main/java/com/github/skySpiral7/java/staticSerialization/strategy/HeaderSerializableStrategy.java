@@ -157,7 +157,7 @@ public enum HeaderSerializableStrategy
    public static boolean writeHeaderReturnIsId(final AsynchronousFileAppender appender, final Class<?> inheritFromClass, final Object data,
                                                final ObjectWriterRegistry registry)
    {
-      if (data != null && !data.getClass().isPrimitive() && !ClassUtil.isBoxedPrimitive(data.getClass()))
+      if (data != null && !ClassUtil.isPrimitiveOrBox(data.getClass()))
       {
          //TODO: long gets id, other primitives don't, else do
          //TODO: test
