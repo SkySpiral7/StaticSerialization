@@ -1,5 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization;
 
+import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 

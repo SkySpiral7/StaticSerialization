@@ -8,6 +8,8 @@ import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;

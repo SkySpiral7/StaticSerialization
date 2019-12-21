@@ -3,6 +3,7 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 import java.lang.reflect.Array;
 
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 

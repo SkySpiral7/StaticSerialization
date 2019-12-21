@@ -4,10 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectReaderRegistry;
-import com.github.skySpiral7.java.staticSerialization.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
+import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import org.apache.logging.log4j.LogManager;

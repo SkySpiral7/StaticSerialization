@@ -5,17 +5,15 @@ import java.io.File;
 import java.io.Flushable;
 
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 
 public class ObjectStreamWriter implements Closeable, Flushable
 {
-   private final ObjectWriterRegistry registry;
    private final InternalStreamWriter internalStreamWriter;
 
    public ObjectStreamWriter(final File destination)
    {
-      registry = new ObjectWriterRegistry();
       //TODO: allow other streams
       internalStreamWriter = new InternalStreamWriter(destination);
    }
@@ -61,11 +59,5 @@ public class ObjectStreamWriter implements Closeable, Flushable
    public void writeFieldsReflectively(final Object data)
    {
       ReflectionSerializableStrategy.write(this, data);
-   }
-
-   //TODO: make internal package for ObjectWriterRegistry, Header info, internal*
-   public ObjectWriterRegistry getObjectRegistry()
-   {
-      return registry;
    }
 }

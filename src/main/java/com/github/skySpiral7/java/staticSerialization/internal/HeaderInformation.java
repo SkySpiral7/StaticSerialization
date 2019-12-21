@@ -1,6 +1,8 @@
-package com.github.skySpiral7.java.staticSerialization.strategy;
+package com.github.skySpiral7.java.staticSerialization.internal;
 
 import java.util.Objects;
+
+import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 
 /**
  * An immutable bean to hold the information that the stream's header contains. It is returned by HeaderSerializableStrategy.

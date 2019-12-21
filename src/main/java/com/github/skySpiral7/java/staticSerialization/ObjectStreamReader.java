@@ -5,7 +5,7 @@ import java.io.File;
 import java.util.Objects;
 
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
-import com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamReader;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
@@ -32,8 +32,8 @@ public class ObjectStreamReader implements Closeable
    public int remainingBytes(){return internalStreamReader.getFileReader().remainingBytes();}
 
    /**
-    * Reads the next object in the stream no matter what it is.
-    * For security this means that you either trust the stream or you trust all available classes.
+    * Reads the next object in the stream no matter what it is. For security this means that you either trust the stream or you trust all
+    * available classes.
     *
     * @see #readObject(Class)
     */
@@ -44,18 +44,16 @@ public class ObjectStreamReader implements Closeable
 
    /**
     * <p>Reads an object from the stream and requires that the class must match exactly. While normally
-    * you could just call the class's readFromStream method, this method is useful if either the class
-    * implements Serializable rather than StaticSerializable (such as BigDecimal), or if you don't know the
-    * exact class at compile time and would like this method to do the reflection for you.</p>
+    * you could just call the class's readFromStream method, this method is useful if either the class implements Serializable rather than
+    * StaticSerializable (such as BigDecimal), or if you don't know the exact class at compile time and would like this method to do the
+    * reflection for you.</p>
     *
     * <p>Security feature: if the expected class isn't the same as the class in this stream then an IllegalStateException
-    * is thrown without loading the class found. Thus untrusted classes will not be loaded (preventing static initializer
-    * blocks).</p>
+    * is thrown without loading the class found. Thus untrusted classes will not be loaded (preventing static initializer blocks).</p>
     *
     * <p>Security limitation: for multidimensional arrays only the topmost is matched exactly. Therefore if the
-    * base component is not a final class (or primitive) then you must trust all possible children. In the case
-    * of an Object array (not supported) this means trusting all classes which makes this method nearly pointless
-    * (failing only if the root is different).</p>
+    * base component is not a final class (or primitive) then you must trust all possible children. In the case of an Object array this
+    * means trusting all classes which makes this method nearly pointless (failing only if the root is different).</p>
     *
     * @see #readObject(Class)
     */

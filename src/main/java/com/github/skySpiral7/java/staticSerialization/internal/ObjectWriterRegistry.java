@@ -1,4 +1,4 @@
-package com.github.skySpiral7.java.staticSerialization;
+package com.github.skySpiral7.java.staticSerialization.internal;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
