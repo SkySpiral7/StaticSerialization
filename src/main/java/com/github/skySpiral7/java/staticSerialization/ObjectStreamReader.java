@@ -6,17 +6,22 @@ import java.util.Objects;
 
 import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
+import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public class ObjectStreamReader implements Closeable
 {
+   private final ObjectReaderRegistry registry;
+   private final AsynchronousFileReader fileReader;
    private final InternalStreamReader internalStreamReader;
 
    public ObjectStreamReader(final File sourceFile)
    {
-      internalStreamReader = new InternalStreamReader(sourceFile);
+      registry = new ObjectReaderRegistry();
+      fileReader = new AsynchronousFileReader(sourceFile);
+      internalStreamReader = new InternalStreamReader(fileReader, registry);
    }
 
    /**
@@ -25,9 +30,9 @@ public class ObjectStreamReader implements Closeable
    @Override
    public void close(){internalStreamReader.close();}
 
-   public boolean hasData(){return internalStreamReader.getFileReader().hasData();}
+   public boolean hasData(){return fileReader.hasData();}
 
-   public int remainingBytes(){return internalStreamReader.getFileReader().remainingBytes();}
+   public int remainingBytes(){return fileReader.remainingBytes();}
 
    /**
     * Reads the next object in the stream no matter what it is. For security this means that you either trust the stream or you trust all
@@ -91,17 +96,17 @@ public class ObjectStreamReader implements Closeable
 
    public void readFieldsReflectively(final Object instance)
    {
-      internalStreamReader.registerObject(instance);
+      registry.registerObject(instance);
       ReflectionSerializableStrategy.read(this, instance);
    }
 
    public boolean isRegistered(final Object instance)
    {
-      return internalStreamReader.isRegistered(instance);
+      return registry.isRegistered(instance);
    }
 
    public void registerObject(final Object instance)
    {
-      internalStreamReader.registerObject(instance);
+      registry.registerObject(instance);
    }
 }

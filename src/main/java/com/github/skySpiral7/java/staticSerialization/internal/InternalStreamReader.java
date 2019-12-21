@@ -1,7 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.internal;
 
 import java.io.Closeable;
-import java.io.File;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
@@ -18,10 +17,10 @@ public class InternalStreamReader implements Closeable
    private final ObjectReaderRegistry registry;
    private final AsynchronousFileReader fileReader;
 
-   public InternalStreamReader(final File sourceFile)
+   public InternalStreamReader(final AsynchronousFileReader fileReader, final ObjectReaderRegistry registry)
    {
-      registry = new ObjectReaderRegistry();
-      fileReader = new AsynchronousFileReader(sourceFile);
+      this.registry = registry;
+      this.fileReader = fileReader;
    }
 
    /**
@@ -75,20 +74,5 @@ public class InternalStreamReader implements Closeable
       if (!returnValue.getClass().isPrimitive() && !ClassUtil.isBoxedPrimitive(returnValue.getClass()) && !streamReader.isRegistered(
             returnValue)) streamReader.registerObject(returnValue);
       return returnValue;
-   }
-
-   public AsynchronousFileReader getFileReader()
-   {
-      return fileReader;
-   }
-
-   public boolean isRegistered(final Object instance)
-   {
-      return registry.isRegistered(instance);
-   }
-
-   public void registerObject(final Object instance)
-   {
-      registry.registerObject(instance);
    }
 }
