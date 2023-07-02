@@ -40,6 +40,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
    public AsynchronousFileAppender(final File targetFile)
    {
       //TODO: I don't know if these classes do anything beyond BufferedInputStream etc
+      //mine has better API though
       if (targetFile.isDirectory()) throw new IllegalArgumentException("It is not possible to write to a directory");
       //it's ok if the file doesn't exist since writing to it will create it
 
@@ -64,6 +65,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
       {
          try
          {
+            //TODO: could update to sleep less see https://stackoverflow.com/a/54394101
             Thread.sleep(10);
          }
          catch (final InterruptedException e)

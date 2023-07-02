@@ -21,9 +21,13 @@ import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableE
  * <p>A header that contains the class will be included with each element for security.
  * Most classes don't need a version number so one is not included by default.
  * Most classes don't need an id but it will be included as needed.</p>
+ * <p>Usage: do not call these methods yourself as doing so will ruin the required overhead.</p>
  *
  * <p>Note that using this interface also requires the class to define a static method of this signature:</p>
  * <blockQuote>{@code public static YourClass readFromStream(final ObjectStreamReader reader)}</blockQuote>
+ *
+ * @see ObjectStreamReader
+ * @see ObjectStreamWriter
  */
 //Java's security holes: https://tersesystems.com/blog/2015/11/08/closing-the-open-door-of-java-object-serialization/
 //TODO: is it possible to have readFromStream return a child? in the case of EnumSet's proxy. doc the answer

@@ -26,8 +26,9 @@ public enum HeaderSerializableStrategy
     * <ul>
     * <li>+ boolean true (header only). and component used for boolean arrays</li>
     * <li>- boolean false (header only. not valid array component)</li>
-    * <li>[2 object arrays</li>
-    * <li>]2 primitive arrays</li>
+    * <li>[2Type object arrays</li>
+    * <li>]2Type primitive arrays</li>
+    * <li>Type; normal class which is ; terminated</li>
     * <li>; null (header only. not valid array component)</li>
     * <li>? inherit type from containing array</li>
     * <li>\id reference existing object (header only)</li>
@@ -39,8 +40,9 @@ public enum HeaderSerializableStrategy
     * <ul>
     * <li>+ boolean true (header only). and component used for boolean arrays</li>
     * <li>- boolean false (header only. not valid array component)</li>
-    * <li>[2 object arrays</li>
-    * <li>]2 primitive arrays</li>
+    * <li>[2Type object arrays</li>
+    * <li>]2Type primitive arrays</li>
+    * <li>Type; normal class which is ; terminated</li>
     * <li>; null (header only. not valid array component)</li>
     * <li>? inherit type from containing array</li>
     * <li>\id reference existing object (header only)</li>
@@ -50,6 +52,15 @@ public enum HeaderSerializableStrategy
 
    static
    {
+      /*
+      possible printable ASCII headers: space to / (not $ or .) is 14, : to @ is +7, [ to ` (not _) is +5, { to ~ is +4 = 30
+      I've used 15 so far which leaves 15 free spots
+      forbidden: $.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
+      used: !#%&*+-;?@[\]^~
+      free: space "'(),/:<=>`{|}
+      technically a FQ class name can't start with a number or dot so I could use them but I won't
+      variables names can start with $ so I assume a package/class can too
+      */
       COMPRESSED_HEADER_TO_CLASS = new HashMap<>();
       COMPRESSED_HEADER_TO_CLASS.put('~', Byte.class);
       COMPRESSED_HEADER_TO_CLASS.put('!', Short.class);
@@ -60,6 +71,7 @@ public enum HeaderSerializableStrategy
       COMPRESSED_HEADER_TO_CLASS.put('^', Double.class);
       COMPRESSED_HEADER_TO_CLASS.put('&', Character.class);
       COMPRESSED_HEADER_TO_CLASS.put('*', String.class);
+      //TODO: more memnotic: ' char, " string, ` string with nulls, & for id
 
       CLASS_TO_COMPRESSED_HEADER = new HashMap<>();
       CLASS_TO_COMPRESSED_HEADER.put(Byte.class, '~');

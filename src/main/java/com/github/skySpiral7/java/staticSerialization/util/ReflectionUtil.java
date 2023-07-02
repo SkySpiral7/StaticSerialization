@@ -38,8 +38,9 @@ public enum ReflectionUtil
       //java.lang.reflect.Modifier.isSynthetic is not public and $ is now allowed so I can't know
       //but this$0 is final and is the only synthetic field I know of (synthetic classes don't matter)
       //TODO: is a synthetic class possible? eg annon class. even for non reflection?
+      //TODO: what about types like T[] or raw types List<? extends T>
 
-      //TODO: sort by class then name to allow ensure function and ignore declared order
+      //TODO: sort by class then name to ensure functionality and ignore declared order
       return allFields.stream().filter(field -> {
          final int modifiers = field.getModifiers();
          if (Modifier.isFinal(modifiers)) return false;  //can't be read from stream

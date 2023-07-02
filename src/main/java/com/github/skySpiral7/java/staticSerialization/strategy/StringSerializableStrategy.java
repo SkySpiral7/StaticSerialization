@@ -16,6 +16,8 @@ public enum StringSerializableStrategy
    ;  //no instances
    private static final Logger LOG = LogManager.getLogger();
 
+   //TODO: maybe use DI instead of static all. more garbage but allows test mocking
+   //could have new ObjectStreamWriter/Reader do new AllDependencies() which new() them all and passes in bundle
    public static void writeWithLength(final AsynchronousFileAppender appender, final String data)
    {
       LOG.debug(data);
@@ -27,6 +29,9 @@ public enum StringSerializableStrategy
    public static String readWithLength(final AsynchronousFileReader reader)
    {
       final int stringByteLength = IntegerSerializableStrategy.read(reader);
+      /*TODO: could use an Overlong null delimiter 0xC080 to reduce overhead by 2 but harder to read stream
+      could also make a new string type for null delimited 0x00 (only used when contains no null)
+      AsynchronousFileReader would need a readBytesUntil*/
       final String result = cast(reader.readString(stringByteLength));
       LOG.debug(result);
       return result;
