@@ -103,11 +103,16 @@ public final class AsynchronousFileReader implements Closeable
    /**
     * Reads bytes from the file and converts them to a UTF-8 string. This method will wait if the queue is empty.
     *
-    * @param byteCount the number of bytes to read
+    * @param byteCount the number of bytes (not characters) to read. Be careful not to chop characters in half!
     * @see #readString(int, Charset)
     */
    public String readString(final int byteCount)
    {
+      /* I could make a version that reads by UTF-8 characters:
+       * read first byte, count leading 1s, if 0 done, else read 1s-1 more bytes.
+       * That's 1 character, loop that.
+       * However I don't need that and this class was made for me (internal package).
+       * "UTF-∞" does the same thing but the leading 1s can be across multiple bytes. */
       return readString(byteCount, StandardCharsets.UTF_8);
    }
 

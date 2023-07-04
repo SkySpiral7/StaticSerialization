@@ -76,7 +76,7 @@ public final class HeaderInformation<T_Value>
     * If {@link #getClassName()} is null then the header represents null. Else null means there is no value. There will be a value for true,
     * false, null, or an existing id.
     *
-    * @return the value of the stream's object if any (most doesn't have a value)
+    * @return the value of the stream's object if any (most values aren't in the header)
     */
    public T_Value getValue(){return value;}
 

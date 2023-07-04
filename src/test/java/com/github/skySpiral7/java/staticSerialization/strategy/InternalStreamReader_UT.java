@@ -1,10 +1,5 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.math.BigInteger;
-
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
@@ -16,6 +11,11 @@ import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -187,6 +187,45 @@ public class InternalStreamReader_UT
    }
 
    @Test
+   public void readObject_returns_givenId() throws Exception
+   {
+      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_header_null.", ".txt");
+      tempFile.deleteOnExit();
+      byte[] fileContents = {'*', 0, 0, 0, 2};
+      FileIoUtil.writeToFile(tempFile, fileContents);
+      FileIoUtil.appendToFile(tempFile, "hi");
+      fileContents = new byte[]{'\\', 0, 0, 0, 0};
+      FileIoUtil.appendToFile(tempFile, fileContents);
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.hasData());
+      String firstObject = testObject.readObject(String.class);
+      String secondObject = testObject.readObject(String.class);
+      assertSame(firstObject, secondObject);
+      assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   @Test
+   public void readObject_byte() throws Exception
+   {
+      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_byte.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
+      final byte[] fileContents = {(byte) 0xde, '~', (byte) 0xad};
+      FileIoUtil.appendToFile(tempFile, fileContents);
+
+      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      assertTrue(testObject.hasData());
+      assertEquals((byte) 0xde, testObject.readObject(Byte.class).byteValue());
+      assertEquals((byte) 0xad, testObject.readObject(byte.class).byteValue());
+      assertFalse(testObject.hasData());
+
+      testObject.close();
+   }
+
+   @Test
    public void readObject_Short() throws Exception
    {
       final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Short.", ".txt");
@@ -282,7 +321,7 @@ public class InternalStreamReader_UT
    {
       final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Boolean.", ".txt");
       tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "-+-+");
+      FileIoUtil.writeToFile(tempFile, "-+-+java.lang.Boolean;-java.lang.Boolean;+java.lang.Boolean;;");
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertTrue(testObject.hasData());
@@ -290,6 +329,9 @@ public class InternalStreamReader_UT
       assertTrue(testObject.readObject(Boolean.class));
       assertFalse(testObject.readObject(boolean.class));
       assertTrue(testObject.readObject(boolean.class));
+      assertFalse(testObject.readObject(Boolean.class));
+      assertTrue(testObject.readObject(Boolean.class));
+      assertNull(testObject.readObject(Boolean.class));
       assertFalse(testObject.hasData());
 
       testObject.close();
@@ -709,12 +751,17 @@ public class InternalStreamReader_UT
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "java.math.BigInteger;");
       final BigInteger data = BigInteger.TEN;
-      final byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
+      byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
+      FileIoUtil.appendToFile(tempFile, BitWiseUtil.toBigEndianBytes(javaData.length, 4));
+      FileIoUtil.appendToFile(tempFile, javaData);
+      FileIoUtil.appendToFile(tempFile, "java.math.BigInteger;");
+      javaData = JavaSerializableStrategy.javaSerialize(null);
       FileIoUtil.appendToFile(tempFile, BitWiseUtil.toBigEndianBytes(javaData.length, 4));
       FileIoUtil.appendToFile(tempFile, javaData);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
       assertEquals(data, testObject.readObject());
+      assertNull(testObject.readObject());
 
       testObject.close();
    }

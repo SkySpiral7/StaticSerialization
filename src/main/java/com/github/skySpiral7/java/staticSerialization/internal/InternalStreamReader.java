@@ -44,7 +44,8 @@ public class InternalStreamReader implements Closeable
       if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));
 
       final HeaderInformation<?> headerInformation = HeaderSerializableStrategy.readHeader(fileReader, inheritFromClass, registry);
-      //TODO: throw new StreamCorruptedException("Expected: int, Actual: null, Consider using Integer")
+      //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
+      //if cast it will NPE is that better? what about allowing children?
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
       if (headerInformation.getDimensionCount() == 0 && Boolean.class.getName().equals(headerInformation.getClassName()))
       {
@@ -52,11 +53,10 @@ public class InternalStreamReader implements Closeable
          if (headerInformation.getValue() != null) return cast(headerInformation.getValue());  //either true or false
          //will be null for primitive arrays or if the header explicitly contained Boolean for some reason
          //either way will be read below
-         //TODO: add tests for header of "java.lang.Boolean"
       }
       else if (headerInformation.getValue() != null)
       {
-         //TODO: test and validate
+         //TODO: validate
          //ReaderValidationStrategy.validateId(expectedClass, headerInformation.getValue(), allowChildClass);
          return cast(headerInformation.getValue());
       }
@@ -68,9 +68,8 @@ public class InternalStreamReader implements Closeable
       }
       final T_Actual returnValue = AllSerializableStrategy.read(streamReader, this, fileReader, actualClass);
       //null, boolean, and id don't reach here
-      //TODO: test
+      if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: can array?
       //TODO: make util for should register since long should
-      if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: confirm
       if (!ClassUtil.isPrimitiveOrBox(returnValue.getClass()) && !streamReader.isRegistered(returnValue))
          streamReader.registerObject(returnValue);
       return returnValue;

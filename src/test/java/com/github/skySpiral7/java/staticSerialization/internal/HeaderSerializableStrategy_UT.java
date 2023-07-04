@@ -448,9 +448,86 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_throws_whenHeaderNoTerminated() throws Exception
+   public void readHeader_throws_whenIdMissing() throws Exception
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenHeaderNoTerminated.", ".txt");
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenIdMissing.",
+              ".txt");
+      tempFile.deleteOnExit();
+
+      ObjectReaderRegistry registry = new ObjectReaderRegistry();
+      registry.reserveIdForLater();
+      registry.registerObject("hi");
+
+      FileIoUtil.writeToFile(tempFile, "\\");
+      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+
+      try
+      {
+         HeaderSerializableStrategy.readHeader(reader, null, registry);
+         fail("Didn't throw");
+      }
+      catch (final StreamCorruptedException actual)
+      {
+         assertEquals("Incomplete header: id type but no id", actual.getMessage());
+      }
+
+      reader.close();
+   }
+
+   @Test
+   public void readHeader_throws_whenNoMatchingId() throws Exception
+   {
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenNoMatchingId.",
+              ".txt");
+      tempFile.deleteOnExit();
+
+      ObjectReaderRegistry registry = new ObjectReaderRegistry();
+      registry.reserveIdForLater();
+
+      FileIoUtil.writeToFile(tempFile, "\\");
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 0});
+      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+
+      try
+      {
+         HeaderSerializableStrategy.readHeader(reader, null, registry);
+         fail("Didn't throw");
+      }
+      catch (final StreamCorruptedException actual)
+      {
+         assertEquals("id not found", actual.getMessage());
+      }
+
+      reader.close();
+   }
+
+   @Test
+   public void readHeader_returns_givenId() throws Exception
+   {
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returns_givenId.",
+              ".txt");
+      tempFile.deleteOnExit();
+
+      ObjectReaderRegistry registry = new ObjectReaderRegistry();
+      registry.reserveIdForLater();
+      String objectValue = "hi";
+      registry.registerObject(objectValue);
+
+      FileIoUtil.writeToFile(tempFile, "\\");
+      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 0});
+      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final HeaderInformation<String> expected = new HeaderInformation<>(String.class.getName(), objectValue, 0, false);
+
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, registry);
+
+      assertEquals(expected, actual);
+      reader.close();
+   }
+
+   @Test
+   public void readHeader_throws_whenHeaderNotTerminated() throws Exception
+   {
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenHeaderNotTerminated.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "j");
       final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
@@ -529,6 +606,28 @@ public class HeaderSerializableStrategy_UT
       final byte[] expected = {';'};
       //don't use bytesToString since that assumes the header has UTF-8 encoding
       assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+   }
+
+   @Test
+   public void writeObject_id() throws IOException
+   {
+      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_id.", ".txt");
+      tempFile.deleteOnExit();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+
+      String reusedValue = "f";
+      testObject.writeObject(reusedValue);
+      testObject.writeObject(reusedValue);
+      testObject.close();
+      final byte[] expected = {
+              '*',  //short hand for String
+              0, 0, 0, 1,  //UTF-8 length (int)
+              'f',  //data
+              '\\',  //id type
+              0, 0, 0, 0  //id
+      };
+      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test

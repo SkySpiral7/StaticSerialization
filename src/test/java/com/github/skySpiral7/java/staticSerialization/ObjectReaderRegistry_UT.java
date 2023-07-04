@@ -1,5 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization;
 
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,8 +91,8 @@ public class ObjectReaderRegistry_UT
       catch (IllegalStateException actual)
       {
          final String expectedMessage = "id not found. Make sure registerObject is only called for the "
-                                        + "root object and that ObjectStreamReader.readObject etc are used as an "
-                                        + "entry point for reading the stream.";
+               + "root object and that ObjectStreamReader.readObject etc are used as an "
+               + "entry point for reading the stream.";
          assertEquals(expectedMessage, actual.getMessage());
       }
    }
@@ -103,5 +104,36 @@ public class ObjectReaderRegistry_UT
       testObject.reserveIdForLater();
       testObject.registerObject(data);
       assertEquals(data, testObject.getRegisteredObject(0));
+   }
+
+   @Test
+   public void getRegisteredObject_throws_whenIdNegative()
+   {
+      try
+      {
+         testObject.getRegisteredObject(-2);
+         fail("Should've thrown");
+      }
+      catch (StreamCorruptedException actual)
+      {
+         assertEquals("invalid id. registry.size=0 but found id=-2", actual.getMessage());
+      }
+   }
+
+   @Test
+   public void getRegisteredObject_throws_whenIdNotFound()
+   {
+      final Object data = new Object();
+      testObject.reserveIdForLater();
+      testObject.registerObject(data);
+      try
+      {
+         testObject.getRegisteredObject(10);
+         fail("Should've thrown");
+      }
+      catch (StreamCorruptedException actual)
+      {
+         assertEquals("invalid id. registry.size=1 but found id=10", actual.getMessage());
+      }
    }
 }

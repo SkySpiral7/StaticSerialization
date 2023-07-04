@@ -1,14 +1,15 @@
 package com.github.skySpiral7.java.staticSerialization.internal;
 
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ObjectReaderRegistry
 {
@@ -56,8 +57,8 @@ public class ObjectReaderRegistry
          2) Class's readFromStream was called directly
          */
          if (id == -1) throw new IllegalStateException("id not found. Make sure registerObject is only called for the "
-                                                       + "root object and that ObjectStreamReader.readObject etc are used as an "
-                                                       + "entry point for reading the stream.");
+               + "root object and that ObjectStreamReader.readObject etc are used as an "
+               + "entry point for reading the stream.");
          registry.set(id, instance);
          LOG.debug(id + ": " + instance + " " + instance.getClass().getSimpleName());
          uniqueness.put(instance, id);
@@ -66,6 +67,8 @@ public class ObjectReaderRegistry
 
    public <T> T getRegisteredObject(final int id)
    {
+      if (id < 0 || id >= registry.size())
+         throw new StreamCorruptedException("invalid id. registry.size=" + registry.size() + " but found id=" + id);
       return ClassUtil.cast(registry.get(id));
    }
 }

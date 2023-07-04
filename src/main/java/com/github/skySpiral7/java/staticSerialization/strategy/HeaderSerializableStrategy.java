@@ -122,9 +122,9 @@ public enum HeaderSerializableStrategy
          primitiveArray = (']' == firstByte);  //is false if not an array at all
          if ('[' == firstByte || ']' == firstByte)
          {
-            if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array dimensions");
+            if (!reader.hasData()) throw new StreamCorruptedException("Incomplete header: no array dimensions");
             dimensionCount = Byte.toUnsignedInt(reader.readByte());
-            if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array component type");
+            if (!reader.hasData()) throw new StreamCorruptedException("Incomplete header: no array component type");
             //technically the previous assignment wasn't the first byte but what else can I call this variable?
             firstByte = reader.readByte();
             if (';' == firstByte) throw new StreamCorruptedException("header's array component type can't be null");
@@ -144,12 +144,10 @@ public enum HeaderSerializableStrategy
       }
       if ('\\' == firstByte)
       {
-         //TODO: test
-         if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: id type but no id");
+         if (!reader.hasData()) throw new StreamCorruptedException("Incomplete header: id type but no id");
          final int id = IntegerSerializableStrategy.read(reader);
          final Object registeredObject = registry.getRegisteredObject(id);
          //null value will not have an id. null is only possible if id was reserved but not registered
-         //TODO: StreamCorruptedException if id is out of bounds
          if (registeredObject == null) throw new StreamCorruptedException("id not found");
          //LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
          LOG.debug("id: " + id + " (" + registeredObject + " " + registeredObject.getClass().getSimpleName() + ")");
@@ -172,7 +170,6 @@ public enum HeaderSerializableStrategy
       if (data != null && !ClassUtil.isPrimitiveOrBox(data.getClass()))
       {
          //TODO: long gets id, other primitives don't, else do
-         //TODO: test
          final Integer id = registry.getId(data);
          //LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data + " id=" + id);
          if (id != null)

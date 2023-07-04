@@ -324,7 +324,7 @@ public class EveryId_IT
    }
 
    /**
-    * catch Node: readFromStream failing to call registerObject: to make sure user failure message is useful for you class
+    * catch Node: readFromStream failing to call registerObject: to make sure user failure message is useful for your class
     */
    @Test
    public void myClassFailedToRegister() throws Exception

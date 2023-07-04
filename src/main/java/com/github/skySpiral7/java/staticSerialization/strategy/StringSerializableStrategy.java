@@ -58,12 +58,13 @@ public enum StringSerializableStrategy
       classNameStream.write(firstByte);
       while (true)
       {
-         if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: class name not terminated");
+         if (!reader.hasData())
+            throw new StreamCorruptedException("Incomplete header: class name not terminated");
          final byte thisByte = reader.readByte();
          if (thisByte == ';') break;
          classNameStream.write(thisByte);
       }
-      final String result = new String(classNameStream.toByteArray(), StandardCharsets.UTF_8);
+      final String result = classNameStream.toString(StandardCharsets.UTF_8);
       LOG.debug(result);
       return result;
    }
