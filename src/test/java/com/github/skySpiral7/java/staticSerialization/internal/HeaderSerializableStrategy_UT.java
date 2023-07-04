@@ -1,22 +1,21 @@
 package com.github.skySpiral7.java.staticSerialization.internal;
 
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+import com.github.skySpiral7.java.util.FileIoUtil;
+import org.junit.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
-import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
-import com.github.skySpiral7.java.util.FileIoUtil;
-import org.junit.Test;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class HeaderSerializableStrategy_UT
 {
@@ -99,12 +98,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_throws_whenNoArrayDimensions() throws Exception
+   public void readHeader_throws_whenNoArrayDimensions()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenNoArrayDimensions.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{'['});
 
       try
       {
@@ -120,12 +116,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_throws_whenNoArrayComponent() throws Exception
+   public void readHeader_throws_whenNoArrayComponent()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenNoArrayComponent.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[a");  //'a' is a lot of dimensions
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{'[', 'a'});  //'a' is 97 dimensions
 
       try
       {
@@ -185,14 +178,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returns_givenBooleanArrayInStream() throws Exception
+   public void readHeader_returns_givenBooleanArrayInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returns_givenBooleanArrayInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-
-      FileIoUtil.writeToFile(tempFile, new byte[]{'[', 1, '+'});
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{'[', 1, '+'});
       final HeaderInformation<Boolean> expected = new HeaderInformation<>(Boolean.class.getName(), null, 1, false);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -202,16 +190,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returns_givenPrimitiveBooleanArrayInStream() throws Exception
+   public void readHeader_returns_givenPrimitiveBooleanArrayInStream()
    {
-      final File tempFile = File.createTempFile(
-            "HeaderSerializableStrategy_UT.TempFile.readHeader_returns_givenPrimitiveBooleanArrayInStream.", ".txt");
-      tempFile.deleteOnExit();
-
-      FileIoUtil.writeToFile(tempFile, "]");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});
-      FileIoUtil.appendToFile(tempFile, "+");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{']', 1, '+'});
       final HeaderInformation<Boolean> expected = new HeaderInformation<>(Boolean.class.getName(), null, 1, true);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -221,13 +202,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsNullInfo_givenNullInStream() throws Exception
+   public void readHeader_returnsNullInfo_givenNullInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returnsNullInfo_givenNullInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, ";");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{';'});
       final HeaderInformation<?> expected = new HeaderInformation<>(null, null, 0, false);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -237,13 +214,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsTrueInfo_givenTrueInStream() throws Exception
+   public void readHeader_returnsTrueInfo_givenTrueInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returnsTrueInfo_givenTrueInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "+");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{'+'});
       final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", Boolean.TRUE, 0, false);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -253,13 +226,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsFalseInfo_givenFalseInStream() throws Exception
+   public void readHeader_returnsFalseInfo_givenFalseInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returnsFalseInfo_givenFalseInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "-");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{'-'});
       final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", Boolean.FALSE, 0, false);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -269,13 +238,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsBooleanInfo_givenBooleanObjectInStream() throws Exception
+   public void readHeader_returnsBooleanInfo_givenBooleanObjectInStream()
    {
-      final File tempFile = File.createTempFile(
-            "HeaderSerializableStrategy_UT.TempFile.readHeader_returnsBooleanInfo_givenBooleanObjectInStream.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Boolean;");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader("java.lang.Boolean;".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", null, 0, false);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -285,13 +250,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsByteInfo_givenByteInStream() throws Exception
+   public void readHeader_returnsByteInfo_givenByteInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returnsByteInfo_givenByteInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;~");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader("java.lang.Byte;~".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Byte> expected = new HeaderInformation<>("java.lang.Byte", null, 0, false);
 
       final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -303,13 +264,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsShortInfo_givenShortInStream() throws Exception
+   public void readHeader_returnsShortInfo_givenShortInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returnsShortInfo_givenShortInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Short;!");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader("java.lang.Short;!".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Short> expected = new HeaderInformation<>("java.lang.Short", null, 0, false);
 
       final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -321,13 +278,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsIntegerInfo_givenIntegerInStream() throws Exception
+   public void readHeader_returnsIntegerInfo_givenIntegerInStream()
    {
-      final File tempFile = File.createTempFile(
-            "HeaderSerializableStrategy_UT.TempFile.readHeader_returnsIntegerInfo_givenIntegerInStream.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Integer;@");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader("java.lang.Integer;@".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Integer> expected = new HeaderInformation<>("java.lang.Integer", null, 0, false);
 
       final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -339,13 +292,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsLongInfo_givenLongInStream() throws Exception
+   public void readHeader_returnsLongInfo_givenLongInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returnsLongInfo_givenLongInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Long;#");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader("java.lang.Long;#".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Long> expected = new HeaderInformation<>("java.lang.Long", null, 0, false);
 
       final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -357,13 +306,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsFloatInfo_givenFloatInStream() throws Exception
+   public void readHeader_returnsFloatInfo_givenFloatInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returnsFloatInfo_givenFloatInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Float;%");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader("java.lang.Float;%".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Float> expected = new HeaderInformation<>("java.lang.Float", null, 0, false);
 
       final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -375,13 +320,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsDoubleInfo_givenDoubleInStream() throws Exception
+   public void readHeader_returnsDoubleInfo_givenDoubleInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returnsDoubleInfo_givenDoubleInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Double;^");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader("java.lang.Double;^".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Double> expected = new HeaderInformation<>("java.lang.Double", null, 0, false);
 
       final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -393,13 +334,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsCharacterInfo_givenCharacterInStream() throws Exception
+   public void readHeader_returnsCharacterInfo_givenCharacterInStream()
    {
-      final File tempFile = File.createTempFile(
-            "HeaderSerializableStrategy_UT.TempFile.readHeader_returnsCharacterInfo_givenCharacterInStream.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Character;&");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader("java.lang.Character;&".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Character> expected = new HeaderInformation<>("java.lang.Character", null, 0, false);
 
       final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -411,13 +348,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsStringInfo_givenStringInStream() throws Exception
+   public void readHeader_returnsStringInfo_givenStringInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returnsStringInfo_givenStringInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.String;*");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader("java.lang.String;*".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<String> expected = new HeaderInformation<>("java.lang.String", null, 0, false);
 
       final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -429,16 +362,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returns_givenByteArrayInStream() throws Exception
+   public void readHeader_returns_givenByteArrayInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returns_givenByteArrayInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});
-      FileIoUtil.appendToFile(tempFile, "~");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{'[', 1, '~'});
       final HeaderInformation<Byte> expected = new HeaderInformation<>(Byte.class.getName(), null, 1, false);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -448,18 +374,13 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_throws_whenIdMissing() throws Exception
+   public void readHeader_throws_whenIdMissing()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenIdMissing.",
-              ".txt");
-      tempFile.deleteOnExit();
-
       ObjectReaderRegistry registry = new ObjectReaderRegistry();
       registry.reserveIdForLater();
       registry.registerObject("hi");
 
-      FileIoUtil.writeToFile(tempFile, "\\");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{'\\'});
 
       try
       {
@@ -475,18 +396,12 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_throws_whenNoMatchingId() throws Exception
+   public void readHeader_throws_whenNoMatchingId()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenNoMatchingId.",
-              ".txt");
-      tempFile.deleteOnExit();
-
       ObjectReaderRegistry registry = new ObjectReaderRegistry();
       registry.reserveIdForLater();
 
-      FileIoUtil.writeToFile(tempFile, "\\");
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 0});
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{'\\', 0, 0, 0, 0});
 
       try
       {
@@ -502,20 +417,14 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returns_givenId() throws Exception
+   public void readHeader_returns_givenId()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returns_givenId.",
-              ".txt");
-      tempFile.deleteOnExit();
-
       ObjectReaderRegistry registry = new ObjectReaderRegistry();
       registry.reserveIdForLater();
       String objectValue = "hi";
       registry.registerObject(objectValue);
 
-      FileIoUtil.writeToFile(tempFile, "\\");
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 0});
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{'\\', 0, 0, 0, 0});
       final HeaderInformation<String> expected = new HeaderInformation<>(String.class.getName(), objectValue, 0, false);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, registry);
@@ -525,12 +434,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_throws_whenHeaderNotTerminated() throws Exception
+   public void readHeader_throws_whenHeaderNotTerminated()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenHeaderNotTerminated.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "j");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader(new byte[]{'j'});
 
       try
       {
@@ -546,13 +452,9 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returnsObjectInfo_givenObjectInStream() throws Exception
+   public void readHeader_returnsObjectInfo_givenObjectInStream()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returnsObjectInfo_givenObjectInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Object;");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      final EasyReader reader = new ByteReader("java.lang.Object;".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Object> expected = new HeaderInformation<>("java.lang.Object", null, 0, false);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -564,14 +466,10 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returns_givenObjectArrayInStream() throws Exception
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_returns_givenObjectArrayInStream.",
-            ".txt");
-      tempFile.deleteOnExit();
-
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});
-      FileIoUtil.appendToFile(tempFile, "java.lang.Object;");
-      final AsynchronousFileReader reader = new AsynchronousFileReader(tempFile);
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      byteArrayOutputStream.write(new byte[]{'[', 1});
+      byteArrayOutputStream.write("java.lang.Object;".getBytes(StandardCharsets.UTF_8));
+      final EasyReader reader = new ByteReader(byteArrayOutputStream.toByteArray());
       final HeaderInformation<Object> expected = new HeaderInformation<>(Object.class.getName(), null, 1, false);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);

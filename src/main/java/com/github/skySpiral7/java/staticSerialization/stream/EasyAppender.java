@@ -28,5 +28,5 @@ public interface EasyAppender extends Closeable, Flushable
      *
      * @see #append(String)
      */
-    public void append(final byte[] newContents);
+    void append(final byte[] newContents);
 }
