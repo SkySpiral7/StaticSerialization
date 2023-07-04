@@ -1,4 +1,4 @@
-package com.github.skySpiral7.java.staticSerialization.fileWrapper;
+package com.github.skySpiral7.java.staticSerialization.stream;
 
 import java.io.File;
 import java.io.IOException;

@@ -4,7 +4,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 
-import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 

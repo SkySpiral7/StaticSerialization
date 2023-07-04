@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
@@ -95,7 +95,7 @@ public enum HeaderSerializableStrategy
       final int dimensionCount;
       final boolean primitiveArray;
 
-      //TODO: I don't think it should be excluding Object (even though that's unsupported anyway)
+      //excludes Object for the sake of Object[]
       if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
       {
          //TODO: tests are likely thin
