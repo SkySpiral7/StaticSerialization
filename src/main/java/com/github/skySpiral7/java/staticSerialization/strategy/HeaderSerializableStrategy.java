@@ -1,18 +1,18 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeByte;
 
@@ -88,7 +88,7 @@ public enum HeaderSerializableStrategy
    /**
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
-   public static HeaderInformation<?> readHeader(final AsynchronousFileReader reader, final Class<?> inheritFromClass,
+   public static HeaderInformation<?> readHeader(final EasyReader reader, final Class<?> inheritFromClass,
                                                  final ObjectReaderRegistry registry)
    {
       byte firstByte;
@@ -164,7 +164,7 @@ public enum HeaderSerializableStrategy
    /**
     * @return true if an id was used and no value should be written
     */
-   public static boolean writeHeaderReturnIsId(final AsynchronousFileAppender appender, final Class<?> inheritFromClass, final Object data,
+   public static boolean writeHeaderReturnIsId(final EasyAppender appender, final Class<?> inheritFromClass, final Object data,
                                                final ObjectWriterRegistry registry)
    {
       if (data != null && !ClassUtil.isPrimitiveOrBox(data.getClass()))

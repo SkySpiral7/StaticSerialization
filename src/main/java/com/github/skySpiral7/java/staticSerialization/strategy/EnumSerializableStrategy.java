@@ -1,8 +1,8 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -10,12 +10,12 @@ public enum EnumSerializableStrategy
 {
    ;  //no instances
 
-   public static void write(final AsynchronousFileAppender appender, final Enum<?> data)
+   public static void write(final EasyAppender appender, final Enum<?> data)
    {
       IntegerSerializableStrategy.write(appender, data.ordinal());
    }
 
-   public static <T> T read(final AsynchronousFileReader reader, final Class<T> expectedClass)
+   public static <T> T read(final EasyReader reader, final Class<T> expectedClass)
    {
       final int ordinal = IntegerSerializableStrategy.read(reader);
       if (ordinal < 0) throw new StreamCorruptedException("expected array index. Actual: " + ordinal);

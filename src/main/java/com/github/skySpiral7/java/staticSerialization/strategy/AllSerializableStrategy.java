@@ -1,16 +1,16 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.io.Serializable;
-
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+
+import java.io.Serializable;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -19,7 +19,7 @@ public enum AllSerializableStrategy
    ;  //no instances
 
    public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
-                            final AsynchronousFileAppender fileAppender, final Object data)
+                            final EasyAppender fileAppender, final Object data)
    {
       final Class<?> dataClass = data.getClass();
       if (ClassUtil.isPrimitiveOrBox(dataClass))
@@ -59,7 +59,7 @@ public enum AllSerializableStrategy
    }
 
    public static <T> T read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
-                            final AsynchronousFileReader fileReader, final Class<T> actualClass)
+                            final EasyReader fileReader, final Class<T> actualClass)
    {
       if (ClassUtil.isPrimitiveOrBox(actualClass)) return BoxPrimitiveSerializableStrategy.read(fileReader, actualClass);
       if (String.class.equals(actualClass)) return cast(StringSerializableStrategy.readWithLength(fileReader));

@@ -1,19 +1,20 @@
 package com.github.skySpiral7.java.staticSerialization.internal;
 
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+import com.github.skySpiral7.java.util.FileIoUtil;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 
-import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
-import com.github.skySpiral7.java.util.FileIoUtil;
-
 public class InternalStreamWriter implements Closeable, Flushable
 {
    private final ObjectWriterRegistry registry;
-   private final AsynchronousFileAppender fileAppender;
+   private final EasyAppender fileAppender;
 
    public InternalStreamWriter(final File destination)
    {
@@ -43,7 +44,7 @@ public class InternalStreamWriter implements Closeable, Flushable
       AllSerializableStrategy.write(streamWriter, this, fileAppender, data);
    }
 
-   public AsynchronousFileAppender getFileAppender()
+   public EasyAppender getFileAppender()
    {
       return fileAppender;
    }

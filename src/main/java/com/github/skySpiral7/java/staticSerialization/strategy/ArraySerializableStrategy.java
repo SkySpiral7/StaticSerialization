@@ -1,14 +1,14 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.lang.reflect.Array;
-
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+
+import java.lang.reflect.Array;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -17,7 +17,7 @@ public enum ArraySerializableStrategy
    ;  //no instances
 
    public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
-                            final AsynchronousFileAppender fileAppender, final Object data)
+                            final EasyAppender fileAppender, final Object data)
    {
       final int length = Array.getLength(data);
       IntegerSerializableStrategy.write(fileAppender, length);
@@ -30,7 +30,7 @@ public enum ArraySerializableStrategy
    }
 
    public static <T_Array, T_Component> T_Array read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
-                                                     final AsynchronousFileReader fileReader, final Class<T_Component> componentType)
+                                                     final EasyReader fileReader, final Class<T_Component> componentType)
    {
       final int arrayLength = IntegerSerializableStrategy.read(fileReader);
       final T_Array arrayValue = cast(Array.newInstance(componentType, arrayLength));

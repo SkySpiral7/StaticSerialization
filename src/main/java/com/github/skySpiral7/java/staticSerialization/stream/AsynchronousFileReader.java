@@ -1,18 +1,13 @@
 package com.github.skySpiral7.java.staticSerialization.stream;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ArrayBlockingQueue;
-
 import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
 import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
 import com.github.skySpiral7.java.util.FileIoUtil;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * <p>Creating this class will start reading the file in another thread and placing the results in a queue.
@@ -24,7 +19,7 @@ import com.github.skySpiral7.java.util.FileIoUtil;
  * @see #close()
  * @see #readBytes(int)
  */
-public final class AsynchronousFileReader implements Closeable
+public final class AsynchronousFileReader implements EasyReader
 {
    private final ReaderClass reader;
    private boolean amOpen = true;
@@ -84,9 +79,7 @@ public final class AsynchronousFileReader implements Closeable
       amOpen = false;
    }
 
-   /**
-    * @return true if there are any more bytes
-    */
+   @Override
    public boolean hasData()
    {
       return (remainingBytes > 0);
@@ -95,6 +88,7 @@ public final class AsynchronousFileReader implements Closeable
    /**
     * @return the number of bytes in the file that have not yet been consumed
     */
+   @Override
    public int remainingBytes()
    {
       return remainingBytes;
@@ -106,6 +100,7 @@ public final class AsynchronousFileReader implements Closeable
     * @param byteCount the number of bytes (not characters) to read. Be careful not to chop characters in half!
     * @see #readString(int, Charset)
     */
+   @Override
    public String readString(final int byteCount)
    {
       /* I could make a version that reads by UTF-8 characters:
@@ -119,10 +114,11 @@ public final class AsynchronousFileReader implements Closeable
    /**
     * Reads bytes from the file and converts them to a string using the given encoding. This method will wait if the queue is empty.
     *
-    * @param byteCount the number of bytes to read
+    * @param byteCount the number of bytes (not characters) to read. Be careful not to chop characters in half!
     * @param encoding  the character set used to decode the bytes
     * @see #readBytes(int)
     */
+   @Override
    public String readString(final int byteCount, final Charset encoding)
    {
       return new String(readBytes(byteCount), encoding);
@@ -133,6 +129,7 @@ public final class AsynchronousFileReader implements Closeable
     *
     * @see #readBytes(int)
     */
+   @Override
    public byte readByte()
    {
       return readBytes(1)[0];
@@ -144,6 +141,7 @@ public final class AsynchronousFileReader implements Closeable
     * @param byteCount the number of bytes to read
     * @see #readString(int)
     */
+   @Override
    public byte[] readBytes(final int byteCount)
    {
       if (!amOpen) throw new ClosedResourceException("Can't read from a closed stream");

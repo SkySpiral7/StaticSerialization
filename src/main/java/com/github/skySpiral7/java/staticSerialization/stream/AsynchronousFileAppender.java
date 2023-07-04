@@ -1,19 +1,13 @@
 package com.github.skySpiral7.java.staticSerialization.stream;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.Flushable;
-import java.io.IOException;
-import java.io.OutputStream;
+import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
+import com.github.skySpiral7.java.util.FileIoUtil;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
-import com.github.skySpiral7.java.util.FileIoUtil;
 
 /**
  * <p>This class lets you send data into a queue that another thread will write to the file.
@@ -25,7 +19,7 @@ import com.github.skySpiral7.java.util.FileIoUtil;
  * @see #close()
  * @see #append(byte[])
  */
-public final class AsynchronousFileAppender implements Closeable, Flushable
+public final class AsynchronousFileAppender implements EasyAppender
 {
    private final WriterClass writer;
    private boolean amOpen = true;
@@ -109,6 +103,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
     *
     * @see #append(String, Charset)
     */
+   @Override
    public void append(final String newContents)
    {
       append(newContents.getBytes(StandardCharsets.UTF_8));
@@ -119,6 +114,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
     *
     * @see #append(byte[])
     */
+   @Override
    public void append(final String newContents, final Charset encoding)
    {
       append(newContents.getBytes(encoding));
@@ -129,6 +125,7 @@ public final class AsynchronousFileAppender implements Closeable, Flushable
     *
     * @see #append(String)
     */
+   @Override
    public void append(final byte[] newContents)
    {
       if (!amOpen) throw new ClosedResourceException("Can't write to a closed stream");

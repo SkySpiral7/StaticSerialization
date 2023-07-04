@@ -1,8 +1,8 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 
 import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeBytes;
@@ -12,7 +12,7 @@ public enum BoxPrimitiveSerializableStrategy
 {
    ;  //no instances
 
-   public static void write(final AsynchronousFileAppender appender, final Object data)
+   public static void write(final EasyAppender appender, final Object data)
    {
       if (data instanceof Byte) ByteSerializableStrategy.writeByte(appender, (byte) data);
       else if (data instanceof Short) writeBytes(appender, (short) data, 2);
@@ -36,7 +36,7 @@ public enum BoxPrimitiveSerializableStrategy
       else throw new AssertionError("Method shouldn't've been called");
    }
 
-   public static <T> T read(final AsynchronousFileReader reader, final Class<T> expectedClass)
+   public static <T> T read(final EasyReader reader, final Class<T> expectedClass)
    {
       if (Byte.class.equals(expectedClass)) return cast(reader.readByte());
       if (Short.class.equals(expectedClass))
