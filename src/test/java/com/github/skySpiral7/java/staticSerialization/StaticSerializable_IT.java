@@ -1,20 +1,18 @@
 package com.github.skySpiral7.java.staticSerialization;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
+import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister;
+import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister.Node;
+import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.Test;
+
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-
-import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister;
-import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister.Node;
-import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
-import com.github.skySpiral7.java.util.FileIoUtil;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -29,198 +27,184 @@ public class StaticSerializable_IT
    private static final Logger LOG = LogManager.getLogger();
 
    @Test
-   public void value_null() throws Exception
+   public void value_null()
    {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.value_null.", ".txt");
-      tempFile.deleteOnExit();
-
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(null);
       writer.writeObject(null);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertNull(reader.readObject(String.class));
       assertNull(reader.readObject(byte.class));
       reader.close();
    }
 
    @Test
-   public void primitive_byte() throws Exception
+   public void primitive_byte()
    {
       //This test case exists because primitives have a special format.
       //TODO: include boxes and arrays in these tests?
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_byte.", ".txt");
-      tempFile.deleteOnExit();
       final byte data = 2;
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertEquals(Byte.valueOf(data), reader.readObject(byte.class));
       reader.close();
    }
 
    @Test
-   public void primitive_short() throws Exception
+   public void primitive_short()
    {
       //This test case exists because primitives have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_short.", ".txt");
-      tempFile.deleteOnExit();
       final short data = (short) 2;
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertEquals(Short.valueOf(data), reader.readObject(short.class));
       reader.close();
    }
 
    @Test
-   public void primitive_int() throws Exception
+   public void primitive_int()
    {
       //This test case exists because primitives have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_int.", ".txt");
-      tempFile.deleteOnExit();
       final int data = 2;
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertEquals(Integer.valueOf(data), reader.readObject(int.class));
       reader.close();
    }
 
    @Test
-   public void primitive_long() throws Exception
+   public void primitive_long()
    {
       //This test case exists because primitives have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_long.", ".txt");
-      tempFile.deleteOnExit();
       final long data = 2L;
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertEquals(Long.valueOf(data), reader.readObject(long.class));
       reader.close();
    }
 
    @Test
-   public void primitive_float() throws Exception
+   public void primitive_float()
    {
       //This test case exists because primitives have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_float.", ".txt");
-      tempFile.deleteOnExit();
       final float data = 2.0F;
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertEquals(Float.valueOf(data), reader.readObject(float.class));
       reader.close();
    }
 
    @Test
-   public void primitive_double() throws Exception
+   public void primitive_double()
    {
       //This test case exists because primitives have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_double.", ".txt");
-      tempFile.deleteOnExit();
       final double data = 2.0D;
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertEquals(Double.valueOf(data), reader.readObject(double.class));
       reader.close();
    }
 
    @Test
-   public void primitive_boolean() throws Exception
+   public void primitive_boolean()
    {
       //This test case exists because primitives have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_boolean.", ".txt");
-      tempFile.deleteOnExit();
-
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(true);
       writer.writeObject(false);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertTrue(reader.readObject(boolean.class));
       assertFalse(reader.readObject(Boolean.class));
       reader.close();
    }
 
    @Test
-   public void primitive_char() throws Exception
+   public void primitive_char()
    {
       //This test case exists because primitives have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitive_char.", ".txt");
-      tempFile.deleteOnExit();
       final char data = 'f';
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertEquals(Character.valueOf(data), reader.readObject(char.class));
       reader.close();
    }
 
    @Test
-   public void string() throws Exception
+   public void string()
    {
       //This test case exists because Strings have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.string.", ".txt");
-      tempFile.deleteOnExit();
       final String data = "\u0000∞ > 😢";  //control (null), BMP (infinity), ascii, non-BMP (Crying Face)
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertEquals(data, reader.readObject(String.class));
       reader.close();
    }
 
    @Test
-   public void objectArray() throws IOException
+   public void objectArray()
    {
       //This test case exists because Arrays have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.objectArray.", ".txt");
-      tempFile.deleteOnExit();
       final Object[] data = {1, "joe"};
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertArrayEquals(data, reader.readObject(Object[].class));
       reader.close();
    }
 
    @Test
-   public void sameObject() throws IOException
+   public void sameObject()
    {
       //This test case exists because Arrays have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.sameObject.", ".txt");
-      tempFile.deleteOnExit();
       final BigInteger same = new BigInteger("10");
       final BigInteger bigOne = new BigInteger("1");
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(same);
       writer.writeObject(bigOne);
       writer.writeObject(same);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final BigInteger actualSame = reader.readObject(BigInteger.class);
       final BigInteger actualOne = reader.readObject(BigInteger.class);
       assertSame(actualSame, reader.readObject(BigInteger.class));
@@ -229,20 +213,19 @@ public class StaticSerializable_IT
    }
 
    @Test
-   public void sameObjectInArray() throws IOException
+   public void sameObjectInArray()
    {
       //This test case exists because Arrays have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.sameObjectInArray.", ".txt");
-      tempFile.deleteOnExit();
       final BigInteger same = new BigInteger("10");
       final BigInteger bigOne = new BigInteger("1");
       final Object[] data = {same, bigOne, same};
       assertSame(data[0], data[2]);
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final Object[] actual = reader.readObject(Object[].class);
       assertArrayEquals(data, actual);
       assertSame(actual[0], actual[2]);
@@ -251,66 +234,62 @@ public class StaticSerializable_IT
    }
 
    @Test
-   public void boxArray() throws IOException
+   public void boxArray()
    {
       //This test case exists because Arrays have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.boxArray.", ".txt");
-      tempFile.deleteOnExit();
       final Integer[] data = {1, 5};
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertArrayEquals(data, reader.readObject(Integer[].class));
       reader.close();
    }
 
    @Test
-   public void primitiveArray() throws IOException
+   public void primitiveArray()
    {
       //This test case exists because Arrays have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitiveArray.", ".txt");
-      tempFile.deleteOnExit();
       final int[] data = {1, 5};
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertArrayEquals(data, reader.readObject(int[].class));
       reader.close();
    }
 
    @Test
-   public void array2D() throws IOException
+   public void array2D()
    {
       //This test case exists because Arrays have a special format.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.array2D.", ".txt");
-      tempFile.deleteOnExit();
       final Byte[][] data = {{1}, null};
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertArrayEquals(data, reader.readObject(Byte[][].class));
       reader.close();
    }
 
    @Test
-   public void arrayStressTest() throws IOException
+   public void arrayStressTest()
    {
       //This test case exists to prove that the complexities of arrays are all handled correctly.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.arrayStressTest.", ".txt");
-      tempFile.deleteOnExit();
       final Object[][][] data = new Object[3][][];
       data[0] = new CharSequence[][]{new String[]{"hi"}};
       data[1] = new Number[][]{new Integer[]{1, 2}, new Long[]{4L, 5L}};
       data[2] = new Object[1][1];
       data[2][0][0] = new Object[]{null, "joe", new int[]{6}, data};
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
 
@@ -336,127 +315,122 @@ Object graph (using non compressed names):
                0006
             \<id 0>
        */
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(new byte[]{'[', 3});   //data array indicator and dimensions
-      baos.write("java.lang.Object;".getBytes(StandardCharsets.UTF_8));   //data component
-      baos.write(new byte[]{0, 0, 0, 3});   //data length
-      baos.write("java.lang.CharSequence;".getBytes(StandardCharsets.UTF_8));   //data[0] component
-      baos.write(new byte[]{0, 0, 0, 1});   //data[0] length
-      baos.write(new byte[]{'*'});   //data[0][0] component (String)
-      baos.write(new byte[]{0, 0, 0, 1});   //data[0][0] length
-      baos.write(new byte[]{'?', 0, 0, 0, 2});   //data[0][0][0] inherited type and UTF-8 length
-      baos.write("hi".getBytes(StandardCharsets.UTF_8));   //data[0][0][0] value
-      baos.write("java.lang.Number;".getBytes(StandardCharsets.UTF_8));   //data[1] component
-      baos.write(new byte[]{0, 0, 0, 2});   //data[1] length
-      baos.write(new byte[]{'@'});   //data[1][0] array component (Integer)
-      baos.write(new byte[]{0, 0, 0, 2});   //data[1][0] length
-      baos.write(new byte[]{'?', 0, 0, 0, 1});   //data[1][0][0] inherited type and value
-      baos.write(new byte[]{'?', 0, 0, 0, 2});   //data[1][0][1] inherited type and value
-      baos.write(new byte[]{'#'});   //data[1][1] array component (Long)
-      baos.write(new byte[]{0, 0, 0, 2});   //data[1][1] length
-      baos.write(new byte[]{'?', 0, 0, 0, 0, 0, 0, 0, 4});   //data[1][1][0] inherited type and value
-      baos.write(new byte[]{'?', 0, 0, 0, 0, 0, 0, 0, 5});   //data[1][1][1] inherited type and value
-      baos.write(new byte[]{'?'});   //data[2] inherited type
-      baos.write(new byte[]{0, 0, 0, 1});   //data[2] length
-      baos.write(new byte[]{'?'});   //data[2][0] inherited type
-      baos.write(new byte[]{0, 0, 0, 1});   //data[2][0] length
-      baos.write(new byte[]{'[', 1});   //data[2][0][0] array indicator and dimensions
-      baos.write("java.lang.Object;".getBytes(StandardCharsets.UTF_8));   //data[2][0][0] component
-      baos.write(new byte[]{0, 0, 0, 4});   //data[2][0][0] length
-      baos.write(new byte[]{';'});   //data[2][0][0][0]=null
-      baos.write(new byte[]{'*', 0, 0, 0, 3});   //data[2][0][0][1] type (String) and UTF-8 length
-      baos.write("joe".getBytes(StandardCharsets.UTF_8));   //data[2][0][0][1] value
-      baos.write(new byte[]{']', 1, '@'});   //data[2][0][0][2] array indicator, dimensions, component (int)
-      baos.write(new byte[]{0, 0, 0, 1});   //data[2][0][0][2] length
-      baos.write(new byte[]{0, 0, 0, 6});   //data[2][0][0][2] value (no header)
-      baos.write(new byte[]{'\\', 0, 0, 0, 0});   //data[2][0][0][3] id of data
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 3});   //data array indicator and dimensions
+      expectedBuilder.append("java.lang.Object;");   //data component
+      expectedBuilder.append(new byte[]{0, 0, 0, 3});   //data length
+      expectedBuilder.append("java.lang.CharSequence;");   //data[0] component
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[0] length
+      expectedBuilder.append(new byte[]{'*'});   //data[0][0] component (String)
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[0][0] length
+      expectedBuilder.append(new byte[]{'?', 0, 0, 0, 2});   //data[0][0][0] inherited type and UTF-8 length
+      expectedBuilder.append("hi");   //data[0][0][0] value
+      expectedBuilder.append("java.lang.Number;");   //data[1] component
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //data[1] length
+      expectedBuilder.append(new byte[]{'@'});   //data[1][0] array component (Integer)
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //data[1][0] length
+      expectedBuilder.append(new byte[]{'?', 0, 0, 0, 1});   //data[1][0][0] inherited type and value
+      expectedBuilder.append(new byte[]{'?', 0, 0, 0, 2});   //data[1][0][1] inherited type and value
+      expectedBuilder.append(new byte[]{'#'});   //data[1][1] array component (Long)
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //data[1][1] length
+      expectedBuilder.append(new byte[]{'?', 0, 0, 0, 0, 0, 0, 0, 4});   //data[1][1][0] inherited type and value
+      expectedBuilder.append(new byte[]{'?', 0, 0, 0, 0, 0, 0, 0, 5});   //data[1][1][1] inherited type and value
+      expectedBuilder.append(new byte[]{'?'});   //data[2] inherited type
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[2] length
+      expectedBuilder.append(new byte[]{'?'});   //data[2][0] inherited type
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[2][0] length
+      expectedBuilder.append(new byte[]{'[', 1});   //data[2][0][0] array indicator and dimensions
+      expectedBuilder.append("java.lang.Object;");   //data[2][0][0] component
+      expectedBuilder.append(new byte[]{0, 0, 0, 4});   //data[2][0][0] length
+      expectedBuilder.append(new byte[]{';'});   //data[2][0][0][0]=null
+      expectedBuilder.append(new byte[]{'*', 0, 0, 0, 3});   //data[2][0][0][1] type (String) and UTF-8 length
+      expectedBuilder.append("joe");   //data[2][0][0][1] value
+      expectedBuilder.append(new byte[]{']', 1, '@'});   //data[2][0][0][2] array indicator, dimensions, component (int)
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[2][0][0][2] length
+      expectedBuilder.append(new byte[]{0, 0, 0, 6});   //data[2][0][0][2] value (no header)
+      expectedBuilder.append(new byte[]{'\\', 0, 0, 0, 0});   //data[2][0][0][3] id of data
 
-      final byte[] expectedInFile = baos.toByteArray();
-      final byte[] actualInFile = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] expectedInFile = expectedBuilder.getAllBytes();
+      final byte[] actualInFile = mockFile.getAllBytes();
       assertEquals(new String(expectedInFile, StandardCharsets.UTF_8), new String(actualInFile, StandardCharsets.UTF_8));
       assertEquals(Arrays.toString(expectedInFile).replace(", ", ",\n"), Arrays.toString(actualInFile).replace(", ", ",\n"));
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(actualInFile));
       assertEquals(Arrays.deepToString(data), Arrays.deepToString(reader.readObject(Object[][][].class)));
       reader.close();
    }
 
    @Test
-   public void objectArrayOfSupported() throws IOException
+   public void objectArrayOfSupported()
    {
       //This test case exists to validate an edge case since Object.class isn't supported.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.objectArrayOfSupported.", ".txt");
-      tempFile.deleteOnExit();
       final Object[] data = {1};
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertEquals(Arrays.deepToString(data), Arrays.deepToString(reader.readObject(Object[].class)));
       reader.close();
    }
 
    @Test
-   public void primitiveBooleanArray() throws IOException
+   public void primitiveBooleanArray()
    {
       //This test case exists because boolean[] is an edge case.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.primitiveBooleanArray.", ".txt");
-      tempFile.deleteOnExit();
       final boolean[] data = new boolean[]{true, false};
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertArrayEquals(data, reader.readObject(boolean[].class));
       reader.close();
    }
 
    @Test
-   public void boxBooleanArray() throws IOException
+   public void boxBooleanArray()
    {
       //This test case exists because Boolean[] is an edge case.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.boxBooleanArray.", ".txt");
-      tempFile.deleteOnExit();
       final Boolean[] data = new Boolean[]{true, false};
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertArrayEquals(data, reader.readObject(Boolean[].class));
       reader.close();
    }
 
    @Test
-   public void emptyArray() throws IOException
+   public void emptyArray()
    {
       //This test case exists because an empty array can be of a unsupported type.
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.emptyArray.", ".txt");
-      tempFile.deleteOnExit();
       final Void[] data = new Void[0];
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       assertArrayEquals(data, reader.readObject(Void[].class));
       reader.close();
    }
 
    @Test
-   public void custom() throws Exception
+   public void custom()
    {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.custom.", ".txt");
-      tempFile.deleteOnExit();
       final SimpleHappy data = new SimpleHappy(4);
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
 
       final SimpleHappy actual = reader.readObject(SimpleHappy.class);
       assertNotSame(data, actual);
@@ -465,15 +439,13 @@ Object graph (using non compressed names):
    }
 
    @Test
-   public void normalEnum() throws Exception
+   public void normalEnum()
    {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.normalEnum.", ".txt");
-      tempFile.deleteOnExit();
-
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(RoundingMode.HALF_DOWN);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
 
       assertSame(RoundingMode.HALF_DOWN, reader.readObject(RoundingMode.class));
       reader.close();
@@ -497,25 +469,21 @@ Object graph (using non compressed names):
    }
 
    @Test
-   public void customEnum() throws Exception
+   public void customEnum()
    {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.customEnum.", ".txt");
-      tempFile.deleteOnExit();
-
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(CustomEnum.One);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
 
       assertSame(CustomEnum.One, reader.readObject(CustomEnum.class));
       reader.close();
    }
 
    @Test
-   public void rootedGraph() throws Exception
+   public void rootedGraph()
    {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.rootedGraph.", ".txt");
-      tempFile.deleteOnExit();
       final GraphCallsRegister graph;
       final Node root = new Node("Alice");
       {
@@ -531,7 +499,8 @@ Object graph (using non compressed names):
          graph = new GraphCallsRegister(root);
       }
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       //write both the graph and root to show that self-referencing is handled inside an object and as the root object being written
       LOG.debug("writeObject(graph)");
       writer.writeObject(graph);
@@ -540,7 +509,7 @@ Object graph (using non compressed names):
       writer.close();
       LOG.debug("writer.close()\n");
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       LOG.debug("readObject(GraphCallsRegister.class)");
       final GraphCallsRegister actualGraph = reader.readObject(GraphCallsRegister.class);
       LOG.debug("readObject(GraphCallsRegister.Node.class)");
@@ -553,10 +522,8 @@ Object graph (using non compressed names):
    }
 
    @Test
-   public void rootNode() throws Exception
+   public void rootNode()
    {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.rootNode.", ".txt");
-      tempFile.deleteOnExit();
       final Node root = new Node("Alice");
       {
          final Node bob = new Node("Bob");
@@ -569,12 +536,13 @@ Object graph (using non compressed names):
          //a -> b <-> c -> c
       }
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       //shows that self-referencing is handled as the root object being written
       writer.writeObject(root);
       writer.close();
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final Node actualRoot = reader.readObject();
       reader.close();
       assertNotSame(root, actualRoot);
@@ -601,17 +569,16 @@ Object graph (using non compressed names):
    }
 
    @Test
-   public void reflection() throws Exception
+   public void reflection()
    {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.reflection.", ".txt");
-      tempFile.deleteOnExit();
       final ReflectiveClass data = new ReflectiveClass();
       data.field = 0x0afe_babe;
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
 
       final ReflectiveClass actual = reader.readObject(ReflectiveClass.class);
       assertNotSame(data, actual);
@@ -620,16 +587,15 @@ Object graph (using non compressed names):
    }
 
    @Test
-   public void serializable() throws Exception
+   public void serializable()
    {
-      final File tempFile = File.createTempFile("StaticSerializable_IT.TempFile.serializable.", ".txt");
-      tempFile.deleteOnExit();
       final BigInteger data = BigInteger.TEN;
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
 
       final BigInteger actual = reader.readObject();
       assertNotSame(data, actual);  //TEN is not a singleton and BigInteger won't readResolve it to be the same

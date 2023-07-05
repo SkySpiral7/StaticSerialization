@@ -1,12 +1,13 @@
 package com.github.skySpiral7.java.staticSerialization;
 
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
-
-import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 
 public class ObjectStreamWriter implements Closeable, Flushable
 {
@@ -14,21 +15,29 @@ public class ObjectStreamWriter implements Closeable, Flushable
 
    public ObjectStreamWriter(final File destination)
    {
-      //TODO: allow other streams
       internalStreamWriter = new InternalStreamWriter(destination);
+   }
+
+   /**
+    * Exists for testing.
+    */
+   public ObjectStreamWriter(final EasyAppender appender)
+   {
+      //TODO: allow other streams
+      internalStreamWriter = new InternalStreamWriter(appender);
    }
 
    /**
     * @see AsynchronousFileAppender#flush()
     */
    @Override
-   public void flush(){internalStreamWriter.getFileAppender().flush();}
+   public void flush(){internalStreamWriter.getAppender().flush();}
 
    /**
     * @see AsynchronousFileAppender#close()
     */
    @Override
-   public void close(){internalStreamWriter.getFileAppender().close();}
+   public void close(){internalStreamWriter.getAppender().close();}
 
    /**
     * List of supported types:

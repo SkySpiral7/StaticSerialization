@@ -14,38 +14,44 @@ import java.io.Flushable;
 public class InternalStreamWriter implements Closeable, Flushable
 {
    private final ObjectWriterRegistry registry;
-   private final EasyAppender fileAppender;
+   private final EasyAppender appender;
 
    public InternalStreamWriter(final File destination)
    {
       registry = new ObjectWriterRegistry();
       //start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)
       FileIoUtil.writeToFile(destination, "");  //must do before fileAppender is created so that the file won't be locked
-      fileAppender = new AsynchronousFileAppender(destination);
+      appender = new AsynchronousFileAppender(destination);
+   }
+
+   public InternalStreamWriter(final EasyAppender appender)
+   {
+      registry = new ObjectWriterRegistry();
+      this.appender = appender;
    }
 
    /**
     * @see AsynchronousFileAppender#flush()
     */
    @Override
-   public void flush(){fileAppender.flush();}
+   public void flush(){appender.flush();}
 
    /**
     * @see AsynchronousFileAppender#close()
     */
    @Override
-   public void close(){fileAppender.close();}
+   public void close(){appender.close();}
 
    public void writeObjectInternal(final ObjectStreamWriter streamWriter, final Class<?> inheritFromClass, final Object data)
    {
-      final boolean usedId = HeaderSerializableStrategy.writeHeaderReturnIsId(fileAppender, inheritFromClass, data, registry);
+      final boolean usedId = HeaderSerializableStrategy.writeHeaderReturnIsId(appender, inheritFromClass, data, registry);
       //if an id was written then don't write value
       if (usedId) return;
-      AllSerializableStrategy.write(streamWriter, this, fileAppender, data);
+      AllSerializableStrategy.write(streamWriter, this, appender, data);
    }
 
-   public EasyAppender getFileAppender()
+   public EasyAppender getAppender()
    {
-      return fileAppender;
+      return appender;
    }
 }

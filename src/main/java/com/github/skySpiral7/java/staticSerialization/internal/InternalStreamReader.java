@@ -16,19 +16,19 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 public class InternalStreamReader implements Closeable
 {
    private final ObjectReaderRegistry registry;
-   private final EasyReader fileReader;
+   private final EasyReader reader;
 
-   public InternalStreamReader(final EasyReader fileReader, final ObjectReaderRegistry registry)
+   public InternalStreamReader(final EasyReader reader, final ObjectReaderRegistry registry)
    {
       this.registry = registry;
-      this.fileReader = fileReader;
+      this.reader = reader;
    }
 
    /**
     * @see AsynchronousFileReader#close()
     */
    @Override
-   public void close(){fileReader.close();}
+   public void close(){reader.close();}
 
    /**
     * @param allowChildClass true will throw if the class found isn't the exact same. false allows casting.
@@ -38,13 +38,13 @@ public class InternalStreamReader implements Closeable
                                                                                 Class<T_Expected> expectedClass,
                                                                                 final boolean allowChildClass)
    {
-      if (!fileReader.hasData()) throw new NoMoreDataException();
+      if (!reader.hasData()) throw new NoMoreDataException();
 
       //must check for void.class because ClassUtil.boxClass would throw something less helpful
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));
 
-      final HeaderInformation<?> headerInformation = HeaderSerializableStrategy.readHeader(fileReader, inheritFromClass, registry);
+      final HeaderInformation<?> headerInformation = HeaderSerializableStrategy.readHeader(reader, inheritFromClass, registry);
       //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
       //if cast it will NPE is that better? what about allowing children?
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
@@ -67,7 +67,7 @@ public class InternalStreamReader implements Closeable
       {
          registry.reserveIdForLater();
       }
-      final T_Actual returnValue = AllSerializableStrategy.read(streamReader, this, fileReader, actualClass);
+      final T_Actual returnValue = AllSerializableStrategy.read(streamReader, this, reader, actualClass);
       //null, boolean, and id don't reach here
       if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: can array?
       //TODO: make util for should register since long should

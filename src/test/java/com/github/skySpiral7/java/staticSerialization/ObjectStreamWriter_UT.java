@@ -1,20 +1,17 @@
 package com.github.skySpiral7.java.staticSerialization;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
+import org.junit.Test;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-
-import com.github.skySpiral7.java.util.FileIoUtil;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class ObjectStreamWriter_UT
 {
    @Test
-   public void writeFieldsReflectively() throws IOException
+   public void writeFieldsReflectively()
    {
       final class ReflectiveLocal implements StaticSerializable
       {
@@ -29,18 +26,16 @@ public class ObjectStreamWriter_UT
          }
       }
 
-      final File tempFile = File.createTempFile("ObjectStreamWriter_UT.TempFile.writeFieldsReflectively.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(
-            "com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter_UT$1ReflectiveLocal;@".getBytes(StandardCharsets.UTF_8));
-      baos.write(new byte[]{(byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad});
-      final byte[] expected = baos.toByteArray();
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter_UT$1ReflectiveLocal;@");
+      expectedBuilder.append(new byte[]{(byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad});
+      final byte[] expected = expectedBuilder.getAllBytes();
 
       testObject.writeObject(new ReflectiveLocal());
       testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 }

@@ -15,14 +15,22 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 public class ObjectStreamReader implements Closeable
 {
    private final ObjectReaderRegistry registry;
-   private final EasyReader fileReader;
+   private final EasyReader reader;
    private final InternalStreamReader internalStreamReader;
 
    public ObjectStreamReader(final File sourceFile)
    {
+      this(new AsynchronousFileReader(sourceFile));
+   }
+
+   /**
+    * Exists for testing.
+    */
+   public ObjectStreamReader(final EasyReader reader)
+   {
       registry = new ObjectReaderRegistry();
-      fileReader = new AsynchronousFileReader(sourceFile);
-      internalStreamReader = new InternalStreamReader(fileReader, registry);
+      this.reader = reader;
+      internalStreamReader = new InternalStreamReader(reader, registry);
    }
 
    /**
@@ -31,9 +39,9 @@ public class ObjectStreamReader implements Closeable
    @Override
    public void close(){internalStreamReader.close();}
 
-   public boolean hasData(){return fileReader.hasData();}
+   public boolean hasData(){return reader.hasData();}
 
-   public int remainingBytes(){return fileReader.remainingBytes();}
+   public int remainingBytes(){return reader.remainingBytes();}
 
    /**
     * Reads the next object in the stream no matter what it is. For security this means that you either trust the stream or you trust all

@@ -5,7 +5,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Not thread safe.
+ * Thread safe.
  */
 public class ByteAppender implements EasyAppender
 {

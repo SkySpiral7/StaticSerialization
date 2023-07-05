@@ -4,33 +4,31 @@ import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
-import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class HeaderSerializableStrategy_UT
 {
    //TODO: organize tests. make almost everything an IT but named as UT
    @Test
-   public void readHeader_primitiveArrayElementsHaveNoHeader() throws Exception
+   public void readHeader_primitiveArrayElementsHaveNoHeader()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_primitiveArrayElementsHaveNoHeader.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{']', 1, '~'});  //header
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 2});  //length
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{']', 1, '~'});  //header
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});  //length
       final byte[] expectedData = {2, 5};
-      FileIoUtil.appendToFile(tempFile, expectedData);
-      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+      expectedBuilder.append(expectedData);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
 
       final byte[] actual = streamReader.readObject(byte[].class);
 
@@ -39,17 +37,17 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_inheritType() throws IOException
+   public void readHeader_inheritType()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_inheritType.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{'[', 2, '~'});   //root array indicator, dimensions, component
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});   //root length (int)
-      FileIoUtil.appendToFile(tempFile, new byte[]{'?'});  //root[0] inherits type
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 2});   //root[0] length (int)
-      FileIoUtil.appendToFile(tempFile, new byte[]{'?', 1, ';'});   //root[0][0] data inherits type, root[0][1] is null (not same type)
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 2, '~'});   //root array indicator, dimensions, component
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //root length (int)
+      expectedBuilder.append(new byte[]{'?'});  //root[0] inherits type
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //root[0] length (int)
+      expectedBuilder.append(new byte[]{'?', 1, ';'});   //root[0][0] data inherits type, root[0][1] is null (not same type)
       final Byte[][] expected = {{1, null}};
-      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
 
       final Byte[][] actual = streamReader.readObject(Byte[][].class);
 
@@ -58,16 +56,16 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_inheritTypeIsNotRequired() throws IOException
+   public void readHeader_inheritTypeIsNotRequired()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_inheritTypeIsNotRequired.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{'[', 1});   //array indicator, dimensions
-      FileIoUtil.appendToFile(tempFile, "java.lang.Object;".getBytes(StandardCharsets.UTF_8));   //component
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});   //length (int)
-      FileIoUtil.appendToFile(tempFile, new byte[]{'~', 1});   //data with header (inherit wouldn't be a supported type here)
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 1});   //array indicator, dimensions
+      expectedBuilder.append("java.lang.Object;");   //component
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //length (int)
+      expectedBuilder.append(new byte[]{'~', 1});   //data with header (inherit wouldn't be a supported type here)
       final Object[] expected = {(byte) 1};
-      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
 
       final Object[] actual = streamReader.readObject(Object[].class);
 
@@ -76,13 +74,12 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_throws_whenInheritOutsideOfArray() throws Exception
+   public void readHeader_throws_whenInheritOutsideOfArray()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenInheritOutsideOfArray.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "?1");
-      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("?1");
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
 
       try
       {
@@ -134,13 +131,12 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_throws_whenArrayComponentIsNull() throws Exception
+   public void readHeader_throws_whenArrayComponentIsNull()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenArrayComponentIsNull.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[a;");  //'a' is 97 dimensions
-      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("[a;");  //'a' is 97 dimensions
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
 
       try
       {
@@ -156,13 +152,12 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_throws_whenArrayComponentIsFalse() throws Exception
+   public void readHeader_throws_whenArrayComponentIsFalse()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.readHeader_throws_whenArrayComponentIsFalse.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[a-");  //'a' is 97 dimensions
-      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("[a-");  //'a' is 97 dimensions
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
 
       try
       {
@@ -464,12 +459,12 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void readHeader_returns_givenObjectArrayInStream() throws Exception
+   public void readHeader_returns_givenObjectArrayInStream()
    {
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      byteArrayOutputStream.write(new byte[]{'[', 1});
-      byteArrayOutputStream.write("java.lang.Object;".getBytes(StandardCharsets.UTF_8));
-      final EasyReader reader = new ByteReader(byteArrayOutputStream.toByteArray());
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append(new byte[]{'[', 1});
+      inputBuilder.append("java.lang.Object;");
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       final HeaderInformation<Object> expected = new HeaderInformation<>(Object.class.getName(), null, 1, false);
 
       final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
@@ -479,39 +474,36 @@ public class HeaderSerializableStrategy_UT
    }
 
    @Test
-   public void writeObject_header() throws IOException
+   public void writeObject_header()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_header.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject((byte) 0xab);
       testObject.close();
       final byte[] expected = {'~', (byte) 0xab};
       //don't use bytesToString since that assumes the header has UTF-8 encoding
-      assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+      assertEquals(Arrays.toString(expected), Arrays.toString(mockFile.getAllBytes()));
    }
 
    @Test
-   public void writeObject_header_null() throws IOException
+   public void writeObject_header_null()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_header_null.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject(null);
       testObject.close();
       final byte[] expected = {';'};
       //don't use bytesToString since that assumes the header has UTF-8 encoding
-      assertEquals(Arrays.toString(expected), Arrays.toString(FileIoUtil.readBinaryFile(tempFile)));
+      assertEquals(Arrays.toString(expected), Arrays.toString(mockFile.getAllBytes()));
    }
 
    @Test
-   public void writeObject_id() throws IOException
+   public void writeObject_id()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_id.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       String reusedValue = "f";
       testObject.writeObject(reusedValue);
@@ -524,217 +516,205 @@ public class HeaderSerializableStrategy_UT
               '\\',  //id type
               0, 0, 0, 0  //id
       };
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_byte() throws IOException
+   public void writeObject_byte()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_byte.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       final Byte data = 2;
 
       testObject.writeObject(data);
       testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals("~", bytesToString(fileContents, 1));
       assertEquals(2, fileContents[1]);
    }
 
    @Test
-   public void writeObject_short() throws IOException
+   public void writeObject_short()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_short.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       final Short data = (short) 0xcafe;
       final byte[] expected = {(byte) 0xca, (byte) 0xfe};
 
       testObject.writeObject(data);
       testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals("!", bytesToString(fileContents, 2));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 2)));
    }
 
    @Test
-   public void writeObject_int() throws IOException
+   public void writeObject_int()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_int.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       final Integer data = 0xcafe_bead;
       final byte[] expected = {(byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad};
 
       testObject.writeObject(data);
       testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals("@", bytesToString(fileContents, 4));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
    }
 
    @Test
-   public void writeObject_long() throws IOException
+   public void writeObject_long()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_long.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       final Long data = 0xdead_beef__b100_d123L;
       final byte[] expected = {(byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, 0, (byte) 0xd1, 0x23};
 
       testObject.writeObject(data);
       testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals("#", bytesToString(fileContents, 8));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 8)));
    }
 
    @Test
-   public void writeObject_float() throws IOException
+   public void writeObject_float()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_float.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       final Float data = Float.intBitsToFloat(0xcafe_bead);
       final byte[] expected = {(byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad};
 
       testObject.writeObject(data);
       testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals("%", bytesToString(fileContents, 4));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 4)));
    }
 
    @Test
-   public void writeObject_double() throws IOException
+   public void writeObject_double()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_double.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       final Double data = Double.longBitsToDouble(0xdead_beef__b100_d123L);
       final byte[] expected = {(byte) 0xde, (byte) 0xad, (byte) 0xbe, (byte) 0xef, (byte) 0xb1, 0, (byte) 0xd1, 0x23};
 
       testObject.writeObject(data);
       testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals("^", bytesToString(fileContents, 8));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, 8)));
    }
 
    @Test
-   public void writeHeader_boolean() throws IOException
+   public void writeHeader_boolean()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeHeader_boolean.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter streamWriter = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter streamWriter = new ObjectStreamWriter(mockFile);
 
       streamWriter.writeObject(true);
       streamWriter.writeObject(false);
       streamWriter.close();
       final byte[] expected = {'+', '-'};
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_char() throws IOException
+   public void writeObject_char()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_char.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      ByteAppender mockFile = new ByteAppender();
+      ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject('f');
       testObject.flush();
-      byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      byte[] fileContents = mockFile.getAllBytes();
       assertEquals("&", bytesToString(fileContents, 2));
       assertEquals("[0, " + 0x66 + "]", Arrays.toString(shortenBytes(fileContents, 2)));
 
-      FileIoUtil.writeToFile(tempFile, "");
+      mockFile = new ByteAppender();
+      testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject('∞');  //infinity sign is BMP non-private
       testObject.close();
-      fileContents = FileIoUtil.readBinaryFile(tempFile);
+      fileContents = mockFile.getAllBytes();
       assertEquals("&", bytesToString(fileContents, 2));
       assertEquals("[" + 0x22 + ", " + 0x1e + "]", Arrays.toString(shortenBytes(fileContents, 2)));
    }
 
    @Test
-   public void writeObject_string() throws IOException
+   public void writeObject_string()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_string.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject("f∞");  //infinity sign is BMP (3 UTF-8 bytes) non-private
       testObject.close();
       final byte[] expected = {0, 0, 0, 4,  //UTF-8 length (int)
             'f', (byte) 0xe2, (byte) 0x88, (byte) 0x9e};
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals("*", bytesToString(fileContents, expected.length));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
    }
 
    @Test
-   public void writeObject_objectArray() throws IOException
+   public void writeObject_objectArray()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_objectArray.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject(new Object[]{(byte) 1, (byte) 2});
       testObject.close();
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(new byte[]{'[', 1});   //array indicator and dimensions
-      baos.write("java.lang.Object;".getBytes(StandardCharsets.UTF_8));
-      baos.write(new byte[]{0, 0, 0, 2});   //length (int)
-      baos.write(new byte[]{'~', 1});
-      baos.write(new byte[]{'~', 2});
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals(Arrays.toString(baos.toByteArray()), Arrays.toString(fileContents));
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 1});   //array indicator and dimensions
+      expectedBuilder.append("java.lang.Object;");
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //length (int)
+      expectedBuilder.append(new byte[]{'~', 1});
+      expectedBuilder.append(new byte[]{'~', 2});
+      final byte[] fileContents = mockFile.getAllBytes();
+      assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_boxArray() throws IOException
+   public void writeObject_boxArray()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_boxArray.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject(new Byte[]{1, 2});
       testObject.close();
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(new byte[]{'[', 1, '~'});   //array indicator, dimensions, component
-      baos.write(new byte[]{0, 0, 0, 2});   //length (int)
-      baos.write(new byte[]{'?', 1});
-      baos.write(new byte[]{'?', 2});
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals(Arrays.toString(baos.toByteArray()), Arrays.toString(fileContents));
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 1, '~'});   //array indicator, dimensions, component
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //length (int)
+      expectedBuilder.append(new byte[]{'?', 1});
+      expectedBuilder.append(new byte[]{'?', 2});
+      final byte[] fileContents = mockFile.getAllBytes();
+      assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_stringArray() throws IOException
+   public void writeObject_stringArray()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_stringArray.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject(new String[0]);
       testObject.close();
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(new byte[]{'[', 1, '*'});   //array indicator, dimensions, component
-      baos.write(new byte[]{0, 0, 0, 0});   //length (int)
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals(Arrays.toString(baos.toByteArray()), Arrays.toString(fileContents));
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 1, '*'});   //array indicator, dimensions, component
+      expectedBuilder.append(new byte[]{0, 0, 0, 0});   //length (int)
+      final byte[] fileContents = mockFile.getAllBytes();
+      assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_primitiveArray() throws IOException
+   public void writeObject_primitiveArray()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_primitiveArray.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject(new byte[]{1, 2});
       testObject.close();
@@ -742,36 +722,34 @@ public class HeaderSerializableStrategy_UT
             '~',  //byte
             0, 0, 0, 2,  //length (int)
             1, 2};  //primitive elements have no header
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_2dArray() throws IOException
+   public void writeObject_2dArray()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_2dArray.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject(new Byte[][]{{1}, null});
       testObject.close();
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(new byte[]{'[', 2, '~'});   //root array indicator, dimensions, component
-      baos.write(new byte[]{0, 0, 0, 2});   //root length (int)
-      baos.write(new byte[]{'?'});   //root[0] inherits type, dimensions, and component
-      baos.write(new byte[]{0, 0, 0, 1});   //root[0] length (int)
-      baos.write(new byte[]{'?', 1});   //root[0][0] data with header
-      baos.write(';');   //root[1] is null
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals(Arrays.toString(baos.toByteArray()), Arrays.toString(fileContents));
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 2, '~'});   //root array indicator, dimensions, component
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //root length (int)
+      expectedBuilder.append(new byte[]{'?'});   //root[0] inherits type, dimensions, and component
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //root[0] length (int)
+      expectedBuilder.append(new byte[]{'?', 1});   //root[0][0] data with header
+      expectedBuilder.append(";");   //root[1] is null
+      final byte[] fileContents = mockFile.getAllBytes();
+      assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_primitiveBooleanArray() throws IOException
+   public void writeObject_primitiveBooleanArray()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_primitiveBooleanArray.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject(new boolean[]{true});
       testObject.close();
@@ -779,42 +757,40 @@ public class HeaderSerializableStrategy_UT
             '+',  //boolean
             0, 0, 0, 1,  //length (int)
             '+'};
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_boxBooleanArray() throws IOException
+   public void writeObject_boxBooleanArray()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_boxBooleanArray.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject(new Boolean[]{false});
       testObject.close();
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(new byte[]{'[', 1, '+'});   //array indicator, dimensions, component
-      baos.write(new byte[]{0, 0, 0, 1});   //length (int)
-      baos.write(new byte[]{'-'});
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals(Arrays.toString(baos.toByteArray()), Arrays.toString(fileContents));
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 1, '+'});   //array indicator, dimensions, component
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //length (int)
+      expectedBuilder.append(new byte[]{'-'});
+      final byte[] fileContents = mockFile.getAllBytes();
+      assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_emptyArray() throws IOException
+   public void writeObject_emptyArray()
    {
-      final File tempFile = File.createTempFile("HeaderSerializableStrategy_UT.TempFile.writeObject_emptyArray.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       testObject.writeObject(new Void[0]);
       testObject.close();
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(new byte[]{'[', 1});   //array indicator and dimensions
-      baos.write("java.lang.Void;".getBytes(StandardCharsets.UTF_8));
-      baos.write(new byte[]{0, 0, 0, 0});   //length (int)
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals(Arrays.toString(baos.toByteArray()), Arrays.toString(fileContents));
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 1});   //array indicator and dimensions
+      expectedBuilder.append("java.lang.Void;");
+      expectedBuilder.append(new byte[]{0, 0, 0, 0});   //length (int)
+      final byte[] fileContents = mockFile.getAllBytes();
+      assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));
    }
 
    private String bytesToString(final byte[] data, final int bytesToIgnore)

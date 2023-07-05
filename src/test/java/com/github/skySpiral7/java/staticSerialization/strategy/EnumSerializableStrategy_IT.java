@@ -1,17 +1,15 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.math.RoundingMode;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
-import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
+
+import java.math.RoundingMode;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -20,46 +18,45 @@ import static org.junit.Assert.fail;
 public class EnumSerializableStrategy_IT
 {
    @Test
-   public void write() throws Exception
+   public void write()
    {
-      final File tempFile = File.createTempFile("EnumSerializableStrategy_IT.TempFile.write.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write("java.math.RoundingMode;".getBytes(StandardCharsets.UTF_8));
-      baos.write(new byte[]{0, 0, 0, 1});
-      final byte[] expected = baos.toByteArray();
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("java.math.RoundingMode;");
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});
+      final byte[] expected = expectedBuilder.getAllBytes();
 
       testObject.writeObject(RoundingMode.DOWN);
       testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test
-   public void read() throws Exception
+   public void read()
    {
-      final File tempFile = File.createTempFile("EnumSerializableStrategy_IT.TempFile.read.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.math.RoundingMode;");
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.math.RoundingMode;");
       final byte[] fileContents = {0, 0, 0, 1};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      inputBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertSame(RoundingMode.DOWN, testObject.readObject(RoundingMode.class));
 
       testObject.close();
    }
 
    @Test
-   public void read_throws_WhenOrdinalInvalid() throws Exception
+   public void read_throws_WhenOrdinalInvalid()
    {
-      final File tempFile = File.createTempFile("EnumSerializableStrategy_IT.TempFile.read_throws_WhenOrdinalInvalid.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.math.RoundingMode;");
-      FileIoUtil.appendToFile(tempFile, BitWiseUtil.toBigEndianBytes(-1, 4));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.math.RoundingMode;");
+      inputBuilder.append(BitWiseUtil.toBigEndianBytes(-1, 4));
+      final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(RoundingMode.class);
@@ -74,15 +71,15 @@ public class EnumSerializableStrategy_IT
    }
 
    @Test
-   public void read_throws_WhenOrdinalNotFound() throws Exception
+   public void read_throws_WhenOrdinalNotFound()
    {
-      final File tempFile = File.createTempFile("EnumSerializableStrategy_IT.TempFile.read_throws_WhenOrdinalNotFound.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.math.RoundingMode;");
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.math.RoundingMode;");
       final byte[] fileContents = {0, 0, 0, 10};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      inputBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(RoundingMode.class);

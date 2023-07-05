@@ -1,12 +1,12 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.io.File;
-import java.util.Arrays;
-
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
-import com.github.skySpiral7.java.util.FileIoUtil;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -15,14 +15,13 @@ import static org.junit.Assert.fail;
 public class ReaderValidationStrategy_UT
 {
    @Test
-   public void readObjectStrictly_throws_whenGotBoolean() throws Exception
+   public void readObjectStrictly_throws_whenGotBoolean()
    {
-      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenGotBoolean.", ".txt");
-      tempFile.deleteOnExit();
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("+-");  //+ is true, - is false
 
-      FileIoUtil.writeToFile(tempFile, "+-");  //+ is true, - is false
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObjectStrictly(Object.class);
@@ -45,14 +44,13 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void getClassFromHeader_throws_noCastToBoolean() throws Exception
+   public void getClassFromHeader_throws_noCastToBoolean()
    {
-      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_throws_noCastToBoolean.", ".txt");
-      tempFile.deleteOnExit();
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("+");  //+ is true
 
-      FileIoUtil.writeToFile(tempFile, "+");  //+ is true
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(String.class);
@@ -66,14 +64,13 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void getClassFromHeader_header_noSuchClassThrows() throws Exception
+   public void getClassFromHeader_header_noSuchClassThrows()
    {
-      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_header_noSuchClassThrows.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.f;");
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("java.lang.f;");
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(String.class);
@@ -88,13 +85,13 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void getClassFromHeader_header_InvalidClassThrows() throws Exception
+   public void getClassFromHeader_header_InvalidClassThrows()
    {
-      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_header_noClassThrows.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.;");
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("java.;");
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
 
       try
       {
@@ -110,35 +107,33 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void getClassFromHeader_returnsArray_whenExpectObject() throws Exception
+   public void getClassFromHeader_returnsArray_whenExpectObject()
    {
-      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_returnsArray_whenExpectObject.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{']', 1, '+'});  //array indicator, dimensions, component
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});  //length (int)
-      FileIoUtil.appendToFile(tempFile, "+");  //data
-      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{']', 1, '+'});  //array indicator, dimensions, component
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});  //length (int)
+      expectedBuilder.append("+");  //data
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       final boolean[] expected = {true};
 
-      final boolean[] actual = streamReader.readObject();
+      final boolean[] actual = testObject.readObject();
 
       assertEquals(Arrays.toString(expected), Arrays.toString(actual));
-      streamReader.close();
+      testObject.close();
    }
 
    @Test
-   public void getClassFromHeader_throws_noArrayCast() throws Exception
+   public void getClassFromHeader_throws_noArrayCast()
    {
-      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_header_noArrayCastThrows.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});
-      FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 0});  //empty array to prove that the check is needed
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("[");
+      expectedBuilder.append(new byte[]{1});
+      expectedBuilder.append("java.lang.Byte;");
+      expectedBuilder.append(new byte[]{0, 0, 0, 0});  //empty array to prove that the check is needed
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(String[].class);
@@ -153,17 +148,16 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void getClassFromHeader_throws_primitiveArrayDoesNotCastToBox() throws Exception
+   public void getClassFromHeader_throws_primitiveArrayDoesNotCastToBox()
    {
-      final File tempFile = File.createTempFile(
-            "ReaderValidationStrategy_UT.TempFile.getClassFromHeader_throws_primitiveArrayDoesNotCastToBox.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "]");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});
-      FileIoUtil.appendToFile(tempFile, "~");
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1, '~', 2});  //length, [0]=2
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("]");
+      expectedBuilder.append(new byte[]{1});
+      expectedBuilder.append("~");
+      expectedBuilder.append(new byte[]{0, 0, 0, 1, '~', 2});  //length, [0]=2
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(Byte[].class);
@@ -178,29 +172,28 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void getClassFromHeader_returns_primitiveArray() throws Exception
+   public void getClassFromHeader_returns_primitiveArray()
    {
-      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_returns_primitiveArray.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "]");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});
-      FileIoUtil.appendToFile(tempFile, "~");
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1, 2});  //length, [0]=2
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("]");
+      expectedBuilder.append(new byte[]{1});
+      expectedBuilder.append("~");
+      expectedBuilder.append(new byte[]{0, 0, 0, 1, 2});  //length, [0]=2
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertArrayEquals(new byte[]{2}, testObject.readObject(byte[].class));
       testObject.close();
    }
 
    @Test
-   public void getClassFromHeader_throws_whenStreamHasPrimitiveVoid() throws Exception
+   public void getClassFromHeader_throws_whenStreamHasPrimitiveVoid()
    {
-      final File tempFile = File.createTempFile(
-            "ReaderValidationStrategy_UT.TempFile.getClassFromHeader_throws_whenStreamHasPrimitiveVoid.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "void;");
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("void;");
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(String.class);
@@ -215,13 +208,13 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void getClassFromHeader_header_noCastThrows() throws Exception
+   public void getClassFromHeader_header_noCastThrows()
    {
-      final File tempFile = File.createTempFile("ReaderValidationStrategy_UT.TempFile.getClassFromHeader_header_noCastThrows.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("java.lang.Byte;");
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(String.class);
@@ -236,17 +229,15 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObjectStrictly_throws_whenExpectedArrayGotNonArray() throws Exception
+   public void readObjectStrictly_throws_whenExpectedArrayGotNonArray()
    {
-      final File tempFile = File.createTempFile(
-            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotNonArray.", ".txt");
-      tempFile.deleteOnExit();
-
+      final ByteAppender expectedBuilder = new ByteAppender();
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
       //meaning that ClassNotFoundException is a failure.
-      FileIoUtil.writeToFile(tempFile, "f;");
+      expectedBuilder.append("f;");
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObjectStrictly(Object[].class);
@@ -260,17 +251,15 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObjectStrictly_throws_whenExpectedPrimitiveArrayGotBox() throws Exception
+   public void readObjectStrictly_throws_whenExpectedPrimitiveArrayGotBox()
    {
-      final File tempFile = File.createTempFile(
-            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotNonArray.", ".txt");
-      tempFile.deleteOnExit();
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("[");
+      expectedBuilder.append(new byte[]{1});
+      expectedBuilder.append("java.lang.Byte;");
 
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});
-      FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObjectStrictly(byte[].class);
@@ -285,19 +274,17 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObjectStrictly_throws_whenExpectedArrayGotDifferentArrayType() throws Exception
+   public void readObjectStrictly_throws_whenExpectedArrayGotDifferentArrayType()
    {
-      final File tempFile = File.createTempFile(
-            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotDifferentArrayType.", ".txt");
-      tempFile.deleteOnExit();
-
+      final ByteAppender expectedBuilder = new ByteAppender();
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
       //meaning that ClassNotFoundException is a failure.
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});
-      FileIoUtil.appendToFile(tempFile, "f;");
+      expectedBuilder.append("[");
+      expectedBuilder.append(new byte[]{1});
+      expectedBuilder.append("f;");
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObjectStrictly(Object[].class);
@@ -311,17 +298,15 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObjectStrictly_throws_whenExpectedArrayGotDifferentDimensions() throws Exception
+   public void readObjectStrictly_throws_whenExpectedArrayGotDifferentDimensions()
    {
-      final File tempFile = File.createTempFile(
-            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedArrayGotDifferentDimensions.", ".txt");
-      tempFile.deleteOnExit();
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("[");
+      expectedBuilder.append(new byte[]{2});
+      expectedBuilder.append("java.lang.Object;");
 
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{2});
-      FileIoUtil.appendToFile(tempFile, "java.lang.Object;");
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObjectStrictly(Object[].class);
@@ -336,19 +321,17 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObjectStrictly_throws_whenExpectedNonArrayGotArray() throws Exception
+   public void readObjectStrictly_throws_whenExpectedNonArrayGotArray()
    {
-      final File tempFile = File.createTempFile(
-            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedNonArrayGotArray.", ".txt");
-      tempFile.deleteOnExit();
-
+      final ByteAppender expectedBuilder = new ByteAppender();
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
       //meaning that ClassNotFoundException is a failure.
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});
-      FileIoUtil.appendToFile(tempFile, "f;");
+      expectedBuilder.append("[");
+      expectedBuilder.append(new byte[]{1});
+      expectedBuilder.append("f;");
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObjectStrictly(Object.class);
@@ -362,17 +345,15 @@ public class ReaderValidationStrategy_UT
    }
 
    @Test
-   public void readObjectStrictly_throws_whenExpectedNonArrayGotDifferentNonArray() throws Exception
+   public void readObjectStrictly_throws_whenExpectedNonArrayGotDifferentNonArray()
    {
-      final File tempFile = File.createTempFile(
-            "ReaderValidationStrategy_UT.TempFile.readObjectStrictly_throws_whenExpectedNonArrayGotDifferentNonArray.", ".txt");
-      tempFile.deleteOnExit();
-
+      final ByteAppender expectedBuilder = new ByteAppender();
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
       //meaning that ClassNotFoundException is a failure.
-      FileIoUtil.writeToFile(tempFile, "f;");
+      expectedBuilder.append("f;");
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObjectStrictly(Object.class);

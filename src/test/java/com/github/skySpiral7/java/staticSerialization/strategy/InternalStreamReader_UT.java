@@ -7,15 +7,16 @@ import com.github.skySpiral7.java.staticSerialization.exception.DeserializationE
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
 import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
-import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -42,12 +43,10 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_throw_nullInput() throws Exception
+   public void readObject_throw_nullInput()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_throw_nullInput.", ".txt");
-      tempFile.deleteOnExit();
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(new byte[0]);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       boolean didCatch = false;
       try
       {
@@ -63,12 +62,10 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_throw_noData() throws Exception
+   public void readObject_throw_noData()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_throw_noData.", ".txt");
-      tempFile.deleteOnExit();
-
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ByteReader mockFile = new ByteReader(new byte[0]);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertFalse(testObject.hasData());
       try
       {
@@ -84,13 +81,11 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_throw_unknownClass() throws Exception
+   public void readObject_throw_unknownClass()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_throw_unknownClass.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Object;");
+      final ByteReader mockFile = new ByteReader("java.lang.Object;".getBytes(StandardCharsets.UTF_8));
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(Object.class);
@@ -105,13 +100,11 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_throw_voidClass() throws Exception
+   public void readObject_throw_voidClass()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_throw_voidClass.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "void;");
+      final ByteReader mockFile = new ByteReader("void;".getBytes(StandardCharsets.UTF_8));
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(void.class);
@@ -126,13 +119,11 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_BoxesClassArg_GivenPrimitive() throws Exception
+   public void readObject_BoxesClassArg_GivenPrimitive()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_BoxesClassArg_GivenPrimitive.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "-+");
+      final ByteReader mockFile = new ByteReader("-+".getBytes(StandardCharsets.UTF_8));
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertFalse(testObject.readObject(boolean.class));
       assertTrue(testObject.readObject(boolean.class));
@@ -142,14 +133,14 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_header_happy() throws Exception
+   public void readObject_header_happy()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_header_happy.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
-      FileIoUtil.appendToFile(tempFile, new byte[]{2});
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.lang.Byte;");
+      fileBuilder.append(new byte[]{2});
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertEquals(2L, testObject.readObject(Byte.class).longValue());
       assertFalse(testObject.hasData());
@@ -158,27 +149,25 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_header_upCast() throws Exception
+   public void readObject_header_upCast()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_header_upCast.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
-      FileIoUtil.appendToFile(tempFile, new byte[]{2});
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.lang.Byte;");
+      fileBuilder.append(new byte[]{2});
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals(Byte.valueOf((byte) 2), testObject.readObject(Number.class));
 
       testObject.close();
    }
 
    @Test
-   public void readObject_header_null() throws Exception
+   public void readObject_header_null()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_header_null.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, ";");
+      final ByteReader mockFile = new ByteReader(new byte[]{';'});
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertNull(testObject.readObject(Byte.class));
       assertFalse(testObject.hasData());
@@ -187,17 +176,15 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_returns_givenId() throws Exception
+   public void readObject_returns_givenId()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_header_null.", ".txt");
-      tempFile.deleteOnExit();
-      byte[] fileContents = {'*', 0, 0, 0, 2};
-      FileIoUtil.writeToFile(tempFile, fileContents);
-      FileIoUtil.appendToFile(tempFile, "hi");
-      fileContents = new byte[]{'\\', 0, 0, 0, 0};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append(new byte[]{'*', 0, 0, 0, 2});
+      fileBuilder.append("hi");
+      fileBuilder.append(new byte[]{'\\', 0, 0, 0, 0});
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       String firstObject = testObject.readObject(String.class);
       String secondObject = testObject.readObject(String.class);
@@ -208,15 +195,15 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_byte() throws Exception
+   public void readObject_byte()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_byte.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Byte;");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.lang.Byte;");
       final byte[] fileContents = {(byte) 0xde, '~', (byte) 0xad};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertEquals((byte) 0xde, testObject.readObject(Byte.class).byteValue());
       assertEquals((byte) 0xad, testObject.readObject(byte.class).byteValue());
@@ -226,15 +213,14 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_Short() throws Exception
+   public void readObject_Short()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Short.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Short;");
-      final byte[] fileContents = {0x0a, (byte) 0xfe, '!', 0x2b, (byte) 0xf1};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.lang.Short;");
+      fileBuilder.append(new byte[] {0x0a, (byte) 0xfe, '!', 0x2b, (byte) 0xf1});
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertEquals(0x0afeL, testObject.readObject(Short.class).longValue());
       assertEquals(0x2bf1L, testObject.readObject(short.class).longValue());
@@ -244,15 +230,14 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_Integer() throws Exception
+   public void readObject_Integer()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Integer.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Integer;");
-      final byte[] fileContents = {0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe, '@', 0x0a, 0x1e, (byte) 0xba, (byte) 0xb2};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.lang.Integer;");
+      fileBuilder.append(new byte[]{0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe, '@', 0x0a, 0x1e, (byte) 0xba, (byte) 0xb2});
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertEquals(0x0afe_babeL, testObject.readObject(Integer.class).longValue());
       assertEquals(0x0a1e_bab2L, testObject.readObject(int.class).longValue());
@@ -262,15 +247,15 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_Long() throws Exception
+   public void readObject_Long()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Long.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Long;");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.lang.Long;");
       final byte[] fileContents = {1, 2, 3, 4, 5, 6, 7, 8, '#', 5, 4, 3, 2, 1, 0, 1, 2};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertEquals(0x01020304_05060708L, testObject.readObject(Long.class).longValue());
       assertEquals(0x05040302_01000102L, testObject.readObject(long.class).longValue());
@@ -280,15 +265,15 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_Float() throws Exception
+   public void readObject_Float()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Float.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Float;");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.lang.Float;");
       final byte[] fileContents = {1, 2, 3, 4, '%', (byte) 0xc1, (byte) 0xd2, (byte) 0xe3, (byte) 0xf4};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertEquals((Float) Float.intBitsToFloat(0x01020304), testObject.readObject(Float.class));
       assertEquals((Float) Float.intBitsToFloat(0xc1d2e3f4), testObject.readObject(float.class));
@@ -298,16 +283,16 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_Double() throws Exception
+   public void readObject_Double()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Double.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Double;");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.lang.Double;");
       final byte[] fileContents = {1, 2, 3, 4, 5, 6, 7, 8, '^', (byte) 0xa1, (byte) 0xb2, (byte) 0xc3, (byte) 0xd4, (byte) 0xe5,
             (byte) 0xf6, 0x17, 8};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertEquals((Double) Double.longBitsToDouble(0x01020304_05060708L), testObject.readObject(Double.class));
       assertEquals((Double) Double.longBitsToDouble(0xa1b2c3d4_e5f61708L), testObject.readObject(double.class));
@@ -317,13 +302,13 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_Boolean() throws Exception
+   public void readObject_Boolean()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Boolean.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "-+-+java.lang.Boolean;-java.lang.Boolean;+java.lang.Boolean;;");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("-+-+java.lang.Boolean;-java.lang.Boolean;+java.lang.Boolean;;");
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertFalse(testObject.readObject(Boolean.class));
       assertTrue(testObject.readObject(Boolean.class));
@@ -338,16 +323,16 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_Character() throws Exception
+   public void readObject_Character()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Character.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.Character;");
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0x66});
-      FileIoUtil.appendToFile(tempFile, "&");
-      FileIoUtil.appendToFile(tempFile, new byte[]{0x22, 0x1e});
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.lang.Character;");
+      fileBuilder.append(new byte[]{0, 0x66});
+      fileBuilder.append("&");
+      fileBuilder.append(new byte[]{0x22, 0x1e});
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertEquals('f', testObject.readObject(Character.class).charValue());
       assertEquals(0x221e, testObject.readObject(char.class).charValue());  //infinity sign is BMP non-private
@@ -357,18 +342,18 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_String() throws Exception
+   public void readObject_String()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_String.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.lang.String;");
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 4});  //UTF-8 length (int));
-      FileIoUtil.appendToFile(tempFile, "f∞");
-      FileIoUtil.appendToFile(tempFile, "*");  //shorthand
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});  //UTF-8 length (int));
-      FileIoUtil.appendToFile(tempFile, new byte[]{0});
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.lang.String;");
+      fileBuilder.append(new byte[]{0, 0, 0, 4});  //UTF-8 length (int));
+      fileBuilder.append("f∞");
+      fileBuilder.append("*");  //shorthand
+      fileBuilder.append(new byte[]{0, 0, 0, 1});  //UTF-8 length (int));
+      fileBuilder.append(new byte[]{0});
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertEquals("f∞", testObject.readObject(String.class));  //infinity sign is BMP (3 UTF-8 bytes) non-private
       assertEquals("\u0000", testObject.readObject(String.class));
@@ -378,20 +363,20 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_objectArray() throws IOException
+   public void readObject_objectArray()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_objectArray.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
-      FileIoUtil.appendToFile(tempFile, "java.lang.Object;");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("[");
+      fileBuilder.append(new byte[]{1});   //array indicator and dimensions
+      fileBuilder.append("java.lang.Object;");
       final byte[] fileContents = {0, 0, 0, 2,  //length (int)
             '~', 1,  //each element has header
             '~', 2};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final Object[] expected = {(byte) 1, (byte) 2};
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertArrayEquals(expected, testObject.readObject(Object[].class));
       assertFalse(testObject.hasData());
@@ -400,20 +385,20 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_boxArray() throws IOException
+   public void readObject_boxArray()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_boxArray.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
-      FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("[");
+      fileBuilder.append(new byte[]{1});   //array indicator and dimensions
+      fileBuilder.append("java.lang.Byte;");
       final byte[] fileContents = {0, 0, 0, 2,  //length (int)
             '~', 1,  //each element has header
             '~', 2};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final Byte[] expected = {1, 2};
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertArrayEquals(expected, testObject.readObject(Byte[].class));
       assertFalse(testObject.hasData());
@@ -422,18 +407,18 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_primitiveArray() throws IOException
+   public void readObject_primitiveArray()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_primitiveArray.", ".txt");
-      tempFile.deleteOnExit();
+      final ByteAppender fileBuilder = new ByteAppender();
       final byte[] fileContents = {']', 1,   //array indicator and dimensions
             '~',  //byte
             0, 0, 0, 2,  //length (int)
             1, 2};  //elements of a primitive array do not have headers
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final byte[] expected = {1, 2};
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertArrayEquals(expected, testObject.readObject(byte[].class));
       assertFalse(testObject.hasData());
@@ -442,20 +427,20 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_2dArray() throws IOException
+   public void readObject_2dArray()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_2dArray.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{'[', 2});   //root array indicator and dimensions
-      FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");  //root component
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 2});   //root length (int)
-      FileIoUtil.appendToFile(tempFile, "~");  //root[0] component
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});   //root[0] length (int)
-      FileIoUtil.appendToFile(tempFile, new byte[]{'~', 1});   //root[0][0] data with header
-      FileIoUtil.appendToFile(tempFile, ";");   //root[1] is null
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append(new byte[]{'[', 2});   //root array indicator and dimensions
+      fileBuilder.append("java.lang.Byte;");  //root component
+      fileBuilder.append(new byte[]{0, 0, 0, 2});   //root length (int)
+      fileBuilder.append("~");  //root[0] component
+      fileBuilder.append(new byte[]{0, 0, 0, 1});   //root[0] length (int)
+      fileBuilder.append(new byte[]{'~', 1});   //root[0][0] data with header
+      fileBuilder.append(";");   //root[1] is null
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final Byte[][] expected = {{1}, null};
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertArrayEquals(expected, testObject.readObject(Byte[][].class));
       assertFalse(testObject.hasData());
@@ -464,20 +449,20 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_2dPrimitiveArray() throws IOException
+   public void readObject_2dPrimitiveArray()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_2dPrimitiveArray.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{']', 2});   //root array indicator and dimensions
-      FileIoUtil.appendToFile(tempFile, "java.lang.Byte;");  //root component
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 2});   //root length (int)
-      FileIoUtil.appendToFile(tempFile, "~");  //root[0] component
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});   //root[0] length (int)
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});   //root[0][0] data (no header)
-      FileIoUtil.appendToFile(tempFile, ";");  //root[1]=null
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append(new byte[]{']', 2});   //root array indicator and dimensions
+      fileBuilder.append("java.lang.Byte;");  //root component
+      fileBuilder.append(new byte[]{0, 0, 0, 2});   //root length (int)
+      fileBuilder.append("~");  //root[0] component
+      fileBuilder.append(new byte[]{0, 0, 0, 1});   //root[0] length (int)
+      fileBuilder.append(new byte[]{1});   //root[0][0] data (no header)
+      fileBuilder.append(";");  //root[1]=null
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final byte[][] expected = {{1}, null};
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertArrayEquals(expected, testObject.readObject(byte[][].class));
       assertFalse(testObject.hasData());
@@ -486,18 +471,18 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_primitiveBooleanArray() throws IOException
+   public void readObject_primitiveBooleanArray()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_primitiveBooleanArray.", ".txt");
-      tempFile.deleteOnExit();
+      final ByteAppender fileBuilder = new ByteAppender();
       final byte[] fileContents = {']', 1,   //array indicator and dimensions
             '+',  //boolean
             0, 0, 0, 1,  //length (int)
             '+'};
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final boolean[] expected = {true};
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertArrayEquals(expected, testObject.readObject(boolean[].class));
       assertFalse(testObject.hasData());
@@ -506,19 +491,19 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_boxBooleanArray() throws IOException
+   public void readObject_boxBooleanArray()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_boxBooleanArray.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
-      FileIoUtil.appendToFile(tempFile, "+");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("[");
+      fileBuilder.append(new byte[]{1});   //array indicator and dimensions
+      fileBuilder.append("+");
       final byte[] fileContents = {0, 0, 0, 1,  //length (int)
             '-'};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final Boolean[] expected = {false};
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertArrayEquals(expected, testObject.readObject(Boolean[].class));
       assertFalse(testObject.hasData());
@@ -527,18 +512,18 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_emptyArray() throws IOException
+   public void readObject_emptyArray()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_emptyArray.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "[");
-      FileIoUtil.appendToFile(tempFile, new byte[]{1});   //array indicator and dimensions
-      FileIoUtil.appendToFile(tempFile, "java.lang.Void;");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("[");
+      fileBuilder.append(new byte[]{1});   //array indicator and dimensions
+      fileBuilder.append("java.lang.Void;");
       final byte[] fileContents = {0, 0, 0, 0};  //length (int)
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final Void[] expected = new Void[0];
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.hasData());
       assertArrayEquals(expected, testObject.readObject(Void[].class));
       assertFalse(testObject.hasData());
@@ -547,16 +532,16 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_custom_happy() throws Exception
+   public void readObject_custom_happy()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_custom_happy.", ".txt");
-      tempFile.deleteOnExit();
+      final ByteAppender fileBuilder = new ByteAppender();
       final String header = "com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;";
-      FileIoUtil.writeToFile(tempFile, header);
+      fileBuilder.append(header);
       final byte[] fileContents = {'@', 0, 0, 0, 4};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      fileBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       final SimpleHappy readData = testObject.readObject(SimpleHappy.class);
       assertEquals(4, readData.smileyStickersCount);
       assertFalse(testObject.hasData());
@@ -582,15 +567,15 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_customEnum() throws Exception
+   public void readObject_customEnum()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_customEnum.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, CustomEnum.class.getName());
-      FileIoUtil.appendToFile(tempFile, new byte[]{';', '*', 0, 0, 0, 3});
-      FileIoUtil.appendToFile(tempFile, "One");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append(CustomEnum.class.getName());
+      fileBuilder.append(new byte[]{';', '*', 0, 0, 0, 3});
+      fileBuilder.append("One");
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertSame(CustomEnum.One, testObject.readObject(CustomEnum.class));
 
       testObject.close();
@@ -600,14 +585,14 @@ public class InternalStreamReader_UT
    {}
 
    @Test
-   public void readObject_custom_throw_privateClass() throws Exception
+   public void readObject_custom_throw_privateClass()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_custom_throw_privateClass.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, CustomPrivateClass.class.getName());
-      FileIoUtil.appendToFile(tempFile, ";");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append(CustomPrivateClass.class.getName());
+      fileBuilder.append(";");
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(CustomPrivateClass.class);
@@ -626,14 +611,14 @@ public class InternalStreamReader_UT
    {}  //abstract and no writer doesn't matter
 
    @Test
-   public void readObject_custom_throw_noReader() throws Exception
+   public void readObject_custom_throw_noReader()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_custom_throw_noReader.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, NoReader.class.getName());
-      FileIoUtil.appendToFile(tempFile, ";");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append(NoReader.class.getName());
+      fileBuilder.append(";");
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(NoReader.class);
@@ -658,14 +643,14 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_custom_throw_nonPublic() throws Exception
+   public void readObject_custom_throw_nonPublic()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_custom_throw_nonPublic.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, NonPublicReader.class.getName());
-      FileIoUtil.appendToFile(tempFile, ";");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append(NonPublicReader.class.getName());
+      fileBuilder.append(";");
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(NonPublicReader.class);
@@ -690,14 +675,14 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_custom_throw_nonStatic() throws Exception
+   public void readObject_custom_throw_nonStatic()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_custom_throw_nonStatic.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, LocalNonStaticReader.class.getName());
-      FileIoUtil.appendToFile(tempFile, ";");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append(LocalNonStaticReader.class.getName());
+      fileBuilder.append(";");
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(LocalNonStaticReader.class);
@@ -722,14 +707,14 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_custom_throw_throwingReader() throws Exception
+   public void readObject_custom_throw_throwingReader()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_custom_throw_throwingReader.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, ThrowingReader.class.getName());
-      FileIoUtil.appendToFile(tempFile, ";");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append(ThrowingReader.class.getName());
+      fileBuilder.append(";");
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
       {
          testObject.readObject(ThrowingReader.class);
@@ -745,21 +730,21 @@ public class InternalStreamReader_UT
    }
 
    @Test
-   public void readObject_Serializable() throws Exception
+   public void readObject_Serializable()
    {
-      final File tempFile = File.createTempFile("InternalStreamReader_UT.TempFile.readObject_Serializable.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "java.math.BigInteger;");
+      final ByteAppender fileBuilder = new ByteAppender();
+      fileBuilder.append("java.math.BigInteger;");
       final BigInteger data = BigInteger.TEN;
       byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
-      FileIoUtil.appendToFile(tempFile, BitWiseUtil.toBigEndianBytes(javaData.length, 4));
-      FileIoUtil.appendToFile(tempFile, javaData);
-      FileIoUtil.appendToFile(tempFile, "java.math.BigInteger;");
+      fileBuilder.append(BitWiseUtil.toBigEndianBytes(javaData.length, 4));
+      fileBuilder.append(javaData);
+      fileBuilder.append("java.math.BigInteger;");
       javaData = JavaSerializableStrategy.javaSerialize(null);
-      FileIoUtil.appendToFile(tempFile, BitWiseUtil.toBigEndianBytes(javaData.length, 4));
-      FileIoUtil.appendToFile(tempFile, javaData);
+      fileBuilder.append(BitWiseUtil.toBigEndianBytes(javaData.length, 4));
+      fileBuilder.append(javaData);
+      final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals(data, testObject.readObject());
       assertNull(testObject.readObject());
 
