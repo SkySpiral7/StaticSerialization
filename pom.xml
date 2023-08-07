@@ -8,8 +8,8 @@
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <maven.compiler.source>11</maven.compiler.source>
-      <maven.compiler.target>11</maven.compiler.target>
+      <maven.compiler.source>17</maven.compiler.source>
+      <maven.compiler.target>17</maven.compiler.target>
       <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss.SSSXXX</maven.build.timestamp.format>
       <project.timestamp>${maven.build.timestamp}</project.timestamp>
 
@@ -30,19 +30,25 @@
          <artifactId>log4j-api</artifactId>
          <version>${log4j2.version}</version>
       </dependency>
+
+      <!--test scope-->
       <dependency>
          <groupId>com.github.SkySpiral7</groupId>
          <artifactId>Java</artifactId>
          <version>0.0.0-SNAPSHOT</version>
-<!--         <scope>test</scope>-->
+         <scope>test</scope>
       </dependency>
-
-      <!--test scope-->
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
          <version>${junit.version}</version>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <groupId>org.hamcrest</groupId>
+               <artifactId>hamcrest-core</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.apache.logging.log4j</groupId>
