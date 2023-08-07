@@ -1,6 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.util;
 
-import com.github.skySpiral7.java.util.StringUtil;
+import java.nio.charset.StandardCharsets;
 
 public enum ArrayUtil
 {
@@ -11,7 +11,13 @@ public enum ArrayUtil
     */
    public static int countArrayDimensions(final Class<?> arrayClass)
    {
-      return StringUtil.countCharOccurrences(arrayClass.getName(), '[');
+      final byte[] nameToSearch=arrayClass.getName().getBytes(StandardCharsets.UTF_8);
+      int count = 0;
+      for (byte currentByte : nameToSearch)
+      {
+         if (currentByte == '[') ++count;
+      }
+      return count;
    }
 
    /**

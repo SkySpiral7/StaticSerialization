@@ -2,7 +2,6 @@ package com.github.skySpiral7.java.staticSerialization.stream;
 
 import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
 import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
-import com.github.skySpiral7.java.util.FileIoUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,8 +30,6 @@ public final class AsynchronousFileReader implements EasyReader
 
    /**
     * @param targetFile the file that will be read from
-    * @see FileIoUtil#readTextFile(File)
-    * @see FileIoUtil#readBinaryFile(File)
     */
    public AsynchronousFileReader(final File targetFile)
    {

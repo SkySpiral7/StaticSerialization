@@ -5,13 +5,10 @@ import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
-import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
@@ -32,16 +29,6 @@ public class InternalStreamWriter_UT
       {
          assertEquals("It is not possible to write to a directory (.)", actual.getMessage());
       }
-   }
-
-   @Test
-   public void constructor_clears() throws IOException
-   {
-      final File tempFile = File.createTempFile("InternalStreamWriter_UT.TempFile.constructor_clears.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "test");
-      new ObjectStreamWriter(tempFile).close();
-      assertEquals("", FileIoUtil.readTextFile(tempFile));
    }
 
    @Test

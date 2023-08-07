@@ -1,15 +1,16 @@
 package com.github.skySpiral7.java.staticSerialization.stream;
 
 import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
-import com.github.skySpiral7.java.util.FileIoUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -29,18 +30,26 @@ public final class AsynchronousFileAppender implements EasyAppender
    private boolean amOpen = true;
 
    /**
-    * Note that this class only appends to the file (not write). If appending is not desired then you must clear the file yourself
-    * beforehand.
+    * Note that this class clears the file contents then only appends.
     *
     * @param targetFile the file that will be appended to
-    * @see FileIoUtil#writeToFile(File, String) use FileIoUtil.writeToFile(targetFile, "") to clear the file
     */
    public AsynchronousFileAppender(final File targetFile)
    {
       //TODO: I don't know if these classes do anything beyond BufferedInputStream etc
       //mine has better API though
-      if (targetFile.isDirectory()) throw new IllegalArgumentException("It is not possible to write to a directory");
+      if (targetFile.isDirectory()) throw new IllegalArgumentException("It is not possible to write to a directory (" + targetFile + ")");
       //it's ok if the file doesn't exist since writing to it will create it
+
+      //start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)
+      try
+      {
+         Files.write(targetFile.toPath(), new byte[0]);
+      }
+      catch (IOException ioException)
+      {
+         throw new UncheckedIOException(ioException);
+      }
 
       try
       {

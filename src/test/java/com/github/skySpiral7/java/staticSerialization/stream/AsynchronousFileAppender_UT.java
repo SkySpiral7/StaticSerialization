@@ -1,16 +1,25 @@
 package com.github.skySpiral7.java.staticSerialization.stream;
 
-import java.io.File;
-import java.io.IOException;
-
 import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
 public class AsynchronousFileAppender_UT
 {
+   @Test
+   public void constructor_clears() throws IOException
+   {
+      final File tempFile = File.createTempFile("InternalStreamWriter_UT.TempFile.constructor_clears.", ".txt");
+      tempFile.deleteOnExit();
+      FileIoUtil.writeToFile(tempFile, "test");
+      new AsynchronousFileAppender(tempFile).close();
+      assertEquals("", FileIoUtil.readTextFile(tempFile));
+   }
 
    @Test
    public void writesToFile() throws IOException

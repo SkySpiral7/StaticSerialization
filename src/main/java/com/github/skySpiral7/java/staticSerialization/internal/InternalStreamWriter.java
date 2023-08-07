@@ -5,7 +5,6 @@ import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableSt
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
-import com.github.skySpiral7.java.util.FileIoUtil;
 
 import java.io.Closeable;
 import java.io.File;
@@ -19,8 +18,6 @@ public class InternalStreamWriter implements Closeable, Flushable
    public InternalStreamWriter(final File destination)
    {
       registry = new ObjectWriterRegistry();
-      //start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)
-      FileIoUtil.writeToFile(destination, "");  //must do before fileAppender is created so that the file won't be locked
       appender = new AsynchronousFileAppender(destination);
    }
 
