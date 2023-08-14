@@ -8,8 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -90,13 +88,14 @@ public final class AsynchronousFileAppender implements EasyAppender
    @Override
    public void close()
    {
-      if (!amOpen) return;  //this is to prevent getting stuck by this.wait() below
+      if (!amOpen) return;  //fast check
       this.flush();  //need to finish writing to disk before telling it to stop writing
 
       try
       {
          synchronized (this)
          {
+            if (!amOpen) return;  //check again inside the lock
             writer.shouldWrite = false;
             this.wait();  //wait for the writer's thread to stop before closing
             //therefore all resources will be released when this method returns
@@ -112,31 +111,7 @@ public final class AsynchronousFileAppender implements EasyAppender
    }
 
    /**
-    * Appends a UTF-8 string to the file. This method will wait if the queue is full.
-    *
-    * @see #append(String, Charset)
-    */
-   @Override
-   public void append(final String newContents)
-   {
-      append(newContents.getBytes(StandardCharsets.UTF_8));
-   }
-
-   /**
-    * Appends a string to the file using the given character encoding. This method will wait if the queue is full.
-    *
-    * @see #append(byte[])
-    */
-   @Override
-   public void append(final String newContents, final Charset encoding)
-   {
-      append(newContents.getBytes(encoding));
-   }
-
-   /**
     * Appends binary data to the file. This method will wait if the queue is full.
-    *
-    * @see #append(String)
     */
    @Override
    public void append(final byte[] newContents)

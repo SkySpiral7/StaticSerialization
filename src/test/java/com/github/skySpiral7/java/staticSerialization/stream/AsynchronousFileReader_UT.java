@@ -1,12 +1,13 @@
 package com.github.skySpiral7.java.staticSerialization.stream;
 
-import java.io.File;
-import java.io.IOException;
-
 import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
 import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
 import com.github.skySpiral7.java.util.FileIoUtil;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 
@@ -21,7 +22,7 @@ public class AsynchronousFileReader_UT
       FileIoUtil.writeToFile(tempFile, "hi");
       final AsynchronousFileReader testObject = new AsynchronousFileReader(tempFile);
 
-      assertEquals("hi", testObject.readString(2));
+      assertEquals("hi", new String(testObject.readBytes(2), StandardCharsets.UTF_8));
       //the test can only assert that the payload was delivered
       //using breakpoints I think I fixed all deadlocks
 

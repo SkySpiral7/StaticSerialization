@@ -9,8 +9,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
-import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
-
 public enum StringSerializableStrategy
 {
    ;  //no instances
@@ -32,7 +30,7 @@ public enum StringSerializableStrategy
       /*TODO: could use an Overlong null delimiter 0xC080 to reduce overhead by 2 but harder to read stream
       could also make a new string type for null delimited 0x00 (only used when contains no null)
       AsynchronousFileReader would need a readBytesUntil*/
-      final String result = cast(reader.readString(stringByteLength));
+      final String result = new String(reader.readBytes(stringByteLength), StandardCharsets.UTF_8);
       LOG.debug(result);
       return result;
    }

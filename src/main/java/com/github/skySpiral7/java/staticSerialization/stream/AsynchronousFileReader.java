@@ -8,8 +8,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -60,12 +58,13 @@ public final class AsynchronousFileReader implements EasyReader
    @Override
    public void close()
    {
-      if (!amOpen) return;  //this is to prevent getting stuck by this.wait() below
+      if (!amOpen) return;  //fast check
 
       try
       {
          synchronized (this)
          {
+            if (!amOpen) return;  //check again inside the lock
             reader.shouldRead = false;
             this.wait();  //wait for the reader's thread to stop before closing
             //therefore all resources will be released when this method returns
@@ -87,60 +86,9 @@ public final class AsynchronousFileReader implements EasyReader
    }
 
    /**
-    * @return the number of bytes in the file that have not yet been consumed
-    */
-   @Override
-   public int remainingBytes()
-   {
-      return remainingBytes;
-   }
-
-   /**
-    * Reads bytes from the file and converts them to a UTF-8 string. This method will wait if the queue is empty.
-    *
-    * @param byteCount the number of bytes (not characters) to read. Be careful not to chop characters in half!
-    * @see #readString(int, Charset)
-    */
-   @Override
-   public String readString(final int byteCount)
-   {
-      /* I could make a version that reads by UTF-8 characters:
-       * read first byte, count leading 1s, if 0 done, else read 1s-1 more bytes.
-       * That's 1 character, loop that.
-       * However I don't need that and this class was made for me (internal package).
-       * "UTF-∞" does the same thing but the leading 1s can be across multiple bytes. */
-      return readString(byteCount, StandardCharsets.UTF_8);
-   }
-
-   /**
-    * Reads bytes from the file and converts them to a string using the given encoding. This method will wait if the queue is empty.
-    *
-    * @param byteCount the number of bytes (not characters) to read. Be careful not to chop characters in half!
-    * @param encoding  the character set used to decode the bytes
-    * @see #readBytes(int)
-    */
-   @Override
-   public String readString(final int byteCount, final Charset encoding)
-   {
-      return new String(readBytes(byteCount), encoding);
-   }
-
-   /**
-    * Reads a single byte of binary data from the file. This method will wait if the queue is empty.
-    *
-    * @see #readBytes(int)
-    */
-   @Override
-   public byte readByte()
-   {
-      return readBytes(1)[0];
-   }
-
-   /**
     * Reads binary data from the file. This method will wait if the queue is empty.
     *
     * @param byteCount the number of bytes to read
-    * @see #readString(int)
     */
    @Override
    public byte[] readBytes(final int byteCount)

@@ -1,8 +1,5 @@
 package com.github.skySpiral7.java.staticSerialization.stream;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
 /**
  * Not thread safe.
  */
@@ -30,27 +27,10 @@ public class ByteReader implements EasyReader {
     }
 
     @Override
-    public int remainingBytes()
-    {
-        return data.length - position;
-    }
-
-    @Override
-    public String readString(int byteCount)
-    {
-        return readString(byteCount, StandardCharsets.UTF_8);
-    }
-
-    @Override
-    public String readString(int byteCount, Charset encoding)
-    {
-        return new String(readBytes(byteCount), encoding);
-    }
-
-    @Override
     public byte readByte()
     {
-        return readBytes(1)[0];
+        position++;
+        return data[position - 1];
     }
 
     @Override

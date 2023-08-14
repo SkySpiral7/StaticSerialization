@@ -41,8 +41,6 @@ public class ObjectStreamReader implements Closeable
 
    public boolean hasData(){return reader.hasData();}
 
-   public int remainingBytes(){return reader.remainingBytes();}
-
    /**
     * Reads the next object in the stream no matter what it is. For security this means that you either trust the stream or you trust all
     * available classes.
