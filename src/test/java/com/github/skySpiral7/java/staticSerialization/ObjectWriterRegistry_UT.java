@@ -1,26 +1,27 @@
 package com.github.skySpiral7.java.staticSerialization;
 
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ObjectWriterRegistry_UT
 {
    private ObjectWriterRegistry testObject;
 
-   @Before
+   @BeforeEach
    public void setUp()
    {
       testObject = new ObjectWriterRegistry();
    }
 
-   @Test(expected = NullPointerException.class)
+   @Test
    public void registerObject_throwsNpe_givenNull()
    {
-      testObject.registerObject(null);
+      assertThrows(NullPointerException.class, () -> testObject.registerObject(null));
    }
 
    @Test
@@ -48,9 +49,9 @@ public class ObjectWriterRegistry_UT
       assertEquals(0L, actual.longValue());
    }
 
-   @Test(expected = NullPointerException.class)
+   @Test
    public void getId_throwsNpe_givenNull()
    {
-      testObject.getId(null);
+      assertThrows(NullPointerException.class, () -> testObject.getId(null));
    }
 }

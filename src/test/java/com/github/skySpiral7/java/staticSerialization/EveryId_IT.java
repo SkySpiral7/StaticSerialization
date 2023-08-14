@@ -7,17 +7,17 @@ import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsBoil
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsReflection;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphUnregistered;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * <h2>every id related scenario</h2>

@@ -6,14 +6,14 @@ import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedE
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.RoundingMode;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class EnumSerializableStrategy_IT
 {

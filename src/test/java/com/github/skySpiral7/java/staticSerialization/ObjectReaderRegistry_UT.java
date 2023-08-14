@@ -2,19 +2,20 @@ package com.github.skySpiral7.java.staticSerialization;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ObjectReaderRegistry_UT
 {
    private ObjectReaderRegistry testObject;
 
-   @Before
+   @BeforeEach
    public void setUp()
    {
       testObject = new ObjectReaderRegistry();
@@ -35,10 +36,10 @@ public class ObjectReaderRegistry_UT
       assertTrue(testObject.isRegistered(data));
    }
 
-   @Test(expected = NullPointerException.class)
+   @Test
    public void isRegistered_throwsNpe_givenNull()
    {
-      testObject.isRegistered(null);
+      assertThrows(NullPointerException.class, () -> testObject.isRegistered(null));
    }
 
    @Test
@@ -50,10 +51,10 @@ public class ObjectReaderRegistry_UT
       assertTrue(testObject.isRegistered(data));
    }
 
-   @Test(expected = NullPointerException.class)
+   @Test
    public void registerObject_throwsNpe_givenNull()
    {
-      testObject.registerObject(null);
+      assertThrows(NullPointerException.class, () -> testObject.registerObject(null));
    }
 
    @Test

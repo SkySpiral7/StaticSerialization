@@ -4,19 +4,19 @@ import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * This test covers reasons why the user shouldn't call the public methods directly. Useful validation messages are not possible and it
  * won't do what you want or will fail. Therefore this test is junit ignored and excluded from maven-surefire-plugin.
  */
-@Ignore
+@Disabled
 public class DoNotDo_IT
 {
    /**

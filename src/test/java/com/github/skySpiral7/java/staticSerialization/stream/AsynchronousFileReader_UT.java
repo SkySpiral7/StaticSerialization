@@ -3,13 +3,13 @@ package com.github.skySpiral7.java.staticSerialization.stream;
 import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
 import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
 import com.github.skySpiral7.java.util.FileIoUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AsynchronousFileReader_UT
 {

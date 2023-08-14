@@ -1,16 +1,16 @@
 package com.github.skySpiral7.java.staticSerialization.util;
 
+import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
+import org.junit.jupiter.api.Test;
+
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
-import org.junit.Test;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class ReflectionUtil_UT
 {
