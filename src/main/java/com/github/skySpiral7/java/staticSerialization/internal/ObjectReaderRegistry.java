@@ -17,9 +17,9 @@ public class ObjectReaderRegistry
    private final List<Object> registry = new ArrayList<>();
    /**
     * Used to tell if an object is already registered. This is the reverse of the registry. Key: objects registered. Value: id
+    * Not redundant with {@link #registry} because this needs to be identity based.
     */
    private final Map<Object, Integer> uniqueness = new IdentityHashMap<>();
-   //TODO: doc: do not combine
 
    public void reserveIdForLater()
    {

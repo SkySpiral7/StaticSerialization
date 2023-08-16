@@ -7,9 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * This utility class is for helping StaticSerializable, not for Serialization in general.
- */
 public enum ReflectionUtil
 {
    //no instances
@@ -31,8 +28,6 @@ public enum ReflectionUtil
       //allClasses has subject and the extends chain but not interfaces
       //do not look at interfaces since all interface fields are static final
 
-      final List<Field> allFields = new ArrayList<>();
-      allClasses.forEach(clazz -> allFields.addAll(Arrays.asList(clazz.getDeclaredFields())));
       //getDeclaredFields includes private but doesn't include inherited hence the need for allClasses
       //this does include Synthetic but I have no way to exclude
       //java.lang.reflect.Modifier.isSynthetic is not public and $ is now allowed so I can't know
@@ -41,14 +36,16 @@ public enum ReflectionUtil
       //TODO: what about types like T[] or raw types List<? extends T>
 
       //TODO: sort by class then name to ensure functionality and ignore declared order
-      return allFields.stream().filter(field -> {
-         final int modifiers = field.getModifiers();
-         if (Modifier.isFinal(modifiers)) return false;  //can't be read from stream
-         if (Modifier.isTransient(modifiers)) return false;  //shouldn't be touched
-         if (Modifier.isStatic(modifiers)) return false;  //not related to the instance
-         //else attempt to serialize since it could be null or supported
-         return true;
-      }).collect(Collectors.toList());
+      return allClasses.stream()
+         .flatMap(clazz -> Arrays.stream(clazz.getDeclaredFields()))
+         .filter(field -> {
+            final int modifiers = field.getModifiers();
+            if (Modifier.isFinal(modifiers)) return false;  //can't be read from stream
+            if (Modifier.isTransient(modifiers)) return false;  //shouldn't be touched
+            if (Modifier.isStatic(modifiers)) return false;  //not related to the instance
+            //else attempt to serialize since it could be null or supported
+            return true;
+         }).collect(Collectors.toList());
    }
 
 }

@@ -1,10 +1,11 @@
 package com.github.skySpiral7.java.staticSerialization;
 
+import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
+
 import java.io.Externalizable;
+import java.util.EnumSet;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-
-import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 
 /**
  * <p>Goals of this library in order:</p>
@@ -26,11 +27,13 @@ import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableE
  * <p>Note that using this interface also requires the class to define a static method of this signature:</p>
  * <blockQuote>{@code public static YourClass readFromStream(final ObjectStreamReader reader)}</blockQuote>
  *
+ * <p>If you want a proxy like {@link EnumSet} has then have each destination class implement a readFromStream
+ * which calls a single common method. Likewise each writeToStream must be compatible.</p>
+ *
  * @see ObjectStreamReader
  * @see ObjectStreamWriter
  */
 //Java's security holes: https://tersesystems.com/blog/2015/11/08/closing-the-open-door-of-java-object-serialization/
-//TODO: is it possible to have readFromStream return a child? in the case of EnumSet's proxy. doc the answer
 public interface StaticSerializable
 {
    //public static T<this> readFromStream(final ObjectStreamReader reader)
@@ -47,9 +50,9 @@ public interface StaticSerializable
     * instance rather than a new one (despite the stream) then you must implement this yourself.
     *
     * @param reader      the current stream to read from
-    * @param createEmpty a function (likely a method reference) that creates the object with minimal information
-    * @param populate    a consumer (likely a method reference) that populates all other data within the object
-    * @return the already created object that matches the id or the object created by createEmpty
+    * @param createEmpty a function (likely a constructor reference) that creates the object with minimal information
+    * @param populate    a consumer (likely a private method reference) that populates all other data within the object
+    * @return a new object created by createEmpty. already registered and populated with data
     */
    public static <T> T readFromStream(final ObjectStreamReader reader, final Function<ObjectStreamReader, T> createEmpty,
                                       final BiConsumer<ObjectStreamReader, T> populate)
@@ -63,39 +66,11 @@ public interface StaticSerializable
       //if createEmpty vs populate are correctly separated can createEmpty ruin the id?
       //is it possible to package data so that there only needs to be 1 method?
 
-      //what about calling the static methods directly?
-      //there's no way to return before create empty since id is in header.
-      //I can't have these static read header because the header is read in order to know which static to call
-
       final T result = createEmpty.apply(reader);
       reader.registerObject(result);
       populate.accept(reader, result);
       return result;
-
-      /*
-      Pro/con of uuid vs index for most vs circle for each call
-      UUID:
-         Both:
-            Con: Calling static directly means no overhead which is bad for null
-         Most:
-            Pro: Have no id
-            Pro: simple readFromStream without registry
-            Con: Object[] have lots of ids for no reason even though Number[] etc don't
-         Circle:
-            Con: ids are large and exist as data after header
-            Con: boilerplate important since there are a few steps
-      Index:
-         Both:
-            Con: Calling static directly means no overhead which is bad for null and id
-         Most:
-            Pro: Have no id (even Object[]!)
-            Pro: simple readFromStream without registry
-         Circle:
-            Pro: ids are small and exist as a header
-            Pro: ids are rare
-            Con: boilerplate exists but is simple
-      */
       //current state: index works
-      //TODO: make non spiky: check todos, fix all tests, clean up, update docs
+      //TODO: make less spiky: check correctness todos, maybe more tests
    }
 }

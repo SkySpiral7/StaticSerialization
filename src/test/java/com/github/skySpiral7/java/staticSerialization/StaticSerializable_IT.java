@@ -2,6 +2,8 @@ package com.github.skySpiral7.java.staticSerialization;
 
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
+import com.github.skySpiral7.java.staticSerialization.testClasses.ChildImmutable;
+import com.github.skySpiral7.java.staticSerialization.testClasses.ChildMutable;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister.Node;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
@@ -478,6 +480,21 @@ Object graph (using non compressed names):
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
 
       assertSame(CustomEnum.One, reader.readObject(CustomEnum.class));
+      reader.close();
+   }
+
+   @Test
+   public void withProxy()
+   {
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
+      writer.writeObject(new ChildImmutable(12));
+      writer.writeObject(new ChildMutable("hi"));
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
+
+      assertEquals(new ChildImmutable(12), reader.readObject(ChildImmutable.class));
+      assertEquals(new ChildMutable("hi"), reader.readObject(ChildMutable.class));
       reader.close();
    }
 
