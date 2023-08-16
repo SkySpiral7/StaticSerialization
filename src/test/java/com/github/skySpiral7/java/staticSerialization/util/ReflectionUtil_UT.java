@@ -33,13 +33,14 @@ public class ReflectionUtil_UT
    public void getAllSerializableFields_excludesBasedOnModifier() throws Exception
    {
       final List<Field> expected = new ArrayList<>();
-      expected.add(Class_getAllSerializableFields.class.getField("fieldPrimitive"));
-      expected.add(Class_getAllSerializableFields.class.getField("fieldBoxedPrimitive"));
-      expected.add(Class_getAllSerializableFields.class.getField("fieldString"));
-      expected.add(Class_getAllSerializableFields.class.getField("fieldStaticSerializable"));
-      expected.add(Class_getAllSerializableFields.class.getField("fieldSerializable"));
+      //sorted by field name
       expected.add(Class_getAllSerializableFields.class.getField("fieldArray"));
+      expected.add(Class_getAllSerializableFields.class.getField("fieldBoxedPrimitive"));
       expected.add(Class_getAllSerializableFields.class.getField("fieldOther"));
+      expected.add(Class_getAllSerializableFields.class.getField("fieldPrimitive"));
+      expected.add(Class_getAllSerializableFields.class.getField("fieldSerializable"));
+      expected.add(Class_getAllSerializableFields.class.getField("fieldStaticSerializable"));
+      expected.add(Class_getAllSerializableFields.class.getField("fieldString"));
 
       final List<Field> actual = ReflectionUtil.getAllSerializableFields(Class_getAllSerializableFields.class);
 
@@ -54,18 +55,19 @@ public class ReflectionUtil_UT
    {
       class ClassA
       {
-         public int field$A = 1;
+         public int field$Z = 1;
       }
       class ClassB extends ClassA
       {
-         public int fieldB = 2;
+         public int fieldC = 2;
       }
       //by virtue of being non-static these local classes contain a generated field (this$0) which references ReflectionUtil_UT
       //this$0 is final and thus excluded
 
       final List<Field> expected = new ArrayList<>();
-      expected.add(ClassB.class.getField("fieldB"));
-      expected.add(ClassA.class.getField("field$A"));
+      //sorted by class name
+      expected.add(ClassA.class.getField("field$Z"));
+      expected.add(ClassB.class.getField("fieldC"));
 
       assertThat(ReflectionUtil.getAllSerializableFields(ClassB.class), is(expected));
    }

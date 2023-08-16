@@ -70,7 +70,6 @@ public interface StaticSerializable
       reader.registerObject(result);
       populate.accept(reader, result);
       return result;
-      //current state: index works
       //TODO: make less spiky: check correctness todos, maybe more tests
    }
 }

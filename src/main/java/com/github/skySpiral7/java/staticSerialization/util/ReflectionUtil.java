@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,6 @@ public enum ReflectionUtil
       //TODO: is a synthetic class possible? eg annon class. even for non reflection?
       //TODO: what about types like T[] or raw types List<? extends T>
 
-      //TODO: sort by class then name to ensure functionality and ignore declared order
       return allClasses.stream()
          .flatMap(clazz -> Arrays.stream(clazz.getDeclaredFields()))
          .filter(field -> {
@@ -45,7 +45,10 @@ public enum ReflectionUtil
             if (Modifier.isStatic(modifiers)) return false;  //not related to the instance
             //else attempt to serialize since it could be null or supported
             return true;
-         }).collect(Collectors.toList());
+         })
+         //sort by class then name to ensure functionality since getDeclaredFields is officially unordered
+         .sorted(Comparator.comparing((Field field) -> field.getDeclaringClass().getName()).thenComparing(Field::getName))
+         .collect(Collectors.toList());
    }
 
 }

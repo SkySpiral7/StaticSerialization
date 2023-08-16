@@ -11,6 +11,7 @@ public interface EasyReader extends Closeable
     /**
      * @return true if there are any more bytes
      */
+    //TODO: replace with readByte/s taking a string for the exception message
     boolean hasData();
     /**
      * Reads a single byte of binary data from the stream.
