@@ -57,8 +57,8 @@ public class InternalStreamReader implements Closeable
       }
       else if (headerInformation.getValue() != null)
       {
-         //TODO: validate
-         //ReaderValidationStrategy.validateId(expectedClass, headerInformation.getValue(), allowChildClass);
+         //TODO: add validation that the id matches the expected class
+         //ReaderValidationStrategy.validateIdClass(expectedClass, headerInformation.getValue(), allowChildClass);
          return cast(headerInformation.getValue());
       }
 

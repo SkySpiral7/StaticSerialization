@@ -68,6 +68,7 @@ public enum AllSerializableStrategy
 
       if (StaticSerializable.class.isAssignableFrom(actualClass)) return StaticSerializableStrategy.read(streamReader, actualClass);
 
+      //TODO: does java serial allow enum data? yes: JavaSerializableStrategy, no: doc it
       if (actualClass.isEnum()) return EnumSerializableStrategy.read(fileReader, actualClass);
       if (Serializable.class.isAssignableFrom(actualClass)) return JavaSerializableStrategy.readWithLength(fileReader);
 

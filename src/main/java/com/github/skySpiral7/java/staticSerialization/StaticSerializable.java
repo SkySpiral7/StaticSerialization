@@ -3,6 +3,7 @@ package com.github.skySpiral7.java.staticSerialization;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 
 import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -21,7 +22,8 @@ import java.util.function.Function;
  * therefore it is comparable to {@link Externalizable}.</p>
  * <p>A header that contains the class will be included with each element for security.
  * Most classes don't need a version number so one is not included by default.
- * Most classes don't need an id but it will be included as needed.</p>
+ * Most classes don't need an id but it will be included as needed
+ * although classes with circular references require an extra step, see {@link #readFromStream(ObjectStreamReader, Function, BiConsumer)} for details.</p>
  * <p>Usage: do not call these methods yourself as doing so will ruin the required overhead.</p>
  *
  * <p>Note that using this interface also requires the class to define a static method of this signature:</p>
@@ -45,27 +47,40 @@ public interface StaticSerializable
    public void writeToStream(final ObjectStreamWriter writer);
 
    /**
-    * This static method includes the boilerplate code that is required if your class needs an id in order to avoid a circular reference.
+    * <p>This static method includes the boilerplate code that is required if your class needs an id in order to avoid a circular reference.
+    * Most classes don't need to register since circular references are not typical.
     * Note that this method assumes that any object the stream asks to create will be created and returned, if you want to return the same
-    * instance rather than a new one (despite the stream) then you must implement this yourself.
+    * instance rather than a new one (despite the stream) then you must implement this yourself.</p>
+    *
+    * <p>To be super clear what I mean by circular reference: an {@code Object[]} can contain itself. It is the only
+    * array type that can contain itself (eg {@code Number[]} can't contain itself). {@code Object[]} has a circular reference
+    * if it contains itself or contains something that in turn references back to the root. If your Bob class has a field
+    * of type Bob then it is in danger of infinite recursion on serialization which this method exists to address.
+    * However if Bob has a field of an {@code Object[]} which contains itself (but not a Bob) then Bob doesn't need
+    * to register. Instead the class of {@code Object[]} would hypothetically need to register except that
+    * {@code StaticSerializable} auto handles arrays.</p>
+    *
+    * <p>The "boilerplate" used is a single method call (to {@link ObjectStreamReader#registerObject(Object)})
+    * so debatably calling this method actually requires more code than manually doing it yourself.
+    * This method mainly exists to document how to resolve a circular reference. An advantage of actually calling this
+    * method is that it better separates creation and population.</p>
+    *
+    * <p>{@link Serializable} doesn't require such a thing because the JVM uses an internal way to cheat the creation of
+    * an object and store a reference to it before calling the read/write methods on it. {@code StaticSerializable}
+    * on the other hand, abhors such black magic in favor of normal object creation in any way the class chooses including
+    * the ability to choose not to create an object (thus not violating fixed instance invariants). However this means
+    * that {@code StaticSerializable} doesn't have a reference to the new object until after the creation is done and thus
+    * a method is sometimes needed to be inserted mid deserialization.</p>
     *
     * @param reader      the current stream to read from
-    * @param createEmpty a function (likely a constructor reference) that creates the object with minimal information
+    * @param createEmpty a function (likely a constructor reference) that creates the object with minimal data (possibly none)
     * @param populate    a consumer (likely a private method reference) that populates all other data within the object
     * @return a new object created by createEmpty. already registered and populated with data
+    * @see ObjectStreamReader#registerObject(Object)
     */
    public static <T> T readFromStream(final ObjectStreamReader reader, final Function<ObjectStreamReader, T> createEmpty,
                                       final BiConsumer<ObjectStreamReader, T> populate)
    {
-      //TODO: wouldn't need readObjectOrId but must always registerObject after create empty. is that ok?
-      //at that point have 2 static methods for createEmpty and populate
-      //does that even work? since another object may be written.
-      //master works only if createEmpty doesn't call readObjectOrId (which should be allowed)
-      //if an id is created before calling createEmpty then it would work as long as createEmpty is correct
-      //reg: pull null in list and give #, var = #, serial, set #
-      //if createEmpty vs populate are correctly separated can createEmpty ruin the id?
-      //is it possible to package data so that there only needs to be 1 method?
-
       final T result = createEmpty.apply(reader);
       reader.registerObject(result);
       populate.accept(reader, result);
