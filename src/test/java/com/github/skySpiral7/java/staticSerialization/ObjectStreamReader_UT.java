@@ -1,16 +1,18 @@
 package com.github.skySpiral7.java.staticSerialization;
 
+import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
+import com.github.skySpiral7.java.util.FileIoUtil;
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.math.RoundingMode;
 
-import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
-import com.github.skySpiral7.java.util.FileIoUtil;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ObjectStreamReader_UT
 {
@@ -39,33 +41,31 @@ public class ObjectStreamReader_UT
    }
 
    @Test
-   public void readObject_allowsCast_givenNoArg() throws Exception
+   public void readObject_allowsCast_givenNoArg()
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObject_allowsCast_givenNoArg.", ".txt");
-      tempFile.deleteOnExit();
-
+      final ByteAppender inputBuilder = new ByteAppender();
       final byte[] fileContents = {'~', 3};  //~ is byte
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      inputBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals(Byte.valueOf((byte) 3), testObject.readObject());
       testObject.close();
    }
 
    @Test
-   public void readObjectStrictly_happyPath() throws Exception
+   public void readObjectStrictly_happyPath()
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readObjectStrictly_happyPath.", ".txt");
-      tempFile.deleteOnExit();
-
+      final ByteAppender inputBuilder = new ByteAppender();
       final byte[] fileContents = {'+', '-',  //+ is true, - is false
             '~', 3};  //~ is byte
-      FileIoUtil.writeToFile(tempFile, fileContents);
+      inputBuilder.append(fileContents);
 
-      FileIoUtil.appendToFile(tempFile, "java.math.RoundingMode;");
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});
+      inputBuilder.append("java.math.RoundingMode;");
+      inputBuilder.append(new byte[]{0, 0, 0, 1});
+      final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertTrue(testObject.readObjectStrictly(Boolean.class));
       assertFalse(testObject.readObjectStrictly(Boolean.class));
       assertEquals(Byte.valueOf((byte) 3), testObject.readObjectStrictly(Byte.class));
@@ -89,19 +89,18 @@ public class ObjectStreamReader_UT
    }
 
    @Test
-   public void readFieldsReflectively() throws Exception
+   public void readFieldsReflectively()
    {
-      final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readFieldsReflectively.", ".txt");
-      tempFile.deleteOnExit();
+      final ByteAppender inputBuilder = new ByteAppender();
       final String header = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$ReflectiveClass;@";
-      FileIoUtil.writeToFile(tempFile, header);
+      inputBuilder.append(header);
       final byte[] fileContents = {0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe};
-      FileIoUtil.appendToFile(tempFile, fileContents);
+      inputBuilder.append(fileContents);
+      final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
-      final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals(0x0afe_babeL, testObject.readObject(ReflectiveClass.class).field);
 
       testObject.close();
    }
-
 }

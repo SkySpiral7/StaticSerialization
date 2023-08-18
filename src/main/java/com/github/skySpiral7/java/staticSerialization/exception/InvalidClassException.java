@@ -2,8 +2,7 @@ package com.github.skySpiral7.java.staticSerialization.exception;
 
 /**
  * This exception is thrown when a class violates a contract that can't be enforced by an interface, such as expecting a no-arg constructor
- * or a static method.
- * Use an interface when possible for things that it can enforce.
+ * or a static method. Use an interface when possible for things that it can enforce.
  */
 public class InvalidClassException extends RuntimeException
 {

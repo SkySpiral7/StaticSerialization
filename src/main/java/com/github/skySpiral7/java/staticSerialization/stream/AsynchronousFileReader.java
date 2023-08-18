@@ -1,30 +1,26 @@
-package com.github.skySpiral7.java.staticSerialization.fileWrapper;
+package com.github.skySpiral7.java.staticSerialization.stream;
 
-import java.io.Closeable;
+import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
+import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
-
-import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
-import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
-import com.github.skySpiral7.java.util.FileIoUtil;
 
 /**
  * <p>Creating this class will start reading the file in another thread and placing the results in a queue.
- * Therefore the other thread will be waiting on the disk instead of the main thread.
- * The main thread can create this object, do other stuff, and hopefully not need to wait when calling the read methods.
- * Note that if creation, reading, and closing happen in quick succession then using this class was pointless.</p>
+ * Therefore the other thread will be waiting on the disk instead of the main thread. The main thread can create this object, do other
+ * stuff, and hopefully not need to wait when calling the read methods. Note that if creation, reading, and closing happen in quick
+ * succession then using this class was pointless.</p>
  * <p><b>Warning:</b> this is the second Java class I've made with multiple threads.</p>
  *
  * @see #close()
  * @see #readBytes(int)
  */
-public final class AsynchronousFileReader implements Closeable
+public final class AsynchronousFileReader implements EasyReader
 {
    private final ReaderClass reader;
    private boolean amOpen = true;
@@ -32,9 +28,6 @@ public final class AsynchronousFileReader implements Closeable
 
    /**
     * @param targetFile the file that will be read from
-    *
-    * @see FileIoUtil#readTextFile(File)
-    * @see FileIoUtil#readBinaryFile(File)
     */
    public AsynchronousFileReader(final File targetFile)
    {
@@ -65,12 +58,13 @@ public final class AsynchronousFileReader implements Closeable
    @Override
    public void close()
    {
-      if (!amOpen) return;  //this is to prevent getting stuck by this.wait() below
+      if (!amOpen) return;  //fast check
 
       try
       {
          synchronized (this)
          {
+            if (!amOpen) return;  //check again inside the lock
             reader.shouldRead = false;
             this.wait();  //wait for the reader's thread to stop before closing
             //therefore all resources will be released when this method returns
@@ -85,68 +79,18 @@ public final class AsynchronousFileReader implements Closeable
       amOpen = false;
    }
 
-   /**
-    * @return true if there are any more bytes
-    */
+   @Override
    public boolean hasData()
    {
       return (remainingBytes > 0);
    }
 
    /**
-    * @return the number of bytes in the file that have not yet been consumed
-    */
-   public int remainingBytes()
-   {
-      return remainingBytes;
-   }
-
-   /**
-    * Reads bytes from the file and converts them to a UTF-8 string.
-    * This method will wait if the queue is empty.
+    * Reads binary data from the file. This method will wait if the queue is empty.
     *
     * @param byteCount the number of bytes to read
-    *
-    * @see #readString(int, Charset)
     */
-   public String readString(final int byteCount)
-   {
-      return readString(byteCount, StandardCharsets.UTF_8);
-   }
-
-   /**
-    * Reads bytes from the file and converts them to a string using the given encoding.
-    * This method will wait if the queue is empty.
-    *
-    * @param byteCount the number of bytes to read
-    * @param encoding  the character set used to decode the bytes
-    *
-    * @see #readBytes(int)
-    */
-   public String readString(final int byteCount, final Charset encoding)
-   {
-      return new String(readBytes(byteCount), encoding);
-   }
-
-   /**
-    * Reads a single byte of binary data from the file.
-    * This method will wait if the queue is empty.
-    *
-    * @see #readBytes(int)
-    */
-   public byte readByte()
-   {
-      return readBytes(1)[0];
-   }
-
-   /**
-    * Reads binary data from the file.
-    * This method will wait if the queue is empty.
-    *
-    * @param byteCount the number of bytes to read
-    *
-    * @see #readString(int)
-    */
+   @Override
    public byte[] readBytes(final int byteCount)
    {
       if (!amOpen) throw new ClosedResourceException("Can't read from a closed stream");
@@ -174,8 +118,8 @@ public final class AsynchronousFileReader implements Closeable
    {
       public final InputStream inputStream;
       /**
-       * I don't know enough about concurrency to make a simple disruptor.
-       * And the fact that each queue entry holds 1 byte makes me think I could be doing this better.
+       * I don't know enough about concurrency to make a simple disruptor. And the fact that each queue entry holds 1 byte makes me think I
+       * could be doing this better.
        */
       public final ArrayBlockingQueue<Byte> queue;
       /**

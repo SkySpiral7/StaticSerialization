@@ -4,6 +4,18 @@ public enum BitWiseUtil
 {
    ;  //no instances
 
+   public static byte[] toBigEndianBytes(long data, final int byteCount)
+   {
+      final byte[] result = new byte[byteCount];
+      for (int i = (byteCount - 1); i >= 0; --i)
+      {
+         //the array is reversed so that it is in big endian
+         result[i] = (byte) (data & 0xFF);
+         data >>>= 8;
+      }
+      return result;
+   }
+
    public static int bigEndianBytesToInteger(final byte[] input)
    {
       if (input.length != 4) throw new IllegalArgumentException("expected length 4, got: " + input.length);
@@ -27,5 +39,4 @@ public enum BitWiseUtil
       }
       return result;
    }
-
 }

@@ -1,52 +1,56 @@
 package com.github.skySpiral7.java.staticSerialization;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsBoiler;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsReflection;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphUnregistered;
-import com.github.skySpiral7.java.util.FileIoUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * every id related scenario:
- * no ids needed or present: all normal tests eg a String
- * same object twice: uses id to save space even though there's no circle
- * no ids for Number[]: as a happy path for arrays
- * no ids for Object[]: to show index is better
- * Object[] with ids: to auto-handle circles
- * RootedGraph: ids are handled deeply
- * Node: ids are handled for the root object
- * readFromStream calling StaticSerializable.readFromStream: to show boilerplate works
- * readFromStream calling registerObject: happy path for expected implementation
- * catch Node: readFromStream failing to call registerObject: to make sure user failure message is useful for you class
- * catch RootedGraph: readFromStream failing to call registerObject: to make sure user failure message is useful for deep
- * RootedGraph reflection: easy enough
- * Node reflection: have reflection method call registerObject for you
+ * <h2>every id related scenario</h2>
+ * <ul>
+ * <li>no ids needed or present: all normal tests eg a String</li>
+ * <li>same object twice: uses id to save space even though there's no circle</li>
+ * <li>no ids for Number[]: as a happy path for arrays</li>
+ * <li>no ids for Object[]: to show index is better</li>
+ * <li>Object[] with ids: to auto-handle circles</li>
+ * <li>RootedGraph: ids are handled deeply</li>
+ * <li>Node: ids are handled for the root object</li>
+ * <li>readFromStream calling StaticSerializable.readFromStream: to show boilerplate works</li>
+ * <li>readFromStream calling registerObject: happy path for expected implementation</li>
+ * <li>catch Node: readFromStream failing to call registerObject: to make sure user failure message is useful for you class</li>
+ * <li>catch RootedGraph: readFromStream failing to call registerObject: to make sure user failure message is useful for deep</li>
+ * <li>RootedGraph reflection: easy enough</li>
+ * <li>Node reflection: have reflection method call registerObject for you</li>
+ * </ul>
  *
- * do not do:
- * calling readFromStream directly when null/id: pretty sure there's no error message I can give
- * calling RootedGraph.readFromStream would work: no possible error message
- * calling Node.readFromStream won't work: might be able to do error message
+ * <h2>do not do</h2>
+ * <ul>
+ * <li>calling readFromStream directly when null/id: pretty sure there's no error message I can give</li>
+ * <li>calling RootedGraph.readFromStream would work: no possible error message</li>
+ * <li>calling Node.readFromStream won't work: might be able to do error message</li>
+ * </ul>
  *
- * test classes:
- * used for most: calls registerObject
- * calls StaticSerializable.readFromStream
- * does not call registerObject
- * reflection
+ * <h2>test classes</h2>
+ * <ul>
+ * <li>used for most: calls registerObject</li>
+ * <li>calls StaticSerializable.readFromStream</li>
+ * <li>does not call registerObject</li>
+ * <li>reflection</li>
+ * </ul>
  */
 public class EveryId_IT
 {
@@ -54,26 +58,25 @@ public class EveryId_IT
     * no ids needed or present: all normal tests eg a String
     */
    @Test
-   public void noId() throws Exception
+   public void noId()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.noId.", ".txt");
-      tempFile.deleteOnExit();
       final String data = "hi";
 
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(new byte[]{'*', 0, 0, 0, 2});   //type (String) and UTF-8 length
-      baos.write("hi".getBytes(StandardCharsets.UTF_8));   //value
-      final byte[] expectedInFile = baos.toByteArray();
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'*', 0, 0, 0, 2});   //type (String) and UTF-8 length
+      expectedBuilder.append("hi");   //value
+      final byte[] expectedInFile = expectedBuilder.getAllBytes();
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
 
-      final byte[] actualInFile = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] actualInFile = mockFile.getAllBytes();
       assertEquals(new String(expectedInFile, StandardCharsets.UTF_8), new String(actualInFile, StandardCharsets.UTF_8));
       assertEquals(Arrays.toString(expectedInFile).replace(", ", ",\n"), Arrays.toString(actualInFile).replace(", ", ",\n"));
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(actualInFile));
       assertEquals(data, reader.readObject(String.class));
       reader.close();
    }
@@ -82,19 +85,18 @@ public class EveryId_IT
     * same object twice: uses id to save space even though there's no circle
     */
    @Test
-   public void sameObject() throws IOException
+   public void sameObject()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.sameObject.", ".txt");
-      tempFile.deleteOnExit();
       final BigInteger same = new BigInteger("10");
       final BigInteger bigOne = new BigInteger("1");
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(same);
       writer.writeObject(bigOne);
       writer.writeObject(same);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final BigInteger actualSame = reader.readObject(BigInteger.class);
       reader.readObject(BigInteger.class);  //bigOne
       assertSame(actualSame, reader.readObject(BigInteger.class));
@@ -106,19 +108,18 @@ public class EveryId_IT
     * same object twice: uses id to save space even though there's no circle
     */
    @Test
-   public void sameObjectInArray() throws IOException
+   public void sameObjectInArray()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.sameObjectInArray.", ".txt");
-      tempFile.deleteOnExit();
       final BigInteger same = new BigInteger("10");
       final BigInteger bigOne = new BigInteger("1");
       final Object[] data = {same, bigOne, same};
       assertSame(data[0], data[2]);
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final Object[] actual = reader.readObject(Object[].class);
       assertArrayEquals(data, actual);
       assertSame(actual[0], actual[2]);
@@ -130,29 +131,28 @@ public class EveryId_IT
     * no ids for Number[]: as a happy path for arrays
     */
    @Test
-   public void numberArrayNoId() throws IOException
+   public void numberArrayNoId()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.numberArrayNoId.", ".txt");
-      tempFile.deleteOnExit();
       final Object[] data = new Number[]{2};
 
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(new byte[]{'[', 1});   //data array indicator and dimensions
-      baos.write("java.lang.Number;".getBytes(StandardCharsets.UTF_8));  //component
-      baos.write(new byte[]{0, 0, 0, 1});   //array length
-      baos.write(new byte[]{'@'});   //element type (Integer)
-      baos.write(new byte[]{0, 0, 0, 2});   //element
-      final byte[] expectedInFile = baos.toByteArray();
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 1});   //data array indicator and dimensions
+      expectedBuilder.append("java.lang.Number;");  //component
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //array length
+      expectedBuilder.append(new byte[]{'@'});   //element type (Integer)
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //element
+      final byte[] expectedInFile = expectedBuilder.getAllBytes();
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
 
-      final byte[] actualInFile = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] actualInFile = mockFile.getAllBytes();
       assertEquals(new String(expectedInFile, StandardCharsets.UTF_8), new String(actualInFile, StandardCharsets.UTF_8));
       assertEquals(Arrays.toString(expectedInFile).replace(", ", ",\n"), Arrays.toString(actualInFile).replace(", ", ",\n"));
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(actualInFile));
       assertEquals(Arrays.deepToString(data), Arrays.deepToString(reader.readObject(Object[][][].class)));
       reader.close();
    }
@@ -161,50 +161,48 @@ public class EveryId_IT
     * no ids for Object[]: to show index is better
     */
    @Test
-   public void objectArrayNoId() throws IOException
+   public void objectArrayNoId()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.objectArrayNoId.", ".txt");
-      tempFile.deleteOnExit();
       final Object[] data = {2};
 
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(new byte[]{'[', 1});   //data array indicator and dimensions
-      baos.write("java.lang.Object;".getBytes(StandardCharsets.UTF_8));  //component
-      baos.write(new byte[]{0, 0, 0, 1});   //array length
-      baos.write(new byte[]{'@'});   //element type (Integer)
-      baos.write(new byte[]{0, 0, 0, 2});   //element
-      final byte[] expectedInFile = baos.toByteArray();
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(new byte[]{'[', 1});   //data array indicator and dimensions
+      expectedBuilder.append("java.lang.Object;");  //component
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //array length
+      expectedBuilder.append(new byte[]{'@'});   //element type (Integer)
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //element
+      final byte[] expectedInFile = expectedBuilder.getAllBytes();
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
 
-      final byte[] actualInFile = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] actualInFile = mockFile.getAllBytes();
       assertEquals(new String(expectedInFile, StandardCharsets.UTF_8), new String(actualInFile, StandardCharsets.UTF_8));
       assertEquals(Arrays.toString(expectedInFile).replace(", ", ",\n"), Arrays.toString(actualInFile).replace(", ", ",\n"));
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(actualInFile));
       assertEquals(Arrays.deepToString(data), Arrays.deepToString(reader.readObject(Object[][][].class)));
       reader.close();
    }
 
    /**
-    * Object[] with ids: to auto-handle circles
-    * This test case exists to validate an edge case since Object[] is the only array that can contain itself
+    * <p>Object[] with ids: to auto-handle circles</p>
+    * <p>This test case exists to validate an edge case since Object[] is the only array that can contain itself</p>
     */
    @Test
-   public void objectArrayOfSelf() throws IOException
+   public void objectArrayOfSelf()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.objectArrayOfSelf.", ".txt");
-      tempFile.deleteOnExit();
       final Object[] data = {1, 0};
       data[1] = data;
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(data);
       writer.close();
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final Object[] actual = reader.readObject(Object[].class);
       reader.close();
       assertEquals(Arrays.deepToString(data), Arrays.deepToString(actual));
@@ -212,14 +210,12 @@ public class EveryId_IT
    }
 
    /**
-    * RootedGraph: ids are handled deeply
-    * readFromStream calling registerObject: happy path for expected implementation
+    * <p>RootedGraph: ids are handled deeply</p>
+    * <p>readFromStream calling registerObject: happy path for expected implementation</p>
     */
    @Test
-   public void handlesDeepIds() throws Exception
+   public void handlesDeepIds()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.handlesDeepIds.", ".txt");
-      tempFile.deleteOnExit();
       final GraphCallsRegister graph;
       final GraphCallsRegister.Node root = new GraphCallsRegister.Node("Alice");
       {
@@ -235,13 +231,14 @@ public class EveryId_IT
          graph = new GraphCallsRegister(root);
       }
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       //write both the graph and root to show that self-referencing is handled inside an object and as the root object being written
       writer.writeObject(graph);
       writer.writeObject(root);
       writer.close();
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final GraphCallsRegister actualGraph = reader.readObject(GraphCallsRegister.class);
       final GraphCallsRegister.Node actualRoot = reader.readObject(GraphCallsRegister.Node.class);
       reader.close();
@@ -251,14 +248,12 @@ public class EveryId_IT
    }
 
    /**
-    * Node: ids are handled for the root object
-    * readFromStream calling registerObject: happy path for expected implementation
+    * <p>Node: ids are handled for the root object</p>
+    * <p>readFromStream calling registerObject: happy path for expected implementation</p>
     */
    @Test
-   public void rootNode() throws Exception
+   public void rootNode()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.rootNode.", ".txt");
-      tempFile.deleteOnExit();
       final GraphCallsRegister.Node root = new GraphCallsRegister.Node("Alice");
       {
          final GraphCallsRegister.Node bob = new GraphCallsRegister.Node("Bob");
@@ -271,12 +266,13 @@ public class EveryId_IT
          //a -> b <-> c -> c
       }
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       //shows that self-referencing is handled as the root object being written
       writer.writeObject(root);
       writer.close();
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final GraphCallsRegister.Node actualRoot = reader.readObject();
       reader.close();
       assertNotSame(root, actualRoot);
@@ -288,10 +284,8 @@ public class EveryId_IT
     * readFromStream calling StaticSerializable.readFromStream: to show boilerplate works
     */
    @Test
-   public void boilerplate() throws Exception
+   public void boilerplate()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.boilerplate.", ".txt");
-      tempFile.deleteOnExit();
       final GraphCallsBoiler.Node root = new GraphCallsBoiler.Node("Alice");
       {
          final GraphCallsBoiler.Node bob = new GraphCallsBoiler.Node("Bob");
@@ -304,12 +298,13 @@ public class EveryId_IT
          //a -> b <-> c -> c
       }
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       //shows that self-referencing is handled as the root object being written
       writer.writeObject(root);
       writer.close();
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final GraphCallsBoiler.Node actualRoot = reader.readObject();
       reader.close();
       assertNotSame(root, actualRoot);
@@ -318,13 +313,11 @@ public class EveryId_IT
    }
 
    /**
-    * catch Node: readFromStream failing to call registerObject: to make sure user failure message is useful for you class
+    * catch Node: readFromStream failing to call registerObject: to make sure user failure message is useful for your class
     */
    @Test
-   public void myClassFailedToRegister() throws Exception
+   public void myClassFailedToRegister()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.myClassFailedToRegister.", ".txt");
-      tempFile.deleteOnExit();
       final GraphUnregistered.Node root = new GraphUnregistered.Node("Alice");
       {
          final GraphUnregistered.Node bob = new GraphUnregistered.Node("Bob");
@@ -337,12 +330,13 @@ public class EveryId_IT
          //a -> b <-> c -> c
       }
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       //shows that self-referencing is handled as the root object being written
       writer.writeObject(root);
       writer.close();
 
-      try (ObjectStreamReader reader = new ObjectStreamReader(tempFile))
+      try (ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes())))
       {
          reader.readObject();
          fail("Should've thrown");
@@ -371,10 +365,8 @@ public class EveryId_IT
     * catch RootedGraph: readFromStream failing to call registerObject: to make sure user failure message is useful for deep
     */
    @Test
-   public void deepFailedToRegister() throws Exception
+   public void deepFailedToRegister()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.deepFailedToRegister.", ".txt");
-      tempFile.deleteOnExit();
       final GraphUnregistered graph;
       final GraphUnregistered.Node root = new GraphUnregistered.Node("Alice");
       {
@@ -390,11 +382,12 @@ public class EveryId_IT
          graph = new GraphUnregistered(root);
       }
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(graph);
       writer.close();
 
-      try (ObjectStreamReader reader = new ObjectStreamReader(tempFile))
+      try (ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes())))
       {
          reader.readObject();
          fail("Should've thrown");
@@ -411,10 +404,8 @@ public class EveryId_IT
     * RootedGraph reflection: easy enough
     */
    @Test
-   public void reflectionDeep() throws Exception
+   public void reflectionDeep()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.reflectionDeep.", ".txt");
-      tempFile.deleteOnExit();
       final GraphCallsReflection graph;
       final GraphCallsReflection.Node root = new GraphCallsReflection.Node("Alice");
       {
@@ -429,11 +420,12 @@ public class EveryId_IT
          graph = new GraphCallsReflection(root);
       }
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(graph);
       writer.close();
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final GraphCallsReflection actualGraph = reader.readObject(GraphCallsReflection.class);
       reader.close();
       assertNotSame(graph, actualGraph);
@@ -444,10 +436,8 @@ public class EveryId_IT
     * Node reflection: have reflection method call registerObject for you
     */
    @Test
-   public void reflectionForMe() throws Exception
+   public void reflectionForMe()
    {
-      final File tempFile = File.createTempFile("EveryId_IT.TempFile.reflectionForMe.", ".txt");
-      tempFile.deleteOnExit();
       final GraphCallsReflection.Node root = new GraphCallsReflection.Node("Alice");
       {
          final GraphCallsReflection.Node bob = new GraphCallsReflection.Node("Bob");
@@ -459,11 +449,12 @@ public class EveryId_IT
          //a -> b <-> c
       }
 
-      final ObjectStreamWriter writer = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(root);
       writer.close();
 
-      final ObjectStreamReader reader = new ObjectStreamReader(tempFile);
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final GraphCallsReflection.Node actualRoot = reader.readObject();
       reader.close();
       assertNotSame(root, actualRoot);

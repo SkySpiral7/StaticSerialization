@@ -1,18 +1,15 @@
 package com.github.skySpiral7.java.staticSerialization.util;
 
-import java.lang.reflect.Field;
+import org.junit.jupiter.api.Test;
+
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.junit.Test;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ClassUtil_UT
 {
@@ -29,39 +26,30 @@ public class ClassUtil_UT
    }
 
    @Test
-   public void getAllFields() throws Exception
-   {
-      class ClassA
-      {
-         @SuppressWarnings("unused")
-         public int fieldA = 1;
-      }
-      class ClassB extends ClassA
-      {
-         @SuppressWarnings("unused")
-         public int fieldB = 2;
-      }
-      //by virtue of being non-static these local classes contain a generated field (this$0) which references ClassUtil_UT
-
-      final List<Field> expected = new ArrayList<>();
-      expected.add(ClassB.class.getField("fieldB"));
-      expected.add(ClassA.class.getField("fieldA"));
-
-      assertThat(ClassUtil.getAllFields(ClassB.class), is(expected));
-   }
-
-   @Test
    public void isBoxedPrimitive()
    {
-      assertFalse(ClassUtil.isBoxedPrimitive(String.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Byte.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Short.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Integer.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Long.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Float.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Double.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Boolean.class));
-      assertTrue(ClassUtil.isBoxedPrimitive(Character.class));
+      assertFalse(ClassUtil.isPrimitiveOrBox(String.class));
+
+      assertTrue(ClassUtil.isPrimitiveOrBox(Byte.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Short.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Integer.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Long.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Float.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Double.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Boolean.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(Character.class));
+
+      assertTrue(ClassUtil.isPrimitiveOrBox(byte.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(short.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(int.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(long.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(float.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(double.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(boolean.class));
+      assertTrue(ClassUtil.isPrimitiveOrBox(char.class));
+
+      assertFalse(ClassUtil.isPrimitiveOrBox(Void.class));
+      assertFalse(ClassUtil.isPrimitiveOrBox(void.class));
    }
 
    @Test

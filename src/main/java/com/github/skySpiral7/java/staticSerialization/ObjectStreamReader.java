@@ -1,24 +1,36 @@
 package com.github.skySpiral7.java.staticSerialization;
 
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
+import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+
 import java.io.Closeable;
 import java.io.File;
 import java.util.Objects;
-
-import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
-import com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public class ObjectStreamReader implements Closeable
 {
    private final ObjectReaderRegistry registry;
+   private final EasyReader reader;
    private final InternalStreamReader internalStreamReader;
 
    public ObjectStreamReader(final File sourceFile)
    {
+      this(new AsynchronousFileReader(sourceFile));
+   }
+
+   /**
+    * Exists for testing.
+    */
+   public ObjectStreamReader(final EasyReader reader)
+   {
       registry = new ObjectReaderRegistry();
-      internalStreamReader = new InternalStreamReader(sourceFile);
+      this.reader = reader;
+      internalStreamReader = new InternalStreamReader(reader, registry);
    }
 
    /**
@@ -27,13 +39,11 @@ public class ObjectStreamReader implements Closeable
    @Override
    public void close(){internalStreamReader.close();}
 
-   public boolean hasData(){return internalStreamReader.getFileReader().hasData();}
-
-   public int remainingBytes(){return internalStreamReader.getFileReader().remainingBytes();}
+   public boolean hasData(){return reader.hasData();}
 
    /**
-    * Reads the next object in the stream no matter what it is.
-    * For security this means that you either trust the stream or you trust all available classes.
+    * Reads the next object in the stream no matter what it is. For security this means that you either trust the stream or you trust all
+    * available classes.
     *
     * @see #readObject(Class)
     */
@@ -43,19 +53,14 @@ public class ObjectStreamReader implements Closeable
    }
 
    /**
-    * <p>Reads an object from the stream and requires that the class must match exactly. While normally
-    * you could just call the class's readFromStream method, this method is useful if either the class
-    * implements Serializable rather than StaticSerializable (such as BigDecimal), or if you don't know the
-    * exact class at compile time and would like this method to do the reflection for you.</p>
+    * <p>Reads an object from the stream and requires that the class must match exactly (not a child class).</p>
     *
     * <p>Security feature: if the expected class isn't the same as the class in this stream then an IllegalStateException
-    * is thrown without loading the class found. Thus untrusted classes will not be loaded (preventing static initializer
-    * blocks).</p>
+    * is thrown without loading the class found. Thus untrusted classes will not be loaded (preventing static initializer blocks).</p>
     *
     * <p>Security limitation: for multidimensional arrays only the topmost is matched exactly. Therefore if the
-    * base component is not a final class (or primitive) then you must trust all possible children. In the case
-    * of an Object array (not supported) this means trusting all classes which makes this method nearly pointless
-    * (failing only if the root is different).</p>
+    * base component is not a final class (or primitive) then you must trust all possible children. In the case of an Object array this
+    * means trusting all classes which makes this method nearly pointless (failing only if the root is different).</p>
     *
     * @see #readObject(Class)
     */
@@ -93,13 +98,25 @@ public class ObjectStreamReader implements Closeable
       return internalStreamReader.readObjectInternal(this, null, expectedClass, allowChildClass);
    }
 
+   /**
+    * This will populate the given instance by setting all fields using reflection. You'll have to serialize all constructor args first
+    * since this class won't assume which constructor to use or which static factory method.
+    *
+    * @param instance you must create the object initially thus accounting for final fields and object creation edge cases
+    */
    public void readFieldsReflectively(final Object instance)
    {
+      registry.registerObject(instance);
       ReflectionSerializableStrategy.read(this, instance);
    }
 
-   public ObjectReaderRegistry getObjectRegistry()
+   public boolean isRegistered(final Object instance)
    {
-      return registry;
+      return registry.isRegistered(instance);
+   }
+
+   public void registerObject(final Object instance)
+   {
+      registry.registerObject(instance);
    }
 }

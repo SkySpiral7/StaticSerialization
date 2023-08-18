@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.github.skySpiral7.java.staticSerialization.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
@@ -104,13 +103,9 @@ public final class GraphCallsRegister implements StaticSerializable
 
       public static Node readFromStream(final ObjectStreamReader reader)
       {
-         final ObjectReaderRegistry registry = reader.getObjectRegistry();
-         final Node registeredObject = registry.readObjectOrId(reader);
-         if (registeredObject != null) return registeredObject;
-
          final Node result = new Node(reader.readObject(String.class));
 
-         registry.claimId(result);
+         reader.registerObject(result);
 
          final int linkSize = reader.readObject(int.class);
          for (int linkIndex = 0; linkIndex < linkSize; ++linkIndex)
@@ -123,7 +118,6 @@ public final class GraphCallsRegister implements StaticSerializable
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {
-         if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
          writer.writeObject(data);
          writer.writeObject(links.size());
          links.forEach(writer::writeObject);

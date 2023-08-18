@@ -1,47 +1,66 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
+import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
+import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeByte;
 
 public enum HeaderSerializableStrategy
 {
    ;  //no instances
+   private static final Logger LOG = LogManager.getLogger();
 
    /**
     * Not in map:
     * <ul>
-    * <li>+ boolean true</li>
-    * <li>- boolean false</li>
-    * <li>[2 object arrays</li>
-    * <li>]2 primitive arrays</li>
-    * <li>; null</li>
+    * <li>+ boolean true (header only). and component used for boolean arrays</li>
+    * <li>- boolean false (header only. not valid array component)</li>
+    * <li>[2Type object arrays</li>
+    * <li>]2Type primitive arrays</li>
+    * <li>Type; normal class which is ; terminated</li>
+    * <li>; null (header only. not valid array component)</li>
     * <li>? inherit type from containing array</li>
+    * <li>\id reference existing object (header only)</li>
     * </ul>
     */
    private static final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
    /**
     * Not in map:
     * <ul>
-    * <li>+ boolean true</li>
-    * <li>- boolean false</li>
-    * <li>[2 object arrays</li>
-    * <li>]2 primitive arrays</li>
-    * <li>; null</li>
+    * <li>+ boolean true (header only). and component used for boolean arrays</li>
+    * <li>- boolean false (header only. not valid array component)</li>
+    * <li>[2Type object arrays</li>
+    * <li>]2Type primitive arrays</li>
+    * <li>Type; normal class which is ; terminated</li>
+    * <li>; null (header only. not valid array component)</li>
     * <li>? inherit type from containing array</li>
+    * <li>\id reference existing object (header only)</li>
     * </ul>
     */
    private static final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
 
    static
    {
+      /*
+      possible printable ASCII headers: space to / (not $ or .) is 14, : to @ is +7, [ to ` (not _) is +5, { to ~ is +4 = 30
+      I've used 15 so far which leaves 15 free spots
+      forbidden: $.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
+      used: !#%&*+-;?@[\]^~
+      free: space "'(),/:<=>`{|}
+      technically a FQ class name can't start with a number or dot so I could use them but I won't
+      variables names can start with $ so I assume a package/class can too
+      */
       COMPRESSED_HEADER_TO_CLASS = new HashMap<>();
       COMPRESSED_HEADER_TO_CLASS.put('~', Byte.class);
       COMPRESSED_HEADER_TO_CLASS.put('!', Short.class);
@@ -52,6 +71,7 @@ public enum HeaderSerializableStrategy
       COMPRESSED_HEADER_TO_CLASS.put('^', Double.class);
       COMPRESSED_HEADER_TO_CLASS.put('&', Character.class);
       COMPRESSED_HEADER_TO_CLASS.put('*', String.class);
+      //TODO: more memnotic: ' char, " string, ` string with nulls, & for id
 
       CLASS_TO_COMPRESSED_HEADER = new HashMap<>();
       CLASS_TO_COMPRESSED_HEADER.put(Byte.class, '~');
@@ -68,19 +88,22 @@ public enum HeaderSerializableStrategy
    /**
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
-   public static HeaderInformation readHeader(final AsynchronousFileReader reader, final Class<?> inheritFromClass)
+   public static HeaderInformation<?> readHeader(final EasyReader reader, final Class<?> inheritFromClass,
+                                                 final ObjectReaderRegistry registry)
    {
       byte firstByte;
       final int dimensionCount;
       final boolean primitiveArray;
 
+      //excludes Object for the sake of Object[]
       if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
       {
          //TODO: tests are likely thin
          //inheritFromClass is never primitive void.class.
          //It is only primitive if contained in a primitive array in which case there is no header
          //since it can't be null or any other class.
-         if (inheritFromClass.isPrimitive()) return new HeaderInformation(ClassUtil.boxClass(inheritFromClass).getName());
+         if (inheritFromClass.isPrimitive())
+            return HeaderInformation.forPrimitiveArrayValue(ClassUtil.boxClass(inheritFromClass).getName());
          //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or ';')
          firstByte = reader.readByte();
          dimensionCount = ArrayUtil.countArrayDimensions(inheritFromClass);
@@ -88,7 +111,7 @@ public enum HeaderSerializableStrategy
          primitiveArray = baseComponent.isPrimitive();
          if ('?' == firstByte)
          {
-            return new HeaderInformation(baseComponent.getName(), dimensionCount, primitiveArray);
+            return HeaderInformation.forPossibleArray(baseComponent.getName(), dimensionCount, primitiveArray);
          }
          //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
       }
@@ -99,38 +122,88 @@ public enum HeaderSerializableStrategy
          primitiveArray = (']' == firstByte);  //is false if not an array at all
          if ('[' == firstByte || ']' == firstByte)
          {
-            if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array dimensions");
+            if (!reader.hasData()) throw new StreamCorruptedException("Incomplete header: no array dimensions");
             dimensionCount = Byte.toUnsignedInt(reader.readByte());
-            if (reader.remainingBytes() == 0) throw new StreamCorruptedException("Incomplete header: no array component type");
+            if (!reader.hasData()) throw new StreamCorruptedException("Incomplete header: no array component type");
+            //technically the previous assignment wasn't the first byte but what else can I call this variable?
             firstByte = reader.readByte();
             if (';' == firstByte) throw new StreamCorruptedException("header's array component type can't be null");
             if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
-            if ('+' == firstByte) return new HeaderInformation(Boolean.class.getName(), dimensionCount, primitiveArray);
+            if ('+' == firstByte) return HeaderInformation.forPossibleArray(Boolean.class.getName(), dimensionCount, primitiveArray);
          }
          else dimensionCount = 0;
       }
 
-      if (';' == firstByte) return new HeaderInformation();  //the empty string class name means null
-      if ('+' == firstByte) return new HeaderInformation(Boolean.TRUE);
-      if ('-' == firstByte) return new HeaderInformation(Boolean.FALSE);
+      if (';' == firstByte) return HeaderInformation.forNull();  //the empty string class name means null
+      if ('+' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.TRUE);
+      if ('-' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.FALSE);
       if (COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte))  //safe cast because map contains only ASCII
       {
          final Class<?> compressedClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
-         return new HeaderInformation(compressedClass.getName(), dimensionCount, primitiveArray);
+         return HeaderInformation.forPossibleArray(compressedClass.getName(), dimensionCount, primitiveArray);
+      }
+      if ('\\' == firstByte)
+      {
+         if (!reader.hasData()) throw new StreamCorruptedException("Incomplete header: id type but no id");
+         final int id = IntegerSerializableStrategy.read(reader);
+         final Object registeredObject = registry.getRegisteredObject(id);
+         //null value will not have an id. null is only possible if id was reserved but not registered
+         if (registeredObject == null) throw new StreamCorruptedException("id not found");
+         //LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
+         LOG.debug("id: " + id + " (" + registeredObject + " " + registeredObject.getClass().getSimpleName() + ")");
+         return HeaderInformation.forValue(registeredObject.getClass().getName(), registeredObject);
       }
 
       //else firstByte is part of a class name
-      return new HeaderInformation(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount, primitiveArray);
+      return HeaderInformation.forPossibleArray(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount,
+            primitiveArray);
    }
 
-   public static void writeHeader(final AsynchronousFileAppender appender, final Class<?> inheritFromClass, final Object data)
+   //TODO: rename since true also for null, bool
+
+   /**
+    * @return true if an id was used and no value should be written
+    */
+   public static boolean writeHeaderReturnIsId(final EasyAppender appender, final Class<?> inheritFromClass, final Object data,
+                                               final ObjectWriterRegistry registry)
    {
+      if (data != null && !ClassUtil.isPrimitiveOrBox(data.getClass()))
+      {
+         //TODO: long gets id, other primitives don't, else do
+         final Integer id = registry.getId(data);
+         //LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data + " id=" + id);
+         if (id != null)
+         {
+            LOG.debug("id: " + id + " (" + data + " " + data.getClass().getSimpleName() + ")");
+            writeByte(appender, '\\');
+            IntegerSerializableStrategy.write(appender, id);
+            return true;
+         }
+         //null, primitive, and box don't get registered
+         registry.registerObject(data);
+      }
+      //else if(data==null) LOG.debug("data.class=null");
+      //else LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data);
+
       //boolean[] and Boolean[] use only headers for elements (primitive doesn't allow null)
-      if (Boolean.TRUE.equals(data)) writeByte(appender, '+');
-      else if (Boolean.FALSE.equals(data)) writeByte(appender, '-');
-      else if (data == null) writeByte(appender, ';');  //if data is null then class name is the empty string
-      else if (null != inheritFromClass && inheritFromClass.isPrimitive()) ;  //do nothing
-         //because non-boolean primitive array elements have no header
+      if (Boolean.TRUE.equals(data))
+      {
+         writeByte(appender, '+');
+         return true;
+      }
+      else if (Boolean.FALSE.equals(data))
+      {
+         writeByte(appender, '-');
+         return true;
+      }
+      else if (data == null)
+      {
+         //if data is null then class name is the empty string
+         writeByte(appender, ';');
+         return true;
+      }
+      //do nothing because non-boolean primitive array elements have no header
+      else if (null != inheritFromClass && inheritFromClass.isPrimitive()) ;
          //(below) if class matches containing array exactly then inherit type.
       else if (null != inheritFromClass && inheritFromClass.equals(data.getClass())) writeByte(appender, '?');
       else if (CLASS_TO_COMPRESSED_HEADER.containsKey(data.getClass()))
@@ -165,5 +238,7 @@ public enum HeaderSerializableStrategy
       {
          StringSerializableStrategy.writeClassName(appender, data.getClass().getName());
       }
+
+      return false;
    }
 }

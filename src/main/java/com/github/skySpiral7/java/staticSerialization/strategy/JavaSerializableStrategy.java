@@ -1,5 +1,10 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
+import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,11 +13,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
-import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
-import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
-
 import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeBytes;
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -20,7 +20,7 @@ public enum JavaSerializableStrategy
 {
    ;  //no instances
 
-   public static void writeWithLength(final AsynchronousFileAppender appender, final Serializable data)
+   public static void writeWithLength(final EasyAppender appender, final Serializable data)
    {
       final byte[] serializedData = javaSerialize(data);
       writeBytes(appender, serializedData.length, 4);
@@ -42,7 +42,7 @@ public enum JavaSerializableStrategy
       return byteStream.toByteArray();
    }
 
-   public static <T> T readWithLength(final AsynchronousFileReader reader)
+   public static <T> T readWithLength(final EasyReader reader)
    {
       final int length = IntegerSerializableStrategy.read(reader);
       final byte[] objectData = reader.readBytes(length);

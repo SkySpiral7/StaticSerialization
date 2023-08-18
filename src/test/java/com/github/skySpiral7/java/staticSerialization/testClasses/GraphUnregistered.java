@@ -118,7 +118,6 @@ public final class GraphUnregistered implements StaticSerializable
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {
-         if (writer.getObjectRegistry().shouldNotWrite(this, writer)) return;
          writer.writeObject(data);
          writer.writeObject(links.size());
          links.forEach(writer::writeObject);

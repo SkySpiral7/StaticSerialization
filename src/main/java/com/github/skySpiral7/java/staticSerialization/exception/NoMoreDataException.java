@@ -4,10 +4,9 @@ import java.io.EOFException;
 import java.util.NoSuchElementException;
 
 /**
- * This exception is thrown when a client attempts to consume more data than remains.
- * This is usually used for streams but can be used more generally. Rather than being an unchecked alternative to EOFException,
- * it is more similar in nature to NoSuchElementException.
- * Instead of throwing this exception consider alternatives such as returning null, Optional, or a special value.
+ * This exception is thrown when a client attempts to consume more data than remains. This is usually used for streams but can be used more
+ * generally. Rather than being an unchecked alternative to EOFException, it is more similar in nature to NoSuchElementException. Instead of
+ * throwing this exception consider alternatives such as returning null, Optional, or a special value.
  *
  * @see NoSuchElementException
  * @see EOFException EOFException which is used for both end of file and end of stream

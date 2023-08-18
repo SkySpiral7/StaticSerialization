@@ -1,22 +1,19 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
-import com.github.skySpiral7.java.util.FileIoUtil;
-import org.junit.Test;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
+import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import java.io.File;
+import java.math.BigInteger;
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class InternalStreamWriter_UT
 {
@@ -35,34 +32,7 @@ public class InternalStreamWriter_UT
    }
 
    @Test
-   public void constructor_clears() throws IOException
-   {
-      final File tempFile = File.createTempFile("InternalStreamWriter_UT.TempFile.constructor_clears.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, "test");
-      new ObjectStreamWriter(tempFile).close();
-      assertEquals("", FileIoUtil.readTextFile(tempFile));
-   }
-
-   @Test
-   public void writeObject_enum() throws IOException
-   {
-      final File tempFile = File.createTempFile("InternalStreamWriter_UT.TempFile.writeObject_enum.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write("java.math.RoundingMode;".getBytes(StandardCharsets.UTF_8));
-      baos.write(new byte[]{0, 0, 0, 1});
-      final byte[] expected = baos.toByteArray();
-
-      testObject.writeObject(RoundingMode.DOWN);
-      testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
-      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
-   }
-
-   @Test
-   public void writeObject_custom() throws IOException
+   public void writeObject_custom()
    {
       final class CustomLocal implements StaticSerializable
       {
@@ -77,9 +47,8 @@ public class InternalStreamWriter_UT
          }
       }
 
-      final File tempFile = File.createTempFile("InternalStreamWriter_UT.TempFile.writeObject_custom.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       final CustomLocal data = new CustomLocal();
 
       testObject.writeObject(data);
@@ -99,52 +68,49 @@ public class InternalStreamWriter_UT
    }
 
    @Test
-   public void writeObject_customEnum() throws IOException
+   public void writeObject_customEnum()
    {
-      final File tempFile = File.createTempFile("InternalStreamWriter_UT.TempFile.writeObject_customEnum.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(CustomEnum.class.getName().getBytes(StandardCharsets.UTF_8));
-      baos.write(";*".getBytes(StandardCharsets.UTF_8));
-      baos.write(new byte[]{0, 0, 0, 3});  //UTF-8 length (int)
-      baos.write("One".getBytes(StandardCharsets.UTF_8));
-      final byte[] expected = baos.toByteArray();
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append(CustomEnum.class.getName());
+      expectedBuilder.append(";*");
+      expectedBuilder.append(new byte[]{0, 0, 0, 3});  //UTF-8 length (int)
+      expectedBuilder.append("One");
+      final byte[] expected = expectedBuilder.getAllBytes();
 
       testObject.writeObject(CustomEnum.One);
       testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_Serializable() throws IOException
+   public void writeObject_Serializable()
    {
-      final File tempFile = File.createTempFile("InternalStreamWriter_UT.TempFile.writeObject_Serializable.", ".txt");
-      tempFile.deleteOnExit();
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
       final BigInteger data = BigInteger.TEN;
       final byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write("java.math.BigInteger;".getBytes(StandardCharsets.UTF_8));
-      baos.write(ByteSerializableStrategy.toBigEndianBytes(javaData.length, 4));
-      baos.write(javaData);
-      final byte[] expected = baos.toByteArray();
+      final ByteAppender expectedBuilder = new ByteAppender();
+      expectedBuilder.append("java.math.BigInteger;");
+      expectedBuilder.append(BitWiseUtil.toBigEndianBytes(javaData.length, 4));
+      expectedBuilder.append(javaData);
+      final byte[] expected = expectedBuilder.getAllBytes();
 
       testObject.writeObject(data);
       testObject.close();
-      final byte[] fileContents = FileIoUtil.readBinaryFile(tempFile);
+      final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
 
    @Test
-   public void writeObject_throw_unknownClass() throws IOException
+   public void writeObject_throw_unknownClass()
    {
-      final File tempFile = File.createTempFile("InternalStreamWriter_UT.TempFile.writeObject_throw_unknownClass.", ".txt");
-      tempFile.deleteOnExit();
+      final ByteAppender mockFile = new ByteAppender();
 
-      final ObjectStreamWriter testObject = new ObjectStreamWriter(tempFile);
+      final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       try
       {
          testObject.writeObject(new Object());

@@ -1,26 +1,25 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.io.File;
-
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.util.FileIoUtil;
-import org.junit.Test;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class BoxPrimitiveSerializableStrategy_UT
 {
    @Test
-   public void read_throws_givenANonBooleanValue() throws Exception
+   public void read_throws_givenANonBooleanValue()
    {
-      final File tempFile = File.createTempFile("BoxPrimitiveSerializableStrategy_UT.TempFile.read_throws_givenANonBooleanValue.", ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{']', 1, '+'});  //array indicator, dimensions, component
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});  //length (int)
-      FileIoUtil.appendToFile(tempFile, "a");  //not valid
-      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append(new byte[]{']', 1, '+'});  //array indicator, dimensions, component
+      inputBuilder.append(new byte[]{0, 0, 0, 1});  //length (int)
+      inputBuilder.append("a");  //not valid
+      final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
+      final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
 
       try
       {
@@ -36,15 +35,14 @@ public class BoxPrimitiveSerializableStrategy_UT
    }
 
    @Test
-   public void read_throws_givenStreamWithNullInPrimitiveBooleanArray() throws Exception
+   public void read_throws_givenStreamWithNullInPrimitiveBooleanArray()
    {
-      final File tempFile = File.createTempFile("BoxPrimitiveSerializableStrategy_UT.TempFile.readHeader_throws_whenInheritOutsideOfArray.",
-            ".txt");
-      tempFile.deleteOnExit();
-      FileIoUtil.writeToFile(tempFile, new byte[]{']', 1, '+'});  //array indicator, dimensions, component
-      FileIoUtil.appendToFile(tempFile, new byte[]{0, 0, 0, 1});  //length (int)
-      FileIoUtil.appendToFile(tempFile, ";");  //data is null rather than true/false
-      final ObjectStreamReader streamReader = new ObjectStreamReader(tempFile);
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append(new byte[]{']', 1, '+'});  //array indicator, dimensions, component
+      inputBuilder.append(new byte[]{0, 0, 0, 1});  //length (int)
+      inputBuilder.append(";");  //data is null rather than true/false
+      final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
+      final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
 
       try
       {

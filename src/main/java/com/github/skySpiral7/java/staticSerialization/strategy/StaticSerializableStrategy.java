@@ -1,14 +1,14 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -53,6 +53,7 @@ public enum StaticSerializableStrategy
          throw new AssertionError("This can't be thrown", e);
          //since I already know it is public static and I know I'm giving it the right args
          //(because otherwise it wouldn't have been found)
+         //TODO: can this be thrown because of modules?
       }
       catch (final InvocationTargetException e)
       {

@@ -1,36 +1,43 @@
 package com.github.skySpiral7.java.staticSerialization;
 
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 
-import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileAppender;
-import com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
-
 public class ObjectStreamWriter implements Closeable, Flushable
 {
-   private final ObjectWriterRegistry registry;
    private final InternalStreamWriter internalStreamWriter;
 
    public ObjectStreamWriter(final File destination)
    {
-      registry = new ObjectWriterRegistry();
-      //TODO: allow other streams
       internalStreamWriter = new InternalStreamWriter(destination);
+   }
+
+   /**
+    * Exists for testing.
+    */
+   public ObjectStreamWriter(final EasyAppender appender)
+   {
+      //TODO: allow other streams
+      internalStreamWriter = new InternalStreamWriter(appender);
    }
 
    /**
     * @see AsynchronousFileAppender#flush()
     */
    @Override
-   public void flush(){internalStreamWriter.getFileAppender().flush();}
+   public void flush(){internalStreamWriter.getAppender().flush();}
 
    /**
     * @see AsynchronousFileAppender#close()
     */
    @Override
-   public void close(){internalStreamWriter.getFileAppender().close();}
+   public void close(){internalStreamWriter.getAppender().close();}
 
    /**
     * List of supported types:
@@ -46,6 +53,12 @@ public class ObjectStreamWriter implements Closeable, Flushable
     * <li>Empty Arrays (any number of dimensions)</li>
     * <li>Arrays (any number of dimensions) which only contain supported elements (the base component need not be supported)</li>
     * </ul>
+    *
+    * <p>An example of the last item: {@code new Object[]{"Str", 1}} is supported because each of the elements are supported even though
+    * Object is not directly supported. But {@code new Object[]{1, new Object()}} is not supported.</p>
+    *
+    * <p>An Object[] is allowed to contain itself without causing infinite recursion. The self reference is a supported element and the
+    * array can be serialized if all other elements are also supported.</p>
     */
    public void writeObject(final Object data)
    {
@@ -55,10 +68,5 @@ public class ObjectStreamWriter implements Closeable, Flushable
    public void writeFieldsReflectively(final Object data)
    {
       ReflectionSerializableStrategy.write(this, data);
-   }
-
-   public ObjectWriterRegistry getObjectRegistry()
-   {
-      return registry;
    }
 }

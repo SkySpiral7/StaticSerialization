@@ -1,15 +1,15 @@
 package com.github.skySpiral7.java.staticSerialization.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 public class ArrayUtil_UT
 {
    @Test
-   public void countArrayDimensions() throws Exception
+   public void countArrayDimensions()
    {
       assertThat(ArrayUtil.countArrayDimensions(byte[].class), is(1));
       assertThat(ArrayUtil.countArrayDimensions(Byte[][][].class), is(3));
@@ -17,7 +17,7 @@ public class ArrayUtil_UT
    }
 
    @Test
-   public void getBaseComponentType() throws Exception
+   public void getBaseComponentType()
    {
       assertThat(ArrayUtil.getBaseComponentType(byte[].class), is((Object) byte.class));
       assertThat(ArrayUtil.getBaseComponentType(Byte[][][].class), is((Object) Byte.class));

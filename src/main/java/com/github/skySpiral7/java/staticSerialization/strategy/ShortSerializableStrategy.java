@@ -1,12 +1,12 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import com.github.skySpiral7.java.staticSerialization.fileWrapper.AsynchronousFileReader;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 
 public enum ShortSerializableStrategy
 {
    ;  //no instances
 
-   public static short read(final AsynchronousFileReader reader)
+   public static short read(final EasyReader reader)
    {
       final byte[] data = reader.readBytes(2);
       final int result = ((data[0] & 0xff) << 8) | (data[1] & 0xff);
