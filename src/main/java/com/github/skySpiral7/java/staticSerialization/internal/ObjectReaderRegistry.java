@@ -37,13 +37,14 @@ public class ObjectReaderRegistry
    {
       Objects.requireNonNull(instance);
       /*
-      reserveIdForLater is always called first since entry point is ObjectStreamReader.readObject
+      reserveIdForLater is always called first since entry point is ObjectStreamReader.readObject.
+      These are all cases where registerObject is called outside of InternalStreamReader.readObjectInternal:
       1) ObjectStreamReader.readFieldsReflectively
       2) StaticSerializable.readFromStream
       3) ArraySerializableStrategy.read
       4) GraphCallsRegister.Node.readFromStream
-      These are all cases where registerObject is called outside of InternalStreamReader.readObjectInternal.
-      The info will not be logged if using the library correctly however it isn't a warn since it's no harm.
+
+      Therefore, this will not be logged if using the library correctly however it isn't a warn since there's no harm.
       */
       if (uniqueness.containsKey(instance))
          LOG.info("Already registered with id " + uniqueness.get(instance) + ": " + instance + " " + instance.getClass().getSimpleName());

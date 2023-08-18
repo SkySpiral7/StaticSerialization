@@ -123,7 +123,6 @@ public final class GraphCallsBoiler implements StaticSerializable
       @Override
       public void writeToStream(final ObjectStreamWriter writer)
       {
-         //TODO: is root node registered too late?
          writer.writeObject(data);
          writer.writeObject(links.size());
          links.forEach(writer::writeObject);

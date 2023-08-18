@@ -179,6 +179,7 @@ public enum HeaderSerializableStrategy
             IntegerSerializableStrategy.write(appender, id);
             return true;
          }
+         //null, primitive, and box don't get registered
          registry.registerObject(data);
       }
       //else if(data==null) LOG.debug("data.class=null");

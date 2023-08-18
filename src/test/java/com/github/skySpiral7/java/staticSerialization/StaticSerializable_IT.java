@@ -5,7 +5,6 @@ import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.testClasses.ChildImmutable;
 import com.github.skySpiral7.java.staticSerialization.testClasses.ChildMutable;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister;
-import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegister.Node;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -502,10 +501,10 @@ Object graph (using non compressed names):
    public void rootedGraph()
    {
       final GraphCallsRegister graph;
-      final Node root = new Node("Alice");
+      final GraphCallsRegister.Node root = new GraphCallsRegister.Node("Alice");
       {
-         final Node bob = new Node("Bob");
-         final Node clark = new Node("Clark");
+         final GraphCallsRegister.Node bob = new GraphCallsRegister.Node("Bob");
+         final GraphCallsRegister.Node clark = new GraphCallsRegister.Node("Clark");
 
          root.links.add(bob);
          bob.links.add(clark);
@@ -541,10 +540,10 @@ Object graph (using non compressed names):
    @Test
    public void rootNode()
    {
-      final Node root = new Node("Alice");
+      final GraphCallsRegister.Node root = new GraphCallsRegister.Node("Alice");
       {
-         final Node bob = new Node("Bob");
-         final Node clark = new Node("Clark");
+         final GraphCallsRegister.Node bob = new GraphCallsRegister.Node("Bob");
+         final GraphCallsRegister.Node clark = new GraphCallsRegister.Node("Clark");
 
          root.links.add(bob);
          bob.links.add(clark);
@@ -560,11 +559,14 @@ Object graph (using non compressed names):
       writer.close();
 
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
-      final Node actualRoot = reader.readObject();
+      final GraphCallsRegister.Node actualRoot = reader.readObject();
       reader.close();
       assertNotSame(root, actualRoot);
       assertEquals(root, actualRoot);
-      //TODO: assert that clark is linked to self
+
+      //a -> b -> c then assert that c links to itself. c.links=[b, c]
+      final GraphCallsRegister.Node actualClark = actualRoot.links.get(0).links.get(0);
+      assertSame(actualClark, actualClark.links.get(1));
    }
 
    public static final class ReflectiveClass implements StaticSerializable
