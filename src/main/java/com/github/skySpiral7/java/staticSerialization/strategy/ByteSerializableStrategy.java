@@ -9,7 +9,7 @@ public enum ByteSerializableStrategy
 
    public static void writeByte(final EasyAppender appender, final int data)
    {
-      appender.append(new byte[]{(byte) data});
+      appender.append((byte) data);
    }
 
    public static void writeBytes(final EasyAppender appender, long data, final int byteCount)

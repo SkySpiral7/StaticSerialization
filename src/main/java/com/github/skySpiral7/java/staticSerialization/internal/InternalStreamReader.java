@@ -38,8 +38,6 @@ public class InternalStreamReader implements Closeable
                                                                                 Class<T_Expected> expectedClass,
                                                                                 final boolean allowChildClass)
    {
-      if (!reader.hasData()) throw new NoMoreDataException();
-
       //must check for void.class because ClassUtil.boxClass would throw something less helpful
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));

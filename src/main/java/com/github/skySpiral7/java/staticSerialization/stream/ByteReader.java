@@ -21,24 +21,14 @@ public class ByteReader implements EasyReader {
     public void close(){}
 
     @Override
-    public boolean hasData()
+    public byte[] readBytes(final int requestedByteCount)
     {
-        return position < data.length;
-    }
-
-    @Override
-    public byte readByte()
-    {
-        position++;
-        return data[position - 1];
-    }
-
-    @Override
-    public byte[] readBytes(int byteCount)
-    {
-        final byte[] result = new byte[byteCount];
-        System.arraycopy(data, position, result, 0, byteCount);
-        position += byteCount;
+        final int remainingBytes = data.length - position;
+        final int actualByteLength = Math.min(requestedByteCount, remainingBytes);
+        final byte[] result = new byte[actualByteLength];
+        //apparently actualByteLength=0 is allowed
+        System.arraycopy(data, position, result, 0, actualByteLength);
+        position += actualByteLength;
         return result;
     }
 }

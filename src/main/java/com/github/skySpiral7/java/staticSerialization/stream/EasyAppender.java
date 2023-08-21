@@ -22,6 +22,15 @@ public interface EasyAppender extends Closeable, Flushable
         //this is only called by tests
         append(newContents.getBytes(StandardCharsets.UTF_8));
     }
+    /**
+     * Appends a single byte to the stream.
+     *
+     * @see #append(byte[])
+     */
+    default void append(final byte data)
+    {
+        append(new byte[]{data});
+    }
 
     /**
      * Appends binary data to the stream.

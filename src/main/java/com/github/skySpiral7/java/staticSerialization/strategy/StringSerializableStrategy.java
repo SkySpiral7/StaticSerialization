@@ -47,7 +47,7 @@ public enum StringSerializableStrategy
 
    public static String readClassName(final EasyReader reader)
    {
-      return readClassName(reader, reader.readByte());
+      return readClassName(reader, reader.readBytes(1)[0]);
    }
 
    public static String readClassName(final EasyReader reader, final byte firstByte)
@@ -56,9 +56,7 @@ public enum StringSerializableStrategy
       classNameStream.write(firstByte);
       while (true)
       {
-         if (!reader.hasData())
-            throw new StreamCorruptedException("Incomplete header: class name not terminated");
-         final byte thisByte = reader.readByte();
+         final byte thisByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: class name not terminated")[0];
          if (thisByte == ';') break;
          classNameStream.write(thisByte);
       }

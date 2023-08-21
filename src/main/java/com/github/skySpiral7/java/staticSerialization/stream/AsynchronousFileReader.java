@@ -1,7 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.stream;
 
 import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
-import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -79,28 +78,23 @@ public final class AsynchronousFileReader implements EasyReader
       amOpen = false;
    }
 
-   @Override
-   public boolean hasData()
-   {
-      return (remainingBytes > 0);
-   }
-
    /**
     * Reads binary data from the file. This method will wait if the queue is empty.
     *
-    * @param byteCount the number of bytes to read
+    * @param requestedByteCount the number of bytes to read
     */
    @Override
-   public byte[] readBytes(final int byteCount)
+   public byte[] readBytes(final int requestedByteCount)
    {
       if (!amOpen) throw new ClosedResourceException("Can't read from a closed stream");
       //otherwise it would wait forever
 
-      if (byteCount > remainingBytes) throw NoMoreDataException.notEnoughBytes(byteCount, remainingBytes);
-      remainingBytes -= byteCount;
+      final int actualByteLength = Math.min(requestedByteCount, remainingBytes);
+      remainingBytes -= requestedByteCount;
 
-      final byte[] result = new byte[byteCount];
-      for (int i = 0; i < byteCount; i++)
+      final byte[] result = new byte[actualByteLength];
+      //loop won't execute if actualByteLength is 0
+      for (int i = 0; i < actualByteLength; i++)
       {
          try
          {

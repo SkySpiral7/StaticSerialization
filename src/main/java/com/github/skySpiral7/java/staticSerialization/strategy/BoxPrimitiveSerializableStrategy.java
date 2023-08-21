@@ -38,7 +38,7 @@ public enum BoxPrimitiveSerializableStrategy
 
    public static <T> T read(final EasyReader reader, final Class<T> expectedClass)
    {
-      if (Byte.class.equals(expectedClass)) return cast(reader.readByte());
+      if (Byte.class.equals(expectedClass)) return cast(reader.readBytes(1)[0]);
       if (Short.class.equals(expectedClass))
       {
          return cast(ShortSerializableStrategy.read(reader));
@@ -68,7 +68,7 @@ public enum BoxPrimitiveSerializableStrategy
          //TODO: should be reachable through Boolean[] as well. else forbid null here
          //Code is only reachable through primitive boolean arrays, else the header contains the value.
          //Also reachable if a custom written stream uses a header of Boolean.class.
-         final byte data = reader.readByte();
+         final byte data = reader.readBytes(1)[0];
          if ('+' == data) return cast(Boolean.TRUE);
          if ('-' == data) return cast(Boolean.FALSE);
          if (';' == data) return null;

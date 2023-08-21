@@ -39,8 +39,6 @@ public class ObjectStreamReader implements Closeable
    @Override
    public void close(){internalStreamReader.close();}
 
-   public boolean hasData(){return reader.hasData();}
-
    /**
     * Reads the next object in the stream no matter what it is. For security this means that you either trust the stream or you trust all
     * available classes.

@@ -8,9 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ByteSerializableStrategy_IT
 {
@@ -27,7 +26,6 @@ public class ByteSerializableStrategy_IT
       byte data2 = 3;
       testObject.writeObject(data1);
       testObject.writeObject(data2);
-      testObject.close();
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
@@ -41,11 +39,8 @@ public class ByteSerializableStrategy_IT
       final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
-      assertTrue(testObject.hasData());
       assertEquals(2L, testObject.readObject(Byte.class).longValue());
       assertEquals(3L, testObject.readObject(byte.class).longValue());
-      assertFalse(testObject.hasData());
-
-      testObject.close();
+      assertArrayEquals(new byte[0], mockFile.readBytes(1));
    }
 }

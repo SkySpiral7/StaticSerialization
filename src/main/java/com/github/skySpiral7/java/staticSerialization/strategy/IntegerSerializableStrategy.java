@@ -1,5 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
@@ -19,7 +20,15 @@ public enum IntegerSerializableStrategy
 
    public static int read(final EasyReader reader)
    {
-      final int data = BitWiseUtil.bigEndianBytesToInteger(reader.readBytes(4));
+      //TODO: make sure all readBytes use throwIfNotEnoughData
+      return read(reader, "Missing int data");
+   }
+
+   public static int read(final EasyReader reader, final String corruptMessage)
+   {
+      final int data = BitWiseUtil.bigEndianBytesToInteger(
+         StreamCorruptedException.throwIfNotEnoughData(reader, 4, corruptMessage)
+      );
       LOG.debug(data);
       return data;
    }

@@ -105,7 +105,7 @@ public enum HeaderSerializableStrategy
          if (inheritFromClass.isPrimitive())
             return HeaderInformation.forPrimitiveArrayValue(ClassUtil.boxClass(inheritFromClass).getName());
          //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or ';')
-         firstByte = reader.readByte();
+         firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
          dimensionCount = ArrayUtil.countArrayDimensions(inheritFromClass);
          final Class<?> baseComponent = inheritFromClass.isArray() ? ArrayUtil.getBaseComponentType(inheritFromClass) : inheritFromClass;
          primitiveArray = baseComponent.isPrimitive();
@@ -117,16 +117,16 @@ public enum HeaderSerializableStrategy
       }
       else
       {
-         firstByte = reader.readByte();
+         firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
          if ('?' == firstByte) throw new StreamCorruptedException("Only array elements can inherit type");
          primitiveArray = (']' == firstByte);  //is false if not an array at all
          if ('[' == firstByte || ']' == firstByte)
          {
-            if (!reader.hasData()) throw new StreamCorruptedException("Incomplete header: no array dimensions");
-            dimensionCount = Byte.toUnsignedInt(reader.readByte());
-            if (!reader.hasData()) throw new StreamCorruptedException("Incomplete header: no array component type");
-            //technically the previous assignment wasn't the first byte but what else can I call this variable?
-            firstByte = reader.readByte();
+            dimensionCount = Byte.toUnsignedInt(
+               StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array dimensions")[0]
+            );
+            //not the first byte but needs to conform for below. don't know what else to call this variable
+            firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array component type")[0];
             if (';' == firstByte) throw new StreamCorruptedException("header's array component type can't be null");
             if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
             if ('+' == firstByte) return HeaderInformation.forPossibleArray(Boolean.class.getName(), dimensionCount, primitiveArray);
@@ -144,8 +144,7 @@ public enum HeaderSerializableStrategy
       }
       if ('\\' == firstByte)
       {
-         if (!reader.hasData()) throw new StreamCorruptedException("Incomplete header: id type but no id");
-         final int id = IntegerSerializableStrategy.read(reader);
+         final int id = IntegerSerializableStrategy.read(reader, "Incomplete header: id type but no id");
          final Object registeredObject = registry.getRegisteredObject(id);
          //null value will not have an id. null is only possible if id was reserved but not registered
          if (registeredObject == null) throw new StreamCorruptedException("id not found");

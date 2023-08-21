@@ -1,6 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization;
 
-import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.util.FileIoUtil;
@@ -19,22 +19,21 @@ public class ObjectStreamReader_UT
    @Test
    public void readBytes_throw() throws Exception
    {
+      //tests com.github.skySpiral7.java.staticSerialization.strategy.ShortSerializableStrategy
       final File tempFile = File.createTempFile("ObjectStreamReader_UT.TempFile.readBytes_throw.", ".txt");
       tempFile.deleteOnExit();
       final byte[] fileContents = {'!', 0x0a};
       FileIoUtil.writeToFile(tempFile, fileContents);
 
       final ObjectStreamReader testObject = new ObjectStreamReader(tempFile);
-      assertTrue(testObject.hasData());
       try
       {
          testObject.readObject(Short.class);
          fail("Didn't throw");
       }
-      catch (final NoMoreDataException actual)
+      catch (final StreamCorruptedException actual)
       {
-         assertEquals("expected 2 bytes, found 1 bytes", actual.getMessage());
-         //this indirectly tests hasData(int) and remainingBytes(). hasData() is tested everywhere
+         assertEquals("Missing short data", actual.getMessage());
       }
 
       testObject.close();

@@ -1,31 +1,26 @@
 package com.github.skySpiral7.java.staticSerialization.stream;
 
+import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+
 import java.io.Closeable;
 
 /**
  * Exists to make an easy API for object serialization use.
+ * By design, you can't ask how if any bytes remain since those bytes
+ * might belong to another class and would thus be misleading.
  */
 public interface EasyReader extends Closeable
 {
     void close();
     /**
-     * @return true if there are any more bytes
-     */
-    //TODO: replace with readByte/s taking a string for the exception message
-    boolean hasData();
-    /**
-     * Reads a single byte of binary data from the stream.
+     * Reads binary data from the stream. The returned array's length will be byteCount unless
+     * the stream doesn't contain enough bytes in which case the returned array length will be however
+     * many bytes remain (possibly 0).
      *
-     * @see #readBytes(int)
+     * @param requestedByteCount the maximum number of bytes to read
+     * @throws ClosedResourceException if the stream is closed
+     * @see StreamCorruptedException#throwIfNotEnoughData(EasyReader, int, String)
      */
-    default byte readByte()
-    {
-        return readBytes(1)[0];
-    }
-    /**
-     * Reads binary data from the stream.
-     *
-     * @param byteCount the number of bytes to read
-     */
-    byte[] readBytes(final int byteCount);
+    byte[] readBytes(final int requestedByteCount);
 }
