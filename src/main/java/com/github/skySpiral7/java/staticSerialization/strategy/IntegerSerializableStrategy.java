@@ -18,12 +18,6 @@ public enum IntegerSerializableStrategy
       ByteSerializableStrategy.writeBytes(appender, data, 4);
    }
 
-   public static int read(final EasyReader reader)
-   {
-      //TODO: make sure all readBytes use throwIfNotEnoughData
-      return read(reader, "Missing int data");
-   }
-
    public static int read(final EasyReader reader, final String corruptMessage)
    {
       final int data = BitWiseUtil.bigEndianBytesToInteger(

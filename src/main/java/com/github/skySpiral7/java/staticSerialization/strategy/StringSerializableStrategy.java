@@ -26,11 +26,12 @@ public enum StringSerializableStrategy
 
    public static String readWithLength(final EasyReader reader)
    {
-      final int stringByteLength = IntegerSerializableStrategy.read(reader);
+      final int stringByteLength = IntegerSerializableStrategy.read(reader, "Missing string byte length");
       /*TODO: could use an Overlong null delimiter 0xC080 to reduce overhead by 2 but harder to read stream
       could also make a new string type for null delimited 0x00 (only used when contains no null)
       AsynchronousFileReader would need a readBytesUntil*/
-      final String result = new String(reader.readBytes(stringByteLength), StandardCharsets.UTF_8);
+      byte[] stringData = StreamCorruptedException.throwIfNotEnoughData(reader, stringByteLength, "Missing string data");
+      final String result = new String(stringData, StandardCharsets.UTF_8);
       LOG.debug(result);
       return result;
    }
@@ -43,11 +44,6 @@ public enum StringSerializableStrategy
       appender.append(writeMe);
       ByteSerializableStrategy.writeByte(appender, ';');
       //instead of size then string have the string terminated by ; since this saves 3 bytes and class names can't contain ;
-   }
-
-   public static String readClassName(final EasyReader reader)
-   {
-      return readClassName(reader, reader.readBytes(1)[0]);
    }
 
    public static String readClassName(final EasyReader reader, final byte firstByte)

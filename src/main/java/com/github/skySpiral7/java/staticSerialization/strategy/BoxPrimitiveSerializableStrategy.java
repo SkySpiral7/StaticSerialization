@@ -38,28 +38,33 @@ public enum BoxPrimitiveSerializableStrategy
 
    public static <T> T read(final EasyReader reader, final Class<T> expectedClass)
    {
-      if (Byte.class.equals(expectedClass)) return cast(reader.readBytes(1)[0]);
+      if (Byte.class.equals(expectedClass))
+      {
+         return cast(StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing byte data")[0]);
+      }
       if (Short.class.equals(expectedClass))
       {
-         return cast(ShortSerializableStrategy.read(reader));
+         return cast(ShortSerializableStrategy.read(reader, "Missing short data"));
       }
       if (Integer.class.equals(expectedClass))
       {
-         return cast(IntegerSerializableStrategy.read(reader));
+         return cast(IntegerSerializableStrategy.read(reader, "Missing int data"));
       }
       if (Long.class.equals(expectedClass))
       {
-         return cast(BitWiseUtil.bigEndianBytesToLong(reader.readBytes(8)));
+         return cast(BitWiseUtil.bigEndianBytesToLong(
+            StreamCorruptedException.throwIfNotEnoughData(reader, 8, "Missing long data")
+         ));
       }
       if (Float.class.equals(expectedClass))
       {
-         final byte[] data = reader.readBytes(4);
+         final byte[] data = StreamCorruptedException.throwIfNotEnoughData(reader, 4, "Missing float data");
          final int intData = BitWiseUtil.bigEndianBytesToInteger(data);
          return cast(Float.intBitsToFloat(intData));
       }
       if (Double.class.equals(expectedClass))
       {
-         final byte[] data = reader.readBytes(8);
+         final byte[] data = StreamCorruptedException.throwIfNotEnoughData(reader, 8, "Missing double data");
          final long longData = BitWiseUtil.bigEndianBytesToLong(data);
          return cast(Double.longBitsToDouble(longData));
       }
@@ -68,7 +73,7 @@ public enum BoxPrimitiveSerializableStrategy
          //TODO: should be reachable through Boolean[] as well. else forbid null here
          //Code is only reachable through primitive boolean arrays, else the header contains the value.
          //Also reachable if a custom written stream uses a header of Boolean.class.
-         final byte data = reader.readBytes(1)[0];
+         final byte data = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing boolean data")[0];
          if ('+' == data) return cast(Boolean.TRUE);
          if ('-' == data) return cast(Boolean.FALSE);
          if (';' == data) return null;
@@ -76,7 +81,7 @@ public enum BoxPrimitiveSerializableStrategy
       }
       if (Character.class.equals(expectedClass))
       {
-         return cast((char) ShortSerializableStrategy.read(reader));
+         return cast((char) ShortSerializableStrategy.read(reader, "Missing char data"));
       }
 
       throw new AssertionError("Method shouldn't've been called");

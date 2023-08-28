@@ -64,7 +64,7 @@ public class EnumSerializableStrategy_IT
       }
       catch (final StreamCorruptedException actual)
       {
-         assertEquals("expected array index. Actual: -1", actual.getMessage());
+         assertEquals("Invalid enum ordinal. Actual: -1", actual.getMessage());
       }
 
       testObject.close();

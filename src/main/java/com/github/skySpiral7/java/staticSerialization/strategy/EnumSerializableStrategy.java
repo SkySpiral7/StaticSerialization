@@ -17,8 +17,8 @@ public enum EnumSerializableStrategy
 
    public static <T> T read(final EasyReader reader, final Class<T> expectedClass)
    {
-      final int ordinal = IntegerSerializableStrategy.read(reader);
-      if (ordinal < 0) throw new StreamCorruptedException("expected array index. Actual: " + ordinal);
+      final int ordinal = IntegerSerializableStrategy.read(reader, "Missing enum ordinal");
+      if (ordinal < 0) throw new StreamCorruptedException("Invalid enum ordinal. Actual: " + ordinal);
 
       final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum
       if (values.length <= ordinal) throw new StreamCorruptedException(

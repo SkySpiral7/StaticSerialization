@@ -32,7 +32,7 @@ public enum ArraySerializableStrategy
    public static <T_Array, T_Component> T_Array read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
                                                      final EasyReader fileReader, final Class<T_Component> componentType)
    {
-      final int arrayLength = IntegerSerializableStrategy.read(fileReader);
+      final int arrayLength = IntegerSerializableStrategy.read(fileReader, "Missing array length");
       final T_Array arrayValue = cast(Array.newInstance(componentType, arrayLength));
 
       //this is only safe because creating an empty array only requires reading a primitive from stream
