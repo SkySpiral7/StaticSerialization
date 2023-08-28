@@ -23,9 +23,6 @@ public class ObjectStreamReader implements Closeable
       this(new AsynchronousFileReader(sourceFile));
    }
 
-   /**
-    * Exists for testing.
-    */
    public ObjectStreamReader(final EasyReader reader)
    {
       registry = new ObjectReaderRegistry();

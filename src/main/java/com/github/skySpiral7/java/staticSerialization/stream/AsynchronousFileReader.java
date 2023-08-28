@@ -81,7 +81,8 @@ public final class AsynchronousFileReader implements EasyReader
    /**
     * Reads binary data from the file. This method will wait if the queue is empty.
     *
-    * @param requestedByteCount the number of bytes to read
+    * @param requestedByteCount the maximum number of bytes to read
+    * @see EasyReader#readBytes(int)
     */
    @Override
    public byte[] readBytes(final int requestedByteCount)

@@ -18,12 +18,8 @@ public class ObjectStreamWriter implements Closeable, Flushable
       internalStreamWriter = new InternalStreamWriter(destination);
    }
 
-   /**
-    * Exists for testing.
-    */
    public ObjectStreamWriter(final EasyAppender appender)
    {
-      //TODO: allow other streams
       internalStreamWriter = new InternalStreamWriter(appender);
    }
 

@@ -7,7 +7,7 @@ import java.io.Closeable;
 
 /**
  * Exists to make an easy API for object serialization use.
- * By design, you can't ask how if any bytes remain since those bytes
+ * By design, you can't ask how many bytes remain since those bytes
  * might belong to another class and would thus be misleading.
  */
 public interface EasyReader extends Closeable
