@@ -61,12 +61,14 @@ public enum AllSerializableStrategy
    public static <T> T read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
                             final EasyReader fileReader, final Class<T> actualClass)
    {
-      if (ClassUtil.isPrimitiveOrBox(actualClass)) return BoxPrimitiveSerializableStrategy.read(fileReader, actualClass);
+      if (ClassUtil.isPrimitiveOrBox(actualClass))
+         return BoxPrimitiveSerializableStrategy.read(fileReader, actualClass);
       if (String.class.equals(actualClass)) return cast(StringSerializableStrategy.readWithLength(fileReader));
       if (actualClass.isArray())
          return ArraySerializableStrategy.read(streamReader, internalStreamReader, fileReader, actualClass.getComponentType());
 
-      if (StaticSerializable.class.isAssignableFrom(actualClass)) return StaticSerializableStrategy.read(streamReader, actualClass);
+      if (StaticSerializable.class.isAssignableFrom(actualClass))
+         return StaticSerializableStrategy.read(streamReader, actualClass);
 
       //TODO: does java serial allow enum data? yes: JavaSerializableStrategy, no: doc it
       if (actualClass.isEnum()) return EnumSerializableStrategy.read(fileReader, actualClass);

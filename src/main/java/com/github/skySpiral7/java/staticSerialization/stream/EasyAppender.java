@@ -9,34 +9,36 @@ import java.nio.charset.StandardCharsets;
  */
 public interface EasyAppender extends Closeable, Flushable
 {
-    void flush();
-    void close();
+   void flush();
 
-    /**
-     * Appends a UTF-8 string to the stream.
-     *
-     * @see #append(byte[])
-     */
-    default void append(final String newContents)
-    {
-        //this is only called by tests
-        append(newContents.getBytes(StandardCharsets.UTF_8));
-    }
-    /**
-     * Appends a single byte to the stream.
-     *
-     * @see #append(byte[])
-     */
-    default void append(final byte data)
-    {
-        //only used once but fair enough to exist as default
-        append(new byte[]{data});
-    }
+   void close();
 
-    /**
-     * Appends binary data to the stream.
-     *
-     * @see #append(String)
-     */
-    void append(final byte[] newContents);
+   /**
+    * Appends a UTF-8 string to the stream.
+    *
+    * @see #append(byte[])
+    */
+   default void append(final String newContents)
+   {
+      //this is only called by tests
+      append(newContents.getBytes(StandardCharsets.UTF_8));
+   }
+
+   /**
+    * Appends a single byte to the stream.
+    *
+    * @see #append(byte[])
+    */
+   default void append(final byte data)
+   {
+      //only used once but fair enough to exist as default
+      append(new byte[]{data});
+   }
+
+   /**
+    * Appends binary data to the stream.
+    *
+    * @see #append(String)
+    */
+   void append(final byte[] newContents);
 }

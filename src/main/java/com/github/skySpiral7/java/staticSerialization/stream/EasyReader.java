@@ -12,15 +12,16 @@ import java.io.Closeable;
  */
 public interface EasyReader extends Closeable
 {
-    void close();
-    /**
-     * Reads binary data from the stream. The returned array's length will be byteCount unless
-     * the stream doesn't contain enough bytes in which case the returned array length will be however
-     * many bytes remain (possibly 0).
-     *
-     * @param requestedByteCount the maximum number of bytes to read
-     * @throws ClosedResourceException if the stream is closed
-     * @see StreamCorruptedException#throwIfNotEnoughData(EasyReader, int, String)
-     */
-    byte[] readBytes(final int requestedByteCount);
+   void close();
+
+   /**
+    * Reads binary data from the stream. The returned array's length will be byteCount unless
+    * the stream doesn't contain enough bytes in which case the returned array length will be however
+    * many bytes remain (possibly 0).
+    *
+    * @param requestedByteCount the maximum number of bytes to read
+    * @throws ClosedResourceException if the stream is closed
+    * @see StreamCorruptedException#throwIfNotEnoughData(EasyReader, int, String)
+    */
+   byte[] readBytes(final int requestedByteCount);
 }

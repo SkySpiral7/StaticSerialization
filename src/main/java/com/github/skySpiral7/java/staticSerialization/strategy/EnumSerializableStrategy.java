@@ -22,7 +22,7 @@ public enum EnumSerializableStrategy
 
       final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum
       if (values.length <= ordinal) throw new StreamCorruptedException(
-            String.format("%s.values()[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
+         String.format("%s.values()[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
 
       return cast(values[ordinal]);
    }

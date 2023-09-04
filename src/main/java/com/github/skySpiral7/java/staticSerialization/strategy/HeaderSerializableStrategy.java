@@ -107,7 +107,9 @@ public enum HeaderSerializableStrategy
          //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or ';')
          firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
          dimensionCount = ArrayUtil.countArrayDimensions(inheritFromClass);
-         final Class<?> baseComponent = inheritFromClass.isArray() ? ArrayUtil.getBaseComponentType(inheritFromClass) : inheritFromClass;
+         final Class<?> baseComponent = inheritFromClass.isArray()
+            ? ArrayUtil.getBaseComponentType(inheritFromClass)
+            : inheritFromClass;
          primitiveArray = baseComponent.isPrimitive();
          if ('?' == firstByte)
          {
@@ -129,7 +131,8 @@ public enum HeaderSerializableStrategy
             firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array component type")[0];
             if (';' == firstByte) throw new StreamCorruptedException("header's array component type can't be null");
             if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
-            if ('+' == firstByte) return HeaderInformation.forPossibleArray(Boolean.class.getName(), dimensionCount, primitiveArray);
+            if ('+' == firstByte)
+               return HeaderInformation.forPossibleArray(Boolean.class.getName(), dimensionCount, primitiveArray);
          }
          else dimensionCount = 0;
       }
@@ -155,7 +158,7 @@ public enum HeaderSerializableStrategy
 
       //else firstByte is part of a class name
       return HeaderInformation.forPossibleArray(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount,
-            primitiveArray);
+         primitiveArray);
    }
 
    //TODO: rename since true also for null, bool
@@ -227,7 +230,8 @@ public enum HeaderSerializableStrategy
          }
 
          if (baseComponent.equals(Boolean.class)) writeByte(appender, '+');
-         else if (CLASS_TO_COMPRESSED_HEADER.containsKey(baseComponent)) writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
+         else if (CLASS_TO_COMPRESSED_HEADER.containsKey(baseComponent))
+            writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
          else
          {
             StringSerializableStrategy.writeClassName(appender, baseComponent.getName());

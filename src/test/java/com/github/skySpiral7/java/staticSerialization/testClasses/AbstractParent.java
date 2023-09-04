@@ -11,10 +11,10 @@ import java.util.EnumSet;
  */
 public abstract class AbstractParent implements StaticSerializable
 {
-    public static AbstractParent readFromStream(final ObjectStreamReader reader)
-    {
-        //bool: is mutable
-        if (reader.readObject(boolean.class)) return new ChildMutable(reader.readObject(String.class));
-        return new ChildImmutable(reader.readObject(int.class));
-    }
+   public static AbstractParent readFromStream(final ObjectStreamReader reader)
+   {
+      //bool: is mutable
+      if (reader.readObject(boolean.class)) return new ChildMutable(reader.readObject(String.class));
+      return new ChildImmutable(reader.readObject(int.class));
+   }
 }

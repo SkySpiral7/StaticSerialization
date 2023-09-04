@@ -5,7 +5,6 @@ import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
-import com.github.skySpiral7.java.staticSerialization.exception.NoMoreDataException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
@@ -208,7 +207,7 @@ public class InternalStreamReader_UT
    {
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append("java.lang.Short;");
-      fileBuilder.append(new byte[] {0x0a, (byte) 0xfe, '!', 0x2b, (byte) 0xf1});
+      fileBuilder.append(new byte[]{0x0a, (byte) 0xfe, '!', 0x2b, (byte) 0xf1});
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -275,7 +274,7 @@ public class InternalStreamReader_UT
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append("java.lang.Double;");
       final byte[] fileContents = {1, 2, 3, 4, 5, 6, 7, 8, '^', (byte) 0xa1, (byte) 0xb2, (byte) 0xc3, (byte) 0xd4, (byte) 0xe5,
-            (byte) 0xf6, 0x17, 8};
+         (byte) 0xf6, 0x17, 8};
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
@@ -352,9 +351,11 @@ public class InternalStreamReader_UT
       fileBuilder.append("[");
       fileBuilder.append(new byte[]{1});   //array indicator and dimensions
       fileBuilder.append("java.lang.Object;");
-      final byte[] fileContents = {0, 0, 0, 2,  //length (int)
-            '~', 1,  //each element has header
-            '~', 2};
+      final byte[] fileContents = {
+         0, 0, 0, 2,  //length (int)
+         '~', 1,  //each element has header
+         '~', 2
+      };
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final Object[] expected = {(byte) 1, (byte) 2};
@@ -373,9 +374,11 @@ public class InternalStreamReader_UT
       fileBuilder.append("[");
       fileBuilder.append(new byte[]{1});   //array indicator and dimensions
       fileBuilder.append("java.lang.Byte;");
-      final byte[] fileContents = {0, 0, 0, 2,  //length (int)
-            '~', 1,  //each element has header
-            '~', 2};
+      final byte[] fileContents = {
+         0, 0, 0, 2,  //length (int)
+         '~', 1,  //each element has header
+         '~', 2
+      };
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final Byte[] expected = {1, 2};
@@ -391,10 +394,12 @@ public class InternalStreamReader_UT
    public void readObject_primitiveArray()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      final byte[] fileContents = {']', 1,   //array indicator and dimensions
-            '~',  //byte
-            0, 0, 0, 2,  //length (int)
-            1, 2};  //elements of a primitive array do not have headers
+      final byte[] fileContents = {
+         ']', 1,   //array indicator and dimensions
+         '~',  //byte
+         0, 0, 0, 2,  //length (int)
+         1, 2  //elements of a primitive array do not have headers
+      };
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final byte[] expected = {1, 2};
@@ -452,10 +457,12 @@ public class InternalStreamReader_UT
    public void readObject_primitiveBooleanArray()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      final byte[] fileContents = {']', 1,   //array indicator and dimensions
-            '+',  //boolean
-            0, 0, 0, 1,  //length (int)
-            '+'};
+      final byte[] fileContents = {
+         ']', 1,   //array indicator and dimensions
+         '+',  //boolean
+         0, 0, 0, 1,  //length (int)
+         '+'
+      };
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final boolean[] expected = {true};
@@ -474,8 +481,10 @@ public class InternalStreamReader_UT
       fileBuilder.append("[");
       fileBuilder.append(new byte[]{1});   //array indicator and dimensions
       fileBuilder.append("+");
-      final byte[] fileContents = {0, 0, 0, 1,  //length (int)
-            '-'};
+      final byte[] fileContents = {
+         0, 0, 0, 1,  //length (int)
+         '-'
+      };
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final Boolean[] expected = {false};
@@ -576,7 +585,7 @@ public class InternalStreamReader_UT
       catch (final InvalidClassException actual)
       {
          assertEquals("com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamReader_UT$CustomPrivateClass"
-                      + " must be public for me to use it", actual.getMessage());
+            + " must be public for me to use it", actual.getMessage());
       }
 
       testObject.close();
@@ -602,7 +611,7 @@ public class InternalStreamReader_UT
       catch (final InvalidClassException actual)
       {
          assertEquals("com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamReader_UT$NoReader"
-                      + " implements StaticSerializable but doesn't define readFromStream", actual.getMessage());
+            + " implements StaticSerializable but doesn't define readFromStream", actual.getMessage());
       }
 
       testObject.close();
@@ -634,7 +643,7 @@ public class InternalStreamReader_UT
       catch (final InvalidClassException actual)
       {
          assertEquals("com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamReader_UT$NonPublicReader.readFromStream"
-                      + " must be public static", actual.getMessage());
+            + " must be public static", actual.getMessage());
       }
 
       testObject.close();
@@ -666,7 +675,7 @@ public class InternalStreamReader_UT
       catch (final InvalidClassException actual)
       {
          assertEquals("com.github.skySpiral7.java.staticSerialization.strategy.InternalStreamReader_UT$LocalNonStaticReader.readFromStream"
-                      + " must be public static", actual.getMessage());
+            + " must be public static", actual.getMessage());
       }
 
       testObject.close();

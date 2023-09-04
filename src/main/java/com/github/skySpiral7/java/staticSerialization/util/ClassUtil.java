@@ -10,7 +10,7 @@ public enum ClassUtil
     * This constant isn't immutable but shouldn't be mutated.
     */
    private static final List<?> BOX_CLASS_LIST = Arrays.asList(Byte.class, Short.class, Integer.class, Long.class,  //integers
-         Float.class, Double.class, Boolean.class, Character.class);
+      Float.class, Double.class, Boolean.class, Character.class);
 
    /**
     * <p>

@@ -38,7 +38,11 @@ public class StreamCorruptedException extends RuntimeException
    public static byte[] throwIfNotEnoughData(final EasyReader reader, final int requiredBytes, final String corruptMessage)
    {
       final byte[] result = reader.readBytes(requiredBytes);
-      if(requiredBytes > result.length) throw new StreamCorruptedException(corruptMessage, NoMoreDataException.notEnoughBytes(requiredBytes, result.length));
+      if (requiredBytes > result.length)
+         throw new StreamCorruptedException(
+            corruptMessage,
+            NoMoreDataException.notEnoughBytes(requiredBytes, result.length)
+         );
       return result;
    }
 }

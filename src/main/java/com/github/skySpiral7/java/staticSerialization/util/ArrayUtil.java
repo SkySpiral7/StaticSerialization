@@ -11,7 +11,7 @@ public enum ArrayUtil
     */
    public static int countArrayDimensions(final Class<?> arrayClass)
    {
-      final byte[] nameToSearch=arrayClass.getName().getBytes(StandardCharsets.UTF_8);
+      final byte[] nameToSearch = arrayClass.getName().getBytes(StandardCharsets.UTF_8);
       int count = 0;
       for (byte currentByte : nameToSearch)
       {

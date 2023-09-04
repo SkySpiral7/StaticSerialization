@@ -56,8 +56,10 @@ public class ObjectStreamReader_UT
    public void readObjectStrictly_happyPath()
    {
       final ByteAppender inputBuilder = new ByteAppender();
-      final byte[] fileContents = {'+', '-',  //+ is true, - is false
-            '~', 3};  //~ is byte
+      final byte[] fileContents = {
+         '+', '-',  //+ is true, - is false
+         '~', 3  //~ is byte
+      };
       inputBuilder.append(fileContents);
 
       inputBuilder.append("java.math.RoundingMode;");

@@ -35,11 +35,11 @@ public class ByteReader_UT
       assertEquals("hi", new String(testObject.readBytes(3), StandardCharsets.UTF_8));
    }
 
-    @Test
-    public void readBytes_returnsNothing_whenEmpty()
-    {
-       final ByteReader testObject = new ByteReader(new byte[0]);
+   @Test
+   public void readBytes_returnsNothing_whenEmpty()
+   {
+      final ByteReader testObject = new ByteReader(new byte[0]);
 
-       assertArrayEquals(new byte[0], testObject.readBytes(3));
-    }
+      assertArrayEquals(new byte[0], testObject.readBytes(3));
+   }
 }

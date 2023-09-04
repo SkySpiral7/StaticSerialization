@@ -58,8 +58,8 @@ public class ObjectReaderRegistry
          2) Class's readFromStream was called directly
          */
          if (id == -1) throw new IllegalStateException("id not found. Make sure registerObject is only called for the "
-               + "root object and that ObjectStreamReader.readObject etc are used as an "
-               + "entry point for reading the stream.");
+            + "root object and that ObjectStreamReader.readObject etc are used as an "
+            + "entry point for reading the stream.");
          registry.set(id, instance);
          LOG.debug(id + ": " + instance + " " + instance.getClass().getSimpleName());
          uniqueness.put(instance, id);

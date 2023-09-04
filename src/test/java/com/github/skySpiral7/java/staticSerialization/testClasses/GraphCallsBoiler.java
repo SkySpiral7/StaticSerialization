@@ -1,5 +1,9 @@
 package com.github.skySpiral7.java.staticSerialization.testClasses;
 
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -7,10 +11,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
-import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 
 public final class GraphCallsBoiler implements StaticSerializable
 {

@@ -36,7 +36,8 @@ public final class AsynchronousFileAppender implements EasyAppender
    {
       //TODO: I don't know if these classes do anything beyond BufferedInputStream etc
       //mine has better API though
-      if (targetFile.isDirectory()) throw new IllegalArgumentException("It is not possible to write to a directory (" + targetFile + ")");
+      if (targetFile.isDirectory())
+         throw new IllegalArgumentException("It is not possible to write to a directory (" + targetFile + ")");
       //it's ok if the file doesn't exist since writing to it will create it
 
       //start by clearing the file so that all writes can append (also this is fail fast to prove that writing is possible)

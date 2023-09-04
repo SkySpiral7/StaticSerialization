@@ -510,11 +510,11 @@ public class HeaderSerializableStrategy_UT
       testObject.writeObject(reusedValue);
       testObject.close();
       final byte[] expected = {
-              '*',  //short hand for String
-              0, 0, 0, 1,  //UTF-8 length (int)
-              'f',  //data
-              '\\',  //id type
-              0, 0, 0, 0  //id
+         '*',  //short hand for String
+         0, 0, 0, 1,  //UTF-8 length (int)
+         'f',  //data
+         '\\',  //id type
+         0, 0, 0, 0  //id
       };
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
@@ -653,8 +653,10 @@ public class HeaderSerializableStrategy_UT
 
       testObject.writeObject("f∞");  //infinity sign is BMP (3 UTF-8 bytes) non-private
       testObject.close();
-      final byte[] expected = {0, 0, 0, 4,  //UTF-8 length (int)
-            'f', (byte) 0xe2, (byte) 0x88, (byte) 0x9e};
+      final byte[] expected = {
+         0, 0, 0, 4,  //UTF-8 length (int)
+         'f', (byte) 0xe2, (byte) 0x88, (byte) 0x9e
+      };
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals("*", bytesToString(fileContents, expected.length));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
@@ -718,10 +720,12 @@ public class HeaderSerializableStrategy_UT
 
       testObject.writeObject(new byte[]{1, 2});
       testObject.close();
-      final byte[] expected = {']', 1,   //array indicator and dimensions
-            '~',  //byte
-            0, 0, 0, 2,  //length (int)
-            1, 2};  //primitive elements have no header
+      final byte[] expected = {
+         ']', 1,   //array indicator and dimensions
+         '~',  //byte
+         0, 0, 0, 2,  //length (int)
+         1, 2  //primitive elements have no header
+      };
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }
@@ -753,10 +757,12 @@ public class HeaderSerializableStrategy_UT
 
       testObject.writeObject(new boolean[]{true});
       testObject.close();
-      final byte[] expected = {']', 1,   //array indicator and dimensions
-            '+',  //boolean
-            0, 0, 0, 1,  //length (int)
-            '+'};
+      final byte[] expected = {
+         ']', 1,   //array indicator and dimensions
+         '+',  //boolean
+         0, 0, 0, 1,  //length (int)
+         '+'
+      };
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
    }

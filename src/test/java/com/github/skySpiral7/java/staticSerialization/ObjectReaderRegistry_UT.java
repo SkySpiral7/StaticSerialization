@@ -92,8 +92,8 @@ public class ObjectReaderRegistry_UT
       catch (IllegalStateException actual)
       {
          final String expectedMessage = "id not found. Make sure registerObject is only called for the "
-               + "root object and that ObjectStreamReader.readObject etc are used as an "
-               + "entry point for reading the stream.";
+            + "root object and that ObjectStreamReader.readObject etc are used as an "
+            + "entry point for reading the stream.";
          assertEquals(expectedMessage, actual.getMessage());
       }
    }

@@ -1,8 +1,8 @@
 package com.github.skySpiral7.java.staticSerialization.internal;
 
-import java.util.Objects;
-
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+
+import java.util.Objects;
 
 /**
  * An immutable bean to hold the information that the stream's header contains. It is returned by HeaderSerializableStrategy.
@@ -11,7 +11,7 @@ import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializabl
  * @see HeaderSerializableStrategy
  */
 public final class HeaderInformation<T_Value>
-      //TODO: confirm no raw types
+   //TODO: confirm no raw types
 {
    private final String className;
    private final T_Value value;
@@ -100,7 +100,7 @@ public final class HeaderInformation<T_Value>
       if (other == null || getClass() != other.getClass()) return false;
       final HeaderInformation<?> that = (HeaderInformation<?>) other;
       return Objects.equals(className, that.className) && Objects.equals(value, that.value) && Objects.equals(dimensionCount,
-            that.dimensionCount) && Objects.equals(primitiveArray, that.primitiveArray);
+         that.dimensionCount) && Objects.equals(primitiveArray, that.primitiveArray);
    }
 
    @Override

@@ -30,7 +30,8 @@ public final class AsynchronousFileReader implements EasyReader
     */
    public AsynchronousFileReader(final File targetFile)
    {
-      if (targetFile.isDirectory()) throw new IllegalArgumentException("It is not possible to read file contents of a directory");
+      if (targetFile.isDirectory())
+         throw new IllegalArgumentException("It is not possible to read file contents of a directory");
       //it's ok if the file doesn't exist since writing to it will create it
       if (!targetFile.exists()) throw new IllegalArgumentException("File doesn't exist");
       //TODO: create FileIo methods: validateRead (reads 1 byte), validateWrite, validateMaxSize

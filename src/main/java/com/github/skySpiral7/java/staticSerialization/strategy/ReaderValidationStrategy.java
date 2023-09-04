@@ -1,11 +1,11 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.lang.reflect.Array;
-
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+
+import java.lang.reflect.Array;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -36,21 +36,33 @@ public enum ReaderValidationStrategy
          {
             final HeaderInformation<?> expectedHeader;
             if (expectedBaseComponentType.isPrimitive())
-               expectedHeader = HeaderInformation.forPossibleArray(ClassUtil.boxClass(expectedBaseComponentType).getName(),
-                     expectedDimensions, true);
-            else expectedHeader = HeaderInformation.forPossibleArray(expectedBaseComponentType.getName(), expectedDimensions, false);
+            {
+               expectedHeader = HeaderInformation.forPossibleArray(
+                  ClassUtil.boxClass(expectedBaseComponentType).getName(),
+                  expectedDimensions,
+                  true
+               );
+            }
+            else
+            {
+               expectedHeader = HeaderInformation.forPossibleArray(
+                  expectedBaseComponentType.getName(),
+                  expectedDimensions,
+                  false
+               );
+            }
 
             if (0 == actualHeader.getDimensionCount()) throw new IllegalStateException(
-                  "Class doesn't match exactly. Expected: " + expectedHeader + " Got: " + actualHeader.getClassName());
+               "Class doesn't match exactly. Expected: " + expectedHeader + " Got: " + actualHeader.getClassName());
             if (!expectedHeader.equals(actualHeader))
                throw new IllegalStateException("Class doesn't match exactly. Expected: " + expectedHeader + " Got: " + actualHeader);
          }
          else
          {
             if (0 != actualHeader.getDimensionCount()) throw new IllegalStateException(
-                  "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: " + actualHeader);
+               "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: " + actualHeader);
             if (!expectedClass.getName().equals(actualHeader.getClassName())) throw new IllegalStateException(
-                  "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: " + actualHeader.getClassName());
+               "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: " + actualHeader.getClassName());
          }
       }
       //it is important to validate here so that some nefarious static initialization blocks won't be ran

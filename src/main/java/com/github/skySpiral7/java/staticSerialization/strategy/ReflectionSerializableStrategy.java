@@ -1,13 +1,13 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import java.lang.reflect.Field;
-import java.util.List;
-
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.util.ReflectionUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 public enum ReflectionSerializableStrategy
 {

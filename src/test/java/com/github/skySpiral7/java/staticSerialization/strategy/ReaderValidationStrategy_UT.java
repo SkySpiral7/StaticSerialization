@@ -268,7 +268,7 @@ public class ReaderValidationStrategy_UT
       catch (final IllegalStateException actual)
       {
          assertEquals("Class doesn't match exactly. Expected: 1d array of primitive java.lang.Byte Got: 1d array of java.lang.Byte",
-               actual.getMessage());
+            actual.getMessage());
       }
       testObject.close();
    }
@@ -315,7 +315,7 @@ public class ReaderValidationStrategy_UT
       catch (final IllegalStateException actual)
       {
          assertEquals("Class doesn't match exactly. Expected: 1d array of java.lang.Object Got: 2d array of java.lang.Object",
-               actual.getMessage());
+            actual.getMessage());
       }
       testObject.close();
    }

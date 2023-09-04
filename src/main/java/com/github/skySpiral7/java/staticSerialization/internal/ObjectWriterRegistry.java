@@ -1,11 +1,11 @@
 package com.github.skySpiral7.java.staticSerialization.internal;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ObjectWriterRegistry
 {
