@@ -14,8 +14,6 @@ public enum StringSerializableStrategy
    ;  //no instances
    private static final Logger LOG = LogManager.getLogger();
 
-   //TODO: maybe use DI instead of static all. more garbage but allows test mocking
-   //could have new ObjectStreamWriter/Reader do new AllDependencies() which new() them all and passes in bundle
    public static void writeWithLength(final EasyAppender appender, final String data)
    {
       LOG.debug(data);

@@ -27,13 +27,13 @@ public class ObjectStreamWriter implements Closeable, Flushable
     * @see AsynchronousFileAppender#flush()
     */
    @Override
-   public void flush(){internalStreamWriter.getAppender().flush();}
+   public void flush(){internalStreamWriter.flush();}
 
    /**
     * @see AsynchronousFileAppender#close()
     */
    @Override
-   public void close(){internalStreamWriter.getAppender().close();}
+   public void close(){internalStreamWriter.close();}
 
    /**
     * List of supported types:

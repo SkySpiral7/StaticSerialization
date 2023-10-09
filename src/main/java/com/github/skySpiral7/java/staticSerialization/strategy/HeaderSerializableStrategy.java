@@ -2,6 +2,8 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
@@ -88,12 +90,15 @@ public enum HeaderSerializableStrategy
    /**
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
-   public static HeaderInformation<?> readHeader(final EasyReader reader, final Class<?> inheritFromClass,
-                                                 final ObjectReaderRegistry registry)
+   public static HeaderInformation<?> readHeader(final InternalStreamReader internalStreamReader,
+                                                 final Class<?> inheritFromClass)
    {
       byte firstByte;
       final int dimensionCount;
       final boolean primitiveArray;
+      final EasyReader reader = internalStreamReader.getReader();
+      final ObjectReaderRegistry registry = internalStreamReader.getRegistry();
+      final ArrayUtil arrayUtil = internalStreamReader.getUtilInstances().getArrayUtil();
 
       //excludes Object for the sake of Object[]
       if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
@@ -106,9 +111,9 @@ public enum HeaderSerializableStrategy
             return HeaderInformation.forPrimitiveArrayValue(ClassUtil.boxClass(inheritFromClass).getName());
          //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or ';')
          firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
-         dimensionCount = ArrayUtil.countArrayDimensions(inheritFromClass);
+         dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
          final Class<?> baseComponent = inheritFromClass.isArray()
-            ? ArrayUtil.getBaseComponentType(inheritFromClass)
+            ? arrayUtil.getBaseComponentType(inheritFromClass)
             : inheritFromClass;
          primitiveArray = baseComponent.isPrimitive();
          if ('?' == firstByte)
@@ -166,9 +171,12 @@ public enum HeaderSerializableStrategy
    /**
     * @return true if an id was used and no value should be written
     */
-   public static boolean writeHeaderReturnIsId(final EasyAppender appender, final Class<?> inheritFromClass, final Object data,
-                                               final ObjectWriterRegistry registry)
+   public static boolean writeHeaderReturnIsId(final InternalStreamWriter internalStreamWriter, final Class<?> inheritFromClass,
+                                               final Object data)
    {
+      final EasyAppender appender = internalStreamWriter.getAppender();
+      final ObjectWriterRegistry registry = internalStreamWriter.getRegistry();
+      final ArrayUtil arrayUtil = internalStreamWriter.getUtilInstances().getArrayUtil();
       if (data != null && !ClassUtil.isPrimitiveOrBox(data.getClass()))
       {
          //TODO: long gets id, other primitives don't, else do
@@ -212,7 +220,7 @@ public enum HeaderSerializableStrategy
          writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(data.getClass()));
       else if (data.getClass().isArray())
       {
-         Class<?> baseComponent = ArrayUtil.getBaseComponentType(data.getClass());
+         Class<?> baseComponent = arrayUtil.getBaseComponentType(data.getClass());
          if (Object.class.equals(inheritFromClass) || null == inheritFromClass)
          {
             //array indicator and dimension count can be derived from containing array so don't populate it
@@ -225,7 +233,7 @@ public enum HeaderSerializableStrategy
             }
             else writeByte(appender, '[');
 
-            final int dimensionCount = ArrayUtil.countArrayDimensions(data.getClass());
+            final int dimensionCount = arrayUtil.countArrayDimensions(data.getClass());
             writeByte(appender, dimensionCount);  //won't be 0, max: 255. Use unsigned byte
          }
 

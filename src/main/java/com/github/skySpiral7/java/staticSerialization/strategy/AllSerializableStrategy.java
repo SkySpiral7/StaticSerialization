@@ -22,6 +22,7 @@ public enum AllSerializableStrategy
                             final EasyAppender fileAppender, final Object data)
    {
       final Class<?> dataClass = data.getClass();
+      //TODO: change these to command interface with supports(). compression trick will be first
       if (ClassUtil.isPrimitiveOrBox(dataClass))
       {
          BoxPrimitiveSerializableStrategy.write(fileAppender, data);

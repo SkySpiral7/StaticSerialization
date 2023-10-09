@@ -7,6 +7,7 @@ import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializabl
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -101,7 +102,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         HeaderSerializableStrategy.readHeader(reader, null, null);
+         HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -119,7 +120,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         HeaderSerializableStrategy.readHeader(reader, null, null);
+         HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -178,7 +179,7 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader(new byte[]{'[', 1, '+'});
       final HeaderInformation<Boolean> expected = new HeaderInformation<>(Boolean.class.getName(), null, 1, false);
 
-      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -190,7 +191,7 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader(new byte[]{']', 1, '+'});
       final HeaderInformation<Boolean> expected = new HeaderInformation<>(Boolean.class.getName(), null, 1, true);
 
-      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -202,7 +203,7 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader(new byte[]{';'});
       final HeaderInformation<?> expected = new HeaderInformation<>(null, null, 0, false);
 
-      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -214,7 +215,7 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader(new byte[]{'+'});
       final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", Boolean.TRUE, 0, false);
 
-      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -226,7 +227,7 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader(new byte[]{'-'});
       final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", Boolean.FALSE, 0, false);
 
-      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -238,7 +239,7 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader("java.lang.Boolean;".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", null, 0, false);
 
-      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual);
 
       reader.close();
@@ -250,9 +251,9 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader("java.lang.Byte;~".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Byte> expected = new HeaderInformation<>("java.lang.Byte", null, 0, false);
 
-      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -264,9 +265,9 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader("java.lang.Short;!".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Short> expected = new HeaderInformation<>("java.lang.Short", null, 0, false);
 
-      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -278,9 +279,9 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader("java.lang.Integer;@".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Integer> expected = new HeaderInformation<>("java.lang.Integer", null, 0, false);
 
-      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -292,9 +293,9 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader("java.lang.Long;#".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Long> expected = new HeaderInformation<>("java.lang.Long", null, 0, false);
 
-      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -306,9 +307,9 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader("java.lang.Float;%".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Float> expected = new HeaderInformation<>("java.lang.Float", null, 0, false);
 
-      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -320,9 +321,9 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader("java.lang.Double;^".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Double> expected = new HeaderInformation<>("java.lang.Double", null, 0, false);
 
-      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -334,9 +335,9 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader("java.lang.Character;&".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Character> expected = new HeaderInformation<>("java.lang.Character", null, 0, false);
 
-      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -348,9 +349,9 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader("java.lang.String;*".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<String> expected = new HeaderInformation<>("java.lang.String", null, 0, false);
 
-      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual1 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual2 = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -362,7 +363,7 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader(new byte[]{'[', 1, '~'});
       final HeaderInformation<Byte> expected = new HeaderInformation<>(Byte.class.getName(), null, 1, false);
 
-      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -379,7 +380,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         HeaderSerializableStrategy.readHeader(reader, null, registry);
+         HeaderSerializableStrategy.readHeader(new InternalStreamReader(registry, reader, new UtilInstances()),  null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -400,7 +401,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         HeaderSerializableStrategy.readHeader(reader, null, registry);
+         HeaderSerializableStrategy.readHeader(new InternalStreamReader(registry, reader, new UtilInstances()),  null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -422,7 +423,7 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader(new byte[]{'\\', 0, 0, 0, 0});
       final HeaderInformation<String> expected = new HeaderInformation<>(String.class.getName(), objectValue, 0, false);
 
-      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, registry);
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(new InternalStreamReader(registry, reader, new UtilInstances()),  null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -435,7 +436,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         HeaderSerializableStrategy.readHeader(reader, null, null);
+         HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -452,7 +453,7 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader("java.lang.Object;".getBytes(StandardCharsets.UTF_8));
       final HeaderInformation<Object> expected = new HeaderInformation<>("java.lang.Object", null, 0, false);
 
-      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
       assertEquals(expected, actual);
 
       reader.close();
@@ -467,7 +468,7 @@ public class HeaderSerializableStrategy_UT
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       final HeaderInformation<Object> expected = new HeaderInformation<>(Object.class.getName(), null, 1, false);
 
-      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(reader, null, null);
+      final HeaderInformation<?> actual = HeaderSerializableStrategy.readHeader(new InternalStreamReader(null, reader, new UtilInstances()),  null);
 
       assertEquals(expected, actual);
       reader.close();

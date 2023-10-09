@@ -7,8 +7,10 @@ import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationS
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.io.Closeable;
+import java.io.File;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -16,11 +18,23 @@ public class InternalStreamReader implements Closeable
 {
    private final ObjectReaderRegistry registry;
    private final EasyReader reader;
+   private final UtilInstances utilInstances;
 
-   public InternalStreamReader(final EasyReader reader, final ObjectReaderRegistry registry)
+   public InternalStreamReader(final File sourceFile)
+   {
+      this(new AsynchronousFileReader(sourceFile));
+   }
+
+   public InternalStreamReader(final EasyReader reader)
+   {
+      this(new ObjectReaderRegistry(), reader, new UtilInstances());
+   }
+
+   public InternalStreamReader(ObjectReaderRegistry registry, EasyReader reader, UtilInstances utilInstances)
    {
       this.registry = registry;
       this.reader = reader;
+      this.utilInstances = utilInstances;
    }
 
    /**
@@ -41,7 +55,7 @@ public class InternalStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));
 
-      final HeaderInformation<?> headerInformation = HeaderSerializableStrategy.readHeader(reader, inheritFromClass, registry);
+      final HeaderInformation<?> headerInformation = HeaderSerializableStrategy.readHeader(this, inheritFromClass);
       //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
       //if cast it will NPE is that better? what about allowing children?
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
@@ -59,7 +73,8 @@ public class InternalStreamReader implements Closeable
          return cast(headerInformation.getValue());
       }
 
-      final Class<T_Actual> actualClass = ReaderValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+      final Class<T_Actual> actualClass = ReaderValidationStrategy.getClassFromHeader(this, headerInformation,
+         expectedClass, allowChildClass);
       if (!ClassUtil.isPrimitiveOrBox(actualClass))
       {
          registry.reserveIdForLater();
@@ -71,5 +86,20 @@ public class InternalStreamReader implements Closeable
       if (!ClassUtil.isPrimitiveOrBox(returnValue.getClass()) && !streamReader.isRegistered(returnValue))
          streamReader.registerObject(returnValue);
       return returnValue;
+   }
+
+   public EasyReader getReader()
+   {
+      return reader;
+   }
+
+   public ObjectReaderRegistry getRegistry()
+   {
+      return registry;
+   }
+
+   public UtilInstances getUtilInstances()
+   {
+      return utilInstances;
    }
 }

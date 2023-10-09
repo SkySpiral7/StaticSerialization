@@ -5,6 +5,7 @@ import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableSt
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.io.Closeable;
 import java.io.File;
@@ -14,17 +15,23 @@ public class InternalStreamWriter implements Closeable, Flushable
 {
    private final ObjectWriterRegistry registry;
    private final EasyAppender appender;
+   private final UtilInstances utilInstances;
 
    public InternalStreamWriter(final File destination)
    {
-      registry = new ObjectWriterRegistry();
-      appender = new AsynchronousFileAppender(destination);
+      this(new AsynchronousFileAppender(destination));
    }
 
    public InternalStreamWriter(final EasyAppender appender)
    {
-      registry = new ObjectWriterRegistry();
+      this(new ObjectWriterRegistry(), appender, new UtilInstances());
+   }
+
+   public InternalStreamWriter(ObjectWriterRegistry registry, EasyAppender appender, UtilInstances utilInstances)
+   {
+      this.registry = registry;
       this.appender = appender;
+      this.utilInstances = utilInstances;
    }
 
    /**
@@ -41,14 +48,24 @@ public class InternalStreamWriter implements Closeable, Flushable
 
    public void writeObjectInternal(final ObjectStreamWriter streamWriter, final Class<?> inheritFromClass, final Object data)
    {
-      final boolean usedId = HeaderSerializableStrategy.writeHeaderReturnIsId(appender, inheritFromClass, data, registry);
+      final boolean usedId = HeaderSerializableStrategy.writeHeaderReturnIsId(this, inheritFromClass, data);
       //if an id was written then don't write value
       if (usedId) return;
       AllSerializableStrategy.write(streamWriter, this, appender, data);
    }
 
+   public ObjectWriterRegistry getRegistry()
+   {
+      return registry;
+   }
+
    public EasyAppender getAppender()
    {
       return appender;
+   }
+
+   public UtilInstances getUtilInstances()
+   {
+      return utilInstances;
    }
 }
