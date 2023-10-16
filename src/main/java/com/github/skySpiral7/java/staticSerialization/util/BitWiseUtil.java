@@ -1,10 +1,9 @@
 package com.github.skySpiral7.java.staticSerialization.util;
 
-public enum BitWiseUtil
+public class BitWiseUtil
 {
-   ;  //no instances
 
-   public static byte[] toBigEndianBytes(long data, final int byteCount)
+   public byte[] toBigEndianBytes(long data, final int byteCount)
    {
       final byte[] result = new byte[byteCount];
       for (int i = (byteCount - 1); i >= 0; --i)
@@ -16,7 +15,7 @@ public enum BitWiseUtil
       return result;
    }
 
-   public static int bigEndianBytesToInteger(final byte[] input)
+   public int bigEndianBytesToInteger(final byte[] input)
    {
       if (input.length != 4) throw new IllegalArgumentException("expected length 4, got: " + input.length);
       int result = (input[0] & 0xff);
@@ -28,7 +27,7 @@ public enum BitWiseUtil
       return result;
    }
 
-   public static long bigEndianBytesToLong(final byte[] input)
+   public long bigEndianBytesToLong(final byte[] input)
    {
       if (input.length != 8) throw new IllegalArgumentException("expected length 8, got: " + input.length);
       long result = (input[0] & 0xff);

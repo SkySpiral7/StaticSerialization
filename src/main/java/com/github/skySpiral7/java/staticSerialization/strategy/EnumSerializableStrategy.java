@@ -1,8 +1,8 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -10,14 +10,14 @@ public enum EnumSerializableStrategy
 {
    ;  //no instances
 
-   public static void write(final EasyAppender appender, final Enum<?> data)
+   public static void write(final InternalStreamWriter internalStreamWriter, final Enum<?> data)
    {
-      IntegerSerializableStrategy.write(appender, data.ordinal());
+      IntegerSerializableStrategy.write(internalStreamWriter, data.ordinal());
    }
 
-   public static <T> T read(final EasyReader reader, final Class<T> expectedClass)
+   public static <T> T read(final InternalStreamReader internalStreamReader, final Class<T> expectedClass)
    {
-      final int ordinal = IntegerSerializableStrategy.read(reader, "Missing enum ordinal");
+      final int ordinal = IntegerSerializableStrategy.read(internalStreamReader, "Missing enum ordinal");
       if (ordinal < 0) throw new StreamCorruptedException("Invalid enum ordinal. Actual: " + ordinal);
 
       final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum

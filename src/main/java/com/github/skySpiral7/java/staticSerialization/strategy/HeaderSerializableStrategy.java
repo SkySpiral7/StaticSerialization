@@ -152,7 +152,7 @@ public enum HeaderSerializableStrategy
       }
       if ('\\' == firstByte)
       {
-         final int id = IntegerSerializableStrategy.read(reader, "Incomplete header: id type but no id");
+         final int id = IntegerSerializableStrategy.read(internalStreamReader, "Incomplete header: id type but no id");
          final Object registeredObject = registry.getRegisteredObject(id);
          //null value will not have an id. null is only possible if id was reserved but not registered
          if (registeredObject == null) throw new StreamCorruptedException("id not found");
@@ -186,7 +186,7 @@ public enum HeaderSerializableStrategy
          {
             LOG.debug("id: " + id + " (" + data + " " + data.getClass().getSimpleName() + ")");
             writeByte(appender, '\\');
-            IntegerSerializableStrategy.write(appender, id);
+            IntegerSerializableStrategy.write(internalStreamWriter, id);
             return true;
          }
          //null, primitive, and box don't get registered

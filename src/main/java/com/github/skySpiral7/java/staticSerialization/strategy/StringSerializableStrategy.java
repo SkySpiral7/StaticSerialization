@@ -1,6 +1,8 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import org.apache.logging.log4j.LogManager;
@@ -14,17 +16,18 @@ public enum StringSerializableStrategy
    ;  //no instances
    private static final Logger LOG = LogManager.getLogger();
 
-   public static void writeWithLength(final EasyAppender appender, final String data)
+   public static void writeWithLength(final InternalStreamWriter internalStreamWriter, final String data)
    {
       LOG.debug(data);
       final byte[] writeMe = data.getBytes(StandardCharsets.UTF_8);
-      IntegerSerializableStrategy.write(appender, writeMe.length);
-      appender.append(writeMe);
+      IntegerSerializableStrategy.write(internalStreamWriter, writeMe.length);
+      internalStreamWriter.getAppender().append(writeMe);
    }
 
-   public static String readWithLength(final EasyReader reader)
+   public static String readWithLength(final InternalStreamReader internalStreamReader)
    {
-      final int stringByteLength = IntegerSerializableStrategy.read(reader, "Missing string byte length");
+      final EasyReader reader = internalStreamReader.getReader();
+      final int stringByteLength = IntegerSerializableStrategy.read(internalStreamReader, "Missing string byte length");
       /*TODO: could use an Overlong null delimiter 0xC080 to reduce overhead by 2 but harder to read stream
       could also make a new string type for null delimited 0x00 (only used when contains no null)
       AsynchronousFileReader would need a readBytesUntil*/

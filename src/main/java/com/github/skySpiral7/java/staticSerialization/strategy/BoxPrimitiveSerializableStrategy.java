@@ -1,9 +1,11 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
-import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeBytes;
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
@@ -12,32 +14,35 @@ public enum BoxPrimitiveSerializableStrategy
 {
    ;  //no instances
 
-   public static void write(final EasyAppender appender, final Object data)
+   public static void write(final InternalStreamWriter internalStreamWriter, final Object data)
    {
+      final EasyAppender appender = internalStreamWriter.getAppender();
       if (data instanceof Byte) ByteSerializableStrategy.writeByte(appender, (byte) data);
-      else if (data instanceof Short) writeBytes(appender, (short) data, 2);
-      else if (data instanceof Integer) IntegerSerializableStrategy.write(appender, (int) data);
-      else if (data instanceof Long) writeBytes(appender, (long) data, 8);
+      else if (data instanceof Short) writeBytes(internalStreamWriter, (short) data, 2);
+      else if (data instanceof Integer) IntegerSerializableStrategy.write(internalStreamWriter, (int) data);
+      else if (data instanceof Long) writeBytes(internalStreamWriter, (long) data, 8);
       else if (data instanceof Float)
       {
          final int castedData = Float.floatToIntBits((float) data);
          //intentionally normalizes NaN
-         writeBytes(appender, castedData, 4);
+         writeBytes(internalStreamWriter, castedData, 4);
       }
       else if (data instanceof Double)
       {
          long castedData = Double.doubleToLongBits((double) data);
          //intentionally normalizes NaN
-         writeBytes(appender, castedData, 8);
+         writeBytes(internalStreamWriter, castedData, 8);
       }
       //Boolean won't come here because the value is header only
       //TODO: can a null Boolean[] get here?
-      else if (data instanceof Character) writeBytes(appender, (char) data, 2);
+      else if (data instanceof Character) writeBytes(internalStreamWriter, (char) data, 2);
       else throw new AssertionError("Method shouldn't've been called");
    }
 
-   public static <T> T read(final EasyReader reader, final Class<T> expectedClass)
+   public static <T> T read(final InternalStreamReader internalStreamReader, final Class<T> expectedClass)
    {
+      final UtilInstances utilInstances = internalStreamReader.getUtilInstances();
+      final EasyReader reader = internalStreamReader.getReader();
       if (Byte.class.equals(expectedClass))
       {
          return cast(StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing byte data")[0]);
@@ -48,24 +53,24 @@ public enum BoxPrimitiveSerializableStrategy
       }
       if (Integer.class.equals(expectedClass))
       {
-         return cast(IntegerSerializableStrategy.read(reader, "Missing int data"));
+         return cast(IntegerSerializableStrategy.read(internalStreamReader, "Missing int data"));
       }
       if (Long.class.equals(expectedClass))
       {
-         return cast(BitWiseUtil.bigEndianBytesToLong(
+         return cast(utilInstances.getBitWiseUtil().bigEndianBytesToLong(
             StreamCorruptedException.throwIfNotEnoughData(reader, 8, "Missing long data")
          ));
       }
       if (Float.class.equals(expectedClass))
       {
          final byte[] data = StreamCorruptedException.throwIfNotEnoughData(reader, 4, "Missing float data");
-         final int intData = BitWiseUtil.bigEndianBytesToInteger(data);
+         final int intData = utilInstances.getBitWiseUtil().bigEndianBytesToInteger(data);
          return cast(Float.intBitsToFloat(intData));
       }
       if (Double.class.equals(expectedClass))
       {
          final byte[] data = StreamCorruptedException.throwIfNotEnoughData(reader, 8, "Missing double data");
-         final long longData = BitWiseUtil.bigEndianBytesToLong(data);
+         final long longData = utilInstances.getBitWiseUtil().bigEndianBytesToLong(data);
          return cast(Double.longBitsToDouble(longData));
       }
       if (Boolean.class.equals(expectedClass))

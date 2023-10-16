@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class InternalStreamReader_UT
 {
+   private final BitWiseUtil bitWiseUtil = new BitWiseUtil();
+
    @Test
    public void constructor_throws()
    {
@@ -720,11 +722,11 @@ public class InternalStreamReader_UT
       fileBuilder.append("java.math.BigInteger;");
       final BigInteger data = BigInteger.TEN;
       byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
-      fileBuilder.append(BitWiseUtil.toBigEndianBytes(javaData.length, 4));
+      fileBuilder.append(bitWiseUtil.toBigEndianBytes(javaData.length, 4));
       fileBuilder.append(javaData);
       fileBuilder.append("java.math.BigInteger;");
       javaData = JavaSerializableStrategy.javaSerialize(null);
-      fileBuilder.append(BitWiseUtil.toBigEndianBytes(javaData.length, 4));
+      fileBuilder.append(bitWiseUtil.toBigEndianBytes(javaData.length, 4));
       fileBuilder.append(javaData);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
