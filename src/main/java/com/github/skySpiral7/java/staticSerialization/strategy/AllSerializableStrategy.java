@@ -8,7 +8,7 @@ import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamRea
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
-import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.io.Serializable;
 
@@ -21,9 +21,10 @@ public enum AllSerializableStrategy
    public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
                             final EasyAppender fileAppender, final Object data)
    {
+      final UtilInstances utilInstances = internalStreamWriter.getUtilInstances();
       final Class<?> dataClass = data.getClass();
       //TODO: change these to command interface with supports(). compression trick will be first
-      if (ClassUtil.isPrimitiveOrBox(dataClass))
+      if (utilInstances.getClassUtil().isPrimitiveOrBox(dataClass))
       {
          BoxPrimitiveSerializableStrategy.write(internalStreamWriter, data);
          return;
@@ -62,7 +63,8 @@ public enum AllSerializableStrategy
    public static <T> T read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
                             final EasyReader fileReader, final Class<T> actualClass)
    {
-      if (ClassUtil.isPrimitiveOrBox(actualClass))
+      final UtilInstances utilInstances = internalStreamReader.getUtilInstances();
+      if (utilInstances.getClassUtil().isPrimitiveOrBox(actualClass))
          return BoxPrimitiveSerializableStrategy.read(internalStreamReader, actualClass);
       if (String.class.equals(actualClass))
          return cast(StringSerializableStrategy.readWithLength(internalStreamReader));

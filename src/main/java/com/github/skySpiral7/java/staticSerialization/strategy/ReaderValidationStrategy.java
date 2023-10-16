@@ -30,6 +30,7 @@ public enum ReaderValidationStrategy
                                                                                               final boolean allowChildClass)
    {
       final ArrayUtil arrayUtil = internalStreamReader.getUtilInstances().getArrayUtil();
+      final ClassUtil classUtil = internalStreamReader.getUtilInstances().getClassUtil();
       final int expectedDimensions = arrayUtil.countArrayDimensions(expectedClass);
       final Class<?> expectedBaseComponentType = arrayUtil.getBaseComponentType(expectedClass);
       //TODO: dimension count must always match except for Object
@@ -41,7 +42,7 @@ public enum ReaderValidationStrategy
             if (expectedBaseComponentType.isPrimitive())
             {
                expectedHeader = HeaderInformation.forPossibleArray(
-                  ClassUtil.boxClass(expectedBaseComponentType).getName(),
+                  classUtil.boxClass(expectedBaseComponentType).getName(),
                   expectedDimensions,
                   true
                );
@@ -84,7 +85,7 @@ public enum ReaderValidationStrategy
       }
       if (0 != actualHeader.getDimensionCount())
       {
-         if (actualHeader.isPrimitiveArray()) actualClass = ClassUtil.unboxClass(actualClass);
+         if (actualHeader.isPrimitiveArray()) actualClass = classUtil.unboxClass(actualClass);
          //TODO: tests are likely thin
          if (!Object.class.equals(expectedClass) && !expectedBaseComponentType.isAssignableFrom(actualClass))
             //Not redundant because this is the only check for empty arrays

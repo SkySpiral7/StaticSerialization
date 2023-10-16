@@ -14,8 +14,8 @@ public class UtilInstances
    {
       arrayUtil = new ArrayUtil();
       bitWiseUtil = new BitWiseUtil();
+      classUtil = new ClassUtil();
       //TODO: do other utils
-      classUtil = null;
       reflectionUtil = null;
    }
 

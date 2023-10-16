@@ -99,6 +99,7 @@ public enum HeaderSerializableStrategy
       final EasyReader reader = internalStreamReader.getReader();
       final ObjectReaderRegistry registry = internalStreamReader.getRegistry();
       final ArrayUtil arrayUtil = internalStreamReader.getUtilInstances().getArrayUtil();
+      final ClassUtil classUtil = internalStreamReader.getUtilInstances().getClassUtil();
 
       //excludes Object for the sake of Object[]
       if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
@@ -108,7 +109,7 @@ public enum HeaderSerializableStrategy
          //It is only primitive if contained in a primitive array in which case there is no header
          //since it can't be null or any other class.
          if (inheritFromClass.isPrimitive())
-            return HeaderInformation.forPrimitiveArrayValue(ClassUtil.boxClass(inheritFromClass).getName());
+            return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass).getName());
          //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or ';')
          firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
          dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
@@ -177,7 +178,8 @@ public enum HeaderSerializableStrategy
       final EasyAppender appender = internalStreamWriter.getAppender();
       final ObjectWriterRegistry registry = internalStreamWriter.getRegistry();
       final ArrayUtil arrayUtil = internalStreamWriter.getUtilInstances().getArrayUtil();
-      if (data != null && !ClassUtil.isPrimitiveOrBox(data.getClass()))
+      final ClassUtil classUtil = internalStreamWriter.getUtilInstances().getClassUtil();
+      if (data != null && !classUtil.isPrimitiveOrBox(data.getClass()))
       {
          //TODO: long gets id, other primitives don't, else do
          final Integer id = registry.getId(data);
@@ -229,7 +231,7 @@ public enum HeaderSerializableStrategy
             if (baseComponent.isPrimitive())
             {
                writeByte(appender, ']');
-               baseComponent = ClassUtil.boxClass(baseComponent);
+               baseComponent = classUtil.boxClass(baseComponent);
             }
             else writeByte(appender, '[');
 

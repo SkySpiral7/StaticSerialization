@@ -6,7 +6,6 @@ import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializabl
 import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
-import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.io.Closeable;
@@ -53,7 +52,7 @@ public class InternalStreamReader implements Closeable
    {
       //must check for void.class because ClassUtil.boxClass would throw something less helpful
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
-      if (expectedClass.isPrimitive()) expectedClass = cast(ClassUtil.boxClass(expectedClass));
+      if (expectedClass.isPrimitive()) expectedClass = cast(utilInstances.getClassUtil().boxClass(expectedClass));
 
       final HeaderInformation<?> headerInformation = HeaderSerializableStrategy.readHeader(this, inheritFromClass);
       //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
@@ -75,7 +74,7 @@ public class InternalStreamReader implements Closeable
 
       final Class<T_Actual> actualClass = ReaderValidationStrategy.getClassFromHeader(this, headerInformation,
          expectedClass, allowChildClass);
-      if (!ClassUtil.isPrimitiveOrBox(actualClass))
+      if (!utilInstances.getClassUtil().isPrimitiveOrBox(actualClass))
       {
          registry.reserveIdForLater();
       }
@@ -83,7 +82,7 @@ public class InternalStreamReader implements Closeable
       //null, boolean, and id don't reach here
       if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: can array?
       //TODO: make util for should register since long should
-      if (!ClassUtil.isPrimitiveOrBox(returnValue.getClass()) && !streamReader.isRegistered(returnValue))
+      if (!utilInstances.getClassUtil().isPrimitiveOrBox(returnValue.getClass()) && !streamReader.isRegistered(returnValue))
          streamReader.registerObject(returnValue);
       return returnValue;
    }
