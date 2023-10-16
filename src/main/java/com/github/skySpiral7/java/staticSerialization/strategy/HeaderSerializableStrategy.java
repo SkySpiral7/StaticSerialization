@@ -10,6 +10,7 @@ import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,9 +19,8 @@ import java.util.Map;
 
 import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeByte;
 
-public enum HeaderSerializableStrategy
+public class HeaderSerializableStrategy
 {
-   ;  //no instances
    private static final Logger LOG = LogManager.getLogger();
 
    /**
@@ -36,7 +36,7 @@ public enum HeaderSerializableStrategy
     * <li>\id reference existing object (header only)</li>
     * </ul>
     */
-   private static final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
+   private final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
    /**
     * Not in map:
     * <ul>
@@ -50,9 +50,8 @@ public enum HeaderSerializableStrategy
     * <li>\id reference existing object (header only)</li>
     * </ul>
     */
-   private static final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
+   private final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
 
-   static
    {
       /*
       possible printable ASCII headers: space to / (not $ or .) is 14, : to @ is +7, [ to ` (not _) is +5, { to ~ is +4 = 30
@@ -87,19 +86,59 @@ public enum HeaderSerializableStrategy
       CLASS_TO_COMPRESSED_HEADER.put(String.class, '*');
    }
 
+   private final EasyReader reader;
+   private final ObjectReaderRegistry readerRegistry;
+   private final EasyAppender appender;
+   private final ObjectWriterRegistry writerRegistry;
+   private final ArrayUtil arrayUtil;
+   private final ClassUtil classUtil;
+
+   public HeaderSerializableStrategy(final EasyReader reader, final ObjectReaderRegistry registry,
+                                     final UtilInstances utilInstances)
+   {
+      this.reader = reader;
+      readerRegistry = registry;
+      appender = null;
+      writerRegistry = null;
+      arrayUtil = utilInstances.getArrayUtil();
+      classUtil = utilInstances.getClassUtil();
+   }
+
+   public HeaderSerializableStrategy(final EasyAppender appender, final ObjectWriterRegistry registry,
+                                     final UtilInstances utilInstances)
+   {
+      reader = null;
+      readerRegistry = null;
+      this.appender = appender;
+      writerRegistry = registry;
+      arrayUtil = utilInstances.getArrayUtil();
+      classUtil = utilInstances.getClassUtil();
+   }
+
+   /**
+    * For private use and testing only.
+    */
+   HeaderSerializableStrategy(final EasyReader reader, final ObjectReaderRegistry readerRegistry,
+                              final EasyAppender appender, final ObjectWriterRegistry writerRegistry,
+                              final UtilInstances utilInstances)
+   {
+      this.reader = reader;
+      this.readerRegistry = readerRegistry;
+      this.appender = appender;
+      this.writerRegistry = writerRegistry;
+      this.arrayUtil = utilInstances.getArrayUtil();
+      this.classUtil = utilInstances.getClassUtil();
+   }
+
    /**
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
-   public static HeaderInformation<?> readHeader(final InternalStreamReader internalStreamReader,
+   public HeaderInformation<?> readHeader(final InternalStreamReader internalStreamReader,
                                                  final Class<?> inheritFromClass)
    {
       byte firstByte;
       final int dimensionCount;
       final boolean primitiveArray;
-      final EasyReader reader = internalStreamReader.getReader();
-      final ObjectReaderRegistry registry = internalStreamReader.getRegistry();
-      final ArrayUtil arrayUtil = internalStreamReader.getUtilInstances().getArrayUtil();
-      final ClassUtil classUtil = internalStreamReader.getUtilInstances().getClassUtil();
 
       //excludes Object for the sake of Object[]
       if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
@@ -154,7 +193,7 @@ public enum HeaderSerializableStrategy
       if ('\\' == firstByte)
       {
          final int id = IntegerSerializableStrategy.read(internalStreamReader, "Incomplete header: id type but no id");
-         final Object registeredObject = registry.getRegisteredObject(id);
+         final Object registeredObject = readerRegistry.getRegisteredObject(id);
          //null value will not have an id. null is only possible if id was reserved but not registered
          if (registeredObject == null) throw new StreamCorruptedException("id not found");
          //LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
@@ -172,17 +211,13 @@ public enum HeaderSerializableStrategy
    /**
     * @return true if an id was used and no value should be written
     */
-   public static boolean writeHeaderReturnIsId(final InternalStreamWriter internalStreamWriter, final Class<?> inheritFromClass,
+   public boolean writeHeaderReturnIsId(final InternalStreamWriter internalStreamWriter, final Class<?> inheritFromClass,
                                                final Object data)
    {
-      final EasyAppender appender = internalStreamWriter.getAppender();
-      final ObjectWriterRegistry registry = internalStreamWriter.getRegistry();
-      final ArrayUtil arrayUtil = internalStreamWriter.getUtilInstances().getArrayUtil();
-      final ClassUtil classUtil = internalStreamWriter.getUtilInstances().getClassUtil();
       if (data != null && !classUtil.isPrimitiveOrBox(data.getClass()))
       {
          //TODO: long gets id, other primitives don't, else do
-         final Integer id = registry.getId(data);
+         final Integer id = writerRegistry.getId(data);
          //LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data + " id=" + id);
          if (id != null)
          {
@@ -192,7 +227,7 @@ public enum HeaderSerializableStrategy
             return true;
          }
          //null, primitive, and box don't get registered
-         registry.registerObject(data);
+         writerRegistry.registerObject(data);
       }
       //else if(data==null) LOG.debug("data.class=null");
       //else LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data);

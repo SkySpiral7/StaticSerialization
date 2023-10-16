@@ -2,7 +2,7 @@ package com.github.skySpiral7.java.staticSerialization.internal;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.StrategyInstances;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
@@ -13,9 +13,10 @@ import java.io.Flushable;
 
 public class InternalStreamWriter implements Closeable, Flushable
 {
-   private final ObjectWriterRegistry registry;
    private final EasyAppender appender;
+   private final ObjectWriterRegistry registry;
    private final UtilInstances utilInstances;
+   private final StrategyInstances strategyInstances;
 
    public InternalStreamWriter(final File destination)
    {
@@ -24,14 +25,22 @@ public class InternalStreamWriter implements Closeable, Flushable
 
    public InternalStreamWriter(final EasyAppender appender)
    {
-      this(new ObjectWriterRegistry(), appender, new UtilInstances());
+      this(appender, new ObjectWriterRegistry(), new UtilInstances());
    }
 
-   public InternalStreamWriter(ObjectWriterRegistry registry, EasyAppender appender, UtilInstances utilInstances)
+   public InternalStreamWriter(final EasyAppender appender, final ObjectWriterRegistry registry,
+                               final UtilInstances utilInstances)
    {
-      this.registry = registry;
+      this(appender, registry, utilInstances, new StrategyInstances(appender, registry, utilInstances));
+   }
+
+   public InternalStreamWriter(final EasyAppender appender, final ObjectWriterRegistry registry,
+                               final UtilInstances utilInstances, final StrategyInstances strategyInstances)
+   {
       this.appender = appender;
+      this.registry = registry;
       this.utilInstances = utilInstances;
+      this.strategyInstances = strategyInstances;
    }
 
    /**
@@ -48,15 +57,11 @@ public class InternalStreamWriter implements Closeable, Flushable
 
    public void writeObjectInternal(final ObjectStreamWriter streamWriter, final Class<?> inheritFromClass, final Object data)
    {
-      final boolean usedId = HeaderSerializableStrategy.writeHeaderReturnIsId(this, inheritFromClass, data);
+      final boolean usedId = strategyInstances.getHeaderSerializableStrategy().writeHeaderReturnIsId(this,
+         inheritFromClass, data);
       //if an id was written then don't write value
       if (usedId) return;
       AllSerializableStrategy.write(streamWriter, this, appender, data);
-   }
-
-   public ObjectWriterRegistry getRegistry()
-   {
-      return registry;
    }
 
    public EasyAppender getAppender()
@@ -64,8 +69,18 @@ public class InternalStreamWriter implements Closeable, Flushable
       return appender;
    }
 
+   public ObjectWriterRegistry getRegistry()
+   {
+      return registry;
+   }
+
    public UtilInstances getUtilInstances()
    {
       return utilInstances;
+   }
+
+   public StrategyInstances getStrategyInstances()
+   {
+      return strategyInstances;
    }
 }

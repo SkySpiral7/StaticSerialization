@@ -2,8 +2,8 @@ package com.github.skySpiral7.java.staticSerialization.internal;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.StrategyInstances;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
@@ -15,9 +15,10 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 
 public class InternalStreamReader implements Closeable
 {
-   private final ObjectReaderRegistry registry;
    private final EasyReader reader;
+   private final ObjectReaderRegistry registry;
    private final UtilInstances utilInstances;
+   private final StrategyInstances strategyInstances;
 
    public InternalStreamReader(final File sourceFile)
    {
@@ -26,14 +27,22 @@ public class InternalStreamReader implements Closeable
 
    public InternalStreamReader(final EasyReader reader)
    {
-      this(new ObjectReaderRegistry(), reader, new UtilInstances());
+      this(reader, new ObjectReaderRegistry(), new UtilInstances());
    }
 
-   public InternalStreamReader(ObjectReaderRegistry registry, EasyReader reader, UtilInstances utilInstances)
+   private InternalStreamReader(final EasyReader reader, final ObjectReaderRegistry registry,
+                               final UtilInstances utilInstances)
    {
-      this.registry = registry;
+      this(reader, registry, utilInstances, new StrategyInstances(reader, registry, utilInstances));
+   }
+
+   public InternalStreamReader(final EasyReader reader, final ObjectReaderRegistry registry,
+                               final UtilInstances utilInstances, final StrategyInstances strategyInstances)
+   {
       this.reader = reader;
+      this.registry = registry;
       this.utilInstances = utilInstances;
+      this.strategyInstances = strategyInstances;
    }
 
    /**
@@ -54,7 +63,8 @@ public class InternalStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(utilInstances.getClassUtil().boxClass(expectedClass));
 
-      final HeaderInformation<?> headerInformation = HeaderSerializableStrategy.readHeader(this, inheritFromClass);
+      final HeaderInformation<?> headerInformation = strategyInstances.getHeaderSerializableStrategy().readHeader(this,
+         inheritFromClass);
       //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
       //if cast it will NPE is that better? what about allowing children?
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
@@ -100,5 +110,10 @@ public class InternalStreamReader implements Closeable
    public UtilInstances getUtilInstances()
    {
       return utilInstances;
+   }
+
+   public StrategyInstances getStrategyInstances()
+   {
+      return strategyInstances;
    }
 }
