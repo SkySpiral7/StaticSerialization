@@ -15,8 +15,7 @@ public class UtilInstances
       arrayUtil = new ArrayUtil();
       bitWiseUtil = new BitWiseUtil();
       classUtil = new ClassUtil();
-      //TODO: do other utils
-      reflectionUtil = null;
+      reflectionUtil = new ReflectionUtil();
    }
 
    public ArrayUtil getArrayUtil()

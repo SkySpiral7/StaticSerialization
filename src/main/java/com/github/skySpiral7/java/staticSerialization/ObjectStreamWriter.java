@@ -63,6 +63,6 @@ public class ObjectStreamWriter implements Closeable, Flushable
 
    public void writeFieldsReflectively(final Object data)
    {
-      ReflectionSerializableStrategy.write(this, data);
+      ReflectionSerializableStrategy.write(this, internalStreamWriter, data);
    }
 }

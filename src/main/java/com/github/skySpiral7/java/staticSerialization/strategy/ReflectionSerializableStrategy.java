@@ -2,6 +2,8 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.util.ReflectionUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,9 +16,10 @@ public enum ReflectionSerializableStrategy
    ;  //no instances
    private static final Logger LOG = LogManager.getLogger();
 
-   public static void write(final ObjectStreamWriter writer, final Object data)
+   public static void write(final ObjectStreamWriter writer, final InternalStreamWriter internalStreamWriter, final Object data)
    {
-      final List<Field> allSerializableFields = ReflectionUtil.getAllSerializableFields(data.getClass());
+      final ReflectionUtil reflectionUtil = internalStreamWriter.getUtilInstances().getReflectionUtil();
+      final List<Field> allSerializableFields = reflectionUtil.getAllSerializableFields(data.getClass());
       LOG.debug("size: " + allSerializableFields.size());
       allSerializableFields.forEach(field -> {
          field.setAccessible(true);
@@ -34,9 +37,11 @@ public enum ReflectionSerializableStrategy
       });
    }
 
-   public static void read(final ObjectStreamReader reader, final Object instance)
+   public static void read(final ObjectStreamReader reader, final InternalStreamReader internalStreamReader,
+                           final Object instance)
    {
-      final List<Field> allSerializableFields = ReflectionUtil.getAllSerializableFields(instance.getClass());
+      final ReflectionUtil reflectionUtil = internalStreamReader.getUtilInstances().getReflectionUtil();
+      final List<Field> allSerializableFields = reflectionUtil.getAllSerializableFields(instance.getClass());
       LOG.debug("size: " + allSerializableFields.size());
       allSerializableFields.forEach(field -> {
          field.setAccessible(true);
