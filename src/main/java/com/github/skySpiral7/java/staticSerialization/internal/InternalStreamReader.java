@@ -72,8 +72,7 @@ public class InternalStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(classUtil.boxClass(expectedClass));
 
-      final HeaderInformation<?> headerInformation = headerSerializableStrategy.readHeader(this,
-         inheritFromClass);
+      final HeaderInformation<?> headerInformation = headerSerializableStrategy.readHeader(inheritFromClass);
       //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
       //if cast it will NPE is that better? what about allowing children?
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely

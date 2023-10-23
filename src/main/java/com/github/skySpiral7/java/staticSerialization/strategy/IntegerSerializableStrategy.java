@@ -22,20 +22,13 @@ public class IntegerSerializableStrategy
       byteSerializableStrategy = null;
    }
 
+   /**
+    * For writing
+    */
    public IntegerSerializableStrategy(final ByteSerializableStrategy byteSerializableStrategy)
    {
       reader = null;
       bitWiseUtil = null;
-      this.byteSerializableStrategy = byteSerializableStrategy;
-   }
-
-   /**
-    * For private use and testing only.
-    */
-   IntegerSerializableStrategy(final EasyReader reader, final UtilInstances utilInstances, final ByteSerializableStrategy byteSerializableStrategy)
-   {
-      this.reader = reader;
-      bitWiseUtil = utilInstances.getBitWiseUtil();
       this.byteSerializableStrategy = byteSerializableStrategy;
    }
 

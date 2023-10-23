@@ -2,8 +2,6 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
@@ -125,8 +123,7 @@ public class HeaderSerializableStrategy
    /**
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
-   public HeaderInformation<?> readHeader(final InternalStreamReader internalStreamReader,
-                                                 final Class<?> inheritFromClass)
+   public HeaderInformation<?> readHeader(final Class<?> inheritFromClass)
    {
       byte firstByte;
       final int dimensionCount;
@@ -204,9 +201,7 @@ public class HeaderSerializableStrategy
    /**
     * @return true if an id was used and no value should be written
     */
-   public boolean writeHeaderReturnIsId(final InternalStreamWriter internalStreamWriter, final Class<?> inheritFromClass,
-                                               //TODO: remove InternalStreamWriter arg
-                                               final Object data)
+   public boolean writeHeaderReturnIsId(final Class<?> inheritFromClass, final Object data)
    {
       if (data != null && !classUtil.isPrimitiveOrBox(data.getClass()))
       {

@@ -4,8 +4,6 @@ import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
@@ -26,8 +24,6 @@ public class HeaderSerializableStrategy_UT
 {
    //TODO: organize tests. make almost everything an IT but named as UT
    private HeaderSerializableStrategy testObject;
-   private InternalStreamReader internalStreamReader;
-   private InternalStreamWriter internalStreamWriter;
 
    @Test
    public void readHeader_primitiveArrayElementsHaveNoHeader()
@@ -112,7 +108,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         testObject.readHeader(internalStreamReader, null);
+         testObject.readHeader(null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -131,7 +127,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         testObject.readHeader(internalStreamReader, null);
+         testObject.readHeader(null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -191,7 +187,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Boolean> expected = new HeaderInformation<>(Boolean.class.getName(), null, 1, false);
 
-      final HeaderInformation<?> actual = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual = testObject.readHeader(null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -204,7 +200,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Boolean> expected = new HeaderInformation<>(Boolean.class.getName(), null, 1, true);
 
-      final HeaderInformation<?> actual = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual = testObject.readHeader(null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -217,7 +213,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<?> expected = new HeaderInformation<>(null, null, 0, false);
 
-      final HeaderInformation<?> actual = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual = testObject.readHeader(null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -230,7 +226,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", Boolean.TRUE, 0, false);
 
-      final HeaderInformation<?> actual = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual = testObject.readHeader(null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -243,7 +239,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", Boolean.FALSE, 0, false);
 
-      final HeaderInformation<?> actual = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual = testObject.readHeader(null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -256,7 +252,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", null, 0, false);
 
-      final HeaderInformation<?> actual = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual = testObject.readHeader(null);
       assertEquals(expected, actual);
 
       reader.close();
@@ -269,9 +265,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Byte> expected = new HeaderInformation<>("java.lang.Byte", null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -284,9 +280,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Short> expected = new HeaderInformation<>("java.lang.Short", null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -299,9 +295,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Integer> expected = new HeaderInformation<>("java.lang.Integer", null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -314,9 +310,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Long> expected = new HeaderInformation<>("java.lang.Long", null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -329,9 +325,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Float> expected = new HeaderInformation<>("java.lang.Float", null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -344,9 +340,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Double> expected = new HeaderInformation<>("java.lang.Double", null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -359,9 +355,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Character> expected = new HeaderInformation<>("java.lang.Character", null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -374,9 +370,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<String> expected = new HeaderInformation<>("java.lang.String", null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -389,7 +385,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Byte> expected = new HeaderInformation<>(Byte.class.getName(), null, 1, false);
 
-      final HeaderInformation<?> actual = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual = testObject.readHeader(null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -407,7 +403,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         testObject.readHeader(internalStreamReader, null);
+         testObject.readHeader(null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -429,7 +425,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         testObject.readHeader(internalStreamReader, null);
+         testObject.readHeader(null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -452,7 +448,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, registry);
       final HeaderInformation<String> expected = new HeaderInformation<>(String.class.getName(), objectValue, 0, false);
 
-      final HeaderInformation<?> actual = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual = testObject.readHeader(null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -466,7 +462,7 @@ public class HeaderSerializableStrategy_UT
 
       try
       {
-         testObject.readHeader(internalStreamReader, null);
+         testObject.readHeader(null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -484,7 +480,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Object> expected = new HeaderInformation<>("java.lang.Object", null, 0, false);
 
-      final HeaderInformation<?> actual = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual = testObject.readHeader(null);
       assertEquals(expected, actual);
 
       reader.close();
@@ -500,7 +496,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Object> expected = new HeaderInformation<>(Object.class.getName(), null, 1, false);
 
-      final HeaderInformation<?> actual = testObject.readHeader(internalStreamReader, null);
+      final HeaderInformation<?> actual = testObject.readHeader(null);
 
       assertEquals(expected, actual);
       reader.close();
@@ -846,16 +842,13 @@ public class HeaderSerializableStrategy_UT
 
    private void init(final EasyReader reader, final ObjectReaderRegistry registry)
    {
-      final UtilInstances utilInstances = new UtilInstances();
-      final StrategyInstances strategyInstances = new StrategyInstances(reader, registry, utilInstances);
+      final StrategyInstances strategyInstances = new StrategyInstances(reader, registry, new UtilInstances());
       testObject = strategyInstances.getHeaderSerializableStrategy();
-      internalStreamReader = new InternalStreamReader(reader, registry, utilInstances.getClassUtil(), strategyInstances);
    }
 
    private void init(final EasyAppender appender, final ObjectWriterRegistry registry)
    {
       final StrategyInstances strategyInstances = new StrategyInstances(appender, registry, new UtilInstances());
       testObject = strategyInstances.getHeaderSerializableStrategy();
-      internalStreamWriter = new InternalStreamWriter(appender, strategyInstances);
    }
 }

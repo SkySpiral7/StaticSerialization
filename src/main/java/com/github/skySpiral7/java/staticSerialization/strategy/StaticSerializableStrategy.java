@@ -14,7 +14,6 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 
 public class StaticSerializableStrategy
 {
-   ;  //no instances
 
    public void write(final ObjectStreamWriter writer, final StaticSerializable data)
    {
