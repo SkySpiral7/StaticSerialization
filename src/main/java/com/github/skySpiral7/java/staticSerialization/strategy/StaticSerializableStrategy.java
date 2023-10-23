@@ -12,16 +12,16 @@ import java.lang.reflect.Modifier;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public enum StaticSerializableStrategy
+public class StaticSerializableStrategy
 {
    ;  //no instances
 
-   public static void write(final ObjectStreamWriter writer, final StaticSerializable data)
+   public void write(final ObjectStreamWriter writer, final StaticSerializable data)
    {
       data.writeToStream(writer);
    }
 
-   public static <T> T read(final ObjectStreamReader reader, final Class<T> expectedClass)
+   public <T> T read(final ObjectStreamReader reader, final Class<T> expectedClass)
    {
       if (!Modifier.isPublic(expectedClass.getModifiers()))
       {
