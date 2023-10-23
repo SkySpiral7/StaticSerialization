@@ -16,7 +16,7 @@ public enum IntegerSerializableStrategy
    public static void write(final InternalStreamWriter internalStreamWriter, final int data)
    {
       LOG.debug(data);
-      ByteSerializableStrategy.writeBytes(internalStreamWriter, data, 4);
+      internalStreamWriter.getStrategyInstances().getByteSerializableStrategy().writeBytes(data, 4);
    }
 
    public static int read(final InternalStreamReader internalStreamReader, final String corruptMessage)

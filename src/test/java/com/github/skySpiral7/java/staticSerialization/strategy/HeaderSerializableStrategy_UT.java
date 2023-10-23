@@ -848,7 +848,7 @@ public class HeaderSerializableStrategy_UT
    {
       UtilInstances utilInstances = new UtilInstances();
       testObject = new HeaderSerializableStrategy(reader, registry, null, null,
-         utilInstances);
+         utilInstances, null);
       internalStreamReader = new InternalStreamReader(reader, registry, utilInstances,
          new StrategyInstances(reader, registry, utilInstances));
    }
@@ -857,7 +857,7 @@ public class HeaderSerializableStrategy_UT
    {
       UtilInstances utilInstances = new UtilInstances();
       testObject = new HeaderSerializableStrategy(null, null, appender, registry,
-         utilInstances);
+         utilInstances, new ByteSerializableStrategy(appender, utilInstances));
       internalStreamWriter = new InternalStreamWriter(appender, registry, utilInstances,
          new StrategyInstances(appender, registry, utilInstances));
    }

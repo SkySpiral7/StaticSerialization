@@ -1,7 +1,5 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
@@ -34,9 +32,9 @@ public class StrategyInstances
       this.allSerializableStrategy = null;
       this.arraySerializableStrategy = null;
       this.boxPrimitiveSerializableStrategy = null;
-      this.byteSerializableStrategy = null;
+      this.byteSerializableStrategy = null;  //don't need
       this.enumSerializableStrategy = null;
-      this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances);
+      this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances, this);
       this.integerSerializableStrategy = null;
       this.javaSerializableStrategy = null;
       this.readerValidationStrategy = null;
@@ -52,9 +50,9 @@ public class StrategyInstances
       this.allSerializableStrategy = null;
       this.arraySerializableStrategy = null;
       this.boxPrimitiveSerializableStrategy = null;
-      this.byteSerializableStrategy = null;
+      this.byteSerializableStrategy = new ByteSerializableStrategy(appender, utilInstances);
       this.enumSerializableStrategy = null;
-      this.headerSerializableStrategy = new HeaderSerializableStrategy(appender, registry, utilInstances);
+      this.headerSerializableStrategy = new HeaderSerializableStrategy(appender, registry, utilInstances, this);
       this.integerSerializableStrategy = null;
       this.javaSerializableStrategy = null;
       this.readerValidationStrategy = null;

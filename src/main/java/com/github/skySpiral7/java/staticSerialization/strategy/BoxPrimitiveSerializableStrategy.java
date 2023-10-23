@@ -3,11 +3,9 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
-import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeBytes;
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public enum BoxPrimitiveSerializableStrategy
@@ -16,26 +14,28 @@ public enum BoxPrimitiveSerializableStrategy
 
    public static void write(final InternalStreamWriter internalStreamWriter, final Object data)
    {
-      final EasyAppender appender = internalStreamWriter.getAppender();
-      if (data instanceof Byte) ByteSerializableStrategy.writeByte(appender, (byte) data);
-      else if (data instanceof Short) writeBytes(internalStreamWriter, (short) data, 2);
+      final ByteSerializableStrategy byteSerializableStrategy =
+         internalStreamWriter.getStrategyInstances().getByteSerializableStrategy();
+      if (data instanceof Byte) byteSerializableStrategy.writeByte((byte) data);
+      else if (data instanceof Short) byteSerializableStrategy.writeBytes((short) data, 2);
       else if (data instanceof Integer) IntegerSerializableStrategy.write(internalStreamWriter, (int) data);
-      else if (data instanceof Long) writeBytes(internalStreamWriter, (long) data, 8);
+      else if (data instanceof Long) byteSerializableStrategy.writeBytes((long) data, 8);
       else if (data instanceof Float)
       {
          final int castedData = Float.floatToIntBits((float) data);
          //intentionally normalizes NaN
-         writeBytes(internalStreamWriter, castedData, 4);
+         //TODO: does it need to normalize NaN?
+         byteSerializableStrategy.writeBytes(castedData, 4);
       }
       else if (data instanceof Double)
       {
          long castedData = Double.doubleToLongBits((double) data);
          //intentionally normalizes NaN
-         writeBytes(internalStreamWriter, castedData, 8);
+         byteSerializableStrategy.writeBytes(castedData, 8);
       }
       //Boolean won't come here because the value is header only
       //TODO: can a null Boolean[] get here?
-      else if (data instanceof Character) writeBytes(internalStreamWriter, (char) data, 2);
+      else if (data instanceof Character) byteSerializableStrategy.writeBytes((char) data, 2);
       else throw new AssertionError("Method shouldn't've been called");
    }
 

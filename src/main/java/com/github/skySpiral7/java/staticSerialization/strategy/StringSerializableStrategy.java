@@ -3,7 +3,6 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,13 +36,13 @@ public enum StringSerializableStrategy
       return result;
    }
 
-   public static void writeClassName(final EasyAppender appender, final String className)
+   public static void writeClassName(final InternalStreamWriter internalStreamWriter, final String className)
    {
       LOG.debug(className);
       //can't use recursion to write the string because that's endless and needs different format
       final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
-      appender.append(writeMe);
-      ByteSerializableStrategy.writeByte(appender, ';');
+      internalStreamWriter.getAppender().append(writeMe);
+      internalStreamWriter.getStrategyInstances().getByteSerializableStrategy().writeByte(';');
       //instead of size then string have the string terminated by ; since this saves 3 bytes and class names can't contain ;
    }
 

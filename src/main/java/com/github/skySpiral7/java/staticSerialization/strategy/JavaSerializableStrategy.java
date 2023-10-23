@@ -14,7 +14,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
-import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeBytes;
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public enum JavaSerializableStrategy
@@ -24,7 +23,7 @@ public enum JavaSerializableStrategy
    public static void writeWithLength(final InternalStreamWriter internalStreamWriter, final Serializable data)
    {
       final byte[] serializedData = javaSerialize(data);
-      writeBytes(internalStreamWriter, serializedData.length, 4);
+      internalStreamWriter.getStrategyInstances().getByteSerializableStrategy().writeBytes(serializedData.length, 4);
       internalStreamWriter.getAppender().append(serializedData);
    }
 
