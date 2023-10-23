@@ -1,23 +1,26 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public enum EnumSerializableStrategy
+public class EnumSerializableStrategy
 {
-   ;  //no instances
+   private final IntegerSerializableStrategy integerSerializableStrategy;
 
-   public static void write(final InternalStreamWriter internalStreamWriter, final Enum<?> data)
+   public EnumSerializableStrategy(IntegerSerializableStrategy integerSerializableStrategy)
    {
-      internalStreamWriter.getStrategyInstances().getIntegerSerializableStrategy().write(data.ordinal());
+      this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
-   public static <T> T read(final InternalStreamReader internalStreamReader, final Class<T> expectedClass)
+   public void write(final Enum<?> data)
    {
-      final int ordinal = internalStreamReader.getStrategyInstances().getIntegerSerializableStrategy().read("Missing enum ordinal");
+      integerSerializableStrategy.write(data.ordinal());
+   }
+
+   public <T> T read(final Class<T> expectedClass)
+   {
+      final int ordinal = integerSerializableStrategy.read("Missing enum ordinal");
       if (ordinal < 0) throw new StreamCorruptedException("Invalid enum ordinal. Actual: " + ordinal);
 
       final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum

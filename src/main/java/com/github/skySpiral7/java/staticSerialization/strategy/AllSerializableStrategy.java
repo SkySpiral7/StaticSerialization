@@ -22,6 +22,8 @@ public enum AllSerializableStrategy
                             final EasyAppender fileAppender, final Object data)
    {
       final UtilInstances utilInstances = internalStreamWriter.getUtilInstances();
+      final StrategyInstances strategyInstances = internalStreamWriter.getStrategyInstances();
+
       final Class<?> dataClass = data.getClass();
       //TODO: change these to command interface with supports(). compression trick will be first
       if (utilInstances.getClassUtil().isPrimitiveOrBox(dataClass))
@@ -31,7 +33,7 @@ public enum AllSerializableStrategy
       }
       if (data instanceof String)
       {
-         internalStreamWriter.getStrategyInstances().getStringSerializableStrategy().writeWithLength((String) data);
+         strategyInstances.getStringSerializableStrategy().writeWithLength((String) data);
          return;
       }
       if (dataClass.isArray())
@@ -48,7 +50,7 @@ public enum AllSerializableStrategy
 
       if (dataClass.isEnum())
       {
-         EnumSerializableStrategy.write(internalStreamWriter, (Enum<?>) data);
+         strategyInstances.getEnumSerializableStrategy().write((Enum<?>) data);
          return;
       }
       if (data instanceof Serializable)
@@ -64,10 +66,14 @@ public enum AllSerializableStrategy
                             final EasyReader fileReader, final Class<T> actualClass)
    {
       final UtilInstances utilInstances = internalStreamReader.getUtilInstances();
+      final StrategyInstances strategyInstances = internalStreamReader.getStrategyInstances();
+
       if (utilInstances.getClassUtil().isPrimitiveOrBox(actualClass))
          return BoxPrimitiveSerializableStrategy.read(internalStreamReader, actualClass);
       if (String.class.equals(actualClass))
-         return cast(internalStreamReader.getStrategyInstances().getStringSerializableStrategy().readWithLength());
+      {
+         return cast(strategyInstances.getStringSerializableStrategy().readWithLength());
+      }
       if (actualClass.isArray())
          return ArraySerializableStrategy.read(streamReader, internalStreamReader, fileReader, actualClass.getComponentType());
 
@@ -75,7 +81,7 @@ public enum AllSerializableStrategy
          return StaticSerializableStrategy.read(streamReader, actualClass);
 
       //TODO: does java serial allow enum data? yes: JavaSerializableStrategy, no: doc it
-      if (actualClass.isEnum()) return EnumSerializableStrategy.read(internalStreamReader, actualClass);
+      if (actualClass.isEnum()) return strategyInstances.getEnumSerializableStrategy().read(actualClass);
       if (Serializable.class.isAssignableFrom(actualClass))
          return JavaSerializableStrategy.readWithLength(internalStreamReader);
 

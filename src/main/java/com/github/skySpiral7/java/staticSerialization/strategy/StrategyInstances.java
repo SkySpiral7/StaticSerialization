@@ -33,7 +33,6 @@ public class StrategyInstances
       this.arraySerializableStrategy = null;
       this.boxPrimitiveSerializableStrategy = null;
       this.byteSerializableStrategy = null;  //don't need
-      this.enumSerializableStrategy = null;
       this.integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.javaSerializableStrategy = null;
       this.readerValidationStrategy = null;
@@ -42,6 +41,7 @@ public class StrategyInstances
       this.staticSerializableStrategy = null;
 
       //ones that need other strategies
+      this.enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       this.stringSerializableStrategy = new StringSerializableStrategy(reader, integerSerializableStrategy);
       this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances,
          integerSerializableStrategy, stringSerializableStrategy);
@@ -54,7 +54,6 @@ public class StrategyInstances
       this.arraySerializableStrategy = null;
       this.boxPrimitiveSerializableStrategy = null;
       this.byteSerializableStrategy = new ByteSerializableStrategy(appender, utilInstances);
-      this.enumSerializableStrategy = null;
       this.javaSerializableStrategy = null;
       this.readerValidationStrategy = null;
       this.reflectionSerializableStrategy = null;
@@ -63,6 +62,7 @@ public class StrategyInstances
 
       //ones that need other strategies
       this.integerSerializableStrategy = new IntegerSerializableStrategy(byteSerializableStrategy);
+      this.enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       this.stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy,
          integerSerializableStrategy);
       this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
