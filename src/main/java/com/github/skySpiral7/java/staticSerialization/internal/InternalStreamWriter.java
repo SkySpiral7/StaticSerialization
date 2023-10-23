@@ -14,8 +14,6 @@ import java.io.Flushable;
 public class InternalStreamWriter implements Closeable, Flushable
 {
    private final EasyAppender appender;
-   private final ObjectWriterRegistry registry;
-   private final UtilInstances utilInstances;
    private final StrategyInstances strategyInstances;
 
    public InternalStreamWriter(final File destination)
@@ -31,15 +29,12 @@ public class InternalStreamWriter implements Closeable, Flushable
    public InternalStreamWriter(final EasyAppender appender, final ObjectWriterRegistry registry,
                                final UtilInstances utilInstances)
    {
-      this(appender, registry, utilInstances, new StrategyInstances(appender, registry, utilInstances));
+      this(appender, new StrategyInstances(appender, registry, utilInstances));
    }
 
-   public InternalStreamWriter(final EasyAppender appender, final ObjectWriterRegistry registry,
-                               final UtilInstances utilInstances, final StrategyInstances strategyInstances)
+   public InternalStreamWriter(final EasyAppender appender, final StrategyInstances strategyInstances)
    {
       this.appender = appender;
-      this.registry = registry;
-      this.utilInstances = utilInstances;
       this.strategyInstances = strategyInstances;
    }
 
@@ -62,21 +57,6 @@ public class InternalStreamWriter implements Closeable, Flushable
       //if an id was written then don't write value
       if (usedId) return;
       strategyInstances.getAllSerializableStrategy().write(streamWriter, this, data);
-   }
-
-   public EasyAppender getAppender()
-   {
-      return appender;
-   }
-
-   public ObjectWriterRegistry getRegistry()
-   {
-      return registry;
-   }
-
-   public UtilInstances getUtilInstances()
-   {
-      return utilInstances;
    }
 
    public StrategyInstances getStrategyInstances()

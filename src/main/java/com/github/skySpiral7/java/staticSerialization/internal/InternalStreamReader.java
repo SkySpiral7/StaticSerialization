@@ -1,10 +1,10 @@
 package com.github.skySpiral7.java.staticSerialization.internal;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
-import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StrategyInstances;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.io.Closeable;
@@ -16,7 +16,7 @@ public class InternalStreamReader implements Closeable
 {
    private final EasyReader reader;
    private final ObjectReaderRegistry registry;
-   private final UtilInstances utilInstances;
+   private final ClassUtil classUtil;
    private final StrategyInstances strategyInstances;
 
    public InternalStreamReader(final File sourceFile)
@@ -32,15 +32,15 @@ public class InternalStreamReader implements Closeable
    private InternalStreamReader(final EasyReader reader, final ObjectReaderRegistry registry,
                                final UtilInstances utilInstances)
    {
-      this(reader, registry, utilInstances, new StrategyInstances(reader, registry, utilInstances));
+      this(reader, registry, utilInstances.getClassUtil(), new StrategyInstances(reader, registry, utilInstances));
    }
 
    public InternalStreamReader(final EasyReader reader, final ObjectReaderRegistry registry,
-                               final UtilInstances utilInstances, final StrategyInstances strategyInstances)
+                               final ClassUtil classUtil, final StrategyInstances strategyInstances)
    {
       this.reader = reader;
       this.registry = registry;
-      this.utilInstances = utilInstances;
+      this.classUtil = classUtil;
       this.strategyInstances = strategyInstances;
    }
 
@@ -60,7 +60,7 @@ public class InternalStreamReader implements Closeable
    {
       //must check for void.class because ClassUtil.boxClass would throw something less helpful
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
-      if (expectedClass.isPrimitive()) expectedClass = cast(utilInstances.getClassUtil().boxClass(expectedClass));
+      if (expectedClass.isPrimitive()) expectedClass = cast(classUtil.boxClass(expectedClass));
 
       final HeaderInformation<?> headerInformation = strategyInstances.getHeaderSerializableStrategy().readHeader(this,
          inheritFromClass);
@@ -83,7 +83,7 @@ public class InternalStreamReader implements Closeable
 
       final Class<T_Actual> actualClass = strategyInstances.getReaderValidationStrategy().getClassFromHeader(headerInformation,
          expectedClass, allowChildClass);
-      if (!utilInstances.getClassUtil().isPrimitiveOrBox(actualClass))
+      if (!classUtil.isPrimitiveOrBox(actualClass))
       {
          registry.reserveIdForLater();
       }
@@ -91,24 +91,14 @@ public class InternalStreamReader implements Closeable
       //null, boolean, and id don't reach here
       if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: can array?
       //TODO: make util for should register since long should
-      if (!utilInstances.getClassUtil().isPrimitiveOrBox(returnValue.getClass()) && !streamReader.isRegistered(returnValue))
+      if (!classUtil.isPrimitiveOrBox(returnValue.getClass()) && !streamReader.isRegistered(returnValue))
          streamReader.registerObject(returnValue);
       return returnValue;
-   }
-
-   public EasyReader getReader()
-   {
-      return reader;
    }
 
    public ObjectReaderRegistry getRegistry()
    {
       return registry;
-   }
-
-   public UtilInstances getUtilInstances()
-   {
-      return utilInstances;
    }
 
    public StrategyInstances getStrategyInstances()
