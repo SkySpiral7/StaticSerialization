@@ -1,6 +1,10 @@
 package com.github.skySpiral7.java.staticSerialization.internal;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
+import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StrategyInstances;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
@@ -17,7 +21,10 @@ public class InternalStreamReader implements Closeable
    private final EasyReader reader;
    private final ObjectReaderRegistry registry;
    private final ClassUtil classUtil;
-   private final StrategyInstances strategyInstances;
+   private final AllSerializableStrategy allSerializableStrategy;
+   private final HeaderSerializableStrategy headerSerializableStrategy;
+   private final ReaderValidationStrategy readerValidationStrategy;
+   private final ReflectionSerializableStrategy reflectionSerializableStrategy;
 
    public InternalStreamReader(final File sourceFile)
    {
@@ -41,7 +48,10 @@ public class InternalStreamReader implements Closeable
       this.reader = reader;
       this.registry = registry;
       this.classUtil = classUtil;
-      this.strategyInstances = strategyInstances;
+      allSerializableStrategy = strategyInstances.getAllSerializableStrategy();
+      headerSerializableStrategy = strategyInstances.getHeaderSerializableStrategy();
+      readerValidationStrategy = strategyInstances.getReaderValidationStrategy();
+      reflectionSerializableStrategy = strategyInstances.getReflectionSerializableStrategy();
    }
 
    /**
@@ -62,14 +72,14 @@ public class InternalStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(classUtil.boxClass(expectedClass));
 
-      final HeaderInformation<?> headerInformation = strategyInstances.getHeaderSerializableStrategy().readHeader(this,
+      final HeaderInformation<?> headerInformation = headerSerializableStrategy.readHeader(this,
          inheritFromClass);
       //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
       //if cast it will NPE is that better? what about allowing children?
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
       if (headerInformation.getDimensionCount() == 0 && Boolean.class.getName().equals(headerInformation.getClassName()))
       {
-         strategyInstances.getReaderValidationStrategy().validateBoolean(expectedClass, allowChildClass);
+         readerValidationStrategy.validateBoolean(expectedClass, allowChildClass);
          if (headerInformation.getValue() != null) return cast(headerInformation.getValue());  //either true or false
          //will be null for primitive arrays or if the header explicitly contained Boolean for some reason
          //either way will be read below
@@ -81,13 +91,13 @@ public class InternalStreamReader implements Closeable
          return cast(headerInformation.getValue());
       }
 
-      final Class<T_Actual> actualClass = strategyInstances.getReaderValidationStrategy().getClassFromHeader(headerInformation,
+      final Class<T_Actual> actualClass = readerValidationStrategy.getClassFromHeader(headerInformation,
          expectedClass, allowChildClass);
       if (!classUtil.isPrimitiveOrBox(actualClass))
       {
          registry.reserveIdForLater();
       }
-      final T_Actual returnValue = strategyInstances.getAllSerializableStrategy().read(streamReader, this, actualClass);
+      final T_Actual returnValue = allSerializableStrategy.read(streamReader, this, actualClass);
       //null, boolean, and id don't reach here
       if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: can array?
       //TODO: make util for should register since long should
@@ -101,8 +111,8 @@ public class InternalStreamReader implements Closeable
       return registry;
    }
 
-   public StrategyInstances getStrategyInstances()
+   public ReflectionSerializableStrategy getReflectionSerializableStrategy()
    {
-      return strategyInstances;
+      return reflectionSerializableStrategy;
    }
 }

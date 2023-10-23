@@ -849,16 +849,13 @@ public class HeaderSerializableStrategy_UT
       final UtilInstances utilInstances = new UtilInstances();
       final StrategyInstances strategyInstances = new StrategyInstances(reader, registry, utilInstances);
       testObject = strategyInstances.getHeaderSerializableStrategy();
-      internalStreamReader = new InternalStreamReader(reader, registry, utilInstances.getClassUtil(),
-         new StrategyInstances(reader, registry, utilInstances));
+      internalStreamReader = new InternalStreamReader(reader, registry, utilInstances.getClassUtil(), strategyInstances);
    }
 
    private void init(final EasyAppender appender, final ObjectWriterRegistry registry)
    {
-      final UtilInstances utilInstances = new UtilInstances();
-      final StrategyInstances strategyInstances = new StrategyInstances(appender, registry, utilInstances);
+      final StrategyInstances strategyInstances = new StrategyInstances(appender, registry, new UtilInstances());
       testObject = strategyInstances.getHeaderSerializableStrategy();
-      internalStreamWriter = new InternalStreamWriter(appender,
-         new StrategyInstances(appender, registry, utilInstances));
+      internalStreamWriter = new InternalStreamWriter(appender, strategyInstances);
    }
 }

@@ -2,6 +2,8 @@ package com.github.skySpiral7.java.staticSerialization.internal;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StrategyInstances;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
@@ -14,7 +16,9 @@ import java.io.Flushable;
 public class InternalStreamWriter implements Closeable, Flushable
 {
    private final EasyAppender appender;
-   private final StrategyInstances strategyInstances;
+   private final AllSerializableStrategy allSerializableStrategy;
+   private final HeaderSerializableStrategy headerSerializableStrategy;
+   private final ReflectionSerializableStrategy reflectionSerializableStrategy;
 
    public InternalStreamWriter(final File destination)
    {
@@ -35,7 +39,9 @@ public class InternalStreamWriter implements Closeable, Flushable
    public InternalStreamWriter(final EasyAppender appender, final StrategyInstances strategyInstances)
    {
       this.appender = appender;
-      this.strategyInstances = strategyInstances;
+      allSerializableStrategy = strategyInstances.getAllSerializableStrategy();
+      headerSerializableStrategy = strategyInstances.getHeaderSerializableStrategy();
+      reflectionSerializableStrategy = strategyInstances.getReflectionSerializableStrategy();
    }
 
    /**
@@ -52,15 +58,14 @@ public class InternalStreamWriter implements Closeable, Flushable
 
    public void writeObjectInternal(final ObjectStreamWriter streamWriter, final Class<?> inheritFromClass, final Object data)
    {
-      final boolean usedId = strategyInstances.getHeaderSerializableStrategy().writeHeaderReturnIsId(this,
-         inheritFromClass, data);
+      final boolean usedId = headerSerializableStrategy.writeHeaderReturnIsId(this, inheritFromClass, data);
       //if an id was written then don't write value
       if (usedId) return;
-      strategyInstances.getAllSerializableStrategy().write(streamWriter, this, data);
+      allSerializableStrategy.write(streamWriter, this, data);
    }
 
-   public StrategyInstances getStrategyInstances()
+   public ReflectionSerializableStrategy getReflectionSerializableStrategy()
    {
-      return strategyInstances;
+      return reflectionSerializableStrategy;
    }
 }
