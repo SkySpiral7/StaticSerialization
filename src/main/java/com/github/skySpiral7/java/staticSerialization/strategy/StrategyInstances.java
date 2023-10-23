@@ -31,7 +31,6 @@ public class StrategyInstances
       //TODO: DI for StrategyInstances
       this.allSerializableStrategy = null;
       this.arraySerializableStrategy = null;
-      this.boxPrimitiveSerializableStrategy = null;
       this.byteSerializableStrategy = null;  //don't need
       this.integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.javaSerializableStrategy = null;
@@ -43,6 +42,8 @@ public class StrategyInstances
       //ones that need other strategies
       this.enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       this.stringSerializableStrategy = new StringSerializableStrategy(reader, integerSerializableStrategy);
+      this.boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(reader, utilInstances,
+         shortSerializableStrategy, integerSerializableStrategy);
       this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances,
          integerSerializableStrategy, stringSerializableStrategy);
    }
@@ -52,7 +53,6 @@ public class StrategyInstances
    {
       this.allSerializableStrategy = null;
       this.arraySerializableStrategy = null;
-      this.boxPrimitiveSerializableStrategy = null;
       this.byteSerializableStrategy = new ByteSerializableStrategy(appender, utilInstances);
       this.javaSerializableStrategy = null;
       this.readerValidationStrategy = null;
@@ -65,6 +65,8 @@ public class StrategyInstances
       this.enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       this.stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy,
          integerSerializableStrategy);
+      this.boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(utilInstances,
+         byteSerializableStrategy, integerSerializableStrategy);
       this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
          byteSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
    }

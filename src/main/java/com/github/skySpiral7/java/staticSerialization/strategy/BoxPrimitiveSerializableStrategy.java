@@ -1,24 +1,50 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public enum BoxPrimitiveSerializableStrategy
+public class BoxPrimitiveSerializableStrategy
 {
-   ;  //no instances
+   private final EasyReader reader;
+   private final BitWiseUtil bitWiseUtil;
+   private final ByteSerializableStrategy byteSerializableStrategy;
+   private final ShortSerializableStrategy shortSerializableStrategy;
+   private final IntegerSerializableStrategy integerSerializableStrategy;
 
-   public static void write(final InternalStreamWriter internalStreamWriter, final Object data)
+   /**
+    * For writing
+    */
+   public BoxPrimitiveSerializableStrategy(final UtilInstances utilInstances,
+                                           final ByteSerializableStrategy byteSerializableStrategy,
+                                           final IntegerSerializableStrategy integerSerializableStrategy)
    {
-      final ByteSerializableStrategy byteSerializableStrategy =
-         internalStreamWriter.getStrategyInstances().getByteSerializableStrategy();
+      this.reader = null;
+      this.bitWiseUtil = utilInstances.getBitWiseUtil();
+      this.byteSerializableStrategy = byteSerializableStrategy;
+      this.shortSerializableStrategy = null;
+      this.integerSerializableStrategy = integerSerializableStrategy;
+   }
+
+   public BoxPrimitiveSerializableStrategy(final EasyReader reader, final UtilInstances utilInstances,
+                                           final ShortSerializableStrategy shortSerializableStrategy,
+                                           final IntegerSerializableStrategy integerSerializableStrategy)
+   {
+      this.reader = reader;
+      this.bitWiseUtil = utilInstances.getBitWiseUtil();
+      this.byteSerializableStrategy = null;
+      this.shortSerializableStrategy = shortSerializableStrategy;
+      this.integerSerializableStrategy = integerSerializableStrategy;
+   }
+
+   public void write(final Object data)
+   {
       if (data instanceof Byte) byteSerializableStrategy.writeByte((byte) data);
       else if (data instanceof Short) byteSerializableStrategy.writeBytes((short) data, 2);
-      else if (data instanceof Integer) internalStreamWriter.getStrategyInstances().getIntegerSerializableStrategy().write((int) data);
+      else if (data instanceof Integer) integerSerializableStrategy.write((int) data);
       else if (data instanceof Long) byteSerializableStrategy.writeBytes((long) data, 8);
       else if (data instanceof Float)
       {
@@ -39,41 +65,36 @@ public enum BoxPrimitiveSerializableStrategy
       else throw new AssertionError("Method shouldn't've been called");
    }
 
-   public static <T> T read(final InternalStreamReader internalStreamReader, final Class<T> expectedClass)
+   public <T> T read(final Class<T> expectedClass)
    {
-      final UtilInstances utilInstances = internalStreamReader.getUtilInstances();
-      final StrategyInstances strategyInstances = internalStreamReader.getStrategyInstances();
-
-      final EasyReader reader = internalStreamReader.getReader();
       if (Byte.class.equals(expectedClass))
       {
          return cast(StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing byte data")[0]);
       }
       if (Short.class.equals(expectedClass))
       {
-         return cast(strategyInstances.getShortSerializableStrategy().read("Missing short data"));
+         return cast(shortSerializableStrategy.read("Missing short data"));
       }
       if (Integer.class.equals(expectedClass))
       {
-         return cast(strategyInstances.getIntegerSerializableStrategy().read("Missing " +
-            "int data"));
+         return cast(integerSerializableStrategy.read("Missing int data"));
       }
       if (Long.class.equals(expectedClass))
       {
-         return cast(utilInstances.getBitWiseUtil().bigEndianBytesToLong(
+         return cast(bitWiseUtil.bigEndianBytesToLong(
             StreamCorruptedException.throwIfNotEnoughData(reader, 8, "Missing long data")
          ));
       }
       if (Float.class.equals(expectedClass))
       {
          final byte[] data = StreamCorruptedException.throwIfNotEnoughData(reader, 4, "Missing float data");
-         final int intData = utilInstances.getBitWiseUtil().bigEndianBytesToInteger(data);
+         final int intData = bitWiseUtil.bigEndianBytesToInteger(data);
          return cast(Float.intBitsToFloat(intData));
       }
       if (Double.class.equals(expectedClass))
       {
          final byte[] data = StreamCorruptedException.throwIfNotEnoughData(reader, 8, "Missing double data");
-         final long longData = utilInstances.getBitWiseUtil().bigEndianBytesToLong(data);
+         final long longData = bitWiseUtil.bigEndianBytesToLong(data);
          return cast(Double.longBitsToDouble(longData));
       }
       if (Boolean.class.equals(expectedClass))
@@ -89,7 +110,7 @@ public enum BoxPrimitiveSerializableStrategy
       }
       if (Character.class.equals(expectedClass))
       {
-         return cast((char) strategyInstances.getShortSerializableStrategy().read("Missing char data"));
+         return cast((char) shortSerializableStrategy.read("Missing char data"));
       }
 
       throw new AssertionError("Method shouldn't've been called");

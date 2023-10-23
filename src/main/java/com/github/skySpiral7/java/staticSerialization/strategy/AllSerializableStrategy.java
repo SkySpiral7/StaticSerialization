@@ -28,7 +28,7 @@ public enum AllSerializableStrategy
       //TODO: change these to command interface with supports(). compression trick will be first
       if (utilInstances.getClassUtil().isPrimitiveOrBox(dataClass))
       {
-         BoxPrimitiveSerializableStrategy.write(internalStreamWriter, data);
+         strategyInstances.getBoxPrimitiveSerializableStrategy().write(data);
          return;
       }
       if (data instanceof String)
@@ -69,7 +69,7 @@ public enum AllSerializableStrategy
       final StrategyInstances strategyInstances = internalStreamReader.getStrategyInstances();
 
       if (utilInstances.getClassUtil().isPrimitiveOrBox(actualClass))
-         return BoxPrimitiveSerializableStrategy.read(internalStreamReader, actualClass);
+         return strategyInstances.getBoxPrimitiveSerializableStrategy().read(actualClass);
       if (String.class.equals(actualClass))
       {
          return cast(strategyInstances.getStringSerializableStrategy().readWithLength());
