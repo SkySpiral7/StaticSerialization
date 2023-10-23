@@ -42,6 +42,8 @@ public enum BoxPrimitiveSerializableStrategy
    public static <T> T read(final InternalStreamReader internalStreamReader, final Class<T> expectedClass)
    {
       final UtilInstances utilInstances = internalStreamReader.getUtilInstances();
+      final StrategyInstances strategyInstances = internalStreamReader.getStrategyInstances();
+
       final EasyReader reader = internalStreamReader.getReader();
       if (Byte.class.equals(expectedClass))
       {
@@ -49,11 +51,12 @@ public enum BoxPrimitiveSerializableStrategy
       }
       if (Short.class.equals(expectedClass))
       {
-         return cast(ShortSerializableStrategy.read(reader, "Missing short data"));
+         return cast(strategyInstances.getShortSerializableStrategy().read("Missing short data"));
       }
       if (Integer.class.equals(expectedClass))
       {
-         return cast(internalStreamReader.getStrategyInstances().getIntegerSerializableStrategy().read("Missing int data"));
+         return cast(strategyInstances.getIntegerSerializableStrategy().read("Missing " +
+            "int data"));
       }
       if (Long.class.equals(expectedClass))
       {
@@ -86,7 +89,7 @@ public enum BoxPrimitiveSerializableStrategy
       }
       if (Character.class.equals(expectedClass))
       {
-         return cast((char) ShortSerializableStrategy.read(reader, "Missing char data"));
+         return cast((char) strategyInstances.getShortSerializableStrategy().read("Missing char data"));
       }
 
       throw new AssertionError("Method shouldn't've been called");
