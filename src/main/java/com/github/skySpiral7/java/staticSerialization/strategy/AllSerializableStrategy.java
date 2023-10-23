@@ -6,8 +6,6 @@ import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.io.Serializable;
@@ -19,7 +17,7 @@ public enum AllSerializableStrategy
    ;  //no instances
 
    public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
-                            final EasyAppender fileAppender, final Object data)
+                            final Object data)
    {
       final UtilInstances utilInstances = internalStreamWriter.getUtilInstances();
       final StrategyInstances strategyInstances = internalStreamWriter.getStrategyInstances();
@@ -38,7 +36,7 @@ public enum AllSerializableStrategy
       }
       if (dataClass.isArray())
       {
-         ArraySerializableStrategy.write(streamWriter, internalStreamWriter, fileAppender, data);
+         strategyInstances.getArraySerializableStrategy().write(streamWriter, internalStreamWriter, data);
          return;
       }
 
@@ -63,7 +61,7 @@ public enum AllSerializableStrategy
    }
 
    public static <T> T read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
-                            final EasyReader fileReader, final Class<T> actualClass)
+                            final Class<T> actualClass)
    {
       final UtilInstances utilInstances = internalStreamReader.getUtilInstances();
       final StrategyInstances strategyInstances = internalStreamReader.getStrategyInstances();
@@ -75,7 +73,7 @@ public enum AllSerializableStrategy
          return cast(strategyInstances.getStringSerializableStrategy().readWithLength());
       }
       if (actualClass.isArray())
-         return ArraySerializableStrategy.read(streamReader, internalStreamReader, fileReader, actualClass.getComponentType());
+         return strategyInstances.getArraySerializableStrategy().read(streamReader, internalStreamReader, actualClass.getComponentType());
 
       if (StaticSerializable.class.isAssignableFrom(actualClass))
          return strategyInstances.getStaticSerializableStrategy().read(streamReader, actualClass);

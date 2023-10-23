@@ -5,22 +5,25 @@ import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 
 import java.lang.reflect.Array;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public enum ArraySerializableStrategy
+public class ArraySerializableStrategy
 {
-   ;  //no instances
+   private final IntegerSerializableStrategy integerSerializableStrategy;
 
-   public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
-                            final EasyAppender fileAppender, final Object data)
+   public ArraySerializableStrategy(IntegerSerializableStrategy integerSerializableStrategy)
+   {
+      this.integerSerializableStrategy = integerSerializableStrategy;
+   }
+
+   public void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
+                     final Object data)
    {
       final int length = Array.getLength(data);
-      internalStreamWriter.getStrategyInstances().getIntegerSerializableStrategy().write(length);
+      integerSerializableStrategy.write(length);
       final Class<?> componentType = data.getClass().getComponentType();
       for (int writeIndex = 0; writeIndex < length; ++writeIndex)
       {
@@ -29,11 +32,10 @@ public enum ArraySerializableStrategy
       }
    }
 
-   public static <T_Array, T_Component> T_Array read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
-                                                     final EasyReader fileReader, final Class<T_Component> componentType)
+   public <T_Array, T_Component> T_Array read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
+                                              final Class<T_Component> componentType)
    {
-      final int arrayLength =
-         internalStreamReader.getStrategyInstances().getIntegerSerializableStrategy().read("Missing " +
+      final int arrayLength = integerSerializableStrategy.read("Missing " +
          "array length");
       final T_Array arrayValue = cast(Array.newInstance(componentType, arrayLength));
 

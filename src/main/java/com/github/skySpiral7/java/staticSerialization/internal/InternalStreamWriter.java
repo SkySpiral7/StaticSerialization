@@ -61,7 +61,7 @@ public class InternalStreamWriter implements Closeable, Flushable
          inheritFromClass, data);
       //if an id was written then don't write value
       if (usedId) return;
-      AllSerializableStrategy.write(streamWriter, this, appender, data);
+      AllSerializableStrategy.write(streamWriter, this, data);
    }
 
    public EasyAppender getAppender()

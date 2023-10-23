@@ -30,7 +30,6 @@ public class StrategyInstances
    {
       //TODO: DI for StrategyInstances
       this.allSerializableStrategy = null;
-      this.arraySerializableStrategy = null;
       this.byteSerializableStrategy = null;  //don't need
       this.integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.readerValidationStrategy = new ReaderValidationStrategy(utilInstances);
@@ -39,6 +38,7 @@ public class StrategyInstances
       this.staticSerializableStrategy = new StaticSerializableStrategy();
 
       //ones that need other strategies
+      this.arraySerializableStrategy = new ArraySerializableStrategy(integerSerializableStrategy);
       this.javaSerializableStrategy = new JavaSerializableStrategy(reader, integerSerializableStrategy);
       this.enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       this.stringSerializableStrategy = new StringSerializableStrategy(reader, integerSerializableStrategy);
@@ -52,7 +52,6 @@ public class StrategyInstances
                             final UtilInstances utilInstances)
    {
       this.allSerializableStrategy = null;
-      this.arraySerializableStrategy = null;
       this.byteSerializableStrategy = new ByteSerializableStrategy(appender, utilInstances);
       this.readerValidationStrategy = null;  //don't need
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(utilInstances);
@@ -61,6 +60,7 @@ public class StrategyInstances
 
       //ones that need other strategies
       this.integerSerializableStrategy = new IntegerSerializableStrategy(byteSerializableStrategy);
+      this.arraySerializableStrategy = new ArraySerializableStrategy(integerSerializableStrategy);
       this.javaSerializableStrategy = new JavaSerializableStrategy(appender, byteSerializableStrategy);
       this.enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       this.stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy,
