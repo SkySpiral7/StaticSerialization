@@ -40,10 +40,11 @@ public class StrategyInstances
       this.reflectionSerializableStrategy = null;
       this.shortSerializableStrategy = null;
       this.staticSerializableStrategy = null;
-      this.stringSerializableStrategy = null;
 
       //ones that need other strategies
-      this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances, integerSerializableStrategy);
+      this.stringSerializableStrategy = new StringSerializableStrategy(reader, integerSerializableStrategy);
+      this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances,
+         integerSerializableStrategy, stringSerializableStrategy);
    }
 
    public StrategyInstances(final EasyAppender appender, final ObjectWriterRegistry registry,
@@ -59,12 +60,13 @@ public class StrategyInstances
       this.reflectionSerializableStrategy = null;
       this.shortSerializableStrategy = null;
       this.staticSerializableStrategy = null;
-      this.stringSerializableStrategy = null;
 
       //ones that need other strategies
       this.integerSerializableStrategy = new IntegerSerializableStrategy(byteSerializableStrategy);
+      this.stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy,
+         integerSerializableStrategy);
       this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
-         byteSerializableStrategy, integerSerializableStrategy);
+         byteSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
    }
 
    public AllSerializableStrategy getAllSerializableStrategy()

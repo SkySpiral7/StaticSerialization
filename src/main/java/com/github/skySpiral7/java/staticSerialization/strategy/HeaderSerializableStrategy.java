@@ -90,10 +90,12 @@ public class HeaderSerializableStrategy
    private final ClassUtil classUtil;
    private final ByteSerializableStrategy byteSerializableStrategy;
    private final IntegerSerializableStrategy integerSerializableStrategy;
+   private final StringSerializableStrategy stringSerializableStrategy;
 
    public HeaderSerializableStrategy(final EasyReader reader, final ObjectReaderRegistry registry,
                                      final UtilInstances utilInstances,
-                                     final IntegerSerializableStrategy integerSerializableStrategy)
+                                     final IntegerSerializableStrategy integerSerializableStrategy,
+                                     final StringSerializableStrategy stringSerializableStrategy)
    {
       this.reader = reader;
       readerRegistry = registry;
@@ -102,11 +104,13 @@ public class HeaderSerializableStrategy
       classUtil = utilInstances.getClassUtil();
       byteSerializableStrategy = null;
       this.integerSerializableStrategy = integerSerializableStrategy;
+      this.stringSerializableStrategy = stringSerializableStrategy;
    }
 
    public HeaderSerializableStrategy(final ObjectWriterRegistry registry,
                                      final UtilInstances utilInstances, final ByteSerializableStrategy byteSerializableStrategy,
-                                     final IntegerSerializableStrategy integerSerializableStrategy)
+                                     final IntegerSerializableStrategy integerSerializableStrategy,
+                                     final StringSerializableStrategy stringSerializableStrategy)
    {
       reader = null;
       readerRegistry = null;
@@ -115,24 +119,7 @@ public class HeaderSerializableStrategy
       classUtil = utilInstances.getClassUtil();
       this.byteSerializableStrategy = byteSerializableStrategy;
       this.integerSerializableStrategy = integerSerializableStrategy;
-   }
-
-   /**
-    * For private use and testing only.
-    */
-   HeaderSerializableStrategy(final EasyReader reader, final ObjectReaderRegistry readerRegistry,
-                              final ObjectWriterRegistry writerRegistry,
-                              final UtilInstances utilInstances,
-                              final ByteSerializableStrategy byteSerializableStrategy,
-                              final IntegerSerializableStrategy integerSerializableStrategy)
-   {
-      this.reader = reader;
-      this.readerRegistry = readerRegistry;
-      this.writerRegistry = writerRegistry;
-      this.arrayUtil = utilInstances.getArrayUtil();
-      this.classUtil = utilInstances.getClassUtil();
-      this.byteSerializableStrategy = byteSerializableStrategy;
-      this.integerSerializableStrategy = integerSerializableStrategy;
+      this.stringSerializableStrategy = stringSerializableStrategy;
    }
 
    /**
@@ -207,7 +194,8 @@ public class HeaderSerializableStrategy
       }
 
       //else firstByte is part of a class name
-      return HeaderInformation.forPossibleArray(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount,
+      return HeaderInformation.forPossibleArray(stringSerializableStrategy.readClassName(firstByte),
+         dimensionCount,
          primitiveArray);
    }
 
@@ -285,12 +273,12 @@ public class HeaderSerializableStrategy
             byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
          else
          {
-            StringSerializableStrategy.writeClassName(internalStreamWriter, baseComponent.getName());
+            stringSerializableStrategy.writeClassName(baseComponent.getName());
          }
       }
       else
       {
-         StringSerializableStrategy.writeClassName(internalStreamWriter, data.getClass().getName());
+         stringSerializableStrategy.writeClassName(data.getClass().getName());
       }
 
       return false;

@@ -31,7 +31,7 @@ public enum AllSerializableStrategy
       }
       if (data instanceof String)
       {
-         StringSerializableStrategy.writeWithLength(internalStreamWriter, (String) data);
+         internalStreamWriter.getStrategyInstances().getStringSerializableStrategy().writeWithLength((String) data);
          return;
       }
       if (dataClass.isArray())
@@ -67,7 +67,7 @@ public enum AllSerializableStrategy
       if (utilInstances.getClassUtil().isPrimitiveOrBox(actualClass))
          return BoxPrimitiveSerializableStrategy.read(internalStreamReader, actualClass);
       if (String.class.equals(actualClass))
-         return cast(StringSerializableStrategy.readWithLength(internalStreamReader));
+         return cast(internalStreamReader.getStrategyInstances().getStringSerializableStrategy().readWithLength());
       if (actualClass.isArray())
          return ArraySerializableStrategy.read(streamReader, internalStreamReader, fileReader, actualClass.getComponentType());
 
