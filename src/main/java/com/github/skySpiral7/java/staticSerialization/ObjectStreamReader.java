@@ -1,7 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization;
 
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 
@@ -97,7 +96,7 @@ public class ObjectStreamReader implements Closeable
    public void readFieldsReflectively(final Object instance)
    {
       internalStreamReader.getRegistry().registerObject(instance);
-      ReflectionSerializableStrategy.read(this, internalStreamReader, instance);
+      internalStreamReader.getStrategyInstances().getReflectionSerializableStrategy().read(this, instance);
    }
 
    public boolean isRegistered(final Object instance)

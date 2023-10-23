@@ -34,7 +34,7 @@ public class StrategyInstances
       this.byteSerializableStrategy = null;  //don't need
       this.integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.readerValidationStrategy = new ReaderValidationStrategy(utilInstances);
-      this.reflectionSerializableStrategy = null;
+      this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(utilInstances);
       this.shortSerializableStrategy = new ShortSerializableStrategy(reader);
       this.staticSerializableStrategy = null;
 
@@ -55,7 +55,7 @@ public class StrategyInstances
       this.arraySerializableStrategy = null;
       this.byteSerializableStrategy = new ByteSerializableStrategy(appender, utilInstances);
       this.readerValidationStrategy = null;  //don't need
-      this.reflectionSerializableStrategy = null;
+      this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(utilInstances);
       this.shortSerializableStrategy = null;  //don't need
       this.staticSerializableStrategy = null;
 

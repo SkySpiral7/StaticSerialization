@@ -1,7 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization;
 
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
-import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 
@@ -63,6 +62,6 @@ public class ObjectStreamWriter implements Closeable, Flushable
 
    public void writeFieldsReflectively(final Object data)
    {
-      ReflectionSerializableStrategy.write(this, internalStreamWriter, data);
+      internalStreamWriter.getStrategyInstances().getReflectionSerializableStrategy().write(this, data);
    }
 }
