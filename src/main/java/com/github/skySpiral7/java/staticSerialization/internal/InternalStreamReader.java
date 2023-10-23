@@ -87,7 +87,7 @@ public class InternalStreamReader implements Closeable
       {
          registry.reserveIdForLater();
       }
-      final T_Actual returnValue = AllSerializableStrategy.read(streamReader, this, actualClass);
+      final T_Actual returnValue = strategyInstances.getAllSerializableStrategy().read(streamReader, this, actualClass);
       //null, boolean, and id don't reach here
       if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: can array?
       //TODO: make util for should register since long should

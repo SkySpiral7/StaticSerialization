@@ -11,25 +11,23 @@ import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
  */
 public class StrategyInstances
 {
-   public final AllSerializableStrategy allSerializableStrategy;
-   public final ArraySerializableStrategy arraySerializableStrategy;
-   public final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy;
-   public final ByteSerializableStrategy byteSerializableStrategy;
-   public final EnumSerializableStrategy enumSerializableStrategy;
-   public final HeaderSerializableStrategy headerSerializableStrategy;
-   public final IntegerSerializableStrategy integerSerializableStrategy;
-   public final JavaSerializableStrategy javaSerializableStrategy;
-   public final ReaderValidationStrategy readerValidationStrategy;
-   public final ReflectionSerializableStrategy reflectionSerializableStrategy;
-   public final ShortSerializableStrategy shortSerializableStrategy;
-   public final StaticSerializableStrategy staticSerializableStrategy;
-   public final StringSerializableStrategy stringSerializableStrategy;
+   private final AllSerializableStrategy allSerializableStrategy;
+   private final ArraySerializableStrategy arraySerializableStrategy;
+   private final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy;
+   private final ByteSerializableStrategy byteSerializableStrategy;
+   private final EnumSerializableStrategy enumSerializableStrategy;
+   private final HeaderSerializableStrategy headerSerializableStrategy;
+   private final IntegerSerializableStrategy integerSerializableStrategy;
+   private final JavaSerializableStrategy javaSerializableStrategy;
+   private final ReaderValidationStrategy readerValidationStrategy;
+   private final ReflectionSerializableStrategy reflectionSerializableStrategy;
+   private final ShortSerializableStrategy shortSerializableStrategy;
+   private final StaticSerializableStrategy staticSerializableStrategy;
+   private final StringSerializableStrategy stringSerializableStrategy;
 
    public StrategyInstances(final EasyReader reader, final ObjectReaderRegistry registry,
                             final UtilInstances utilInstances)
    {
-      //TODO: DI for StrategyInstances
-      this.allSerializableStrategy = null;
       this.byteSerializableStrategy = null;  //don't need
       this.integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.readerValidationStrategy = new ReaderValidationStrategy(utilInstances);
@@ -46,12 +44,14 @@ public class StrategyInstances
          shortSerializableStrategy, integerSerializableStrategy);
       this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances,
          integerSerializableStrategy, stringSerializableStrategy);
+      this.allSerializableStrategy = new AllSerializableStrategy(utilInstances, arraySerializableStrategy,
+         boxPrimitiveSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
+         staticSerializableStrategy, stringSerializableStrategy);
    }
 
    public StrategyInstances(final EasyAppender appender, final ObjectWriterRegistry registry,
                             final UtilInstances utilInstances)
    {
-      this.allSerializableStrategy = null;
       this.byteSerializableStrategy = new ByteSerializableStrategy(appender, utilInstances);
       this.readerValidationStrategy = null;  //don't need
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(utilInstances);
@@ -69,6 +69,9 @@ public class StrategyInstances
          byteSerializableStrategy, integerSerializableStrategy);
       this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
          byteSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
+      this.allSerializableStrategy = new AllSerializableStrategy(utilInstances, arraySerializableStrategy,
+         boxPrimitiveSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
+         staticSerializableStrategy, stringSerializableStrategy);
    }
 
    public AllSerializableStrategy getAllSerializableStrategy()
@@ -76,39 +79,9 @@ public class StrategyInstances
       return allSerializableStrategy;
    }
 
-   public ArraySerializableStrategy getArraySerializableStrategy()
-   {
-      return arraySerializableStrategy;
-   }
-
-   public BoxPrimitiveSerializableStrategy getBoxPrimitiveSerializableStrategy()
-   {
-      return boxPrimitiveSerializableStrategy;
-   }
-
-   public ByteSerializableStrategy getByteSerializableStrategy()
-   {
-      return byteSerializableStrategy;
-   }
-
-   public EnumSerializableStrategy getEnumSerializableStrategy()
-   {
-      return enumSerializableStrategy;
-   }
-
    public HeaderSerializableStrategy getHeaderSerializableStrategy()
    {
       return headerSerializableStrategy;
-   }
-
-   public IntegerSerializableStrategy getIntegerSerializableStrategy()
-   {
-      return integerSerializableStrategy;
-   }
-
-   public JavaSerializableStrategy getJavaSerializableStrategy()
-   {
-      return javaSerializableStrategy;
    }
 
    public ReaderValidationStrategy getReaderValidationStrategy()
@@ -119,20 +92,5 @@ public class StrategyInstances
    public ReflectionSerializableStrategy getReflectionSerializableStrategy()
    {
       return reflectionSerializableStrategy;
-   }
-
-   public ShortSerializableStrategy getShortSerializableStrategy()
-   {
-      return shortSerializableStrategy;
-   }
-
-   public StaticSerializableStrategy getStaticSerializableStrategy()
-   {
-      return staticSerializableStrategy;
-   }
-
-   public StringSerializableStrategy getStringSerializableStrategy()
-   {
-      return stringSerializableStrategy;
    }
 }

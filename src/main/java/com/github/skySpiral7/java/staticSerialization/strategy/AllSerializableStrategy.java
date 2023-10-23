@@ -6,82 +6,100 @@ import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.io.Serializable;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public enum AllSerializableStrategy
+public class AllSerializableStrategy
 {
-   ;  //no instances
+   private final ClassUtil classUtil;
+   private final ArraySerializableStrategy arraySerializableStrategy;
+   private final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy;
+   private final EnumSerializableStrategy enumSerializableStrategy;
+   private final JavaSerializableStrategy javaSerializableStrategy;
+   private final StaticSerializableStrategy staticSerializableStrategy;
+   private final StringSerializableStrategy stringSerializableStrategy;
 
-   public static void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
+   public AllSerializableStrategy(final UtilInstances utilInstances,
+                                  final ArraySerializableStrategy arraySerializableStrategy,
+                                  final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
+                                  final EnumSerializableStrategy enumSerializableStrategy,
+                                  final JavaSerializableStrategy javaSerializableStrategy,
+                                  final StaticSerializableStrategy staticSerializableStrategy,
+                                  final StringSerializableStrategy stringSerializableStrategy)
+   {
+      this.classUtil = utilInstances.getClassUtil();
+      this.arraySerializableStrategy = arraySerializableStrategy;
+      this.boxPrimitiveSerializableStrategy = boxPrimitiveSerializableStrategy;
+      this.enumSerializableStrategy = enumSerializableStrategy;
+      this.javaSerializableStrategy = javaSerializableStrategy;
+      this.staticSerializableStrategy = staticSerializableStrategy;
+      this.stringSerializableStrategy = stringSerializableStrategy;
+   }
+
+   public void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
                             final Object data)
    {
-      final UtilInstances utilInstances = internalStreamWriter.getUtilInstances();
-      final StrategyInstances strategyInstances = internalStreamWriter.getStrategyInstances();
-
       final Class<?> dataClass = data.getClass();
       //TODO: change these to command interface with supports(). compression trick will be first
-      if (utilInstances.getClassUtil().isPrimitiveOrBox(dataClass))
+      if (classUtil.isPrimitiveOrBox(dataClass))
       {
-         strategyInstances.getBoxPrimitiveSerializableStrategy().write(data);
+         boxPrimitiveSerializableStrategy.write(data);
          return;
       }
       if (data instanceof String)
       {
-         strategyInstances.getStringSerializableStrategy().writeWithLength((String) data);
+         stringSerializableStrategy.writeWithLength((String) data);
          return;
       }
       if (dataClass.isArray())
       {
-         strategyInstances.getArraySerializableStrategy().write(streamWriter, internalStreamWriter, data);
+         arraySerializableStrategy.write(streamWriter, internalStreamWriter, data);
          return;
       }
 
       if (data instanceof StaticSerializable)
       {
-         strategyInstances.getStaticSerializableStrategy().write(streamWriter, (StaticSerializable) data);
+         staticSerializableStrategy.write(streamWriter, (StaticSerializable) data);
          return;
       }
 
       if (dataClass.isEnum())
       {
-         strategyInstances.getEnumSerializableStrategy().write((Enum<?>) data);
+         enumSerializableStrategy.write((Enum<?>) data);
          return;
       }
       if (data instanceof Serializable)
       {
-         strategyInstances.getJavaSerializableStrategy().writeWithLength((Serializable) data);
+         javaSerializableStrategy.writeWithLength((Serializable) data);
          return;
       }
 
       throw new NotSerializableException(dataClass);
    }
 
-   public static <T> T read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
+   public <T> T read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
                             final Class<T> actualClass)
    {
-      final UtilInstances utilInstances = internalStreamReader.getUtilInstances();
-      final StrategyInstances strategyInstances = internalStreamReader.getStrategyInstances();
-
-      if (utilInstances.getClassUtil().isPrimitiveOrBox(actualClass))
-         return strategyInstances.getBoxPrimitiveSerializableStrategy().read(actualClass);
+      if (classUtil.isPrimitiveOrBox(actualClass))
+         return boxPrimitiveSerializableStrategy.read(actualClass);
       if (String.class.equals(actualClass))
       {
-         return cast(strategyInstances.getStringSerializableStrategy().readWithLength());
+         return cast(stringSerializableStrategy.readWithLength());
       }
       if (actualClass.isArray())
-         return strategyInstances.getArraySerializableStrategy().read(streamReader, internalStreamReader, actualClass.getComponentType());
+         return arraySerializableStrategy.read(streamReader, internalStreamReader, actualClass.getComponentType());
 
       if (StaticSerializable.class.isAssignableFrom(actualClass))
-         return strategyInstances.getStaticSerializableStrategy().read(streamReader, actualClass);
+         return staticSerializableStrategy.read(streamReader, actualClass);
 
       //TODO: does java serial allow enum data? if yes: JavaSerializableStrategy, if no: doc it
-      if (actualClass.isEnum()) return strategyInstances.getEnumSerializableStrategy().read(actualClass);
+      if (actualClass.isEnum()) return enumSerializableStrategy.read(actualClass);
       if (Serializable.class.isAssignableFrom(actualClass))
-         return strategyInstances.getJavaSerializableStrategy().readWithLength();
+         return javaSerializableStrategy.readWithLength();
 
       throw new NotSerializableException(actualClass);
    }
