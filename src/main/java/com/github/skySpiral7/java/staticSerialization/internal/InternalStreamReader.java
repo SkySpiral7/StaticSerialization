@@ -2,7 +2,6 @@ package com.github.skySpiral7.java.staticSerialization.internal;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StrategyInstances;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
@@ -70,7 +69,7 @@ public class InternalStreamReader implements Closeable
       if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
       if (headerInformation.getDimensionCount() == 0 && Boolean.class.getName().equals(headerInformation.getClassName()))
       {
-         ReaderValidationStrategy.validateBoolean(expectedClass, allowChildClass);
+         strategyInstances.getReaderValidationStrategy().validateBoolean(expectedClass, allowChildClass);
          if (headerInformation.getValue() != null) return cast(headerInformation.getValue());  //either true or false
          //will be null for primitive arrays or if the header explicitly contained Boolean for some reason
          //either way will be read below
@@ -82,7 +81,7 @@ public class InternalStreamReader implements Closeable
          return cast(headerInformation.getValue());
       }
 
-      final Class<T_Actual> actualClass = ReaderValidationStrategy.getClassFromHeader(this, headerInformation,
+      final Class<T_Actual> actualClass = strategyInstances.getReaderValidationStrategy().getClassFromHeader(headerInformation,
          expectedClass, allowChildClass);
       if (!utilInstances.getClassUtil().isPrimitiveOrBox(actualClass))
       {

@@ -2,19 +2,26 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.lang.reflect.Array;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public enum ReaderValidationStrategy
+public class ReaderValidationStrategy
 {
-   ;  //no instances
+   private final ArrayUtil arrayUtil;
+   private final ClassUtil classUtil;
 
-   public static <T> void validateBoolean(final Class<T> expectedClass, final boolean allowChildClass)
+   public ReaderValidationStrategy(final UtilInstances utilInstances)
+   {
+      this.arrayUtil = utilInstances.getArrayUtil();
+      this.classUtil = utilInstances.getClassUtil();
+   }
+
+   public <T> void validateBoolean(final Class<T> expectedClass, final boolean allowChildClass)
    {
       if (!allowChildClass && !Boolean.class.equals(expectedClass))
          throw new IllegalStateException("Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: java.lang.Boolean");
@@ -24,13 +31,10 @@ public enum ReaderValidationStrategy
          throw new ClassCastException(Boolean.class.getName() + " cannot be cast to " + expectedClass.getName());
    }
 
-   public static <T_Expected, T_Actual extends T_Expected> Class<T_Actual> getClassFromHeader(final InternalStreamReader internalStreamReader,
-                                                                                              final HeaderInformation<?> actualHeader,
-                                                                                              final Class<T_Expected> expectedClass,
-                                                                                              final boolean allowChildClass)
+   public <T_Expected, T_Actual extends T_Expected> Class<T_Actual> getClassFromHeader(final HeaderInformation<?> actualHeader,
+                                                                                       final Class<T_Expected> expectedClass,
+                                                                                       final boolean allowChildClass)
    {
-      final ArrayUtil arrayUtil = internalStreamReader.getUtilInstances().getArrayUtil();
-      final ClassUtil classUtil = internalStreamReader.getUtilInstances().getClassUtil();
       final int expectedDimensions = arrayUtil.countArrayDimensions(expectedClass);
       final Class<?> expectedBaseComponentType = arrayUtil.getBaseComponentType(expectedClass);
       //TODO: dimension count must always match except for Object
