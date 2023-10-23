@@ -1,29 +1,53 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public enum IntegerSerializableStrategy
+public class IntegerSerializableStrategy
 {
-   ;  //no instances
    private static final Logger LOG = LogManager.getLogger();
 
-   public static void write(final InternalStreamWriter internalStreamWriter, final int data)
+   private final EasyReader reader;
+   private final BitWiseUtil bitWiseUtil;
+   private final ByteSerializableStrategy byteSerializableStrategy;
+
+   public IntegerSerializableStrategy(final EasyReader reader, final UtilInstances utilInstances)
    {
-      LOG.debug(data);
-      internalStreamWriter.getStrategyInstances().getByteSerializableStrategy().writeBytes(data, 4);
+      this.reader = reader;
+      bitWiseUtil = utilInstances.getBitWiseUtil();
+      byteSerializableStrategy = null;
    }
 
-   public static int read(final InternalStreamReader internalStreamReader, final String corruptMessage)
+   public IntegerSerializableStrategy(final ByteSerializableStrategy byteSerializableStrategy)
    {
-      final UtilInstances utilInstances = internalStreamReader.getUtilInstances();
-      final EasyReader reader = internalStreamReader.getReader();
-      final int data = utilInstances.getBitWiseUtil().bigEndianBytesToInteger(
+      reader = null;
+      bitWiseUtil = null;
+      this.byteSerializableStrategy = byteSerializableStrategy;
+   }
+
+   /**
+    * For private use and testing only.
+    */
+   IntegerSerializableStrategy(final EasyReader reader, final UtilInstances utilInstances, final ByteSerializableStrategy byteSerializableStrategy)
+   {
+      this.reader = reader;
+      bitWiseUtil = utilInstances.getBitWiseUtil();
+      this.byteSerializableStrategy = byteSerializableStrategy;
+   }
+
+   public void write(final int data)
+   {
+      LOG.debug(data);
+      byteSerializableStrategy.writeBytes(data, 4);
+   }
+
+   public int read(final String corruptMessage)
+   {
+      final int data = bitWiseUtil.bigEndianBytesToInteger(
          StreamCorruptedException.throwIfNotEnoughData(reader, 4, corruptMessage)
       );
       LOG.debug(data);

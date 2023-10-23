@@ -20,7 +20,7 @@ public enum ArraySerializableStrategy
                             final EasyAppender fileAppender, final Object data)
    {
       final int length = Array.getLength(data);
-      IntegerSerializableStrategy.write(internalStreamWriter, length);
+      internalStreamWriter.getStrategyInstances().getIntegerSerializableStrategy().write(length);
       final Class<?> componentType = data.getClass().getComponentType();
       for (int writeIndex = 0; writeIndex < length; ++writeIndex)
       {
@@ -32,7 +32,9 @@ public enum ArraySerializableStrategy
    public static <T_Array, T_Component> T_Array read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
                                                      final EasyReader fileReader, final Class<T_Component> componentType)
    {
-      final int arrayLength = IntegerSerializableStrategy.read(internalStreamReader, "Missing array length");
+      final int arrayLength =
+         internalStreamReader.getStrategyInstances().getIntegerSerializableStrategy().read("Missing " +
+         "array length");
       final T_Array arrayValue = cast(Array.newInstance(componentType, arrayLength));
 
       //this is only safe because creating an empty array only requires reading a primitive from stream

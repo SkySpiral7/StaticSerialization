@@ -18,7 +18,7 @@ public enum BoxPrimitiveSerializableStrategy
          internalStreamWriter.getStrategyInstances().getByteSerializableStrategy();
       if (data instanceof Byte) byteSerializableStrategy.writeByte((byte) data);
       else if (data instanceof Short) byteSerializableStrategy.writeBytes((short) data, 2);
-      else if (data instanceof Integer) IntegerSerializableStrategy.write(internalStreamWriter, (int) data);
+      else if (data instanceof Integer) internalStreamWriter.getStrategyInstances().getIntegerSerializableStrategy().write((int) data);
       else if (data instanceof Long) byteSerializableStrategy.writeBytes((long) data, 8);
       else if (data instanceof Float)
       {
@@ -53,7 +53,7 @@ public enum BoxPrimitiveSerializableStrategy
       }
       if (Integer.class.equals(expectedClass))
       {
-         return cast(IntegerSerializableStrategy.read(internalStreamReader, "Missing int data"));
+         return cast(internalStreamReader.getStrategyInstances().getIntegerSerializableStrategy().read("Missing int data"));
       }
       if (Long.class.equals(expectedClass))
       {

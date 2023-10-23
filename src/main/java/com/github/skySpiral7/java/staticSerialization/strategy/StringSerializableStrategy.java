@@ -19,14 +19,15 @@ public enum StringSerializableStrategy
    {
       LOG.debug(data);
       final byte[] writeMe = data.getBytes(StandardCharsets.UTF_8);
-      IntegerSerializableStrategy.write(internalStreamWriter, writeMe.length);
+      internalStreamWriter.getStrategyInstances().getIntegerSerializableStrategy().write(writeMe.length);
       internalStreamWriter.getAppender().append(writeMe);
    }
 
    public static String readWithLength(final InternalStreamReader internalStreamReader)
    {
       final EasyReader reader = internalStreamReader.getReader();
-      final int stringByteLength = IntegerSerializableStrategy.read(internalStreamReader, "Missing string byte length");
+      final int stringByteLength =
+         internalStreamReader.getStrategyInstances().getIntegerSerializableStrategy().read("Missing string byte length");
       /*TODO: could use an Overlong null delimiter 0xC080 to reduce overhead by 2 but harder to read stream
       could also make a new string type for null delimited 0x00 (only used when contains no null)
       AsynchronousFileReader would need a readBytesUntil*/

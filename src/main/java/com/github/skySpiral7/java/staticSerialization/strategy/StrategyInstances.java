@@ -34,14 +34,16 @@ public class StrategyInstances
       this.boxPrimitiveSerializableStrategy = null;
       this.byteSerializableStrategy = null;  //don't need
       this.enumSerializableStrategy = null;
-      this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances, this);
-      this.integerSerializableStrategy = null;
+      this.integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.javaSerializableStrategy = null;
       this.readerValidationStrategy = null;
       this.reflectionSerializableStrategy = null;
       this.shortSerializableStrategy = null;
       this.staticSerializableStrategy = null;
       this.stringSerializableStrategy = null;
+
+      //ones that need other strategies
+      this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances, integerSerializableStrategy);
    }
 
    public StrategyInstances(final EasyAppender appender, final ObjectWriterRegistry registry,
@@ -52,14 +54,17 @@ public class StrategyInstances
       this.boxPrimitiveSerializableStrategy = null;
       this.byteSerializableStrategy = new ByteSerializableStrategy(appender, utilInstances);
       this.enumSerializableStrategy = null;
-      this.headerSerializableStrategy = new HeaderSerializableStrategy(appender, registry, utilInstances, this);
-      this.integerSerializableStrategy = null;
       this.javaSerializableStrategy = null;
       this.readerValidationStrategy = null;
       this.reflectionSerializableStrategy = null;
       this.shortSerializableStrategy = null;
       this.staticSerializableStrategy = null;
       this.stringSerializableStrategy = null;
+
+      //ones that need other strategies
+      this.integerSerializableStrategy = new IntegerSerializableStrategy(byteSerializableStrategy);
+      this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
+         byteSerializableStrategy, integerSerializableStrategy);
    }
 
    public AllSerializableStrategy getAllSerializableStrategy()

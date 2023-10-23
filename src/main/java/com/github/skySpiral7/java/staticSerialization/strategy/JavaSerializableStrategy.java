@@ -45,7 +45,9 @@ public enum JavaSerializableStrategy
    public static <T> T readWithLength(final InternalStreamReader internalStreamReader)
    {
       final EasyReader reader = internalStreamReader.getReader();
-      final int length = IntegerSerializableStrategy.read(internalStreamReader, "Missing java.io.Serializable size");
+      final int length =
+         internalStreamReader.getStrategyInstances().getIntegerSerializableStrategy().read("Missing java.io" +
+         ".Serializable size");
       final byte[] objectData = StreamCorruptedException.throwIfNotEnoughData(reader, length, "Missing java.io.Serializable data");
       return javaDeserialize(objectData);
    }

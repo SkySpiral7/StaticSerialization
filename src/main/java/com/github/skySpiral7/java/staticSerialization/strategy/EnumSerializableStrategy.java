@@ -12,12 +12,12 @@ public enum EnumSerializableStrategy
 
    public static void write(final InternalStreamWriter internalStreamWriter, final Enum<?> data)
    {
-      IntegerSerializableStrategy.write(internalStreamWriter, data.ordinal());
+      internalStreamWriter.getStrategyInstances().getIntegerSerializableStrategy().write(data.ordinal());
    }
 
    public static <T> T read(final InternalStreamReader internalStreamReader, final Class<T> expectedClass)
    {
-      final int ordinal = IntegerSerializableStrategy.read(internalStreamReader, "Missing enum ordinal");
+      final int ordinal = internalStreamReader.getStrategyInstances().getIntegerSerializableStrategy().read("Missing enum ordinal");
       if (ordinal < 0) throw new StreamCorruptedException("Invalid enum ordinal. Actual: " + ordinal);
 
       final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum

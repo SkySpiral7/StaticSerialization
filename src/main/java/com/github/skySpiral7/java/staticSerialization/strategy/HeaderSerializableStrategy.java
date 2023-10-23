@@ -6,7 +6,6 @@ import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamRea
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
@@ -86,50 +85,54 @@ public class HeaderSerializableStrategy
 
    private final EasyReader reader;
    private final ObjectReaderRegistry readerRegistry;
-   private final EasyAppender appender;
    private final ObjectWriterRegistry writerRegistry;
    private final ArrayUtil arrayUtil;
    private final ClassUtil classUtil;
    private final ByteSerializableStrategy byteSerializableStrategy;
+   private final IntegerSerializableStrategy integerSerializableStrategy;
 
    public HeaderSerializableStrategy(final EasyReader reader, final ObjectReaderRegistry registry,
-                                     final UtilInstances utilInstances, final StrategyInstances strategyInstances)
+                                     final UtilInstances utilInstances,
+                                     final IntegerSerializableStrategy integerSerializableStrategy)
    {
       this.reader = reader;
       readerRegistry = registry;
-      appender = null;
       writerRegistry = null;
       arrayUtil = utilInstances.getArrayUtil();
       classUtil = utilInstances.getClassUtil();
-      byteSerializableStrategy = strategyInstances.getByteSerializableStrategy();
+      byteSerializableStrategy = null;
+      this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
-   public HeaderSerializableStrategy(final EasyAppender appender, final ObjectWriterRegistry registry,
-                                     final UtilInstances utilInstances, final StrategyInstances strategyInstances)
+   public HeaderSerializableStrategy(final ObjectWriterRegistry registry,
+                                     final UtilInstances utilInstances, final ByteSerializableStrategy byteSerializableStrategy,
+                                     final IntegerSerializableStrategy integerSerializableStrategy)
    {
       reader = null;
       readerRegistry = null;
-      this.appender = appender;
       writerRegistry = registry;
       arrayUtil = utilInstances.getArrayUtil();
       classUtil = utilInstances.getClassUtil();
-      byteSerializableStrategy = strategyInstances.getByteSerializableStrategy();
+      this.byteSerializableStrategy = byteSerializableStrategy;
+      this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
    /**
     * For private use and testing only.
     */
    HeaderSerializableStrategy(final EasyReader reader, final ObjectReaderRegistry readerRegistry,
-                              final EasyAppender appender, final ObjectWriterRegistry writerRegistry,
-                              final UtilInstances utilInstances, final ByteSerializableStrategy byteSerializableStrategy)
+                              final ObjectWriterRegistry writerRegistry,
+                              final UtilInstances utilInstances,
+                              final ByteSerializableStrategy byteSerializableStrategy,
+                              final IntegerSerializableStrategy integerSerializableStrategy)
    {
       this.reader = reader;
       this.readerRegistry = readerRegistry;
-      this.appender = appender;
       this.writerRegistry = writerRegistry;
       this.arrayUtil = utilInstances.getArrayUtil();
       this.classUtil = utilInstances.getClassUtil();
       this.byteSerializableStrategy = byteSerializableStrategy;
+      this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
    /**
@@ -194,7 +197,7 @@ public class HeaderSerializableStrategy
       }
       if ('\\' == firstByte)
       {
-         final int id = IntegerSerializableStrategy.read(internalStreamReader, "Incomplete header: id type but no id");
+         final int id = integerSerializableStrategy.read("Incomplete header: id type but no id");
          final Object registeredObject = readerRegistry.getRegisteredObject(id);
          //null value will not have an id. null is only possible if id was reserved but not registered
          if (registeredObject == null) throw new StreamCorruptedException("id not found");
@@ -226,7 +229,7 @@ public class HeaderSerializableStrategy
          {
             LOG.debug("id: " + id + " (" + data + " " + data.getClass().getSimpleName() + ")");
             byteSerializableStrategy.writeByte('\\');
-            IntegerSerializableStrategy.write(internalStreamWriter, id);
+            integerSerializableStrategy.write(id);
             return true;
          }
          //null, primitive, and box don't get registered
