@@ -55,7 +55,7 @@ public enum AllSerializableStrategy
       }
       if (data instanceof Serializable)
       {
-         JavaSerializableStrategy.writeWithLength(internalStreamWriter, (Serializable) data);
+         strategyInstances.getJavaSerializableStrategy().writeWithLength((Serializable) data);
          return;
       }
 
@@ -83,7 +83,7 @@ public enum AllSerializableStrategy
       //TODO: does java serial allow enum data? yes: JavaSerializableStrategy, no: doc it
       if (actualClass.isEnum()) return strategyInstances.getEnumSerializableStrategy().read(actualClass);
       if (Serializable.class.isAssignableFrom(actualClass))
-         return JavaSerializableStrategy.readWithLength(internalStreamReader);
+         return strategyInstances.getJavaSerializableStrategy().readWithLength();
 
       throw new NotSerializableException(actualClass);
    }

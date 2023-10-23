@@ -3,7 +3,7 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 
 import java.io.ByteArrayInputStream;
@@ -16,15 +16,36 @@ import java.io.Serializable;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public enum JavaSerializableStrategy
+public class JavaSerializableStrategy
 {
-   ;  //no instances
+   private final EasyReader reader;
+   private final EasyAppender appender;
+   private final ByteSerializableStrategy byteSerializableStrategy;
+   private final IntegerSerializableStrategy integerSerializableStrategy;
 
-   public static void writeWithLength(final InternalStreamWriter internalStreamWriter, final Serializable data)
+   public JavaSerializableStrategy(final EasyReader reader,
+                                   final  IntegerSerializableStrategy integerSerializableStrategy)
+   {
+      this.reader = reader;
+      this.appender = null;
+      this.byteSerializableStrategy = null;
+      this.integerSerializableStrategy = integerSerializableStrategy;
+   }
+
+   public JavaSerializableStrategy(final EasyAppender appender,
+                                   final ByteSerializableStrategy byteSerializableStrategy)
+   {
+      this.reader = null;
+      this.appender = appender;
+      this.byteSerializableStrategy = byteSerializableStrategy;
+      this.integerSerializableStrategy = null;
+   }
+
+   public void writeWithLength(final Serializable data)
    {
       final byte[] serializedData = javaSerialize(data);
-      internalStreamWriter.getStrategyInstances().getByteSerializableStrategy().writeBytes(serializedData.length, 4);
-      internalStreamWriter.getAppender().append(serializedData);
+      byteSerializableStrategy.writeBytes(serializedData.length, 4);
+      appender.append(serializedData);
    }
 
    public static byte[] javaSerialize(final Serializable data)
@@ -42,12 +63,9 @@ public enum JavaSerializableStrategy
       return byteStream.toByteArray();
    }
 
-   public static <T> T readWithLength(final InternalStreamReader internalStreamReader)
+   public <T> T readWithLength()
    {
-      final EasyReader reader = internalStreamReader.getReader();
-      final int length =
-         internalStreamReader.getStrategyInstances().getIntegerSerializableStrategy().read("Missing java.io" +
-         ".Serializable size");
+      final int length = integerSerializableStrategy.read("Missing java.io.Serializable size");
       final byte[] objectData = StreamCorruptedException.throwIfNotEnoughData(reader, length, "Missing java.io.Serializable data");
       return javaDeserialize(objectData);
    }
