@@ -57,7 +57,7 @@ public class StrategyInstances
          shortSerializableStrategy, integerSerializableStrategy);
       this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances,
          integerSerializableStrategy, stringSerializableStrategy);
-      this.allSerializableStrategy = new AllSerializableStrategy(utilInstances, arraySerializableStrategy,
+      this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
          boxPrimitiveSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
          staticSerializableStrategy, stringSerializableStrategy);
    }
@@ -84,7 +84,7 @@ public class StrategyInstances
          byteSerializableStrategy, integerSerializableStrategy);
       this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
          byteSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
-      this.allSerializableStrategy = new AllSerializableStrategy(utilInstances, arraySerializableStrategy,
+      this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
          boxPrimitiveSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
          staticSerializableStrategy, stringSerializableStrategy);
    }

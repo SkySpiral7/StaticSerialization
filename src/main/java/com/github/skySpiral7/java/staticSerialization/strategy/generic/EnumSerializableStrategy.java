@@ -24,6 +24,7 @@ public class EnumSerializableStrategy implements SerializableStrategy
    public void write(final Object rawData)
    {
       final Enum<?> data = (Enum<?>) rawData;
+      //TODO: does java serial allow enum data? if yes: JavaSerializableStrategy, if no: doc it
       integerSerializableStrategy.write(data.ordinal());
    }
 
