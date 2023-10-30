@@ -10,7 +10,7 @@ import java.util.Objects;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-//TODO: move all read/write int/ext to fields
+//TODO: move all read/write int/ext to fields: ArraySerializableStrategy, AllSerializableStrategy
 public class ObjectStreamReader implements Closeable
 {
    private final InternalStreamReader internalStreamReader;

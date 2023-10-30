@@ -5,6 +5,8 @@ import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
+import com.github.skySpiral7.java.staticSerialization.util.ReflectionUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,13 +16,27 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 
 public class StaticSerializableStrategy
 {
+   private final ObjectStreamReader reader;
+   private final ObjectStreamWriter writer;
 
-   public void write(final ObjectStreamWriter writer, final StaticSerializable data)
+   public StaticSerializableStrategy(final ObjectStreamReader reader)
+   {
+      this.reader = reader;
+      this.writer = null;
+   }
+
+   public StaticSerializableStrategy(final ObjectStreamWriter writer)
+   {
+      this.reader = null;
+      this.writer = writer;
+   }
+
+   public void write(final StaticSerializable data)
    {
       data.writeToStream(writer);
    }
 
-   public <T> T read(final ObjectStreamReader reader, final Class<T> expectedClass)
+   public <T> T read(final Class<T> expectedClass)
    {
       if (!Modifier.isPublic(expectedClass.getModifiers()))
       {

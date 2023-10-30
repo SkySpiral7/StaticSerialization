@@ -64,7 +64,7 @@ public class AllSerializableStrategy
 
       if (data instanceof StaticSerializable)
       {
-         staticSerializableStrategy.write(streamWriter, (StaticSerializable) data);
+         staticSerializableStrategy.write((StaticSerializable) data);
          return;
       }
 
@@ -95,7 +95,7 @@ public class AllSerializableStrategy
          return arraySerializableStrategy.read(streamReader, internalStreamReader, actualClass.getComponentType());
 
       if (StaticSerializable.class.isAssignableFrom(actualClass))
-         return staticSerializableStrategy.read(streamReader, actualClass);
+         return staticSerializableStrategy.read(actualClass);
 
       //TODO: does java serial allow enum data? if yes: JavaSerializableStrategy, if no: doc it
       if (actualClass.isEnum()) return enumSerializableStrategy.read(actualClass);

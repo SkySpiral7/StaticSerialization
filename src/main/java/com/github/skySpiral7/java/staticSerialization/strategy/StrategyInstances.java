@@ -36,7 +36,7 @@ public class StrategyInstances
       this.readerValidationStrategy = new ReaderValidationStrategy(utilInstances);
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamReader, utilInstances);
       this.shortSerializableStrategy = new ShortSerializableStrategy(reader);
-      this.staticSerializableStrategy = new StaticSerializableStrategy();
+      this.staticSerializableStrategy = new StaticSerializableStrategy(streamReader);
 
       //ones that need other strategies
       this.arraySerializableStrategy = new ArraySerializableStrategy(integerSerializableStrategy);
@@ -60,7 +60,7 @@ public class StrategyInstances
       this.readerValidationStrategy = null;  //don't need
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamWriter, utilInstances);
       this.shortSerializableStrategy = null;  //don't need
-      this.staticSerializableStrategy = new StaticSerializableStrategy();
+      this.staticSerializableStrategy = new StaticSerializableStrategy(streamWriter);
 
       //ones that need other strategies
       this.integerSerializableStrategy = new IntegerSerializableStrategy(byteSerializableStrategy);
