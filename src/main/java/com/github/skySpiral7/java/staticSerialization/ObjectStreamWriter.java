@@ -8,7 +8,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 
-//TODO: move all read/write int/ext to fields
 public class ObjectStreamWriter implements Closeable, Flushable
 {
    private final InternalStreamWriter internalStreamWriter;
@@ -58,7 +57,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
     */
    public void writeObject(final Object data)
    {
-      internalStreamWriter.writeObjectInternal(this, null, data);
+      internalStreamWriter.writeObjectInternal(null, data);
    }
 
    public void writeFieldsReflectively(final Object data)

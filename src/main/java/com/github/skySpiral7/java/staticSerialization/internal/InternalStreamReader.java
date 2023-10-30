@@ -16,7 +16,6 @@ import java.io.File;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-//TODO: move all read/write int/ext to fields
 public class InternalStreamReader implements Closeable
 {
    private final ObjectStreamReader streamReader;
@@ -41,8 +40,16 @@ public class InternalStreamReader implements Closeable
    private InternalStreamReader(final ObjectStreamReader streamReader, final EasyReader reader, final ObjectReaderRegistry registry,
                                 final UtilInstances utilInstances)
    {
-      this(streamReader, reader, registry, utilInstances.getClassUtil(), new StrategyInstances(streamReader, reader,
-         registry, utilInstances));
+      final StrategyInstances strategyInstances = new StrategyInstances(streamReader, this,
+         reader, registry, utilInstances);
+      this.streamReader = streamReader;
+      this.reader = reader;
+      this.registry = registry;
+      this.classUtil = utilInstances.getClassUtil();
+      allSerializableStrategy = strategyInstances.getAllSerializableStrategy();
+      headerSerializableStrategy = strategyInstances.getHeaderSerializableStrategy();
+      readerValidationStrategy = strategyInstances.getReaderValidationStrategy();
+      reflectionSerializableStrategy = strategyInstances.getReflectionSerializableStrategy();
    }
 
    public InternalStreamReader(final ObjectStreamReader streamReader, final EasyReader reader,
@@ -100,7 +107,7 @@ public class InternalStreamReader implements Closeable
       {
          registry.reserveIdForLater();
       }
-      final T_Actual returnValue = allSerializableStrategy.read(streamReader, this, actualClass);
+      final T_Actual returnValue = allSerializableStrategy.read(actualClass);
       //null, boolean, and id don't reach here
       if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: can array?
       //TODO: make util for should register since long should

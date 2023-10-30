@@ -2,6 +2,8 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
+import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
@@ -27,7 +29,8 @@ public class StrategyInstances
    private final StaticSerializableStrategy staticSerializableStrategy;
    private final StringSerializableStrategy stringSerializableStrategy;
 
-   public StrategyInstances(final ObjectStreamReader streamReader, final EasyReader reader,
+   public StrategyInstances(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
+                            final EasyReader reader,
                             final ObjectReaderRegistry registry,
                             final UtilInstances utilInstances)
    {
@@ -39,7 +42,8 @@ public class StrategyInstances
       this.staticSerializableStrategy = new StaticSerializableStrategy(streamReader);
 
       //ones that need other strategies
-      this.arraySerializableStrategy = new ArraySerializableStrategy(integerSerializableStrategy);
+      this.arraySerializableStrategy = new ArraySerializableStrategy(streamReader, internalStreamReader,
+         integerSerializableStrategy);
       this.javaSerializableStrategy = new JavaSerializableStrategy(reader, integerSerializableStrategy);
       this.enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       this.stringSerializableStrategy = new StringSerializableStrategy(reader, integerSerializableStrategy);
@@ -52,7 +56,8 @@ public class StrategyInstances
          staticSerializableStrategy, stringSerializableStrategy);
    }
 
-   public StrategyInstances(final ObjectStreamWriter streamWriter, final EasyAppender appender,
+   public StrategyInstances(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
+                            final EasyAppender appender,
                             final ObjectWriterRegistry registry,
                             final UtilInstances utilInstances)
    {
@@ -64,7 +69,8 @@ public class StrategyInstances
 
       //ones that need other strategies
       this.integerSerializableStrategy = new IntegerSerializableStrategy(byteSerializableStrategy);
-      this.arraySerializableStrategy = new ArraySerializableStrategy(integerSerializableStrategy);
+      this.arraySerializableStrategy = new ArraySerializableStrategy(streamWriter, internalStreamWriter,
+         integerSerializableStrategy);
       this.javaSerializableStrategy = new JavaSerializableStrategy(appender, byteSerializableStrategy);
       this.enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       this.stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy,

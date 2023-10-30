@@ -1,11 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
-import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
@@ -40,8 +36,7 @@ public class AllSerializableStrategy
       this.stringSerializableStrategy = stringSerializableStrategy;
    }
 
-   public void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
-                            final Object data)
+   public void write(final Object data)
    {
       final Class<?> dataClass = data.getClass();
       //TODO: change these to interface with supports(). compression trick will be first
@@ -58,7 +53,7 @@ public class AllSerializableStrategy
       }
       if (dataClass.isArray())
       {
-         arraySerializableStrategy.write(streamWriter, internalStreamWriter, data);
+         arraySerializableStrategy.write(data);
          return;
       }
 
@@ -82,8 +77,7 @@ public class AllSerializableStrategy
       throw new NotSerializableException(dataClass);
    }
 
-   public <T> T read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
-                            final Class<T> actualClass)
+   public <T> T read(final Class<T> actualClass)
    {
       if (classUtil.isPrimitiveOrBox(actualClass))
          return boxPrimitiveSerializableStrategy.read(actualClass);
@@ -92,7 +86,7 @@ public class AllSerializableStrategy
          return cast(stringSerializableStrategy.readWithLength());
       }
       if (actualClass.isArray())
-         return arraySerializableStrategy.read(streamReader, internalStreamReader, actualClass.getComponentType());
+         return arraySerializableStrategy.read(actualClass.getComponentType());
 
       if (StaticSerializable.class.isAssignableFrom(actualClass))
          return staticSerializableStrategy.read(actualClass);

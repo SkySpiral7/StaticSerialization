@@ -13,7 +13,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 
-//TODO: move all read/write int/ext to fields
 public class InternalStreamWriter implements Closeable, Flushable
 {
    private final EasyAppender appender;
@@ -35,7 +34,12 @@ public class InternalStreamWriter implements Closeable, Flushable
                                final ObjectWriterRegistry registry,
                                final UtilInstances utilInstances)
    {
-      this(appender, new StrategyInstances(streamWriter, appender, registry, utilInstances));
+      final StrategyInstances strategyInstances = new StrategyInstances(streamWriter, this, appender, registry,
+         utilInstances);
+      this.appender = appender;
+      allSerializableStrategy = strategyInstances.getAllSerializableStrategy();
+      headerSerializableStrategy = strategyInstances.getHeaderSerializableStrategy();
+      reflectionSerializableStrategy = strategyInstances.getReflectionSerializableStrategy();
    }
 
    public InternalStreamWriter(final EasyAppender appender, final StrategyInstances strategyInstances)
@@ -58,12 +62,12 @@ public class InternalStreamWriter implements Closeable, Flushable
    @Override
    public void close(){appender.close();}
 
-   public void writeObjectInternal(final ObjectStreamWriter streamWriter, final Class<?> inheritFromClass, final Object data)
+   public void writeObjectInternal(final Class<?> inheritFromClass, final Object data)
    {
       final boolean usedId = headerSerializableStrategy.writeHeaderReturnIsId(inheritFromClass, data);
       //if an id was written then don't write value
       if (usedId) return;
-      allSerializableStrategy.write(streamWriter, this, data);
+      allSerializableStrategy.write(data);
    }
 
    public ReflectionSerializableStrategy getReflectionSerializableStrategy()

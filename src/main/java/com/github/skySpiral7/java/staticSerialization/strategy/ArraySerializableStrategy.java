@@ -12,15 +12,35 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 
 public class ArraySerializableStrategy
 {
+   private final ObjectStreamReader streamReader;
+   private final InternalStreamReader internalStreamReader;
+   private final ObjectStreamWriter streamWriter;
+   private final InternalStreamWriter internalStreamWriter;
    private final IntegerSerializableStrategy integerSerializableStrategy;
 
-   public ArraySerializableStrategy(IntegerSerializableStrategy integerSerializableStrategy)
+   public ArraySerializableStrategy(final ObjectStreamReader streamReader,
+                                    final InternalStreamReader internalStreamReader,
+                                    final IntegerSerializableStrategy integerSerializableStrategy)
    {
+      this.streamReader = streamReader;
+      this.internalStreamReader = internalStreamReader;
+      this.streamWriter = null;
+      this.internalStreamWriter = null;
       this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
-   public void write(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
-                     final Object data)
+   public ArraySerializableStrategy(final ObjectStreamWriter streamWriter,
+                                    final InternalStreamWriter internalStreamWriter,
+                                    final IntegerSerializableStrategy integerSerializableStrategy)
+   {
+      this.streamReader = null;
+      this.internalStreamReader = null;
+      this.streamWriter = streamWriter;
+      this.internalStreamWriter = internalStreamWriter;
+      this.integerSerializableStrategy = integerSerializableStrategy;
+   }
+
+   public void write(final Object data)
    {
       final int length = Array.getLength(data);
       integerSerializableStrategy.write(length);
@@ -28,12 +48,11 @@ public class ArraySerializableStrategy
       for (int writeIndex = 0; writeIndex < length; ++writeIndex)
       {
          final Object element = Array.get(data, writeIndex);
-         internalStreamWriter.writeObjectInternal(streamWriter, componentType, element);
+         internalStreamWriter.writeObjectInternal(componentType, element);
       }
    }
 
-   public <T_Array, T_Component> T_Array read(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
-                                              final Class<T_Component> componentType)
+   public <T_Array, T_Component> T_Array read(final Class<T_Component> componentType)
    {
       final int arrayLength = integerSerializableStrategy.read("Missing " +
          "array length");
