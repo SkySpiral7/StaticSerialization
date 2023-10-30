@@ -17,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class EnumSerializableStrategy_IT
 {
+   private final BitWiseUtil bitWiseUtil = new BitWiseUtil();
+
    @Test
    public void write()
    {
@@ -53,7 +55,7 @@ public class EnumSerializableStrategy_IT
    {
       final ByteAppender inputBuilder = new ByteAppender();
       inputBuilder.append("java.math.RoundingMode;");
-      inputBuilder.append(BitWiseUtil.toBigEndianBytes(-1, 4));
+      inputBuilder.append(bitWiseUtil.toBigEndianBytes(-1, 4));
       final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);

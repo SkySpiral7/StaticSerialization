@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class ReflectionUtil_UT
 {
+   private final ReflectionUtil testObject = new ReflectionUtil();
 
    private static class Class_getAllSerializableFields
    {
@@ -42,7 +43,7 @@ public class ReflectionUtil_UT
       expected.add(Class_getAllSerializableFields.class.getField("fieldStaticSerializable"));
       expected.add(Class_getAllSerializableFields.class.getField("fieldString"));
 
-      final List<Field> actual = ReflectionUtil.getAllSerializableFields(Class_getAllSerializableFields.class);
+      final List<Field> actual = testObject.getAllSerializableFields(Class_getAllSerializableFields.class);
 
       assertThat(actual, is(expected));
       assertFalse(actual.contains(Class_getAllSerializableFields.class.getField("fieldFinal")));
@@ -69,6 +70,6 @@ public class ReflectionUtil_UT
       expected.add(ClassA.class.getField("field$Z"));
       expected.add(ClassB.class.getField("fieldC"));
 
-      assertThat(ReflectionUtil.getAllSerializableFields(ClassB.class), is(expected));
+      assertThat(testObject.getAllSerializableFields(ClassB.class), is(expected));
    }
 }

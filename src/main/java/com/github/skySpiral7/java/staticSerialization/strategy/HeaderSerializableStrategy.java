@@ -4,21 +4,19 @@ import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedE
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy.writeByte;
-
-public enum HeaderSerializableStrategy
+public class HeaderSerializableStrategy
 {
-   ;  //no instances
    private static final Logger LOG = LogManager.getLogger();
 
    /**
@@ -34,7 +32,7 @@ public enum HeaderSerializableStrategy
     * <li>\id reference existing object (header only)</li>
     * </ul>
     */
-   private static final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
+   private final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
    /**
     * Not in map:
     * <ul>
@@ -48,9 +46,8 @@ public enum HeaderSerializableStrategy
     * <li>\id reference existing object (header only)</li>
     * </ul>
     */
-   private static final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
+   private final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
 
-   static
    {
       /*
       possible printable ASCII headers: space to / (not $ or .) is 14, : to @ is +7, [ to ` (not _) is +5, { to ~ is +4 = 30
@@ -71,7 +68,9 @@ public enum HeaderSerializableStrategy
       COMPRESSED_HEADER_TO_CLASS.put('^', Double.class);
       COMPRESSED_HEADER_TO_CLASS.put('&', Character.class);
       COMPRESSED_HEADER_TO_CLASS.put('*', String.class);
-      //TODO: more memnotic: ' char, " string, ` string with nulls, & for id
+      //TODO: more memnotic: ' char, " null terminated string, ` length string, & for id
+      //then have classes be a " string to unreserve ;
+      //compression: pick between overlong null or length
 
       CLASS_TO_COMPRESSED_HEADER = new HashMap<>();
       CLASS_TO_COMPRESSED_HEADER.put(Byte.class, '~');
@@ -85,11 +84,49 @@ public enum HeaderSerializableStrategy
       CLASS_TO_COMPRESSED_HEADER.put(String.class, '*');
    }
 
+   private final EasyReader reader;
+   private final ObjectReaderRegistry readerRegistry;
+   private final ObjectWriterRegistry writerRegistry;
+   private final ArrayUtil arrayUtil;
+   private final ClassUtil classUtil;
+   private final ByteSerializableStrategy byteSerializableStrategy;
+   private final IntegerSerializableStrategy integerSerializableStrategy;
+   private final StringSerializableStrategy stringSerializableStrategy;
+
+   public HeaderSerializableStrategy(final EasyReader reader, final ObjectReaderRegistry registry,
+                                     final UtilInstances utilInstances,
+                                     final IntegerSerializableStrategy integerSerializableStrategy,
+                                     final StringSerializableStrategy stringSerializableStrategy)
+   {
+      this.reader = reader;
+      readerRegistry = registry;
+      writerRegistry = null;
+      arrayUtil = utilInstances.getArrayUtil();
+      classUtil = utilInstances.getClassUtil();
+      byteSerializableStrategy = null;
+      this.integerSerializableStrategy = integerSerializableStrategy;
+      this.stringSerializableStrategy = stringSerializableStrategy;
+   }
+
+   public HeaderSerializableStrategy(final ObjectWriterRegistry registry,
+                                     final UtilInstances utilInstances, final ByteSerializableStrategy byteSerializableStrategy,
+                                     final IntegerSerializableStrategy integerSerializableStrategy,
+                                     final StringSerializableStrategy stringSerializableStrategy)
+   {
+      reader = null;
+      readerRegistry = null;
+      writerRegistry = registry;
+      arrayUtil = utilInstances.getArrayUtil();
+      classUtil = utilInstances.getClassUtil();
+      this.byteSerializableStrategy = byteSerializableStrategy;
+      this.integerSerializableStrategy = integerSerializableStrategy;
+      this.stringSerializableStrategy = stringSerializableStrategy;
+   }
+
    /**
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
-   public static HeaderInformation<?> readHeader(final EasyReader reader, final Class<?> inheritFromClass,
-                                                 final ObjectReaderRegistry registry)
+   public HeaderInformation<?> readHeader(final Class<?> inheritFromClass)
    {
       byte firstByte;
       final int dimensionCount;
@@ -103,12 +140,12 @@ public enum HeaderSerializableStrategy
          //It is only primitive if contained in a primitive array in which case there is no header
          //since it can't be null or any other class.
          if (inheritFromClass.isPrimitive())
-            return HeaderInformation.forPrimitiveArrayValue(ClassUtil.boxClass(inheritFromClass).getName());
+            return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass).getName());
          //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or ';')
          firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
-         dimensionCount = ArrayUtil.countArrayDimensions(inheritFromClass);
+         dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
          final Class<?> baseComponent = inheritFromClass.isArray()
-            ? ArrayUtil.getBaseComponentType(inheritFromClass)
+            ? arrayUtil.getBaseComponentType(inheritFromClass)
             : inheritFromClass;
          primitiveArray = baseComponent.isPrimitive();
          if ('?' == firstByte)
@@ -147,8 +184,8 @@ public enum HeaderSerializableStrategy
       }
       if ('\\' == firstByte)
       {
-         final int id = IntegerSerializableStrategy.read(reader, "Incomplete header: id type but no id");
-         final Object registeredObject = registry.getRegisteredObject(id);
+         final int id = integerSerializableStrategy.read("Incomplete header: id type but no id");
+         final Object registeredObject = readerRegistry.getRegisteredObject(id);
          //null value will not have an id. null is only possible if id was reserved but not registered
          if (registeredObject == null) throw new StreamCorruptedException("id not found");
          //LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
@@ -157,8 +194,8 @@ public enum HeaderSerializableStrategy
       }
 
       //else firstByte is part of a class name
-      return HeaderInformation.forPossibleArray(StringSerializableStrategy.readClassName(reader, firstByte), dimensionCount,
-         primitiveArray);
+      return HeaderInformation.forPossibleArray(stringSerializableStrategy.readClassName(firstByte),
+         dimensionCount, primitiveArray);
    }
 
    //TODO: rename since true also for null, bool
@@ -166,23 +203,22 @@ public enum HeaderSerializableStrategy
    /**
     * @return true if an id was used and no value should be written
     */
-   public static boolean writeHeaderReturnIsId(final EasyAppender appender, final Class<?> inheritFromClass, final Object data,
-                                               final ObjectWriterRegistry registry)
+   public boolean writeHeaderReturnIsId(final Class<?> inheritFromClass, final Object data)
    {
-      if (data != null && !ClassUtil.isPrimitiveOrBox(data.getClass()))
+      if (data != null && !classUtil.isPrimitiveOrBox(data.getClass()))
       {
          //TODO: long gets id, other primitives don't, else do
-         final Integer id = registry.getId(data);
+         final Integer id = writerRegistry.getId(data);
          //LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data + " id=" + id);
          if (id != null)
          {
             LOG.debug("id: " + id + " (" + data + " " + data.getClass().getSimpleName() + ")");
-            writeByte(appender, '\\');
-            IntegerSerializableStrategy.write(appender, id);
+            byteSerializableStrategy.writeByte('\\');
+            integerSerializableStrategy.write(id);
             return true;
          }
          //null, primitive, and box don't get registered
-         registry.registerObject(data);
+         writerRegistry.registerObject(data);
       }
       //else if(data==null) LOG.debug("data.class=null");
       //else LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data);
@@ -190,29 +226,29 @@ public enum HeaderSerializableStrategy
       //boolean[] and Boolean[] use only headers for elements (primitive doesn't allow null)
       if (Boolean.TRUE.equals(data))
       {
-         writeByte(appender, '+');
+         byteSerializableStrategy.writeByte('+');
          return true;
       }
       else if (Boolean.FALSE.equals(data))
       {
-         writeByte(appender, '-');
+         byteSerializableStrategy.writeByte('-');
          return true;
       }
       else if (data == null)
       {
          //if data is null then class name is the empty string
-         writeByte(appender, ';');
+         byteSerializableStrategy.writeByte(';');
          return true;
       }
       //do nothing because non-boolean primitive array elements have no header
       else if (null != inheritFromClass && inheritFromClass.isPrimitive()) ;
          //(below) if class matches containing array exactly then inherit type.
-      else if (null != inheritFromClass && inheritFromClass.equals(data.getClass())) writeByte(appender, '?');
+      else if (null != inheritFromClass && inheritFromClass.equals(data.getClass())) byteSerializableStrategy.writeByte('?');
       else if (CLASS_TO_COMPRESSED_HEADER.containsKey(data.getClass()))
-         writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(data.getClass()));
+         byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(data.getClass()));
       else if (data.getClass().isArray())
       {
-         Class<?> baseComponent = ArrayUtil.getBaseComponentType(data.getClass());
+         Class<?> baseComponent = arrayUtil.getBaseComponentType(data.getClass());
          if (Object.class.equals(inheritFromClass) || null == inheritFromClass)
          {
             //array indicator and dimension count can be derived from containing array so don't populate it
@@ -220,26 +256,26 @@ public enum HeaderSerializableStrategy
             //baseComponent can't be void or null
             if (baseComponent.isPrimitive())
             {
-               writeByte(appender, ']');
-               baseComponent = ClassUtil.boxClass(baseComponent);
+               byteSerializableStrategy.writeByte(']');
+               baseComponent = classUtil.boxClass(baseComponent);
             }
-            else writeByte(appender, '[');
+            else byteSerializableStrategy.writeByte('[');
 
-            final int dimensionCount = ArrayUtil.countArrayDimensions(data.getClass());
-            writeByte(appender, dimensionCount);  //won't be 0, max: 255. Use unsigned byte
+            final int dimensionCount = arrayUtil.countArrayDimensions(data.getClass());
+            byteSerializableStrategy.writeByte(dimensionCount);  //won't be 0, max: 255. Use unsigned byte
          }
 
-         if (baseComponent.equals(Boolean.class)) writeByte(appender, '+');
+         if (baseComponent.equals(Boolean.class)) byteSerializableStrategy.writeByte('+');
          else if (CLASS_TO_COMPRESSED_HEADER.containsKey(baseComponent))
-            writeByte(appender, CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
+            byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
          else
          {
-            StringSerializableStrategy.writeClassName(appender, baseComponent.getName());
+            stringSerializableStrategy.writeClassName(baseComponent.getName());
          }
       }
       else
       {
-         StringSerializableStrategy.writeClassName(appender, data.getClass().getName());
+         stringSerializableStrategy.writeClassName(data.getClass().getName());
       }
 
       return false;

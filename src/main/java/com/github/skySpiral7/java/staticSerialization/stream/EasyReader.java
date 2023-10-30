@@ -15,7 +15,7 @@ public interface EasyReader extends Closeable
    void close();
 
    /**
-    * Reads binary data from the stream. The returned array's length will be byteCount unless
+    * Reads binary data from the stream. The returned array's length will be requestedByteCount unless
     * the stream doesn't contain enough bytes in which case the returned array length will be however
     * many bytes remain (possibly 0).
     *

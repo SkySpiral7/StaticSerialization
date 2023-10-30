@@ -1,4 +1,4 @@
-package com.github.skySpiral7.java.staticSerialization.strategy;
+package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
@@ -12,16 +12,38 @@ import java.lang.reflect.Modifier;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public enum StaticSerializableStrategy
+public class StaticSerializableStrategy implements SerializableStrategy
 {
-   ;  //no instances
+   private final ObjectStreamReader reader;
+   private final ObjectStreamWriter writer;
 
-   public static void write(final ObjectStreamWriter writer, final StaticSerializable data)
+   public StaticSerializableStrategy(final ObjectStreamReader reader)
    {
+      this.reader = reader;
+      this.writer = null;
+   }
+
+   public StaticSerializableStrategy(final ObjectStreamWriter writer)
+   {
+      this.reader = null;
+      this.writer = writer;
+   }
+
+   @Override
+   public boolean supports(final Class<?> actualClass)
+   {
+      return StaticSerializable.class.isAssignableFrom(actualClass);
+   }
+
+   @Override
+   public void write(final Object rawData)
+   {
+      final StaticSerializable data = (StaticSerializable) rawData;
       data.writeToStream(writer);
    }
 
-   public static <T> T read(final ObjectStreamReader reader, final Class<T> expectedClass)
+   @Override
+   public <T> T read(final Class<T> expectedClass)
    {
       if (!Modifier.isPublic(expectedClass.getModifiers()))
       {

@@ -7,6 +7,7 @@ import com.github.skySpiral7.java.staticSerialization.exception.DeserializationE
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
@@ -28,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class InternalStreamReader_UT
 {
+   private final BitWiseUtil bitWiseUtil = new BitWiseUtil();
+
    @Test
    public void constructor_throws()
    {
@@ -720,11 +723,11 @@ public class InternalStreamReader_UT
       fileBuilder.append("java.math.BigInteger;");
       final BigInteger data = BigInteger.TEN;
       byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
-      fileBuilder.append(BitWiseUtil.toBigEndianBytes(javaData.length, 4));
+      fileBuilder.append(bitWiseUtil.toBigEndianBytes(javaData.length, 4));
       fileBuilder.append(javaData);
       fileBuilder.append("java.math.BigInteger;");
       javaData = JavaSerializableStrategy.javaSerialize(null);
-      fileBuilder.append(BitWiseUtil.toBigEndianBytes(javaData.length, 4));
+      fileBuilder.append(bitWiseUtil.toBigEndianBytes(javaData.length, 4));
       fileBuilder.append(javaData);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 

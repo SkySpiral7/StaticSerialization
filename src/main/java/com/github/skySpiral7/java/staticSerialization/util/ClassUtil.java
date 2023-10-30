@@ -1,15 +1,11 @@
 package com.github.skySpiral7.java.staticSerialization.util;
 
-import java.util.Arrays;
 import java.util.List;
 
-public enum ClassUtil
+public class ClassUtil
 {
-   ;  //no instances
-   /**
-    * This constant isn't immutable but shouldn't be mutated.
-    */
-   private static final List<?> BOX_CLASS_LIST = Arrays.asList(Byte.class, Short.class, Integer.class, Long.class,  //integers
+
+   private static final List<?> BOX_CLASS_LIST = List.of(Byte.class, Short.class, Integer.class, Long.class,  //integers
       Float.class, Double.class, Boolean.class, Character.class);
 
    /**
@@ -38,7 +34,7 @@ public enum ClassUtil
     * return false). This method is not null safe (throws NPE).
     * @see Class#isPrimitive()
     */
-   public static boolean isPrimitiveOrBox(final Class<?> classInQuestion)
+   public boolean isPrimitiveOrBox(final Class<?> classInQuestion)
    {
       //void.class is a primitive but this method ignores that
       final boolean isPrimitive = classInQuestion.isPrimitive() && !void.class.equals(classInQuestion);
@@ -50,7 +46,7 @@ public enum ClassUtil
     * @return the primitive class that matches the passed in boxedClass
     * @throws IllegalArgumentException if boxedClass isn't a boxed class. Note that java.lang.Void isn't a boxed class.
     */
-   public static Class<?> unboxClass(final Class<?> boxedClass)
+   public Class<?> unboxClass(final Class<?> boxedClass)
    {
       //boxClassList.contains is pointless: just let it fall through
       if (Byte.class.equals(boxedClass)) return byte.class;
@@ -70,7 +66,7 @@ public enum ClassUtil
     * @throws IllegalArgumentException if primitiveClass isn't a primitive class
     * @throws IllegalArgumentException if primitiveClass is primitive void.class since java.lang.Void.class isn't a boxed class.
     */
-   public static Class<?> boxClass(final Class<?> primitiveClass)
+   public Class<?> boxClass(final Class<?> primitiveClass)
    {
       //expectedClass.isPrimitive() is pointless: just let it fall through
       if (byte.class.equals(primitiveClass)) return Byte.class;

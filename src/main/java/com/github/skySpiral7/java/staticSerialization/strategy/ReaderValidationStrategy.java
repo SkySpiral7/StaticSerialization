@@ -4,16 +4,24 @@ import com.github.skySpiral7.java.staticSerialization.exception.DeserializationE
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.lang.reflect.Array;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public enum ReaderValidationStrategy
+public class ReaderValidationStrategy
 {
-   ;  //no instances
+   private final ArrayUtil arrayUtil;
+   private final ClassUtil classUtil;
 
-   public static <T> void validateBoolean(final Class<T> expectedClass, final boolean allowChildClass)
+   public ReaderValidationStrategy(final UtilInstances utilInstances)
+   {
+      this.arrayUtil = utilInstances.getArrayUtil();
+      this.classUtil = utilInstances.getClassUtil();
+   }
+
+   public <T> void validateBoolean(final Class<T> expectedClass, final boolean allowChildClass)
    {
       if (!allowChildClass && !Boolean.class.equals(expectedClass))
          throw new IllegalStateException("Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: java.lang.Boolean");
@@ -23,12 +31,12 @@ public enum ReaderValidationStrategy
          throw new ClassCastException(Boolean.class.getName() + " cannot be cast to " + expectedClass.getName());
    }
 
-   public static <T_Expected, T_Actual extends T_Expected> Class<T_Actual> getClassFromHeader(final HeaderInformation actualHeader,
-                                                                                              final Class<T_Expected> expectedClass,
-                                                                                              final boolean allowChildClass)
+   public <T_Expected, T_Actual extends T_Expected> Class<T_Actual> getClassFromHeader(final HeaderInformation<?> actualHeader,
+                                                                                       final Class<T_Expected> expectedClass,
+                                                                                       final boolean allowChildClass)
    {
-      final int expectedDimensions = ArrayUtil.countArrayDimensions(expectedClass);
-      final Class<?> expectedBaseComponentType = ArrayUtil.getBaseComponentType(expectedClass);
+      final int expectedDimensions = arrayUtil.countArrayDimensions(expectedClass);
+      final Class<?> expectedBaseComponentType = arrayUtil.getBaseComponentType(expectedClass);
       //TODO: dimension count must always match except for Object
       if (!allowChildClass)
       {
@@ -38,7 +46,7 @@ public enum ReaderValidationStrategy
             if (expectedBaseComponentType.isPrimitive())
             {
                expectedHeader = HeaderInformation.forPossibleArray(
-                  ClassUtil.boxClass(expectedBaseComponentType).getName(),
+                  classUtil.boxClass(expectedBaseComponentType).getName(),
                   expectedDimensions,
                   true
                );
@@ -81,7 +89,7 @@ public enum ReaderValidationStrategy
       }
       if (0 != actualHeader.getDimensionCount())
       {
-         if (actualHeader.isPrimitiveArray()) actualClass = ClassUtil.unboxClass(actualClass);
+         if (actualHeader.isPrimitiveArray()) actualClass = classUtil.unboxClass(actualClass);
          //TODO: tests are likely thin
          if (!Object.class.equals(expectedClass) && !expectedBaseComponentType.isAssignableFrom(actualClass))
             //Not redundant because this is the only check for empty arrays

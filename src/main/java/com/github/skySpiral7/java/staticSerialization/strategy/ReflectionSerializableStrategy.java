@@ -3,20 +3,37 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.util.ReflectionUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.util.List;
 
-public enum ReflectionSerializableStrategy
+public class ReflectionSerializableStrategy
 {
-   ;  //no instances
    private static final Logger LOG = LogManager.getLogger();
+   private final ObjectStreamReader reader;
+   private final ObjectStreamWriter writer;
+   private final ReflectionUtil reflectionUtil;
 
-   public static void write(final ObjectStreamWriter writer, final Object data)
+   public ReflectionSerializableStrategy(final ObjectStreamReader reader, final UtilInstances utilInstances)
    {
-      final List<Field> allSerializableFields = ReflectionUtil.getAllSerializableFields(data.getClass());
+      this.reader = reader;
+      this.writer = null;
+      this.reflectionUtil = utilInstances.getReflectionUtil();
+   }
+
+   public ReflectionSerializableStrategy(final ObjectStreamWriter writer, final UtilInstances utilInstances)
+   {
+      this.reader = null;
+      this.writer = writer;
+      this.reflectionUtil = utilInstances.getReflectionUtil();
+   }
+
+   public void write(final Object data)
+   {
+      final List<Field> allSerializableFields = reflectionUtil.getAllSerializableFields(data.getClass());
       LOG.debug("size: " + allSerializableFields.size());
       allSerializableFields.forEach(field -> {
          field.setAccessible(true);
@@ -34,9 +51,9 @@ public enum ReflectionSerializableStrategy
       });
    }
 
-   public static void read(final ObjectStreamReader reader, final Object instance)
+   public void read(final Object instance)
    {
-      final List<Field> allSerializableFields = ReflectionUtil.getAllSerializableFields(instance.getClass());
+      final List<Field> allSerializableFields = reflectionUtil.getAllSerializableFields(instance.getClass());
       LOG.debug("size: " + allSerializableFields.size());
       allSerializableFields.forEach(field -> {
          field.setAccessible(true);

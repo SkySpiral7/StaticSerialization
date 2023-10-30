@@ -1,26 +1,46 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public enum IntegerSerializableStrategy
+public class IntegerSerializableStrategy
 {
-   ;  //no instances
    private static final Logger LOG = LogManager.getLogger();
 
-   public static void write(final EasyAppender appender, final int data)
+   private final EasyReader reader;
+   private final BitWiseUtil bitWiseUtil;
+   private final ByteSerializableStrategy byteSerializableStrategy;
+
+   public IntegerSerializableStrategy(final EasyReader reader, final UtilInstances utilInstances)
    {
-      LOG.debug(data);
-      ByteSerializableStrategy.writeBytes(appender, data, 4);
+      this.reader = reader;
+      bitWiseUtil = utilInstances.getBitWiseUtil();
+      byteSerializableStrategy = null;
    }
 
-   public static int read(final EasyReader reader, final String corruptMessage)
+   /**
+    * For writing
+    */
+   public IntegerSerializableStrategy(final ByteSerializableStrategy byteSerializableStrategy)
    {
-      final int data = BitWiseUtil.bigEndianBytesToInteger(
+      reader = null;
+      bitWiseUtil = null;
+      this.byteSerializableStrategy = byteSerializableStrategy;
+   }
+
+   public void write(final int data)
+   {
+      LOG.debug(data);
+      byteSerializableStrategy.writeBytes(data, 4);
+   }
+
+   public int read(final String corruptMessage)
+   {
+      final int data = bitWiseUtil.bigEndianBytesToInteger(
          StreamCorruptedException.throwIfNotEnoughData(reader, 4, corruptMessage)
       );
       LOG.debug(data);

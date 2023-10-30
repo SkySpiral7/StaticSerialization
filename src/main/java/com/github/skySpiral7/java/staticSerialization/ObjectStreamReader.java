@@ -1,8 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization;
 
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
-import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
-import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 
@@ -14,20 +12,16 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 
 public class ObjectStreamReader implements Closeable
 {
-   private final ObjectReaderRegistry registry;
-   private final EasyReader reader;
    private final InternalStreamReader internalStreamReader;
 
    public ObjectStreamReader(final File sourceFile)
    {
-      this(new AsynchronousFileReader(sourceFile));
+      internalStreamReader = new InternalStreamReader(this, sourceFile);
    }
 
    public ObjectStreamReader(final EasyReader reader)
    {
-      registry = new ObjectReaderRegistry();
-      this.reader = reader;
-      internalStreamReader = new InternalStreamReader(reader, registry);
+      internalStreamReader = new InternalStreamReader(this, reader);
    }
 
    /**
@@ -90,7 +84,7 @@ public class ObjectStreamReader implements Closeable
                                                                                  final boolean allowChildClass)
    {
       Objects.requireNonNull(expectedClass);
-      return internalStreamReader.readObjectInternal(this, null, expectedClass, allowChildClass);
+      return internalStreamReader.readObjectInternal(null, expectedClass, allowChildClass);
    }
 
    /**
@@ -101,17 +95,17 @@ public class ObjectStreamReader implements Closeable
     */
    public void readFieldsReflectively(final Object instance)
    {
-      registry.registerObject(instance);
-      ReflectionSerializableStrategy.read(this, instance);
+      internalStreamReader.getRegistry().registerObject(instance);
+      internalStreamReader.getReflectionSerializableStrategy().read(instance);
    }
 
    public boolean isRegistered(final Object instance)
    {
-      return registry.isRegistered(instance);
+      return internalStreamReader.getRegistry().isRegistered(instance);
    }
 
    public void registerObject(final Object instance)
    {
-      registry.registerObject(instance);
+      internalStreamReader.getRegistry().registerObject(instance);
    }
 }

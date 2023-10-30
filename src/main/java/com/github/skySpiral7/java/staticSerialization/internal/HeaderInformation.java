@@ -57,7 +57,8 @@ public final class HeaderInformation<T_Value>
    /**
     * For private use and testing only. Takes every value as-is.
     */
-   HeaderInformation(final String className, final T_Value value, final int dimensionCount, final boolean primitiveArray)
+   public HeaderInformation(final String className, final T_Value value, final int dimensionCount,
+                      final boolean primitiveArray)
    {
       this.className = className;
       this.value = value;

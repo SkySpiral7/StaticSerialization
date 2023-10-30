@@ -13,6 +13,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class ClassUtil_UT
 {
+   private final ClassUtil testObject = new ClassUtil();
+
    @Test
    public <T extends Enum<T>> void cast_compiles()
    {
@@ -28,41 +30,41 @@ public class ClassUtil_UT
    @Test
    public void isBoxedPrimitive()
    {
-      assertFalse(ClassUtil.isPrimitiveOrBox(String.class));
+      assertFalse(testObject.isPrimitiveOrBox(String.class));
 
-      assertTrue(ClassUtil.isPrimitiveOrBox(Byte.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(Short.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(Integer.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(Long.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(Float.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(Double.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(Boolean.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(Character.class));
+      assertTrue(testObject.isPrimitiveOrBox(Byte.class));
+      assertTrue(testObject.isPrimitiveOrBox(Short.class));
+      assertTrue(testObject.isPrimitiveOrBox(Integer.class));
+      assertTrue(testObject.isPrimitiveOrBox(Long.class));
+      assertTrue(testObject.isPrimitiveOrBox(Float.class));
+      assertTrue(testObject.isPrimitiveOrBox(Double.class));
+      assertTrue(testObject.isPrimitiveOrBox(Boolean.class));
+      assertTrue(testObject.isPrimitiveOrBox(Character.class));
 
-      assertTrue(ClassUtil.isPrimitiveOrBox(byte.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(short.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(int.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(long.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(float.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(double.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(boolean.class));
-      assertTrue(ClassUtil.isPrimitiveOrBox(char.class));
+      assertTrue(testObject.isPrimitiveOrBox(byte.class));
+      assertTrue(testObject.isPrimitiveOrBox(short.class));
+      assertTrue(testObject.isPrimitiveOrBox(int.class));
+      assertTrue(testObject.isPrimitiveOrBox(long.class));
+      assertTrue(testObject.isPrimitiveOrBox(float.class));
+      assertTrue(testObject.isPrimitiveOrBox(double.class));
+      assertTrue(testObject.isPrimitiveOrBox(boolean.class));
+      assertTrue(testObject.isPrimitiveOrBox(char.class));
 
-      assertFalse(ClassUtil.isPrimitiveOrBox(Void.class));
-      assertFalse(ClassUtil.isPrimitiveOrBox(void.class));
+      assertFalse(testObject.isPrimitiveOrBox(Void.class));
+      assertFalse(testObject.isPrimitiveOrBox(void.class));
    }
 
    @Test
    public void unboxClass()
    {
-      assertEquals(byte.class, ClassUtil.unboxClass(Byte.class));
-      assertEquals(short.class, ClassUtil.unboxClass(Short.class));
-      assertEquals(int.class, ClassUtil.unboxClass(Integer.class));
-      assertEquals(long.class, ClassUtil.unboxClass(Long.class));
-      assertEquals(float.class, ClassUtil.unboxClass(Float.class));
-      assertEquals(double.class, ClassUtil.unboxClass(Double.class));
-      assertEquals(boolean.class, ClassUtil.unboxClass(Boolean.class));
-      assertEquals(char.class, ClassUtil.unboxClass(Character.class));
+      assertEquals(byte.class, testObject.unboxClass(Byte.class));
+      assertEquals(short.class, testObject.unboxClass(Short.class));
+      assertEquals(int.class, testObject.unboxClass(Integer.class));
+      assertEquals(long.class, testObject.unboxClass(Long.class));
+      assertEquals(float.class, testObject.unboxClass(Float.class));
+      assertEquals(double.class, testObject.unboxClass(Double.class));
+      assertEquals(boolean.class, testObject.unboxClass(Boolean.class));
+      assertEquals(char.class, testObject.unboxClass(Character.class));
    }
 
    @Test
@@ -70,7 +72,7 @@ public class ClassUtil_UT
    {
       try
       {
-         ClassUtil.unboxClass(String.class);
+         testObject.unboxClass(String.class);
          fail("Didn't throw");
       }
       catch (final IllegalArgumentException actual)
@@ -84,7 +86,7 @@ public class ClassUtil_UT
    {
       try
       {
-         ClassUtil.unboxClass(Void.class);
+         testObject.unboxClass(Void.class);
          fail("Didn't throw");
       }
       catch (final IllegalArgumentException actual)
@@ -96,14 +98,14 @@ public class ClassUtil_UT
    @Test
    public void boxClass()
    {
-      assertEquals(Byte.class, ClassUtil.boxClass(byte.class));
-      assertEquals(Short.class, ClassUtil.boxClass(short.class));
-      assertEquals(Integer.class, ClassUtil.boxClass(int.class));
-      assertEquals(Long.class, ClassUtil.boxClass(long.class));
-      assertEquals(Float.class, ClassUtil.boxClass(float.class));
-      assertEquals(Double.class, ClassUtil.boxClass(double.class));
-      assertEquals(Boolean.class, ClassUtil.boxClass(boolean.class));
-      assertEquals(Character.class, ClassUtil.boxClass(char.class));
+      assertEquals(Byte.class, testObject.boxClass(byte.class));
+      assertEquals(Short.class, testObject.boxClass(short.class));
+      assertEquals(Integer.class, testObject.boxClass(int.class));
+      assertEquals(Long.class, testObject.boxClass(long.class));
+      assertEquals(Float.class, testObject.boxClass(float.class));
+      assertEquals(Double.class, testObject.boxClass(double.class));
+      assertEquals(Boolean.class, testObject.boxClass(boolean.class));
+      assertEquals(Character.class, testObject.boxClass(char.class));
    }
 
    @Test
@@ -111,7 +113,7 @@ public class ClassUtil_UT
    {
       try
       {
-         ClassUtil.boxClass(String.class);
+         testObject.boxClass(String.class);
          fail("Didn't throw");
       }
       catch (final IllegalArgumentException actual)
@@ -125,7 +127,7 @@ public class ClassUtil_UT
    {
       try
       {
-         ClassUtil.boxClass(void.class);
+         testObject.boxClass(void.class);
          fail("Didn't throw");
       }
       catch (final IllegalArgumentException actual)

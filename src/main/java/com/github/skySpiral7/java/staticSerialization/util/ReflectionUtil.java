@@ -8,16 +8,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum ReflectionUtil
+public class ReflectionUtil
 {
-   //no instances
-   ;
 
    /**
     * @param subject the class to inspect
     * @return all fields that can and should be written with ObjectStreamWriter. Note that it doesn't consider field type (only modifiers).
     */
-   public static List<Field> getAllSerializableFields(final Class<?> subject)
+   public List<Field> getAllSerializableFields(final Class<?> subject)
    {
       final List<Class<?>> allClasses = new ArrayList<>();
       Class<?> cursor = subject;
