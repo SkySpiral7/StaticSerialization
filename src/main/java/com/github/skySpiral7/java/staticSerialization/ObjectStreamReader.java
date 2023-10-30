@@ -10,18 +10,19 @@ import java.util.Objects;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
+//TODO: move all read/write int/ext to fields
 public class ObjectStreamReader implements Closeable
 {
    private final InternalStreamReader internalStreamReader;
 
    public ObjectStreamReader(final File sourceFile)
    {
-      internalStreamReader = new InternalStreamReader(sourceFile);
+      internalStreamReader = new InternalStreamReader(this, sourceFile);
    }
 
    public ObjectStreamReader(final EasyReader reader)
    {
-      internalStreamReader = new InternalStreamReader(reader);
+      internalStreamReader = new InternalStreamReader(this, reader);
    }
 
    /**
@@ -84,7 +85,7 @@ public class ObjectStreamReader implements Closeable
                                                                                  final boolean allowChildClass)
    {
       Objects.requireNonNull(expectedClass);
-      return internalStreamReader.readObjectInternal(this, null, expectedClass, allowChildClass);
+      return internalStreamReader.readObjectInternal(null, expectedClass, allowChildClass);
    }
 
    /**
@@ -96,7 +97,7 @@ public class ObjectStreamReader implements Closeable
    public void readFieldsReflectively(final Object instance)
    {
       internalStreamReader.getRegistry().registerObject(instance);
-      internalStreamReader.getReflectionSerializableStrategy().read(this, instance);
+      internalStreamReader.getReflectionSerializableStrategy().read(instance);
    }
 
    public boolean isRegistered(final Object instance)

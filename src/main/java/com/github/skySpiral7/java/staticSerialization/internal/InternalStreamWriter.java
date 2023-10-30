@@ -13,6 +13,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 
+//TODO: move all read/write int/ext to fields
 public class InternalStreamWriter implements Closeable, Flushable
 {
    private final EasyAppender appender;
@@ -20,20 +21,21 @@ public class InternalStreamWriter implements Closeable, Flushable
    private final HeaderSerializableStrategy headerSerializableStrategy;
    private final ReflectionSerializableStrategy reflectionSerializableStrategy;
 
-   public InternalStreamWriter(final File destination)
+   public InternalStreamWriter(final ObjectStreamWriter streamWriter, final File destination)
    {
-      this(new AsynchronousFileAppender(destination));
+      this(streamWriter, new AsynchronousFileAppender(destination));
    }
 
-   public InternalStreamWriter(final EasyAppender appender)
+   public InternalStreamWriter(final ObjectStreamWriter streamWriter, final EasyAppender appender)
    {
-      this(appender, new ObjectWriterRegistry(), new UtilInstances());
+      this(streamWriter, appender, new ObjectWriterRegistry(), new UtilInstances());
    }
 
-   public InternalStreamWriter(final EasyAppender appender, final ObjectWriterRegistry registry,
+   public InternalStreamWriter(final ObjectStreamWriter streamWriter, final EasyAppender appender,
+                               final ObjectWriterRegistry registry,
                                final UtilInstances utilInstances)
    {
-      this(appender, new StrategyInstances(appender, registry, utilInstances));
+      this(appender, new StrategyInstances(streamWriter, appender, registry, utilInstances));
    }
 
    public InternalStreamWriter(final EasyAppender appender, final StrategyInstances strategyInstances)

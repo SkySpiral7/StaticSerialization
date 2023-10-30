@@ -1,5 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
+import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
@@ -25,13 +27,14 @@ public class StrategyInstances
    private final StaticSerializableStrategy staticSerializableStrategy;
    private final StringSerializableStrategy stringSerializableStrategy;
 
-   public StrategyInstances(final EasyReader reader, final ObjectReaderRegistry registry,
+   public StrategyInstances(final ObjectStreamReader streamReader, final EasyReader reader,
+                            final ObjectReaderRegistry registry,
                             final UtilInstances utilInstances)
    {
       this.byteSerializableStrategy = null;  //don't need
       this.integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.readerValidationStrategy = new ReaderValidationStrategy(utilInstances);
-      this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(utilInstances);
+      this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamReader, utilInstances);
       this.shortSerializableStrategy = new ShortSerializableStrategy(reader);
       this.staticSerializableStrategy = new StaticSerializableStrategy();
 
@@ -49,12 +52,13 @@ public class StrategyInstances
          staticSerializableStrategy, stringSerializableStrategy);
    }
 
-   public StrategyInstances(final EasyAppender appender, final ObjectWriterRegistry registry,
+   public StrategyInstances(final ObjectStreamWriter streamWriter, final EasyAppender appender,
+                            final ObjectWriterRegistry registry,
                             final UtilInstances utilInstances)
    {
       this.byteSerializableStrategy = new ByteSerializableStrategy(appender, utilInstances);
       this.readerValidationStrategy = null;  //don't need
-      this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(utilInstances);
+      this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamWriter, utilInstances);
       this.shortSerializableStrategy = null;  //don't need
       this.staticSerializableStrategy = new StaticSerializableStrategy();
 

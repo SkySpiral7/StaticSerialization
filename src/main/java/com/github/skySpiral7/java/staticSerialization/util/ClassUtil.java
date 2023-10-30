@@ -26,7 +26,6 @@ public class ClassUtil
    @SuppressWarnings("unchecked")
    public static <T> T cast(final Object anything)
    {
-      //TODO: should this be an exception to the DI due to static import?
       return (T) anything;
    }
 

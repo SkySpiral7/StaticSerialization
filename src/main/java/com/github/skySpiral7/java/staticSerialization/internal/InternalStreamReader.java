@@ -16,8 +16,10 @@ import java.io.File;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
+//TODO: move all read/write int/ext to fields
 public class InternalStreamReader implements Closeable
 {
+   private final ObjectStreamReader streamReader;
    private final EasyReader reader;
    private final ObjectReaderRegistry registry;
    private final ClassUtil classUtil;
@@ -26,25 +28,28 @@ public class InternalStreamReader implements Closeable
    private final ReaderValidationStrategy readerValidationStrategy;
    private final ReflectionSerializableStrategy reflectionSerializableStrategy;
 
-   public InternalStreamReader(final File sourceFile)
+   public InternalStreamReader(final ObjectStreamReader streamReader, final File sourceFile)
    {
-      this(new AsynchronousFileReader(sourceFile));
+      this(streamReader, new AsynchronousFileReader(sourceFile));
    }
 
-   public InternalStreamReader(final EasyReader reader)
+   public InternalStreamReader(final ObjectStreamReader streamReader, final EasyReader reader)
    {
-      this(reader, new ObjectReaderRegistry(), new UtilInstances());
+      this(streamReader, reader, new ObjectReaderRegistry(), new UtilInstances());
    }
 
-   private InternalStreamReader(final EasyReader reader, final ObjectReaderRegistry registry,
-                               final UtilInstances utilInstances)
+   private InternalStreamReader(final ObjectStreamReader streamReader, final EasyReader reader, final ObjectReaderRegistry registry,
+                                final UtilInstances utilInstances)
    {
-      this(reader, registry, utilInstances.getClassUtil(), new StrategyInstances(reader, registry, utilInstances));
+      this(streamReader, reader, registry, utilInstances.getClassUtil(), new StrategyInstances(streamReader, reader,
+         registry, utilInstances));
    }
 
-   public InternalStreamReader(final EasyReader reader, final ObjectReaderRegistry registry,
+   public InternalStreamReader(final ObjectStreamReader streamReader, final EasyReader reader,
+                               final ObjectReaderRegistry registry,
                                final ClassUtil classUtil, final StrategyInstances strategyInstances)
    {
+      this.streamReader = streamReader;
       this.reader = reader;
       this.registry = registry;
       this.classUtil = classUtil;
@@ -63,8 +68,7 @@ public class InternalStreamReader implements Closeable
    /**
     * @param allowChildClass true will throw if the class found isn't the exact same. false allows casting.
     */
-   public <T_Expected, T_Actual extends T_Expected> T_Actual readObjectInternal(final ObjectStreamReader streamReader,
-                                                                                final Class<?> inheritFromClass,
+   public <T_Expected, T_Actual extends T_Expected> T_Actual readObjectInternal(final Class<?> inheritFromClass,
                                                                                 Class<T_Expected> expectedClass,
                                                                                 final boolean allowChildClass)
    {

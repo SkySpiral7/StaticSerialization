@@ -46,7 +46,7 @@ public class ArraySerializableStrategy
 
       for (int readIndex = 0; readIndex < arrayLength; ++readIndex)
       {
-         final T_Component element = internalStreamReader.readObjectInternal(streamReader, componentType, componentType, true);
+         final T_Component element = internalStreamReader.readObjectInternal(componentType, componentType, true);
          //boolean is the only primitive that could return null
          //TODO: I don't remember why. make sure there's an IT for this
          if (null == element && componentType.isPrimitive())

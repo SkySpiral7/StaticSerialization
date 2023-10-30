@@ -8,18 +8,19 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
 
+//TODO: move all read/write int/ext to fields
 public class ObjectStreamWriter implements Closeable, Flushable
 {
    private final InternalStreamWriter internalStreamWriter;
 
    public ObjectStreamWriter(final File destination)
    {
-      internalStreamWriter = new InternalStreamWriter(destination);
+      internalStreamWriter = new InternalStreamWriter(this, destination);
    }
 
    public ObjectStreamWriter(final EasyAppender appender)
    {
-      internalStreamWriter = new InternalStreamWriter(appender);
+      internalStreamWriter = new InternalStreamWriter(this, appender);
    }
 
    /**
@@ -62,6 +63,6 @@ public class ObjectStreamWriter implements Closeable, Flushable
 
    public void writeFieldsReflectively(final Object data)
    {
-      internalStreamWriter.getReflectionSerializableStrategy().write(this, data);
+      internalStreamWriter.getReflectionSerializableStrategy().write(data);
    }
 }

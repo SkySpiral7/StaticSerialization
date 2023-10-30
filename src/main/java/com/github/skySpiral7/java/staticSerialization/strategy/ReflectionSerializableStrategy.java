@@ -13,14 +13,25 @@ import java.util.List;
 public class ReflectionSerializableStrategy
 {
    private static final Logger LOG = LogManager.getLogger();
+   private final ObjectStreamReader reader;
+   private final ObjectStreamWriter writer;
    private final ReflectionUtil reflectionUtil;
 
-   public ReflectionSerializableStrategy(final UtilInstances utilInstances)
+   public ReflectionSerializableStrategy(final ObjectStreamReader reader, final UtilInstances utilInstances)
    {
+      this.reader = reader;
+      this.writer = null;
       this.reflectionUtil = utilInstances.getReflectionUtil();
    }
 
-   public void write(final ObjectStreamWriter writer, final Object data)
+   public ReflectionSerializableStrategy(final ObjectStreamWriter writer, final UtilInstances utilInstances)
+   {
+      this.reader = null;
+      this.writer = writer;
+      this.reflectionUtil = utilInstances.getReflectionUtil();
+   }
+
+   public void write(final Object data)
    {
       final List<Field> allSerializableFields = reflectionUtil.getAllSerializableFields(data.getClass());
       LOG.debug("size: " + allSerializableFields.size());
@@ -40,7 +51,7 @@ public class ReflectionSerializableStrategy
       });
    }
 
-   public void read(final ObjectStreamReader reader, final Object instance)
+   public void read(final Object instance)
    {
       final List<Field> allSerializableFields = reflectionUtil.getAllSerializableFields(instance.getClass());
       LOG.debug("size: " + allSerializableFields.size());

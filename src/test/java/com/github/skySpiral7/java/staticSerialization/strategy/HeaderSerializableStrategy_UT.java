@@ -842,13 +842,13 @@ public class HeaderSerializableStrategy_UT
 
    private void init(final EasyReader reader, final ObjectReaderRegistry registry)
    {
-      final StrategyInstances strategyInstances = new StrategyInstances(reader, registry, new UtilInstances());
+      final StrategyInstances strategyInstances = new StrategyInstances(null, reader, registry, new UtilInstances());
       testObject = strategyInstances.getHeaderSerializableStrategy();
    }
 
    private void init(final EasyAppender appender, final ObjectWriterRegistry registry)
    {
-      final StrategyInstances strategyInstances = new StrategyInstances(appender, registry, new UtilInstances());
+      final StrategyInstances strategyInstances = new StrategyInstances(null, appender, registry, new UtilInstances());
       testObject = strategyInstances.getHeaderSerializableStrategy();
    }
 }

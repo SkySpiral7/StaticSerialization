@@ -44,7 +44,8 @@ public class AllSerializableStrategy
                             final Object data)
    {
       final Class<?> dataClass = data.getClass();
-      //TODO: change these to command interface with supports(). compression trick will be first
+      //TODO: change these to interface with supports(). compression trick will be first
+      //new package: generic
       if (classUtil.isPrimitiveOrBox(dataClass))
       {
          boxPrimitiveSerializableStrategy.write(data);
