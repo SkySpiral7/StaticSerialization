@@ -42,14 +42,6 @@ public class InternalStreamWriter implements Closeable, Flushable
       reflectionSerializableStrategy = strategyInstances.getReflectionSerializableStrategy();
    }
 
-   public InternalStreamWriter(final EasyAppender appender, final StrategyInstances strategyInstances)
-   {
-      this.appender = appender;
-      allSerializableStrategy = strategyInstances.getAllSerializableStrategy();
-      headerSerializableStrategy = strategyInstances.getHeaderSerializableStrategy();
-      reflectionSerializableStrategy = strategyInstances.getReflectionSerializableStrategy();
-   }
-
    /**
     * @see AsynchronousFileAppender#flush()
     */

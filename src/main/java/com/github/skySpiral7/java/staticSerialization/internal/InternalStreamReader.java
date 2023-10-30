@@ -52,20 +52,6 @@ public class InternalStreamReader implements Closeable
       reflectionSerializableStrategy = strategyInstances.getReflectionSerializableStrategy();
    }
 
-   public InternalStreamReader(final ObjectStreamReader streamReader, final EasyReader reader,
-                               final ObjectReaderRegistry registry,
-                               final ClassUtil classUtil, final StrategyInstances strategyInstances)
-   {
-      this.streamReader = streamReader;
-      this.reader = reader;
-      this.registry = registry;
-      this.classUtil = classUtil;
-      allSerializableStrategy = strategyInstances.getAllSerializableStrategy();
-      headerSerializableStrategy = strategyInstances.getHeaderSerializableStrategy();
-      readerValidationStrategy = strategyInstances.getReaderValidationStrategy();
-      reflectionSerializableStrategy = strategyInstances.getReflectionSerializableStrategy();
-   }
-
    /**
     * @see AsynchronousFileReader#close()
     */

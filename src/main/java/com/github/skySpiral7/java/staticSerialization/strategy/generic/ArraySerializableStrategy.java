@@ -1,20 +1,19 @@
-package com.github.skySpiral7.java.staticSerialization.strategy;
+package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
-import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 
 import java.lang.reflect.Array;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class ArraySerializableStrategy
+public class ArraySerializableStrategy implements SerializableStrategy
 {
    private final ObjectStreamReader streamReader;
    private final InternalStreamReader internalStreamReader;
-   private final ObjectStreamWriter streamWriter;
    private final InternalStreamWriter internalStreamWriter;
    private final IntegerSerializableStrategy integerSerializableStrategy;
 
@@ -24,22 +23,26 @@ public class ArraySerializableStrategy
    {
       this.streamReader = streamReader;
       this.internalStreamReader = internalStreamReader;
-      this.streamWriter = null;
       this.internalStreamWriter = null;
       this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
-   public ArraySerializableStrategy(final ObjectStreamWriter streamWriter,
-                                    final InternalStreamWriter internalStreamWriter,
+   public ArraySerializableStrategy(final InternalStreamWriter internalStreamWriter,
                                     final IntegerSerializableStrategy integerSerializableStrategy)
    {
       this.streamReader = null;
       this.internalStreamReader = null;
-      this.streamWriter = streamWriter;
       this.internalStreamWriter = internalStreamWriter;
       this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
+   @Override
+   public boolean supports(Class<?> actualClass)
+   {
+      return actualClass.isArray();
+   }
+
+   @Override
    public void write(final Object data)
    {
       final int length = Array.getLength(data);
@@ -52,11 +55,13 @@ public class ArraySerializableStrategy
       }
    }
 
-   public <T_Array, T_Component> T_Array read(final Class<T_Component> componentType)
+   @Override
+   public <T> T read(final Class<T> actualClass)
    {
+      final Class<?> componentType = actualClass.getComponentType();
       final int arrayLength = integerSerializableStrategy.read("Missing " +
          "array length");
-      final T_Array arrayValue = cast(Array.newInstance(componentType, arrayLength));
+      final T arrayValue = cast(Array.newInstance(componentType, arrayLength));
 
       //this is only safe because creating an empty array only requires reading a primitive from stream
       //any constructor that reads objects would register those and mess up the registry order
@@ -65,7 +70,7 @@ public class ArraySerializableStrategy
 
       for (int readIndex = 0; readIndex < arrayLength; ++readIndex)
       {
-         final T_Component element = internalStreamReader.readObjectInternal(componentType, componentType, true);
+         final Object element = internalStreamReader.readObjectInternal(componentType, componentType, true);
          //boolean is the only primitive that could return null
          //TODO: I don't remember why. make sure there's an IT for this
          if (null == element && componentType.isPrimitive())

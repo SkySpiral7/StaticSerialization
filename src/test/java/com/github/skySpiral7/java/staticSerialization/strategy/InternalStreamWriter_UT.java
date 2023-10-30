@@ -3,6 +3,7 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import org.junit.jupiter.api.Test;

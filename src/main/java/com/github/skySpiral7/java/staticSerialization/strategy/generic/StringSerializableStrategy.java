@@ -1,6 +1,8 @@
-package com.github.skySpiral7.java.staticSerialization.strategy;
+package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import org.apache.logging.log4j.LogManager;
@@ -9,7 +11,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
-public class StringSerializableStrategy
+import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
+
+public class StringSerializableStrategy implements SerializableStrategy
 {
    private static final Logger LOG = LogManager.getLogger();
    private final EasyReader reader;
@@ -36,15 +40,24 @@ public class StringSerializableStrategy
       this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
-   public void writeWithLength(final String data)
+   @Override
+   public boolean supports(final Class<?> actualClass)
    {
+      return String.class.isAssignableFrom(actualClass);
+   }
+
+   @Override
+   public void write(final Object rawData)
+   {
+      final String data = (String) rawData;
       LOG.debug(data);
       final byte[] writeMe = data.getBytes(StandardCharsets.UTF_8);
       integerSerializableStrategy.write(writeMe.length);
       appender.append(writeMe);
    }
 
-   public String readWithLength()
+   @Override
+   public <T> T read(final Class<T> actualClass)
    {
       final int stringByteLength = integerSerializableStrategy.read("Missing string byte length");
       /*TODO: could use an Overlong null delimiter 0xC080 to reduce overhead by 2 but harder to read stream
@@ -53,7 +66,7 @@ public class StringSerializableStrategy
       byte[] stringData = StreamCorruptedException.throwIfNotEnoughData(reader, stringByteLength, "Missing string data");
       final String result = new String(stringData, StandardCharsets.UTF_8);
       LOG.debug(result);
-      return result;
+      return cast(result);
    }
 
    public void writeClassName(final String className)

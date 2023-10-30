@@ -7,6 +7,7 @@ import com.github.skySpiral7.java.staticSerialization.exception.DeserializationE
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;

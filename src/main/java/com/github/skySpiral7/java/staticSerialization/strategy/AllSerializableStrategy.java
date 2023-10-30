@@ -2,6 +2,12 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
@@ -39,8 +45,6 @@ public class AllSerializableStrategy
    public void write(final Object data)
    {
       final Class<?> dataClass = data.getClass();
-      //TODO: change these to interface with supports(). compression trick will be first
-      //new package: generic
       if (classUtil.isPrimitiveOrBox(dataClass))
       {
          boxPrimitiveSerializableStrategy.write(data);
@@ -48,7 +52,7 @@ public class AllSerializableStrategy
       }
       if (data instanceof String)
       {
-         stringSerializableStrategy.writeWithLength((String) data);
+         stringSerializableStrategy.write(data);
          return;
       }
       if (dataClass.isArray())
@@ -59,18 +63,18 @@ public class AllSerializableStrategy
 
       if (data instanceof StaticSerializable)
       {
-         staticSerializableStrategy.write((StaticSerializable) data);
+         staticSerializableStrategy.write(data);
          return;
       }
 
       if (dataClass.isEnum())
       {
-         enumSerializableStrategy.write((Enum<?>) data);
+         enumSerializableStrategy.write(data);
          return;
       }
       if (data instanceof Serializable)
       {
-         javaSerializableStrategy.writeWithLength((Serializable) data);
+         javaSerializableStrategy.write(data);
          return;
       }
 
@@ -83,10 +87,10 @@ public class AllSerializableStrategy
          return boxPrimitiveSerializableStrategy.read(actualClass);
       if (String.class.equals(actualClass))
       {
-         return cast(stringSerializableStrategy.readWithLength());
+         return cast(stringSerializableStrategy.read(actualClass));
       }
       if (actualClass.isArray())
-         return arraySerializableStrategy.read(actualClass.getComponentType());
+         return arraySerializableStrategy.read(actualClass);
 
       if (StaticSerializable.class.isAssignableFrom(actualClass))
          return staticSerializableStrategy.read(actualClass);
@@ -94,7 +98,7 @@ public class AllSerializableStrategy
       //TODO: does java serial allow enum data? if yes: JavaSerializableStrategy, if no: doc it
       if (actualClass.isEnum()) return enumSerializableStrategy.read(actualClass);
       if (Serializable.class.isAssignableFrom(actualClass))
-         return javaSerializableStrategy.readWithLength();
+         return javaSerializableStrategy.read(actualClass);
 
       throw new NotSerializableException(actualClass);
    }

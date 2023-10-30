@@ -1,16 +1,21 @@
-package com.github.skySpiral7.java.staticSerialization.strategy;
+package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.ShortSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class BoxPrimitiveSerializableStrategy
+public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
 {
    private final EasyReader reader;
    private final BitWiseUtil bitWiseUtil;
+   private final ClassUtil classUtil;
    private final ByteSerializableStrategy byteSerializableStrategy;
    private final ShortSerializableStrategy shortSerializableStrategy;
    private final IntegerSerializableStrategy integerSerializableStrategy;
@@ -24,6 +29,7 @@ public class BoxPrimitiveSerializableStrategy
    {
       this.reader = null;
       this.bitWiseUtil = utilInstances.getBitWiseUtil();
+      this.classUtil = utilInstances.getClassUtil();
       this.byteSerializableStrategy = byteSerializableStrategy;
       this.shortSerializableStrategy = null;
       this.integerSerializableStrategy = integerSerializableStrategy;
@@ -35,11 +41,19 @@ public class BoxPrimitiveSerializableStrategy
    {
       this.reader = reader;
       this.bitWiseUtil = utilInstances.getBitWiseUtil();
+      this.classUtil = utilInstances.getClassUtil();
       this.byteSerializableStrategy = null;
       this.shortSerializableStrategy = shortSerializableStrategy;
       this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
+   @Override
+   public boolean supports(final Class<?> actualClass)
+   {
+      return classUtil.isPrimitiveOrBox(actualClass);
+   }
+
+   @Override
    public void write(final Object data)
    {
       if (data instanceof Byte) byteSerializableStrategy.writeByte((byte) data);
@@ -55,7 +69,7 @@ public class BoxPrimitiveSerializableStrategy
       }
       else if (data instanceof Double)
       {
-         long castedData = Double.doubleToLongBits((double) data);
+         final long castedData = Double.doubleToLongBits((double) data);
          //intentionally normalizes NaN
          byteSerializableStrategy.writeBytes(castedData, 8);
       }
@@ -65,6 +79,7 @@ public class BoxPrimitiveSerializableStrategy
       else throw new AssertionError("Method shouldn't've been called");
    }
 
+   @Override
    public <T> T read(final Class<T> expectedClass)
    {
       if (Byte.class.equals(expectedClass))

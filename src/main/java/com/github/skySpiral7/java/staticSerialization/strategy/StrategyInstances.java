@@ -6,6 +6,12 @@ import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamRea
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
@@ -69,8 +75,7 @@ public class StrategyInstances
 
       //ones that need other strategies
       this.integerSerializableStrategy = new IntegerSerializableStrategy(byteSerializableStrategy);
-      this.arraySerializableStrategy = new ArraySerializableStrategy(streamWriter, internalStreamWriter,
-         integerSerializableStrategy);
+      this.arraySerializableStrategy = new ArraySerializableStrategy(internalStreamWriter, integerSerializableStrategy);
       this.javaSerializableStrategy = new JavaSerializableStrategy(appender, byteSerializableStrategy);
       this.enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       this.stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy,

@@ -4,6 +4,7 @@ import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedE
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
@@ -67,7 +68,9 @@ public class HeaderSerializableStrategy
       COMPRESSED_HEADER_TO_CLASS.put('^', Double.class);
       COMPRESSED_HEADER_TO_CLASS.put('&', Character.class);
       COMPRESSED_HEADER_TO_CLASS.put('*', String.class);
-      //TODO: more memnotic: ' char, " string, ` string with nulls, & for id
+      //TODO: more memnotic: ' char, " null terminated string, ` length string, & for id
+      //then have classes be a " string to unreserve ;
+      //compression: pick between overlong null or length
 
       CLASS_TO_COMPRESSED_HEADER = new HashMap<>();
       CLASS_TO_COMPRESSED_HEADER.put(Byte.class, '~');
@@ -192,8 +195,7 @@ public class HeaderSerializableStrategy
 
       //else firstByte is part of a class name
       return HeaderInformation.forPossibleArray(stringSerializableStrategy.readClassName(firstByte),
-         dimensionCount,
-         primitiveArray);
+         dimensionCount, primitiveArray);
    }
 
    //TODO: rename since true also for null, bool
