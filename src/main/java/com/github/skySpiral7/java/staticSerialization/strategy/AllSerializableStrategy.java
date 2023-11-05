@@ -8,6 +8,7 @@ import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSeria
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.SerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.UuidSerializableStrategy;
 
 import java.util.List;
 
@@ -20,12 +21,14 @@ public class AllSerializableStrategy
                                   final EnumSerializableStrategy enumSerializableStrategy,
                                   final JavaSerializableStrategy javaSerializableStrategy,
                                   final StaticSerializableStrategy staticSerializableStrategy,
-                                  final StringSerializableStrategy stringSerializableStrategy)
+                                  final StringSerializableStrategy stringSerializableStrategy,
+                                  final UuidSerializableStrategy uuidSerializableStrategy)
    {
       /* order: supported java.lang serial must be before javaSerializableStrategy so that they get compression,
        * staticSerializableStrategy before java since it has priority,
        * enum in between so that it can be static by default but can also be manually serial. */
       strategyList = List.of(boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
+         uuidSerializableStrategy,
          staticSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy);
    }
 

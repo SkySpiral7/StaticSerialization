@@ -17,6 +17,7 @@
       <junit-jupiter-engine.version>5.10.0</junit-jupiter-engine.version>
       <jackson-databind.version>2.15.2</jackson-databind.version>
       <log4j2.version>2.20.0</log4j2.version>
+      <jmockit.version>1.49</jmockit.version>
 
       <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
       <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
@@ -58,6 +59,12 @@
          <scope>test</scope>
       </dependency>
       <dependency>
+         <groupId>org.jmockit</groupId>
+         <artifactId>jmockit</artifactId>
+         <version>${jmockit.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>org.junit.jupiter</groupId>
          <artifactId>junit-jupiter-engine</artifactId>
          <version>${junit-jupiter-engine.version}</version>
@@ -91,6 +98,9 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <version>${maven-surefire-plugin.version}</version>
             <configuration>
+               <argLine>
+                  -javaagent:"${settings.localRepository}"/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar
+               </argLine>
                <includes>
                   <include>**/*_UT.java</include>
                   <include>**/*_IT.java</include>
