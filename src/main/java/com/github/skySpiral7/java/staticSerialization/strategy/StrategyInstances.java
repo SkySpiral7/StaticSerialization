@@ -7,6 +7,7 @@ import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWri
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.BitSetSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
@@ -47,11 +48,14 @@ public class StrategyInstances
       final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(reader, integerSerializableStrategy);
       final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(reader, utilInstances,
          shortSerializableStrategy, integerSerializableStrategy);
+      final BitSetSerializableStrategy bitSetSerializableStrategy =
+         new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
 
       this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances,
          integerSerializableStrategy, stringSerializableStrategy);
       this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
+         bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
          staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
    }
@@ -76,11 +80,14 @@ public class StrategyInstances
          integerSerializableStrategy);
       final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(utilInstances,
          byteSerializableStrategy, integerSerializableStrategy);
+      final BitSetSerializableStrategy bitSetSerializableStrategy =
+         new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
 
       this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
          byteSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
       this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
+         bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
          staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
    }

@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class UuidSerializableStrategy_UT
 {
    @Test
-   public void compress_isValid_whenRoundTrip()
+   public void compress_matches_whenRoundTrip()
    {
       final UUID uuid = UUID.randomUUID();
       final long[] compressed = UuidSerializableStrategy.compress(uuid);

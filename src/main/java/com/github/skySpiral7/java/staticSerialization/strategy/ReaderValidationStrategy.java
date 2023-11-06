@@ -79,8 +79,9 @@ public class ReaderValidationStrategy
       Class<?> actualClass;
       try
       {
-         //No support for "int" etc. primitives can only reach here by someone else writing "int" in the stream.
-         //Since Class.forName doesn't support primitives it likewise won't allow primitive void.
+         /* No support for "int" etc. primitives can only reach here by someone else writing "int" in the stream.
+          * Since Class.forName doesn't support primitives it likewise won't allow primitive void.
+          * Compressed header will get converted into box. That and manual box both forName here. */
          actualClass = Class.forName(actualHeader.getClassName());
       }
       catch (final ClassNotFoundException classNotFoundException)

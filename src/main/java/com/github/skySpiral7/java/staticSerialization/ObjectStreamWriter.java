@@ -7,6 +7,8 @@ import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
+import java.io.Serializable;
+import java.util.BitSet;
 
 public class ObjectStreamWriter implements Closeable, Flushable
 {
@@ -39,11 +41,11 @@ public class ObjectStreamWriter implements Closeable, Flushable
     * <ul>
     * <li>null (not technically a Type.class)</li>
     * <li>Any primitive (except void.class obviously)</li>
-    * <li>Any boxed primitive (java.lang.Void.class isn't a box)</li>
+    * <li>Any boxed primitive ({@link Void} isn't a box)</li>
     * <li>String</li>
-    * <li>Any type that implements StaticSerializable</li>
+    * <li>Any type that implements {@link StaticSerializable}</li>
     * <li>Any enum</li>
-    * <li>Any type that implements Serializable</li>
+    * <li>Any type that implements {@link Serializable}</li>
     * <li>Primitive Arrays (any number of dimensions)</li>
     * <li>Empty Arrays (any number of dimensions)</li>
     * <li>Arrays (any number of dimensions) which only contain supported elements (the base component need not be supported)</li>
@@ -54,6 +56,10 @@ public class ObjectStreamWriter implements Closeable, Flushable
     *
     * <p>An Object[] is allowed to contain itself without causing infinite recursion. The self reference is a supported element and the
     * array can be serialized if all other elements are also supported.</p>
+    *
+    * @implNote Pedantic: A {@link BitSet} written and read will be {@link BitSet#equals(Object)} but will
+    * {@link BitSet#trimToSize()} in order to save space. This differs from the behavior of {@link Serializable} and
+    * no one should care.</p>
     */
    public void writeObject(final Object data)
    {

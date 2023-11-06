@@ -59,8 +59,7 @@ public class ArraySerializableStrategy implements SerializableStrategy
    public <T> T read(final Class<T> actualClass)
    {
       final Class<?> componentType = actualClass.getComponentType();
-      final int arrayLength = integerSerializableStrategy.read("Missing " +
-         "array length");
+      final int arrayLength = integerSerializableStrategy.read("Missing array length");
       final T arrayValue = cast(Array.newInstance(componentType, arrayLength));
 
       //this is only safe because creating an empty array only requires reading a primitive from stream
