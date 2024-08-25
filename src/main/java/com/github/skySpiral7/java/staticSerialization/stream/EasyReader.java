@@ -24,4 +24,5 @@ public interface EasyReader extends Closeable
     * @see StreamCorruptedException#throwIfNotEnoughData(EasyReader, int, String)
     */
    byte[] readBytes(final int requestedByteCount);
+   //TODO: add readBytesUntil. last byte matches or rest of stream (including empty)
 }

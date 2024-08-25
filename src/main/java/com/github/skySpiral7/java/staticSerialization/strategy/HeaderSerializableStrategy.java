@@ -68,7 +68,7 @@ public class HeaderSerializableStrategy
       COMPRESSED_HEADER_TO_CLASS.put('^', Double.class);
       COMPRESSED_HEADER_TO_CLASS.put('&', Character.class);
       COMPRESSED_HEADER_TO_CLASS.put('*', String.class);
-      //TODO: more memnotic: ' char, " null terminated string, ` length string, & for id
+      //TODO: more memnotic: ' char, " FF terminated string, & for id
       //then have classes be a " string to unreserve ;
       //compression: pick between overlong null or length
 

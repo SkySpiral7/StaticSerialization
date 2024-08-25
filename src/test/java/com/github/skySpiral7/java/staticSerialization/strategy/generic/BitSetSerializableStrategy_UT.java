@@ -6,8 +6,8 @@ import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializab
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import mockit.Expectations;
+import mockit.FullVerifications;
 import mockit.Mocked;
-import mockit.Verifications;
 import org.junit.jupiter.api.Test;
 
 import java.util.BitSet;
@@ -39,7 +39,7 @@ class BitSetSerializableStrategy_UT
 
       testObject.write(data);
 
-      new Verifications()
+      new FullVerifications()
       {{
          mockIntegerSerializableStrategy.write(2);
          mockBoxPrimitiveSerializableStrategy.write((byte) 0xba);

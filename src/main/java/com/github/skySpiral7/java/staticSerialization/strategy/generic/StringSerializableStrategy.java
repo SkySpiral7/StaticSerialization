@@ -60,9 +60,7 @@ public class StringSerializableStrategy implements SerializableStrategy
    public <T> T read(final Class<T> actualClass)
    {
       final int stringByteLength = integerSerializableStrategy.read("Missing string byte length");
-      /*TODO: could use an Overlong null delimiter 0xC080 to reduce overhead by 2 but harder to read stream
-      could also make a new string type for null delimited 0x00 (only used when contains no null)
-      AsynchronousFileReader would need a readBytesUntil*/
+      //TODO: could use FF delimiter (invalid UTF-8) to reduce overhead by 3
       byte[] stringData = StreamCorruptedException.throwIfNotEnoughData(reader, stringByteLength, "Missing string data");
       final String result = new String(stringData, StandardCharsets.UTF_8);
       LOG.debug(result);
@@ -73,6 +71,7 @@ public class StringSerializableStrategy implements SerializableStrategy
    {
       LOG.debug(className);
       //can't use recursion to write the string because that's endless and needs different format
+      //TODO: string append wouldn't need byte strat
       final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
       appender.append(writeMe);
       byteSerializableStrategy.writeByte(';');

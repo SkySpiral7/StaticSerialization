@@ -5,8 +5,8 @@ import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import mockit.Expectations;
+import mockit.FullVerifications;
 import mockit.Mocked;
-import mockit.Verifications;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -33,7 +33,7 @@ class UuidSerializableStrategy_UT
 
       testObject.write(input);
 
-      new Verifications()
+      new FullVerifications()
       {{
          mockBoxPrimitiveSerializableStrategy.write(0xc14661197b9c40b0L);
          mockBoxPrimitiveSerializableStrategy.write(0x8129caca6d2b15f1L);

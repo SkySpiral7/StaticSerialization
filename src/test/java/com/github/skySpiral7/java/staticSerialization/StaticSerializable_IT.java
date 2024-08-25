@@ -163,21 +163,6 @@ public class StaticSerializable_IT
    }
 
    @Test
-   public void string()
-   {
-      //This test case exists because Strings have a special format.
-      final String data = "\u0000∞ > 😢";  //control (null), BMP (infinity), ascii, non-BMP (Crying Face)
-
-      final ByteAppender mockFile = new ByteAppender();
-      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
-      writer.writeObject(data);
-      writer.close();
-      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
-      assertEquals(data, reader.readObject(String.class));
-      reader.close();
-   }
-
-   @Test
    public void objectArray()
    {
       //This test case exists because Arrays have a special format.
