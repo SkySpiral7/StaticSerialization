@@ -24,5 +24,14 @@ public interface EasyReader extends Closeable
     * @see StreamCorruptedException#throwIfNotEnoughData(EasyReader, int, String)
     */
    byte[] readBytes(final int requestedByteCount);
-   //TODO: add readBytesUntil. last byte matches or rest of stream (including empty)
+
+   /**
+    * Reads binary data from the stream until the expected byte is found. If found, the returned array's final byte will
+    * match the param. If the byte isn't found then the result will be all remaining bytes (possibly 0).
+    *
+    * @param finalByte stop when this byte is found
+    * @throws ClosedResourceException if the stream is closed
+    */
+   //TODO: use readBytesUntil in new StreamCorruptedException method
+   byte[] readBytesUntil(final byte finalByte);
 }

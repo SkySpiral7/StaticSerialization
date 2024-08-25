@@ -2,6 +2,7 @@ package com.github.skySpiral7.java.staticSerialization.stream;
 
 import com.github.skySpiral7.java.staticSerialization.exception.ClosedResourceException;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -107,6 +108,32 @@ public final class AsynchronousFileReader implements EasyReader
             throw new RuntimeException(e);
          }
       }
+      return result;
+   }
+
+   @Override
+   public byte[] readBytesUntil(byte finalByte)
+   {
+      if (!amOpen) throw new ClosedResourceException("Can't read from a closed stream");
+
+      final ByteArrayOutputStream resultBuilder = new ByteArrayOutputStream(remainingBytes);
+
+      //loop won't execute if remainingBytes is 0
+      for (int i = 0; i < remainingBytes; i++)
+      {
+         try
+         {
+            final byte thisByte = reader.queue.take();
+            resultBuilder.write(thisByte);
+            if (thisByte == finalByte) break;
+         }
+         catch (final InterruptedException e)
+         {
+            throw new RuntimeException(e);
+         }
+      }
+      byte[] result = resultBuilder.toByteArray();
+      remainingBytes -= result.length;
       return result;
    }
 
