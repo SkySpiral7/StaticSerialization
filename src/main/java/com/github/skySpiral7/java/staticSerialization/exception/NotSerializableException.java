@@ -12,7 +12,7 @@ public class NotSerializableException extends RuntimeException
    private static final long serialVersionUID = 0;
 
    /**
-    * Constructs a <code>NotSerializableException</code> with the specified detail message.
+    * Constructs a {@code NotSerializableException} with the specified detail message.
     */
    public NotSerializableException(final String detailMessage)
    {
@@ -20,7 +20,7 @@ public class NotSerializableException extends RuntimeException
    }
 
    /**
-    * Constructs a <code>NotSerializableException</code> indicating the illegal class.
+    * Constructs a {@code NotSerializableException} indicating the illegal class.
     */
    public NotSerializableException(final Class<?> nonSerializableClass)
    {

@@ -12,12 +12,12 @@ public class InvalidClassException extends RuntimeException
    private static final long serialVersionUID = 0;
 
    /**
-    * Constructs a <code>InvalidClassException</code> with the specified detail message.
+    * Constructs a {@code InvalidClassException} with the specified detail message.
     */
    public InvalidClassException(final String detailMessage){super(detailMessage);}
 
    /**
-    * Constructs a <code>InvalidClassException</code> indicating the invalid class and why it's invalid.
+    * Constructs a {@code InvalidClassException} indicating the invalid class and why it's invalid.
     */
    public InvalidClassException(final String detailMessage, final Class<?> invalidClass)
    {

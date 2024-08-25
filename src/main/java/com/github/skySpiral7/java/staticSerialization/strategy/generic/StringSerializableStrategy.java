@@ -82,12 +82,10 @@ public class StringSerializableStrategy implements SerializableStrategy
    {
       final ByteArrayOutputStream classNameStream = new ByteArrayOutputStream();
       classNameStream.write(firstByte);
-      while (true)
-      {
-         final byte thisByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: class name not terminated")[0];
-         if (thisByte == ';') break;
-         classNameStream.write(thisByte);
-      }
+      byte[] remaining = StreamCorruptedException.throwIfNotByteTerminated(reader, (byte) ';', "Incomplete header: " +
+         "class name not terminated");
+      //-1 to exclude the ;
+      classNameStream.write(remaining, 0, remaining.length - 1);
       final String result = classNameStream.toString(StandardCharsets.UTF_8);
       LOG.debug(result);
       return result;

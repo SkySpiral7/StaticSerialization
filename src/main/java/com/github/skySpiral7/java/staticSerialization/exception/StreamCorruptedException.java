@@ -8,14 +8,16 @@ import java.io.Serial;
  * This exception is thrown when attempting to read invalid data in the stream's header. Do not throw this if an object is deserialized in a
  * way that violates invariants. This exception is only for invalid meta information not invalid variable values and thus is likely only
  * going to be thrown by ObjectStreamReader.
+ * @see DeserializationException
  */
+//TODO: StreamCorruptedException is also used for bad enum or missing data but maybe should have new exception for those
 public class StreamCorruptedException extends RuntimeException
 {
    @Serial
    private static final long serialVersionUID = 0;
 
    /**
-    * Constructs a <code>StreamCorruptedException</code> with the specified detail message.
+    * Constructs a {@code StreamCorruptedException} with the specified detail message.
     */
    public StreamCorruptedException(final String detailMessage)
    {
@@ -23,7 +25,7 @@ public class StreamCorruptedException extends RuntimeException
    }
 
    /**
-    * Constructs a <code>StreamCorruptedException</code> with the specified cause.
+    * Constructs a {@code StreamCorruptedException} with the specified cause.
     */
    public StreamCorruptedException(final Throwable cause)
    {
@@ -31,7 +33,7 @@ public class StreamCorruptedException extends RuntimeException
    }
 
    /**
-    * Constructs a <code>StreamCorruptedException</code> with the detail message and cause.
+    * Constructs a {@code StreamCorruptedException} with the detail message and cause.
     */
    public StreamCorruptedException(final String detailMessage, final Throwable cause)
    {

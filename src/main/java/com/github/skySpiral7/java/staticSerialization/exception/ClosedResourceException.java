@@ -12,12 +12,12 @@ public class ClosedResourceException extends RuntimeException
    private static final long serialVersionUID = 0;
 
    /**
-    * Constructs a <code>ClosedResourceException</code> with no detail message.
+    * Constructs a {@code ClosedResourceException} with no detail message.
     */
    public ClosedResourceException(){}
 
    /**
-    * Constructs a <code>ClosedResourceException</code> with the specified detail message.
+    * Constructs a {@code ClosedResourceException} with the specified detail message.
     */
    public ClosedResourceException(final String detailMessage)
    {
