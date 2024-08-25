@@ -13,7 +13,8 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -121,7 +122,7 @@ public class EveryId_IT
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final Object[] actual = reader.readObject(Object[].class);
-      assertArrayEquals(data, actual);
+      assertThat(actual, is(data));
       assertSame(actual[0], actual[2]);
       assertNotSame(data[0], actual[2]);
       reader.close();

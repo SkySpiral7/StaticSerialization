@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ByteSerializableStrategy_IT
@@ -41,6 +42,6 @@ public class ByteSerializableStrategy_IT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals(2L, testObject.readObject(Byte.class).longValue());
       assertEquals(3L, testObject.readObject(byte.class).longValue());
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
    }
 }

@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -182,7 +183,7 @@ public class ReaderValidationStrategy_UT
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
-      assertArrayEquals(new byte[]{2}, testObject.readObject(byte[].class));
+      assertThat(testObject.readObject(byte[].class), is(new byte[]{2}));
       testObject.close();
    }
 

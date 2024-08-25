@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class UuidSerializableStrategy_UT
@@ -74,7 +75,7 @@ class UuidSerializableStrategy_UT
          (byte) 0xc1, 0x46, 0x61, 0x19, 0x7b, (byte) 0x9c, 0x40, (byte) 0xb0,
          (byte) 0x81, 0x29, (byte) 0xca, (byte) 0xca, 0x6d, 0x2b, 0x15, (byte) 0xf1
       });
-      assertArrayEquals(expectedBuilder.getAllBytes(), fileBytes);
+      assertThat(fileBytes, is(expectedBuilder.getAllBytes()));
 
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(fileBytes));
       assertEquals(data, reader.readObject(UUID.class));

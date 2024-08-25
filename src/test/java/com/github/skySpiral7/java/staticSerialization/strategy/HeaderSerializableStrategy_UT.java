@@ -16,7 +16,8 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -57,7 +58,7 @@ public class HeaderSerializableStrategy_UT
 
       final Byte[][] actual = streamReader.readObject(Byte[][].class);
 
-      assertArrayEquals(expected, actual);
+      assertThat(actual, is(expected));
       streamReader.close();
    }
 
@@ -75,7 +76,7 @@ public class HeaderSerializableStrategy_UT
 
       final Object[] actual = streamReader.readObject(Object[].class);
 
-      assertArrayEquals(expected, actual);
+      assertThat(actual, is(expected));
       streamReader.close();
    }
 

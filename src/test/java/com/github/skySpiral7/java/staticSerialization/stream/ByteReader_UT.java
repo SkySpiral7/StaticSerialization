@@ -4,7 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ByteReader_UT
@@ -40,6 +41,6 @@ public class ByteReader_UT
    {
       final ByteReader testObject = new ByteReader(new byte[0]);
 
-      assertArrayEquals(new byte[0], testObject.readBytes(3));
+      assertThat(testObject.readBytes(3), is(new byte[0]));
    }
 }

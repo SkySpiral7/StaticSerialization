@@ -19,7 +19,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -128,7 +129,7 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertFalse(testObject.readObject(boolean.class));
       assertTrue(testObject.readObject(boolean.class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
    }
 
    @Test
@@ -141,7 +142,7 @@ public class InternalStreamReader_UT
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals(2L, testObject.readObject(Byte.class).longValue());
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
    }
 
    @Test
@@ -165,7 +166,7 @@ public class InternalStreamReader_UT
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertNull(testObject.readObject(Byte.class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -183,7 +184,7 @@ public class InternalStreamReader_UT
       String firstObject = testObject.readObject(String.class);
       String secondObject = testObject.readObject(String.class);
       assertSame(firstObject, secondObject);
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -200,7 +201,7 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals((byte) 0xde, testObject.readObject(Byte.class).byteValue());
       assertEquals((byte) 0xad, testObject.readObject(byte.class).byteValue());
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -216,7 +217,7 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals(0x0afeL, testObject.readObject(Short.class).longValue());
       assertEquals(0x2bf1L, testObject.readObject(short.class).longValue());
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -232,7 +233,7 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals(0x0afe_babeL, testObject.readObject(Integer.class).longValue());
       assertEquals(0x0a1e_bab2L, testObject.readObject(int.class).longValue());
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -249,7 +250,7 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals(0x01020304_05060708L, testObject.readObject(Long.class).longValue());
       assertEquals(0x05040302_01000102L, testObject.readObject(long.class).longValue());
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -266,7 +267,7 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals((Float) Float.intBitsToFloat(0x01020304), testObject.readObject(Float.class));
       assertEquals((Float) Float.intBitsToFloat(0xc1d2e3f4), testObject.readObject(float.class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -284,7 +285,7 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals((Double) Double.longBitsToDouble(0x01020304_05060708L), testObject.readObject(Double.class));
       assertEquals((Double) Double.longBitsToDouble(0xa1b2c3d4_e5f61708L), testObject.readObject(double.class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -304,7 +305,7 @@ public class InternalStreamReader_UT
       assertFalse(testObject.readObject(Boolean.class));
       assertTrue(testObject.readObject(Boolean.class));
       assertNull(testObject.readObject(Boolean.class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -322,7 +323,7 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals('f', testObject.readObject(Character.class).charValue());
       assertEquals(0x221e, testObject.readObject(char.class).charValue());  //infinity sign is BMP non-private
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -342,7 +343,7 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertEquals("f∞", testObject.readObject(String.class));  //infinity sign is BMP (3 UTF-8 bytes) non-private
       assertEquals("\u0000", testObject.readObject(String.class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -364,8 +365,8 @@ public class InternalStreamReader_UT
       final Object[] expected = {(byte) 1, (byte) 2};
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
-      assertArrayEquals(expected, testObject.readObject(Object[].class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(testObject.readObject(Object[].class), is(expected));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -387,8 +388,8 @@ public class InternalStreamReader_UT
       final Byte[] expected = {1, 2};
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
-      assertArrayEquals(expected, testObject.readObject(Byte[].class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(testObject.readObject(Byte[].class), is(expected));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -408,8 +409,8 @@ public class InternalStreamReader_UT
       final byte[] expected = {1, 2};
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
-      assertArrayEquals(expected, testObject.readObject(byte[].class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(testObject.readObject(byte[].class), is(expected));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -429,8 +430,8 @@ public class InternalStreamReader_UT
       final Byte[][] expected = {{1}, null};
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
-      assertArrayEquals(expected, testObject.readObject(Byte[][].class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(testObject.readObject(Byte[][].class), is(expected));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -450,8 +451,8 @@ public class InternalStreamReader_UT
       final byte[][] expected = {{1}, null};
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
-      assertArrayEquals(expected, testObject.readObject(byte[][].class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(testObject.readObject(byte[][].class), is(expected));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -471,8 +472,8 @@ public class InternalStreamReader_UT
       final boolean[] expected = {true};
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
-      assertArrayEquals(expected, testObject.readObject(boolean[].class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(testObject.readObject(boolean[].class), is(expected));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -493,8 +494,8 @@ public class InternalStreamReader_UT
       final Boolean[] expected = {false};
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
-      assertArrayEquals(expected, testObject.readObject(Boolean[].class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(testObject.readObject(Boolean[].class), is(expected));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -512,8 +513,8 @@ public class InternalStreamReader_UT
       final Void[] expected = new Void[0];
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
-      assertArrayEquals(expected, testObject.readObject(Void[].class));
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(testObject.readObject(Void[].class), is(expected));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }
@@ -531,7 +532,7 @@ public class InternalStreamReader_UT
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       final SimpleHappy readData = testObject.readObject(SimpleHappy.class);
       assertEquals(4, readData.smileyStickersCount);
-      assertArrayEquals(new byte[0], mockFile.readBytes(1));
+      assertThat(mockFile.readBytes(1), is(new byte[0]));
 
       testObject.close();
    }

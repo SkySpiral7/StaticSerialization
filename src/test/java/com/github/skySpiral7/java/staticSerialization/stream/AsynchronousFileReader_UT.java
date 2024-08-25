@@ -8,7 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -78,7 +79,7 @@ public class AsynchronousFileReader_UT
       tempFile.deleteOnExit();
       final AsynchronousFileReader testObject = new AsynchronousFileReader(tempFile);
 
-      assertArrayEquals(new byte[0], testObject.readBytes(3));
+      assertThat(testObject.readBytes(3), is(new byte[0]));
       testObject.close();
    }
 }

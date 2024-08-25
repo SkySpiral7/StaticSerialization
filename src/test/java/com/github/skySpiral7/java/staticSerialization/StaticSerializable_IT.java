@@ -15,7 +15,8 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -173,7 +174,7 @@ public class StaticSerializable_IT
       writer.writeObject(data);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
-      assertArrayEquals(data, reader.readObject(Object[].class));
+      assertThat(reader.readObject(Object[].class), is(data));
       reader.close();
    }
 
@@ -213,7 +214,7 @@ public class StaticSerializable_IT
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final Object[] actual = reader.readObject(Object[].class);
-      assertArrayEquals(data, actual);
+      assertThat(actual, is(data));
       assertSame(actual[0], actual[2]);
       assertNotSame(data[0], actual[2]);
       reader.close();
@@ -230,7 +231,7 @@ public class StaticSerializable_IT
       writer.writeObject(data);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
-      assertArrayEquals(data, reader.readObject(Integer[].class));
+      assertThat(reader.readObject(Integer[].class), is(data));
       reader.close();
    }
 
@@ -245,7 +246,7 @@ public class StaticSerializable_IT
       writer.writeObject(data);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
-      assertArrayEquals(data, reader.readObject(int[].class));
+      assertThat(reader.readObject(int[].class), is(data));
       reader.close();
    }
 
@@ -260,7 +261,7 @@ public class StaticSerializable_IT
       writer.writeObject(data);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
-      assertArrayEquals(data, reader.readObject(Byte[][].class));
+      assertThat(reader.readObject(Byte[][].class), is(data));
       reader.close();
    }
 
@@ -373,7 +374,7 @@ Object graph (using non compressed names):
       writer.writeObject(data);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
-      assertArrayEquals(data, reader.readObject(boolean[].class));
+      assertThat(reader.readObject(boolean[].class), is(data));
       reader.close();
    }
 
@@ -388,7 +389,7 @@ Object graph (using non compressed names):
       writer.writeObject(data);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
-      assertArrayEquals(data, reader.readObject(Boolean[].class));
+      assertThat(reader.readObject(Boolean[].class), is(data));
       reader.close();
    }
 
@@ -403,7 +404,7 @@ Object graph (using non compressed names):
       writer.writeObject(data);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
-      assertArrayEquals(data, reader.readObject(Void[].class));
+      assertThat(reader.readObject(Void[].class), is(data));
       reader.close();
    }
 

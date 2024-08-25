@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.BitSet;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BitSetSerializableStrategy_UT
@@ -90,7 +91,7 @@ class BitSetSerializableStrategy_UT
          0, 0, 0, 2,  //array length
          (byte) 0xba, (byte) 0xbe
       });
-      assertArrayEquals(expectedBuilder.getAllBytes(), fileBytes);
+      assertThat(fileBytes, is(expectedBuilder.getAllBytes()));
 
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(fileBytes));
       assertEquals(data, reader.readObject(BitSet.class));
