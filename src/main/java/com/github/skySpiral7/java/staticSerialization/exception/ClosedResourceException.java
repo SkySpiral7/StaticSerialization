@@ -1,11 +1,14 @@
 package com.github.skySpiral7.java.staticSerialization.exception;
 
+import java.io.Serial;
+
 /**
  * This exception is thrown when attempting to use an AutoCloseable resource that has already been closed. Instead of throwing this
  * exception consider alternatives such as doing nothing, returning null, returning Optional, or returning a special value.
  */
 public class ClosedResourceException extends RuntimeException
 {
+   @Serial
    private static final long serialVersionUID = 0;
 
    /**

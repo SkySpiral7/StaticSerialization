@@ -1,5 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization.exception;
 
+import java.io.Serial;
+
 /**
  * This exception is thrown when deserialization fails and there's no more specific exception to be thrown. This should not be thrown if an
  * object is deserialized in a way that violates invariants. This exception is only for exceptions that occur during the deserialization
@@ -8,6 +10,7 @@ package com.github.skySpiral7.java.staticSerialization.exception;
  */
 public class DeserializationException extends RuntimeException
 {
+   @Serial
    private static final long serialVersionUID = 0;
 
    /**

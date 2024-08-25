@@ -1,6 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization.exception;
 
 import java.io.EOFException;
+import java.io.Serial;
 import java.util.NoSuchElementException;
 
 /**
@@ -13,15 +14,16 @@ import java.util.NoSuchElementException;
  */
 public class NoMoreDataException extends RuntimeException
 {
+   @Serial
    private static final long serialVersionUID = 0;
 
    /**
-    * Constructs a <code>NoMoreDataException</code> with no detail message in order to indicate that there are 0 bytes remaining.
+    * Constructs a {@code NoMoreDataException} with no detail message in order to indicate that there are 0 bytes remaining.
     */
    public NoMoreDataException(){}
 
    /**
-    * Constructs a <code>NoMoreDataException</code> with the specified detail message.
+    * Constructs a {@code NoMoreDataException} with the specified detail message.
     */
    public NoMoreDataException(final String detailMessage)
    {
@@ -29,7 +31,7 @@ public class NoMoreDataException extends RuntimeException
    }
 
    /**
-    * Constructs a <code>NoMoreDataException</code> indicating that there aren't enough remaining bytes.
+    * Constructs a {@code NoMoreDataException} indicating that there aren't enough remaining bytes.
     */
    public static NoMoreDataException notEnoughBytes(final long expectedByteCount, final long remainingByteCount)
    {

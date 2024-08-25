@@ -31,7 +31,7 @@ public interface EasyReader extends Closeable
     *
     * @param finalByte stop when this byte is found
     * @throws ClosedResourceException if the stream is closed
+    * @see StreamCorruptedException#throwIfNotByteTerminated(EasyReader, byte, String)
     */
-   //TODO: use readBytesUntil in new StreamCorruptedException method
    byte[] readBytesUntil(final byte finalByte);
 }
