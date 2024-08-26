@@ -16,6 +16,10 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 public class StringSerializableStrategy implements SerializableStrategy
 {
    private static final Logger LOG = LogManager.getLogger();
+   /**
+    * Used as a string terminating byte. The FF value isn't valid UTF-8.
+    */
+   private static final byte TERMINATOR = ';';//(byte) 0xFF;
    private final EasyReader reader;
    private final EasyAppender appender;
    private final ByteSerializableStrategy byteSerializableStrategy;
@@ -71,10 +75,9 @@ public class StringSerializableStrategy implements SerializableStrategy
    {
       LOG.debug(className);
       //can't use recursion to write the string because that's endless and needs different format
-      //TODO: string append wouldn't need byte strat
       final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
       appender.append(writeMe);
-      byteSerializableStrategy.writeByte(';');
+      byteSerializableStrategy.writeByte(TERMINATOR);
       //instead of size then string have the string terminated by ; since this saves 3 bytes and class names can't contain ;
    }
 
@@ -82,9 +85,9 @@ public class StringSerializableStrategy implements SerializableStrategy
    {
       final ByteArrayOutputStream classNameStream = new ByteArrayOutputStream();
       classNameStream.write(firstByte);
-      byte[] remaining = StreamCorruptedException.throwIfNotByteTerminated(reader, (byte) ';', "Incomplete header: " +
+      byte[] remaining = StreamCorruptedException.throwIfNotByteTerminated(reader, TERMINATOR, "Incomplete header: " +
          "class name not terminated");
-      //-1 to exclude the ;
+      //-1 to exclude the terminator
       classNameStream.write(remaining, 0, remaining.length - 1);
       final String result = classNameStream.toString(StandardCharsets.UTF_8);
       LOG.debug(result);

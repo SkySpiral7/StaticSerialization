@@ -2,6 +2,7 @@ package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
@@ -18,6 +19,7 @@ import java.util.HexFormat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class StringSerializableStrategy_UT
 {
@@ -39,7 +41,7 @@ class StringSerializableStrategy_UT
    }
 
    @Test
-   public void read(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
+   public void read_returns_whenHasData(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
    {
       final ByteReader byteReader = new ByteReader(new byte[]{'h', 'i'});
       final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader,
@@ -55,6 +57,22 @@ class StringSerializableStrategy_UT
       final Object actual = testObject.read(null);
 
       assertEquals(expected, actual);
+   }
+
+   @Test
+   public void read_throws_whenNotEnoughData(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
+   {
+      final ByteReader byteReader = new ByteReader(new byte[]{'h', 'i'});
+      final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader,
+         mockIntegerSerializableStrategy);
+
+      new Expectations()
+      {{
+         mockIntegerSerializableStrategy.read("Missing string byte length");
+         result = 4;
+      }};
+
+      assertThrows(StreamCorruptedException.class, () -> testObject.read(null));
    }
 
    @Test
@@ -75,7 +93,7 @@ class StringSerializableStrategy_UT
    }
 
    @Test
-   public void readClassName()
+   public void readClassName_returns_whenHasTerminator()
    {
       final ByteReader byteReader = new ByteReader(new byte[]{'i', ';'});
       final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader, null);
@@ -84,6 +102,16 @@ class StringSerializableStrategy_UT
       final Object actual = testObject.readClassName((byte) 'h');
 
       assertEquals(expected, actual);
+   }
+
+   @Test
+   public void readClassName_throws_whenNoTerminator()
+   {
+      final ByteReader byteReader = new ByteReader(new byte[]{'i'});
+      final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader, null);
+      final String expected = "hi";
+
+      assertThrows(StreamCorruptedException.class, () -> testObject.readClassName((byte) 'h'));
    }
 
    @Test
