@@ -311,7 +311,7 @@ Object graph (using non-compressed names and ; for terminator):
       expectedBuilder.append("java.lang.CharSequence");   //data[0] component
       expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[0] length
-      expectedBuilder.append(new byte[]{'*'});   //data[0][0] component (String)
+      expectedBuilder.append(new byte[]{'"'});   //data[0][0] component (String)
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[0][0] length
       expectedBuilder.append(new byte[]{'?'});   //data[0][0][0] inherited type
       expectedBuilder.append("hi");   //data[0][0][0] value
@@ -336,13 +336,13 @@ Object graph (using non-compressed names and ; for terminator):
       expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 4});   //data[2][0][0] length
       expectedBuilder.append(new byte[]{StringSerializableStrategy.TERMINATOR});   //data[2][0][0][0]=null
-      expectedBuilder.append(new byte[]{'*'});   //data[2][0][0][1] type (String)
+      expectedBuilder.append(new byte[]{'"'});   //data[2][0][0][1] type (String)
       expectedBuilder.append("joe");   //data[2][0][0][1] value
       expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{']', 1, '@'});   //data[2][0][0][2] array indicator, dimensions, component (int)
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[2][0][0][2] length
       expectedBuilder.append(new byte[]{0, 0, 0, 6});   //data[2][0][0][2] value (no header)
-      expectedBuilder.append(new byte[]{'\\', 0, 0, 0, 0});   //data[2][0][0][3] id of data
+      expectedBuilder.append(new byte[]{'&', 0, 0, 0, 0});   //data[2][0][0][3] id of data
 
       final byte[] expectedInFile = expectedBuilder.getAllBytes();
       final byte[] actualInFile = mockFile.getAllBytes();

@@ -185,10 +185,10 @@ public class InternalStreamReader_UT
    public void readObject_returns_givenId()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append((byte) '*');
+      fileBuilder.append((byte) '"');
       fileBuilder.append("hi");
       fileBuilder.append(StringSerializableStrategy.TERMINATOR);
-      fileBuilder.append(new byte[]{'\\', 0, 0, 0, 0});
+      fileBuilder.append(new byte[]{'&', 0, 0, 0, 0});
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -340,7 +340,7 @@ public class InternalStreamReader_UT
       fileBuilder.append("java.lang.Character");
       fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       fileBuilder.append(new byte[]{0, 0x66});
-      fileBuilder.append("&");
+      fileBuilder.append("'");
       fileBuilder.append(new byte[]{0x22, 0x1e});
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
@@ -360,7 +360,7 @@ public class InternalStreamReader_UT
       fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       fileBuilder.append("f∞");
       fileBuilder.append(StringSerializableStrategy.TERMINATOR);
-      fileBuilder.append("*");  //shorthand
+      fileBuilder.append("\"");  //shorthand
       fileBuilder.append(new byte[]{0});
       fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
@@ -590,7 +590,7 @@ public class InternalStreamReader_UT
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append(CustomEnum.class.getName());
       fileBuilder.append(StringSerializableStrategy.TERMINATOR);
-      fileBuilder.append("*One");
+      fileBuilder.append("\"One");
       fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 

@@ -70,7 +70,7 @@ class StringSerializableStrategy_UT
       final byte[] fileBytes = mockFile.getAllBytes();
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(new byte[]{
-         '*',  //header
+         '"',  //header
          'h', 'i',
          StringSerializableStrategy.TERMINATOR
       });
@@ -100,7 +100,7 @@ class StringSerializableStrategy_UT
 
       final byte[] fileBytes = mockFile.getAllBytes();
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append((byte) '*');  //header
+      expectedBuilder.append((byte) '"');  //header
       expectedBuilder.append(HexFormat.of().parseHex("EFBFBD0041C3B1E2889EF09F98A2"));
       expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       assertThat(fileBytes, is(expectedBuilder.getAllBytes()));

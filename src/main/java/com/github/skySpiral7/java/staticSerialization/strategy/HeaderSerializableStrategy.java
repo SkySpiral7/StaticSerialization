@@ -29,7 +29,7 @@ public class HeaderSerializableStrategy
     * <li>Type normal class which is 0xFF terminated</li>
     * <li>0xFF null (header only. not valid array component)</li>
     * <li>? inherit type from containing array</li>
-    * <li>\id reference existing object (header only)</li>
+    * <li>&id reference existing object (header only)</li>
     * </ul>
     */
    private final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
@@ -43,7 +43,7 @@ public class HeaderSerializableStrategy
     * <li>Type normal class which is 0xFF terminated</li>
     * <li>0xFF null (header only. not valid array component)</li>
     * <li>? inherit type from containing array</li>
-    * <li>\id reference existing object (header only)</li>
+    * <li>&id reference existing object (header only)</li>
     * </ul>
     */
    private final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
@@ -53,8 +53,8 @@ public class HeaderSerializableStrategy
       possible printable ASCII headers: space to / (not $ or .) is 14, : to @ is +7, [ to ` (not _) is +5, { to ~ is +4 = 30
       I've used 15 so far which leaves 15 free spots
       forbidden: $.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
-      used: !#%&*+-;?@[\]^~
-      free: space "'(),/:<=>`{|}
+      used: !"#%&'+-;?@[]^~
+      free: space ()*,/:<=>\`{|}
       technically a FQ class name can't start with a number or dot so I could use them but I won't
       variables names can start with $ so I assume a package/class can too
       */
@@ -66,11 +66,8 @@ public class HeaderSerializableStrategy
       //$ is allowed to be in class names
       COMPRESSED_HEADER_TO_CLASS.put('%', Float.class);
       COMPRESSED_HEADER_TO_CLASS.put('^', Double.class);
-      COMPRESSED_HEADER_TO_CLASS.put('&', Character.class);
-      COMPRESSED_HEADER_TO_CLASS.put('*', String.class);
-      //TODO: more memnotic: ' char, " FF terminated string, & for id
-      //then have classes be a " string to unreserve ;
-      //compression: pick between overlong null or length
+      COMPRESSED_HEADER_TO_CLASS.put('\'', Character.class);
+      COMPRESSED_HEADER_TO_CLASS.put('"', String.class);
 
       CLASS_TO_COMPRESSED_HEADER = new HashMap<>();
       CLASS_TO_COMPRESSED_HEADER.put(Byte.class, '~');
@@ -80,8 +77,8 @@ public class HeaderSerializableStrategy
       //$ is allowed to be in class names
       CLASS_TO_COMPRESSED_HEADER.put(Float.class, '%');
       CLASS_TO_COMPRESSED_HEADER.put(Double.class, '^');
-      CLASS_TO_COMPRESSED_HEADER.put(Character.class, '&');
-      CLASS_TO_COMPRESSED_HEADER.put(String.class, '*');
+      CLASS_TO_COMPRESSED_HEADER.put(Character.class, '\'');
+      CLASS_TO_COMPRESSED_HEADER.put(String.class, '"');
    }
 
    private final EasyReader reader;
@@ -184,7 +181,7 @@ public class HeaderSerializableStrategy
          final Class<?> compressedClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
          return HeaderInformation.forPossibleArray(compressedClass.getName(), dimensionCount, primitiveArray);
       }
-      if ('\\' == firstByte)
+      if ('&' == firstByte)
       {
          final int id = integerSerializableStrategy.read("Incomplete header: id type but no id");
          final Object registeredObject = readerRegistry.getRegisteredObject(id);
@@ -215,7 +212,7 @@ public class HeaderSerializableStrategy
          if (id != null)
          {
             LOG.debug("id: " + id + " (" + data + " " + data.getClass().getSimpleName() + ")");
-            byteSerializableStrategy.writeByte('\\');
+            byteSerializableStrategy.writeByte('&');
             integerSerializableStrategy.write(id);
             return true;
          }

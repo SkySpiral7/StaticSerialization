@@ -385,7 +385,7 @@ public class HeaderSerializableStrategy_UT
       final ByteAppender inputBuilder = new ByteAppender();
       inputBuilder.append("java.lang.Character");
       inputBuilder.append(StringSerializableStrategy.TERMINATOR);
-      inputBuilder.append((byte) '&');
+      inputBuilder.append((byte) '\'');
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Character> expected = new HeaderInformation<>("java.lang.Character", null, 0, false);
@@ -404,7 +404,7 @@ public class HeaderSerializableStrategy_UT
       final ByteAppender inputBuilder = new ByteAppender();
       inputBuilder.append("java.lang.String");
       inputBuilder.append(StringSerializableStrategy.TERMINATOR);
-      inputBuilder.append((byte) '*');
+      inputBuilder.append((byte) '"');
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<String> expected = new HeaderInformation<>("java.lang.String", null, 0, false);
@@ -437,7 +437,7 @@ public class HeaderSerializableStrategy_UT
       registry.reserveIdForLater();
       registry.registerObject("hi");
 
-      final EasyReader reader = new ByteReader(new byte[]{'\\'});
+      final EasyReader reader = new ByteReader(new byte[]{'&'});
       init(reader, registry);
 
       try
@@ -459,7 +459,7 @@ public class HeaderSerializableStrategy_UT
       ObjectReaderRegistry registry = new ObjectReaderRegistry();
       registry.reserveIdForLater();
 
-      final EasyReader reader = new ByteReader(new byte[]{'\\', 0, 0, 0, 0});
+      final EasyReader reader = new ByteReader(new byte[]{'&', 0, 0, 0, 0});
       init(reader, registry);
 
       try
@@ -483,7 +483,7 @@ public class HeaderSerializableStrategy_UT
       String objectValue = "hi";
       registry.registerObject(objectValue);
 
-      final EasyReader reader = new ByteReader(new byte[]{'\\', 0, 0, 0, 0});
+      final EasyReader reader = new ByteReader(new byte[]{'&', 0, 0, 0, 0});
       init(reader, registry);
       final HeaderInformation<String> expected = new HeaderInformation<>(String.class.getName(), objectValue, 0, false);
 
@@ -582,10 +582,10 @@ public class HeaderSerializableStrategy_UT
       testObject.writeObject(reusedValue);
       testObject.close();
       final byte[] expected = {
-         '*',  //short hand for String
+         '"',  //short hand for String
          'f',  //data
          StringSerializableStrategy.TERMINATOR,
-         '\\',  //id type
+         '&',  //id type
          0, 0, 0, 0  //id
       };
       final byte[] fileContents = mockFile.getAllBytes();
@@ -704,7 +704,7 @@ public class HeaderSerializableStrategy_UT
       testObject.writeObject('f');
       testObject.flush();
       byte[] fileContents = mockFile.getAllBytes();
-      assertEquals("&", bytesToString(fileContents, 2));
+      assertEquals("'", bytesToString(fileContents, 2));
       assertEquals("[0, " + 0x66 + "]", Arrays.toString(shortenBytes(fileContents, 2)));
 
       mockFile = new ByteAppender();
@@ -713,7 +713,7 @@ public class HeaderSerializableStrategy_UT
       testObject.writeObject('∞');  //infinity sign is BMP non-private
       testObject.close();
       fileContents = mockFile.getAllBytes();
-      assertEquals("&", bytesToString(fileContents, 2));
+      assertEquals("'", bytesToString(fileContents, 2));
       assertEquals("[" + 0x22 + ", " + 0x1e + "]", Arrays.toString(shortenBytes(fileContents, 2)));
    }
 
@@ -730,7 +730,7 @@ public class HeaderSerializableStrategy_UT
          StringSerializableStrategy.TERMINATOR
       };
       final byte[] fileContents = mockFile.getAllBytes();
-      assertEquals("*", bytesToString(fileContents, expected.length));
+      assertEquals("\"", bytesToString(fileContents, expected.length));
       assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytes(fileContents, expected.length)));
    }
 
@@ -779,7 +779,7 @@ public class HeaderSerializableStrategy_UT
       testObject.writeObject(new String[0]);
       testObject.close();
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append(new byte[]{'[', 1, '*'});   //array indicator, dimensions, component
+      expectedBuilder.append(new byte[]{'[', 1, '"'});   //array indicator, dimensions, component
       expectedBuilder.append(new byte[]{0, 0, 0, 0});   //length (int)
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));

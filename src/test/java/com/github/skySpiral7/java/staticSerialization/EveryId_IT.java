@@ -65,7 +65,7 @@ public class EveryId_IT
       final String data = "hi";
 
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append((byte) '*');   //type (String)
+      expectedBuilder.append((byte) '"');   //type (String)
       expectedBuilder.append("hi");   //value
       expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] expectedInFile = expectedBuilder.getAllBytes();
