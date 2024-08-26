@@ -51,10 +51,10 @@ public class HeaderSerializableStrategy
    {
       /*
       possible printable ASCII headers: space to / (not $ or .) is 14, : to @ is +7, [ to ` (not _) is +5, { to ~ is +4 = 30
-      I've used 15 so far which leaves 15 free spots
+      I've used 14 so far which leaves 16 free spots
       forbidden: $.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
-      used: !"#%&'+-;?@[]^~
-      free: space ()*,/:<=>\`{|}
+      used: !"#%&'+-?@[]^~
+      free: space ()*,/:;<=>\`{|}
       technically a FQ class name can't start with a number or dot so I could use them but I won't
       variables names can start with $ so I assume a package/class can too
       */
