@@ -33,19 +33,19 @@ public class StrategyInstances
                             final ObjectReaderRegistry registry,
                             final UtilInstances utilInstances)
    {
-      //don't need ByteSerializableStrategy
+      //don't need another strategy
       final IntegerSerializableStrategy integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.readerValidationStrategy = new ReaderValidationStrategy(utilInstances);
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamReader, utilInstances);
       final ShortSerializableStrategy shortSerializableStrategy = new ShortSerializableStrategy(reader);
       final StaticSerializableStrategy staticSerializableStrategy = new StaticSerializableStrategy(streamReader);
+      final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(reader);
 
       //ones that need other strategies
       final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(streamReader, internalStreamReader,
          integerSerializableStrategy);
       final JavaSerializableStrategy javaSerializableStrategy = new JavaSerializableStrategy(reader, integerSerializableStrategy);
       final EnumSerializableStrategy enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
-      final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(reader, integerSerializableStrategy);
       final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(reader, utilInstances,
          shortSerializableStrategy, integerSerializableStrategy);
       final BitSetSerializableStrategy bitSetSerializableStrategy =
@@ -68,7 +68,7 @@ public class StrategyInstances
       final ByteSerializableStrategy byteSerializableStrategy = new ByteSerializableStrategy(appender, utilInstances);
       this.readerValidationStrategy = null;  //don't need
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamWriter, utilInstances);
-      //don't need ShortSerializableStrategy
+      //don't need another strategy
       final StaticSerializableStrategy staticSerializableStrategy = new StaticSerializableStrategy(streamWriter);
 
       //ones that need other strategies
@@ -76,8 +76,7 @@ public class StrategyInstances
       final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(internalStreamWriter, integerSerializableStrategy);
       final JavaSerializableStrategy javaSerializableStrategy = new JavaSerializableStrategy(appender, byteSerializableStrategy);
       final EnumSerializableStrategy enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
-      final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy,
-         integerSerializableStrategy);
+      final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy);
       final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(utilInstances,
          byteSerializableStrategy, integerSerializableStrategy);
       final BitSetSerializableStrategy bitSetSerializableStrategy =

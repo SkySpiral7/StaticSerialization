@@ -583,8 +583,8 @@ public class HeaderSerializableStrategy_UT
       testObject.close();
       final byte[] expected = {
          '*',  //short hand for String
-         0, 0, 0, 1,  //UTF-8 length (int)
          'f',  //data
+         StringSerializableStrategy.TERMINATOR,
          '\\',  //id type
          0, 0, 0, 0  //id
       };
@@ -726,8 +726,8 @@ public class HeaderSerializableStrategy_UT
       testObject.writeObject("f∞");  //infinity sign is BMP (3 UTF-8 bytes) non-private
       testObject.close();
       final byte[] expected = {
-         0, 0, 0, 4,  //UTF-8 length (int)
-         'f', (byte) 0xe2, (byte) 0x88, (byte) 0x9e
+         'f', (byte) 0xe2, (byte) 0x88, (byte) 0x9e,
+         StringSerializableStrategy.TERMINATOR
       };
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals("*", bytesToString(fileContents, expected.length));

@@ -313,8 +313,9 @@ Object graph (using non-compressed names and ; for terminator):
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[0] length
       expectedBuilder.append(new byte[]{'*'});   //data[0][0] component (String)
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[0][0] length
-      expectedBuilder.append(new byte[]{'?', 0, 0, 0, 2});   //data[0][0][0] inherited type and UTF-8 length
+      expectedBuilder.append(new byte[]{'?'});   //data[0][0][0] inherited type
       expectedBuilder.append("hi");   //data[0][0][0] value
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append("java.lang.Number");   //data[1] component
       expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 2});   //data[1] length
@@ -335,8 +336,9 @@ Object graph (using non-compressed names and ; for terminator):
       expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 4});   //data[2][0][0] length
       expectedBuilder.append(new byte[]{StringSerializableStrategy.TERMINATOR});   //data[2][0][0][0]=null
-      expectedBuilder.append(new byte[]{'*', 0, 0, 0, 3});   //data[2][0][0][1] type (String) and UTF-8 length
+      expectedBuilder.append(new byte[]{'*'});   //data[2][0][0][1] type (String)
       expectedBuilder.append("joe");   //data[2][0][0][1] value
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{']', 1, '@'});   //data[2][0][0][2] array indicator, dimensions, component (int)
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[2][0][0][2] length
       expectedBuilder.append(new byte[]{0, 0, 0, 6});   //data[2][0][0][2] value (no header)

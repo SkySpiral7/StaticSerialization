@@ -79,9 +79,8 @@ public class InternalStreamWriter_UT
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(CustomEnum.class.getName());
       expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
-      expectedBuilder.append("*");
-      expectedBuilder.append(new byte[]{0, 0, 0, 3});  //UTF-8 length (int)
-      expectedBuilder.append("One");
+      expectedBuilder.append("*One");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] expected = expectedBuilder.getAllBytes();
 
       testObject.writeObject(CustomEnum.One);

@@ -2,7 +2,6 @@ package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import org.apache.logging.log4j.LogManager;
@@ -23,25 +22,20 @@ public class StringSerializableStrategy implements SerializableStrategy
    private final EasyReader reader;
    private final EasyAppender appender;
    private final ByteSerializableStrategy byteSerializableStrategy;
-   private final IntegerSerializableStrategy integerSerializableStrategy;
 
-   public StringSerializableStrategy(final EasyReader reader,
-                                     final IntegerSerializableStrategy integerSerializableStrategy)
+   public StringSerializableStrategy(final EasyReader reader)
    {
       this.reader = reader;
       appender = null;
       this.byteSerializableStrategy = null;
-      this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
    public StringSerializableStrategy(final EasyAppender appender,
-                                     final ByteSerializableStrategy byteSerializableStrategy,
-                                     final IntegerSerializableStrategy integerSerializableStrategy)
+                                     final ByteSerializableStrategy byteSerializableStrategy)
    {
       reader = null;
       this.appender = appender;
       this.byteSerializableStrategy = byteSerializableStrategy;
-      this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
    @Override
@@ -55,18 +49,19 @@ public class StringSerializableStrategy implements SerializableStrategy
    {
       final String data = (String) rawData;
       LOG.debug(data);
-      final byte[] writeMe = data.getBytes(StandardCharsets.UTF_8);
-      integerSerializableStrategy.write(writeMe.length);
-      appender.append(writeMe);
+      appender.append(data.getBytes(StandardCharsets.UTF_8));
+      byteSerializableStrategy.writeByte(TERMINATOR);
    }
 
    @Override
    public <T> T read(final Class<T> actualClass)
    {
-      final int stringByteLength = integerSerializableStrategy.read("Missing string byte length");
-      //TODO: could use FF delimiter (invalid UTF-8) to reduce overhead by 3
-      byte[] stringData = StreamCorruptedException.throwIfNotEnoughData(reader, stringByteLength, "Missing string data");
-      final String result = new String(stringData, StandardCharsets.UTF_8);
+      final ByteArrayOutputStream classNameStream = new ByteArrayOutputStream();
+      byte[] remaining = StreamCorruptedException.throwIfNotByteTerminated(reader, TERMINATOR, "String data not " +
+         "terminated");
+      //-1 to exclude the terminator
+      classNameStream.write(remaining, 0, remaining.length - 1);
+      final String result = classNameStream.toString(StandardCharsets.UTF_8);
       LOG.debug(result);
       return cast(result);
    }
@@ -74,11 +69,9 @@ public class StringSerializableStrategy implements SerializableStrategy
    public void writeClassName(final String className)
    {
       LOG.debug(className);
-      //can't use recursion to write the string because that's endless and needs different format
       final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
       appender.append(writeMe);
       byteSerializableStrategy.writeByte(TERMINATOR);
-      //instead of size then string have the string terminated by ; since this saves 3 bytes and class names can't contain ;
    }
 
    public String readClassName(final byte firstByte)
