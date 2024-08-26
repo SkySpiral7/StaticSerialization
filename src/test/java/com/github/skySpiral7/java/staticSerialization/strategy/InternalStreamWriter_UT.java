@@ -4,6 +4,7 @@ import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import org.junit.jupiter.api.Test;
@@ -77,7 +78,8 @@ public class InternalStreamWriter_UT
       final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(CustomEnum.class.getName());
-      expectedBuilder.append(";*");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
+      expectedBuilder.append("*");
       expectedBuilder.append(new byte[]{0, 0, 0, 3});  //UTF-8 length (int)
       expectedBuilder.append("One");
       final byte[] expected = expectedBuilder.getAllBytes();
@@ -97,7 +99,8 @@ public class InternalStreamWriter_UT
       final BigInteger data = BigInteger.TEN;
       final byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("java.math.BigInteger;");
+      expectedBuilder.append("java.math.BigInteger");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(bitWiseUtil.toBigEndianBytes(javaData.length, 4));
       expectedBuilder.append(javaData);
       final byte[] expected = expectedBuilder.getAllBytes();

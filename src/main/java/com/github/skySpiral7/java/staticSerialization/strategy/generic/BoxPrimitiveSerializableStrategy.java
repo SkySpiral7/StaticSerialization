@@ -120,7 +120,7 @@ public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
          final byte data = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing boolean data")[0];
          if ('+' == data) return cast(Boolean.TRUE);
          if ('-' == data) return cast(Boolean.FALSE);
-         if (';' == data) return null;
+         if (StringSerializableStrategy.TERMINATOR == data) return null;
          throw new StreamCorruptedException(data + " is not a boolean value");
       }
       if (Character.class.equals(expectedClass))

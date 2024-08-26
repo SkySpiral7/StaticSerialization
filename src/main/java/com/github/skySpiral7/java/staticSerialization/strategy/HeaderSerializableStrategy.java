@@ -26,8 +26,8 @@ public class HeaderSerializableStrategy
     * <li>- boolean false (header only. not valid array component)</li>
     * <li>[2Type object arrays</li>
     * <li>]2Type primitive arrays</li>
-    * <li>Type; normal class which is ; terminated</li>
-    * <li>; null (header only. not valid array component)</li>
+    * <li>Type normal class which is 0xFF terminated</li>
+    * <li>0xFF null (header only. not valid array component)</li>
     * <li>? inherit type from containing array</li>
     * <li>\id reference existing object (header only)</li>
     * </ul>
@@ -40,8 +40,8 @@ public class HeaderSerializableStrategy
     * <li>- boolean false (header only. not valid array component)</li>
     * <li>[2Type object arrays</li>
     * <li>]2Type primitive arrays</li>
-    * <li>Type; normal class which is ; terminated</li>
-    * <li>; null (header only. not valid array component)</li>
+    * <li>Type normal class which is 0xFF terminated</li>
+    * <li>0xFF null (header only. not valid array component)</li>
     * <li>? inherit type from containing array</li>
     * <li>\id reference existing object (header only)</li>
     * </ul>
@@ -141,7 +141,7 @@ public class HeaderSerializableStrategy
          //since it can't be null or any other class.
          if (inheritFromClass.isPrimitive())
             return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass).getName());
-         //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or ';')
+         //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or 0xFF)
          firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
          dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
          final Class<?> baseComponent = inheritFromClass.isArray()
@@ -166,7 +166,8 @@ public class HeaderSerializableStrategy
             );
             //not the first byte but needs to conform for below. don't know what else to call this variable
             firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array component type")[0];
-            if (';' == firstByte) throw new StreamCorruptedException("header's array component type can't be null");
+            if (StringSerializableStrategy.TERMINATOR == firstByte)
+               throw new StreamCorruptedException("header's array component type can't be null");
             if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
             if ('+' == firstByte)
                return HeaderInformation.forPossibleArray(Boolean.class.getName(), dimensionCount, primitiveArray);
@@ -174,7 +175,8 @@ public class HeaderSerializableStrategy
          else dimensionCount = 0;
       }
 
-      if (';' == firstByte) return HeaderInformation.forNull();  //the empty string class name means null
+      if (StringSerializableStrategy.TERMINATOR == firstByte)
+         return HeaderInformation.forNull();  //the empty string class name means null
       if ('+' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.TRUE);
       if ('-' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.FALSE);
       if (COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte))  //safe cast because map contains only ASCII
@@ -237,7 +239,7 @@ public class HeaderSerializableStrategy
       else if (data == null)
       {
          //if data is null then class name is the empty string
-         byteSerializableStrategy.writeByte(';');
+         byteSerializableStrategy.writeByte(StringSerializableStrategy.TERMINATOR);
          return true;
       }
       //do nothing because non-boolean primitive array elements have no header

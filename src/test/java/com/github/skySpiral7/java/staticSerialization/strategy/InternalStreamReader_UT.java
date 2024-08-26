@@ -8,8 +8,10 @@ import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassExce
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import org.junit.jupiter.api.Test;
@@ -86,7 +88,10 @@ public class InternalStreamReader_UT
    @Test
    public void readObject_throw_unknownClass()
    {
-      final ByteReader mockFile = new ByteReader("java.lang.Object;".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.Object");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      final EasyReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
@@ -105,7 +110,10 @@ public class InternalStreamReader_UT
    @Test
    public void readObject_throw_voidClass()
    {
-      final ByteReader mockFile = new ByteReader("void;".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("void");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      final EasyReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       try
@@ -136,7 +144,8 @@ public class InternalStreamReader_UT
    public void readObject_header_happy()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.lang.Byte;");
+      fileBuilder.append("java.lang.Byte");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       fileBuilder.append(new byte[]{2});
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
@@ -149,7 +158,8 @@ public class InternalStreamReader_UT
    public void readObject_header_upCast()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.lang.Byte;");
+      fileBuilder.append("java.lang.Byte");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       fileBuilder.append(new byte[]{2});
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
@@ -162,7 +172,7 @@ public class InternalStreamReader_UT
    @Test
    public void readObject_header_null()
    {
-      final ByteReader mockFile = new ByteReader(new byte[]{';'});
+      final ByteReader mockFile = new ByteReader(new byte[]{StringSerializableStrategy.TERMINATOR});
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
       assertNull(testObject.readObject(Byte.class));
@@ -193,7 +203,8 @@ public class InternalStreamReader_UT
    public void readObject_byte()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.lang.Byte;");
+      fileBuilder.append("java.lang.Byte");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] fileContents = {(byte) 0xde, '~', (byte) 0xad};
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
@@ -210,7 +221,8 @@ public class InternalStreamReader_UT
    public void readObject_Short()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.lang.Short;");
+      fileBuilder.append("java.lang.Short");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       fileBuilder.append(new byte[]{0x0a, (byte) 0xfe, '!', 0x2b, (byte) 0xf1});
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
@@ -226,7 +238,8 @@ public class InternalStreamReader_UT
    public void readObject_Integer()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.lang.Integer;");
+      fileBuilder.append("java.lang.Integer");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       fileBuilder.append(new byte[]{0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe, '@', 0x0a, 0x1e, (byte) 0xba, (byte) 0xb2});
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
@@ -242,7 +255,8 @@ public class InternalStreamReader_UT
    public void readObject_Long()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.lang.Long;");
+      fileBuilder.append("java.lang.Long");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] fileContents = {1, 2, 3, 4, 5, 6, 7, 8, '#', 5, 4, 3, 2, 1, 0, 1, 2};
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
@@ -259,7 +273,8 @@ public class InternalStreamReader_UT
    public void readObject_Float()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.lang.Float;");
+      fileBuilder.append("java.lang.Float");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] fileContents = {1, 2, 3, 4, '%', (byte) 0xc1, (byte) 0xd2, (byte) 0xe3, (byte) 0xf4};
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
@@ -276,7 +291,8 @@ public class InternalStreamReader_UT
    public void readObject_Double()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.lang.Double;");
+      fileBuilder.append("java.lang.Double");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] fileContents = {1, 2, 3, 4, 5, 6, 7, 8, '^', (byte) 0xa1, (byte) 0xb2, (byte) 0xc3, (byte) 0xd4, (byte) 0xe5,
          (byte) 0xf6, 0x17, 8};
       fileBuilder.append(fileContents);
@@ -294,7 +310,13 @@ public class InternalStreamReader_UT
    public void readObject_Boolean()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("-+-+java.lang.Boolean;-java.lang.Boolean;+java.lang.Boolean;;");
+      fileBuilder.append("-+-+java.lang.Boolean");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
+      fileBuilder.append("-java.lang.Boolean");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
+      fileBuilder.append("+java.lang.Boolean");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -314,7 +336,8 @@ public class InternalStreamReader_UT
    public void readObject_Character()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.lang.Character;");
+      fileBuilder.append("java.lang.Character");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       fileBuilder.append(new byte[]{0, 0x66});
       fileBuilder.append("&");
       fileBuilder.append(new byte[]{0x22, 0x1e});
@@ -332,7 +355,8 @@ public class InternalStreamReader_UT
    public void readObject_String()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.lang.String;");
+      fileBuilder.append("java.lang.String");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       fileBuilder.append(new byte[]{0, 0, 0, 4});  //UTF-8 length (int));
       fileBuilder.append("f∞");
       fileBuilder.append("*");  //shorthand
@@ -354,7 +378,8 @@ public class InternalStreamReader_UT
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append("[");
       fileBuilder.append(new byte[]{1});   //array indicator and dimensions
-      fileBuilder.append("java.lang.Object;");
+      fileBuilder.append("java.lang.Object");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] fileContents = {
          0, 0, 0, 2,  //length (int)
          '~', 1,  //each element has header
@@ -377,7 +402,8 @@ public class InternalStreamReader_UT
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append("[");
       fileBuilder.append(new byte[]{1});   //array indicator and dimensions
-      fileBuilder.append("java.lang.Byte;");
+      fileBuilder.append("java.lang.Byte");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] fileContents = {
          0, 0, 0, 2,  //length (int)
          '~', 1,  //each element has header
@@ -420,12 +446,13 @@ public class InternalStreamReader_UT
    {
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append(new byte[]{'[', 2});   //root array indicator and dimensions
-      fileBuilder.append("java.lang.Byte;");  //root component
+      fileBuilder.append("java.lang.Byte");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);  //root component
       fileBuilder.append(new byte[]{0, 0, 0, 2});   //root length (int)
       fileBuilder.append("~");  //root[0] component
       fileBuilder.append(new byte[]{0, 0, 0, 1});   //root[0] length (int)
       fileBuilder.append(new byte[]{'~', 1});   //root[0][0] data with header
-      fileBuilder.append(";");   //root[1] is null
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);   //root[1] is null
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final Byte[][] expected = {{1}, null};
 
@@ -441,12 +468,13 @@ public class InternalStreamReader_UT
    {
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append(new byte[]{']', 2});   //root array indicator and dimensions
-      fileBuilder.append("java.lang.Byte;");  //root component
+      fileBuilder.append("java.lang.Byte");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);  //root component
       fileBuilder.append(new byte[]{0, 0, 0, 2});   //root length (int)
       fileBuilder.append("~");  //root[0] component
       fileBuilder.append(new byte[]{0, 0, 0, 1});   //root[0] length (int)
       fileBuilder.append(new byte[]{1});   //root[0][0] data (no header)
-      fileBuilder.append(";");  //root[1]=null
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);  //root[1]=null
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
       final byte[][] expected = {{1}, null};
 
@@ -506,7 +534,8 @@ public class InternalStreamReader_UT
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append("[");
       fileBuilder.append(new byte[]{1});   //array indicator and dimensions
-      fileBuilder.append("java.lang.Void;");
+      fileBuilder.append("java.lang.Void");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] fileContents = {0, 0, 0, 0};  //length (int)
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
@@ -523,8 +552,8 @@ public class InternalStreamReader_UT
    public void readObject_custom_happy()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      final String header = "com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy;";
-      fileBuilder.append(header);
+      fileBuilder.append("com.github.skySpiral7.java.staticSerialization.testClasses.SimpleHappy");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] fileContents = {'@', 0, 0, 0, 4};
       fileBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
@@ -559,7 +588,7 @@ public class InternalStreamReader_UT
    {
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append(CustomEnum.class.getName());
-      fileBuilder.append(new byte[]{';', '*', 0, 0, 0, 3});
+      fileBuilder.append(new byte[]{StringSerializableStrategy.TERMINATOR, '*', 0, 0, 0, 3});
       fileBuilder.append("One");
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
@@ -577,7 +606,7 @@ public class InternalStreamReader_UT
    {
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append(CustomPrivateClass.class.getName());
-      fileBuilder.append(";");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -603,7 +632,7 @@ public class InternalStreamReader_UT
    {
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append(NoReader.class.getName());
-      fileBuilder.append(";");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -635,7 +664,7 @@ public class InternalStreamReader_UT
    {
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append(NonPublicReader.class.getName());
-      fileBuilder.append(";");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -667,7 +696,7 @@ public class InternalStreamReader_UT
    {
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append(LocalNonStaticReader.class.getName());
-      fileBuilder.append(";");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -699,7 +728,7 @@ public class InternalStreamReader_UT
    {
       final ByteAppender fileBuilder = new ByteAppender();
       fileBuilder.append(ThrowingReader.class.getName());
-      fileBuilder.append(";");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final ByteReader mockFile = new ByteReader(fileBuilder.getAllBytes());
 
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -721,12 +750,14 @@ public class InternalStreamReader_UT
    public void readObject_Serializable()
    {
       final ByteAppender fileBuilder = new ByteAppender();
-      fileBuilder.append("java.math.BigInteger;");
+      fileBuilder.append("java.math.BigInteger");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       final BigInteger data = BigInteger.TEN;
       byte[] javaData = JavaSerializableStrategy.javaSerialize(data);
       fileBuilder.append(bitWiseUtil.toBigEndianBytes(javaData.length, 4));
       fileBuilder.append(javaData);
-      fileBuilder.append("java.math.BigInteger;");
+      fileBuilder.append("java.math.BigInteger");
+      fileBuilder.append(StringSerializableStrategy.TERMINATOR);
       javaData = JavaSerializableStrategy.javaSerialize(null);
       fileBuilder.append(bitWiseUtil.toBigEndianBytes(javaData.length, 4));
       fileBuilder.append(javaData);

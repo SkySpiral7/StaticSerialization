@@ -70,8 +70,9 @@ class UuidSerializableStrategy_UT
 
       final byte[] fileBytes = mockFile.getAllBytes();
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("java.util.UUID;");
+      expectedBuilder.append("java.util.UUID");
       expectedBuilder.append(new byte[]{
+         StringSerializableStrategy.TERMINATOR,
          (byte) 0xc1, 0x46, 0x61, 0x19, 0x7b, (byte) 0x9c, 0x40, (byte) 0xb0,
          (byte) 0x81, 0x29, (byte) 0xca, (byte) 0xca, 0x6d, 0x2b, 0x15, (byte) 0xf1
       });

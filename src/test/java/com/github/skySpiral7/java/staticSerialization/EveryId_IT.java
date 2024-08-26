@@ -1,6 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsBoiler;
@@ -138,7 +139,8 @@ public class EveryId_IT
 
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(new byte[]{'[', 1});   //data array indicator and dimensions
-      expectedBuilder.append("java.lang.Number;");  //component
+      expectedBuilder.append("java.lang.Number");  //component
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //array length
       expectedBuilder.append(new byte[]{'@'});   //element type (Integer)
       expectedBuilder.append(new byte[]{0, 0, 0, 2});   //element
@@ -168,7 +170,8 @@ public class EveryId_IT
 
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(new byte[]{'[', 1});   //data array indicator and dimensions
-      expectedBuilder.append("java.lang.Object;");  //component
+      expectedBuilder.append("java.lang.Object");  //component
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //array length
       expectedBuilder.append(new byte[]{'@'});   //element type (Integer)
       expectedBuilder.append(new byte[]{0, 0, 0, 2});   //element

@@ -2,6 +2,7 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,8 @@ public class ReaderValidationStrategy_UT
    public void getClassFromHeader_header_noSuchClassThrows()
    {
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("java.lang.f;");
+      expectedBuilder.append("java.lang.f");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -89,7 +91,8 @@ public class ReaderValidationStrategy_UT
    public void getClassFromHeader_header_InvalidClassThrows()
    {
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("java.;");
+      expectedBuilder.append("java.");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -130,7 +133,8 @@ public class ReaderValidationStrategy_UT
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append("[");
       expectedBuilder.append(new byte[]{1});
-      expectedBuilder.append("java.lang.Byte;");
+      expectedBuilder.append("java.lang.Byte");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 0});  //empty array to prove that the check is needed
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
@@ -191,7 +195,8 @@ public class ReaderValidationStrategy_UT
    public void getClassFromHeader_throws_whenStreamHasPrimitiveVoid()
    {
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("void;");
+      expectedBuilder.append("void");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -212,7 +217,8 @@ public class ReaderValidationStrategy_UT
    public void getClassFromHeader_header_noCastThrows()
    {
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("java.lang.Byte;");
+      expectedBuilder.append("java.lang.Byte");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -235,7 +241,8 @@ public class ReaderValidationStrategy_UT
       final ByteAppender expectedBuilder = new ByteAppender();
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
       //meaning that ClassNotFoundException is a failure.
-      expectedBuilder.append("f;");
+      expectedBuilder.append("f");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -257,7 +264,8 @@ public class ReaderValidationStrategy_UT
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append("[");
       expectedBuilder.append(new byte[]{1});
-      expectedBuilder.append("java.lang.Byte;");
+      expectedBuilder.append("java.lang.Byte");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -282,7 +290,8 @@ public class ReaderValidationStrategy_UT
       //meaning that ClassNotFoundException is a failure.
       expectedBuilder.append("[");
       expectedBuilder.append(new byte[]{1});
-      expectedBuilder.append("f;");
+      expectedBuilder.append("f");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -304,7 +313,8 @@ public class ReaderValidationStrategy_UT
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append("[");
       expectedBuilder.append(new byte[]{2});
-      expectedBuilder.append("java.lang.Object;");
+      expectedBuilder.append("java.lang.Object");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -329,7 +339,8 @@ public class ReaderValidationStrategy_UT
       //meaning that ClassNotFoundException is a failure.
       expectedBuilder.append("[");
       expectedBuilder.append(new byte[]{1});
-      expectedBuilder.append("f;");
+      expectedBuilder.append("f");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);
@@ -351,7 +362,8 @@ public class ReaderValidationStrategy_UT
       final ByteAppender expectedBuilder = new ByteAppender();
       //f doesn't exist but it should throw IllegalStateException. It MUST NOT attempt to load the class
       //meaning that ClassNotFoundException is a failure.
-      expectedBuilder.append("f;");
+      expectedBuilder.append("f");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
 
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader testObject = new ObjectStreamReader(mockFile);

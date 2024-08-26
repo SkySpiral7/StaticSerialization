@@ -86,8 +86,9 @@ class BitSetSerializableStrategy_UT
 
       final byte[] fileBytes = mockFile.getAllBytes();
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("java.util.BitSet;");
+      expectedBuilder.append("java.util.BitSet");
       expectedBuilder.append(new byte[]{
+         StringSerializableStrategy.TERMINATOR,
          0, 0, 0, 2,  //array length
          (byte) 0xba, (byte) 0xbe
       });

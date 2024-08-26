@@ -17,9 +17,9 @@ public class StringSerializableStrategy implements SerializableStrategy
 {
    private static final Logger LOG = LogManager.getLogger();
    /**
-    * Used as a string terminating byte. The FF value isn't valid UTF-8.
+    * Used as a string terminating byte. The value isn't valid UTF-8.
     */
-   private static final byte TERMINATOR = ';';//(byte) 0xFF;
+   public static final byte TERMINATOR = (byte) 0xFF;
    private final EasyReader reader;
    private final EasyAppender appender;
    private final ByteSerializableStrategy byteSerializableStrategy;

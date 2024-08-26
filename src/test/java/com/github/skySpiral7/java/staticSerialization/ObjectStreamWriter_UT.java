@@ -1,5 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization;
 
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +15,7 @@ public class ObjectStreamWriter_UT
    {
       final class ReflectiveLocal implements StaticSerializable
       {
+         @SuppressWarnings("unused")
          private int field = 0xcafe_bead;
 
          //no reader doesn't matter
@@ -28,7 +30,9 @@ public class ObjectStreamWriter_UT
       final ByteAppender mockFile = new ByteAppender();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter_UT$1ReflectiveLocal;@");
+      expectedBuilder.append("com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter_UT$1ReflectiveLocal");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
+      expectedBuilder.append((byte) '@');
       expectedBuilder.append(new byte[]{(byte) 0xca, (byte) 0xfe, (byte) 0xbe, (byte) 0xad});
       final byte[] expected = expectedBuilder.getAllBytes();
 

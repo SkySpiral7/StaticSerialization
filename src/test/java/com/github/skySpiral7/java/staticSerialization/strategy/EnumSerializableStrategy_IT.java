@@ -3,6 +3,7 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
@@ -25,7 +26,8 @@ public class EnumSerializableStrategy_IT
       final ByteAppender mockFile = new ByteAppender();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("java.math.RoundingMode;");
+      expectedBuilder.append("java.math.RoundingMode");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 1});
       final byte[] expected = expectedBuilder.getAllBytes();
 
@@ -39,7 +41,8 @@ public class EnumSerializableStrategy_IT
    public void read()
    {
       final ByteAppender inputBuilder = new ByteAppender();
-      inputBuilder.append("java.math.RoundingMode;");
+      inputBuilder.append("java.math.RoundingMode");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] fileContents = {0, 0, 0, 1};
       inputBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
@@ -54,7 +57,8 @@ public class EnumSerializableStrategy_IT
    public void read_throws_WhenOrdinalInvalid()
    {
       final ByteAppender inputBuilder = new ByteAppender();
-      inputBuilder.append("java.math.RoundingMode;");
+      inputBuilder.append("java.math.RoundingMode");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
       inputBuilder.append(bitWiseUtil.toBigEndianBytes(-1, 4));
       final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
@@ -76,7 +80,8 @@ public class EnumSerializableStrategy_IT
    public void read_throws_WhenOrdinalNotFound()
    {
       final ByteAppender inputBuilder = new ByteAppender();
-      inputBuilder.append("java.math.RoundingMode;");
+      inputBuilder.append("java.math.RoundingMode");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
       final byte[] fileContents = {0, 0, 0, 10};
       inputBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());

@@ -2,6 +2,7 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,7 @@ public class BoxPrimitiveSerializableStrategy_UT
       final ByteAppender inputBuilder = new ByteAppender();
       inputBuilder.append(new byte[]{']', 1, '+'});  //array indicator, dimensions, component
       inputBuilder.append(new byte[]{0, 0, 0, 1});  //length (int)
-      inputBuilder.append(";");  //data is null rather than true/false
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);  //data is null rather than true/false
       final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
       final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
 

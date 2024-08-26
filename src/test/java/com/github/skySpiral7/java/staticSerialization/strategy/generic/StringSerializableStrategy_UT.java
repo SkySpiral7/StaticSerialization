@@ -88,14 +88,14 @@ class StringSerializableStrategy_UT
       new FullVerifications()
       {{
          mockAppender.append(new byte[]{'h', 'i'});
-         mockByteSerializableStrategy.writeByte(';');
+         mockByteSerializableStrategy.writeByte(StringSerializableStrategy.TERMINATOR);
       }};
    }
 
    @Test
    public void readClassName_returns_whenHasTerminator()
    {
-      final ByteReader byteReader = new ByteReader(new byte[]{'i', ';'});
+      final ByteReader byteReader = new ByteReader(new byte[]{'i', StringSerializableStrategy.TERMINATOR});
       final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader, null);
       final String expected = "hi";
 
@@ -181,8 +181,9 @@ class StringSerializableStrategy_UT
 
       final byte[] fileBytes = mockFile.getAllBytes();
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("java.util.BitSet;");
+      expectedBuilder.append("java.util.BitSet");
       expectedBuilder.append(new byte[]{
+         StringSerializableStrategy.TERMINATOR,
          0, 0, 0, 0  //array length
       });
       assertThat(fileBytes, is(expectedBuilder.getAllBytes()));

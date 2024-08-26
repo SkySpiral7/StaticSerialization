@@ -6,6 +6,7 @@ import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedE
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
@@ -51,7 +52,7 @@ public class HeaderSerializableStrategy_UT
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //root length (int)
       expectedBuilder.append(new byte[]{'?'});  //root[0] inherits type
       expectedBuilder.append(new byte[]{0, 0, 0, 2});   //root[0] length (int)
-      expectedBuilder.append(new byte[]{'?', 1, ';'});   //root[0][0] data inherits type, root[0][1] is null (not same type)
+      expectedBuilder.append(new byte[]{'?', 1, StringSerializableStrategy.TERMINATOR});   //root[0][0] data inherits type, root[0][1] is null (not same type)
       final Byte[][] expected = {{1, null}};
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
@@ -67,7 +68,8 @@ public class HeaderSerializableStrategy_UT
    {
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(new byte[]{'[', 1});   //array indicator, dimensions
-      expectedBuilder.append("java.lang.Object;");   //component
+      expectedBuilder.append("java.lang.Object");   //component
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //length (int)
       expectedBuilder.append(new byte[]{'~', 1});   //data with header (inherit wouldn't be a supported type here)
       final Object[] expected = {(byte) 1};
@@ -143,7 +145,8 @@ public class HeaderSerializableStrategy_UT
    public void readHeader_throws_whenArrayComponentIsNull()
    {
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append("[a;");  //'a' is 97 dimensions
+      expectedBuilder.append("[a");  //'a' is 97 dimensions
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       final ByteReader mockFile = new ByteReader(expectedBuilder.getAllBytes());
       final ObjectStreamReader streamReader = new ObjectStreamReader(mockFile);
 
@@ -210,7 +213,7 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsNullInfo_givenNullInStream()
    {
-      final EasyReader reader = new ByteReader(new byte[]{';'});
+      final EasyReader reader = new ByteReader(new byte[]{StringSerializableStrategy.TERMINATOR});
       init(reader, null);
       final HeaderInformation<?> expected = new HeaderInformation<>(null, null, 0, false);
 
@@ -249,7 +252,10 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsBooleanInfo_givenBooleanObjectInStream()
    {
-      final EasyReader reader = new ByteReader("java.lang.Boolean;".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.Boolean");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", null, 0, false);
 
@@ -262,7 +268,11 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsByteInfo_givenByteInStream()
    {
-      final EasyReader reader = new ByteReader("java.lang.Byte;~".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.Byte");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      inputBuilder.append((byte) '~');
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Byte> expected = new HeaderInformation<>("java.lang.Byte", null, 0, false);
 
@@ -277,7 +287,11 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsShortInfo_givenShortInStream()
    {
-      final EasyReader reader = new ByteReader("java.lang.Short;!".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.Short");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      inputBuilder.append((byte) '!');
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Short> expected = new HeaderInformation<>("java.lang.Short", null, 0, false);
 
@@ -292,7 +306,11 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsIntegerInfo_givenIntegerInStream()
    {
-      final EasyReader reader = new ByteReader("java.lang.Integer;@".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.Integer");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      inputBuilder.append((byte) '@');
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Integer> expected = new HeaderInformation<>("java.lang.Integer", null, 0, false);
 
@@ -307,7 +325,11 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsLongInfo_givenLongInStream()
    {
-      final EasyReader reader = new ByteReader("java.lang.Long;#".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.Long");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      inputBuilder.append((byte) '#');
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Long> expected = new HeaderInformation<>("java.lang.Long", null, 0, false);
 
@@ -322,7 +344,11 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsFloatInfo_givenFloatInStream()
    {
-      final EasyReader reader = new ByteReader("java.lang.Float;%".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.Float");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      inputBuilder.append((byte) '%');
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Float> expected = new HeaderInformation<>("java.lang.Float", null, 0, false);
 
@@ -337,7 +363,11 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsDoubleInfo_givenDoubleInStream()
    {
-      final EasyReader reader = new ByteReader("java.lang.Double;^".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.Double");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      inputBuilder.append((byte) '^');
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Double> expected = new HeaderInformation<>("java.lang.Double", null, 0, false);
 
@@ -352,7 +382,11 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsCharacterInfo_givenCharacterInStream()
    {
-      final EasyReader reader = new ByteReader("java.lang.Character;&".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.Character");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      inputBuilder.append((byte) '&');
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Character> expected = new HeaderInformation<>("java.lang.Character", null, 0, false);
 
@@ -367,7 +401,11 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsStringInfo_givenStringInStream()
    {
-      final EasyReader reader = new ByteReader("java.lang.String;*".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.String");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      inputBuilder.append((byte) '*');
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<String> expected = new HeaderInformation<>("java.lang.String", null, 0, false);
 
@@ -477,7 +515,10 @@ public class HeaderSerializableStrategy_UT
    @Test
    public void readHeader_returnsObjectInfo_givenObjectInStream()
    {
-      final EasyReader reader = new ByteReader("java.lang.Object;".getBytes(StandardCharsets.UTF_8));
+      final ByteAppender inputBuilder = new ByteAppender();
+      inputBuilder.append("java.lang.Object");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Object> expected = new HeaderInformation<>("java.lang.Object", null, 0, false);
 
@@ -492,7 +533,8 @@ public class HeaderSerializableStrategy_UT
    {
       final ByteAppender inputBuilder = new ByteAppender();
       inputBuilder.append(new byte[]{'[', 1});
-      inputBuilder.append("java.lang.Object;");
+      inputBuilder.append("java.lang.Object");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
       final HeaderInformation<Object> expected = new HeaderInformation<>(Object.class.getName(), null, 1, false);
@@ -524,7 +566,7 @@ public class HeaderSerializableStrategy_UT
 
       testObject.writeObject(null);
       testObject.close();
-      final byte[] expected = {';'};
+      final byte[] expected = {StringSerializableStrategy.TERMINATOR};
       //don't use bytesToString since that assumes the header has UTF-8 encoding
       assertEquals(Arrays.toString(expected), Arrays.toString(mockFile.getAllBytes()));
    }
@@ -702,7 +744,8 @@ public class HeaderSerializableStrategy_UT
       testObject.close();
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(new byte[]{'[', 1});   //array indicator and dimensions
-      expectedBuilder.append("java.lang.Object;");
+      expectedBuilder.append("java.lang.Object");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 2});   //length (int)
       expectedBuilder.append(new byte[]{'~', 1});
       expectedBuilder.append(new byte[]{'~', 2});
@@ -769,12 +812,12 @@ public class HeaderSerializableStrategy_UT
       testObject.writeObject(new Byte[][]{{1}, null});
       testObject.close();
       final ByteAppender expectedBuilder = new ByteAppender();
-      expectedBuilder.append(new byte[]{'[', 2, '~'});   //root array indicator, dimensions, component
-      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //root length (int)
-      expectedBuilder.append(new byte[]{'?'});   //root[0] inherits type, dimensions, and component
-      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //root[0] length (int)
-      expectedBuilder.append(new byte[]{'?', 1});   //root[0][0] data with header
-      expectedBuilder.append(";");   //root[1] is null
+      expectedBuilder.append(new byte[]{'[', 2, '~'});  //root array indicator, dimensions, component
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});  //root length (int)
+      expectedBuilder.append(new byte[]{'?'});  //root[0] inherits type, dimensions, and component
+      expectedBuilder.append(new byte[]{0, 0, 0, 1});  //root[0] length (int)
+      expectedBuilder.append(new byte[]{'?', 1});  //root[0][0] data with header
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);  //root[1] is null
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));
    }
@@ -823,7 +866,8 @@ public class HeaderSerializableStrategy_UT
       testObject.close();
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(new byte[]{'[', 1});   //array indicator and dimensions
-      expectedBuilder.append("java.lang.Void;");
+      expectedBuilder.append("java.lang.Void");
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 0});   //length (int)
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));

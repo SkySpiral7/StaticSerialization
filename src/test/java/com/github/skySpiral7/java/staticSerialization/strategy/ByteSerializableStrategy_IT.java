@@ -2,6 +2,7 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,8 @@ public class ByteSerializableStrategy_IT
    public void read()
    {
       final ByteAppender inputBuilder = new ByteAppender();
-      inputBuilder.append("java.lang.Byte;");
+      inputBuilder.append("java.lang.Byte");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
       inputBuilder.append(new byte[]{2, '~', 3});
       final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 

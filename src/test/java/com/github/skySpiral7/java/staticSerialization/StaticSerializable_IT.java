@@ -1,5 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization;
 
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.testClasses.ChildImmutable;
@@ -281,7 +282,7 @@ public class StaticSerializable_IT
       writer.close();
 
       /*
-Object graph (using non compressed names):
+Object graph (using non-compressed names and ; for terminator):
 [3java.lang.Object;<id 0>3
    java.lang.CharSequence;1
       java.lang.String;1
@@ -304,15 +305,18 @@ Object graph (using non compressed names):
        */
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(new byte[]{'[', 3});   //data array indicator and dimensions
-      expectedBuilder.append("java.lang.Object;");   //data component
+      expectedBuilder.append("java.lang.Object");   //data component
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 3});   //data length
-      expectedBuilder.append("java.lang.CharSequence;");   //data[0] component
+      expectedBuilder.append("java.lang.CharSequence");   //data[0] component
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[0] length
       expectedBuilder.append(new byte[]{'*'});   //data[0][0] component (String)
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[0][0] length
       expectedBuilder.append(new byte[]{'?', 0, 0, 0, 2});   //data[0][0][0] inherited type and UTF-8 length
       expectedBuilder.append("hi");   //data[0][0][0] value
-      expectedBuilder.append("java.lang.Number;");   //data[1] component
+      expectedBuilder.append("java.lang.Number");   //data[1] component
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 2});   //data[1] length
       expectedBuilder.append(new byte[]{'@'});   //data[1][0] array component (Integer)
       expectedBuilder.append(new byte[]{0, 0, 0, 2});   //data[1][0] length
@@ -327,9 +331,10 @@ Object graph (using non compressed names):
       expectedBuilder.append(new byte[]{'?'});   //data[2][0] inherited type
       expectedBuilder.append(new byte[]{0, 0, 0, 1});   //data[2][0] length
       expectedBuilder.append(new byte[]{'[', 1});   //data[2][0][0] array indicator and dimensions
-      expectedBuilder.append("java.lang.Object;");   //data[2][0][0] component
+      expectedBuilder.append("java.lang.Object");   //data[2][0][0] component
+      expectedBuilder.append(StringSerializableStrategy.TERMINATOR);
       expectedBuilder.append(new byte[]{0, 0, 0, 4});   //data[2][0][0] length
-      expectedBuilder.append(new byte[]{';'});   //data[2][0][0][0]=null
+      expectedBuilder.append(new byte[]{StringSerializableStrategy.TERMINATOR});   //data[2][0][0][0]=null
       expectedBuilder.append(new byte[]{'*', 0, 0, 0, 3});   //data[2][0][0][1] type (String) and UTF-8 length
       expectedBuilder.append("joe");   //data[2][0][0][1] value
       expectedBuilder.append(new byte[]{']', 1, '@'});   //data[2][0][0][2] array indicator, dimensions, component (int)

@@ -1,6 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.util.FileIoUtil;
@@ -62,7 +63,8 @@ public class ObjectStreamReader_UT
       };
       inputBuilder.append(fileContents);
 
-      inputBuilder.append("java.math.RoundingMode;");
+      inputBuilder.append("java.math.RoundingMode");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
       inputBuilder.append(new byte[]{0, 0, 0, 1});
       final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
 
@@ -93,8 +95,9 @@ public class ObjectStreamReader_UT
    public void readFieldsReflectively()
    {
       final ByteAppender inputBuilder = new ByteAppender();
-      final String header = "com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$ReflectiveClass;@";
-      inputBuilder.append(header);
+      inputBuilder.append("com.github.skySpiral7.java.staticSerialization.ObjectStreamReader_UT$ReflectiveClass");
+      inputBuilder.append(StringSerializableStrategy.TERMINATOR);
+      inputBuilder.append((byte) '@');
       final byte[] fileContents = {0x0a, (byte) 0xfe, (byte) 0xba, (byte) 0xbe};
       inputBuilder.append(fileContents);
       final ByteReader mockFile = new ByteReader(inputBuilder.getAllBytes());
