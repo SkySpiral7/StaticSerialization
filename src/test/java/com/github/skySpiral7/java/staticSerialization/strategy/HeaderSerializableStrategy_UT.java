@@ -506,7 +506,7 @@ public class HeaderSerializableStrategy_UT
       }
       catch (final StreamCorruptedException actual)
       {
-         assertEquals("Incomplete header: class name not terminated", actual.getMessage());
+         assertEquals("String data not terminated", actual.getMessage());
       }
 
       reader.close();

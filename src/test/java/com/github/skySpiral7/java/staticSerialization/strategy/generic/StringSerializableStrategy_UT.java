@@ -58,44 +58,6 @@ class StringSerializableStrategy_UT
    }
 
    @Test
-   public void writeClassName(@Mocked final EasyAppender mockAppender,
-                              @Mocked final ByteSerializableStrategy mockByteSerializableStrategy)
-   {
-      final StringSerializableStrategy testObject = new StringSerializableStrategy(mockAppender,
-         mockByteSerializableStrategy);
-      final String input = "hi";
-
-      testObject.writeClassName(input);
-
-      new FullVerifications()
-      {{
-         mockAppender.append(new byte[]{'h', 'i'});
-         mockByteSerializableStrategy.writeByte(StringSerializableStrategy.TERMINATOR);
-      }};
-   }
-
-   @Test
-   public void readClassName_returns_whenHasTerminator()
-   {
-      final ByteReader byteReader = new ByteReader(new byte[]{'i', StringSerializableStrategy.TERMINATOR});
-      final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader);
-      final String expected = "hi";
-
-      final Object actual = testObject.readClassName((byte) 'h');
-
-      assertEquals(expected, actual);
-   }
-
-   @Test
-   public void readClassName_throws_whenNoTerminator()
-   {
-      final ByteReader byteReader = new ByteReader(new byte[]{'i'});
-      final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader);
-
-      assertThrows(StreamCorruptedException.class, () -> testObject.readClassName((byte) 'h'));
-   }
-
-   @Test
    public void e2e_stringData()
    {
       final String data = "hi";

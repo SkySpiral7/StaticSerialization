@@ -65,25 +65,4 @@ public class StringSerializableStrategy implements SerializableStrategy
       LOG.debug(result);
       return cast(result);
    }
-
-   public void writeClassName(final String className)
-   {
-      LOG.debug(className);
-      final byte[] writeMe = className.getBytes(StandardCharsets.UTF_8);
-      appender.append(writeMe);
-      byteSerializableStrategy.writeByte(TERMINATOR);
-   }
-
-   public String readClassName(final byte firstByte)
-   {
-      final ByteArrayOutputStream classNameStream = new ByteArrayOutputStream();
-      classNameStream.write(firstByte);
-      byte[] remaining = StreamCorruptedException.throwIfNotByteTerminated(reader, TERMINATOR, "Incomplete header: " +
-         "class name not terminated");
-      //-1 to exclude the terminator
-      classNameStream.write(remaining, 0, remaining.length - 1);
-      final String result = classNameStream.toString(StandardCharsets.UTF_8);
-      LOG.debug(result);
-      return result;
-   }
 }
