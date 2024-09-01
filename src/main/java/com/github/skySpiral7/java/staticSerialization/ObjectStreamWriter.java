@@ -61,6 +61,7 @@ public class ObjectStreamWriter implements Closeable, Flushable
     * {@link BitSet#trimToSize()} in order to save space. This differs from the behavior of {@link Serializable} and
     * no one should care.</p>
     */
+   //TODO: compare all supported types. static write/read and check if java serial changed
    public void writeObject(final Object data)
    {
       internalStreamWriter.writeObjectInternal(null, data);

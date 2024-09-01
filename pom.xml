@@ -104,6 +104,7 @@
                <includes>
                   <include>**/*_UT.java</include>
                   <include>**/*_IT.java</include>
+                  <include>**/*Test.java</include>
                </includes>
                <excludes>
                   <exclude>**/DoNotDo_IT.java</exclude>

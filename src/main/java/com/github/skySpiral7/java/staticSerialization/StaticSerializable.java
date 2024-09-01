@@ -14,23 +14,37 @@ import java.util.function.Function;
  * <li>Security</li>
  * <li>Versatility</li>
  * <li>Nice API</li>
- * <li>Maintainability</li>
  * <li>Small serialized size</li>
+ * <li>Maintainability</li>
  * </ol>
- * <p>Speed and memory footprint are not goals. I haven't bench marked and I don't care.
+ *
+ * <p>Speed and RAM footprint are not goals. I haven't bench marked and I don't care.
  * However this library doesn't require setting fields with reflection (for security reasons)
  * therefore it is comparable to {@link Externalizable}.</p>
- * <p>A header that contains the class will be included with each element for security.
+ *
+ * <p>Note that implementing this interface also requires the class to define a static method of this signature:</p>
+ * <blockQuote>{@code public static <YourClass> readFromStream(final ObjectStreamReader reader)}</blockQuote>
+ *
+ * <p>Usage: do not call readFromStream/writeToStream yourself as doing so will ruin the required overhead.</p>
+ *
+ * <p>A header that contains the class name will be included with each element for security.
  * Most classes don't need a version number so one is not included by default.
  * Most classes don't need an id but it will be included as needed
  * although classes with circular references require an extra step, see {@link #readFromStream(ObjectStreamReader, Function, BiConsumer)} for details.</p>
- * <p>Usage: do not call these methods yourself as doing so will ruin the required overhead.</p>
  *
- * <p>Note that using this interface also requires the class to define a static method of this signature:</p>
- * <blockQuote>{@code public static YourClass readFromStream(final ObjectStreamReader reader)}</blockQuote>
- *
- * <p>If you want a proxy like {@link EnumSet} has then have each destination class implement a readFromStream
+ * <p>If you want a proxy (like {@link EnumSet} does) has then have each destination class implement a readFromStream
  * which calls a single common method. Likewise each writeToStream must be compatible.</p>
+ *
+ * <p>Java's {@link Serializable} doesn't allow for an enum to serialize fields even though enums can be
+ * mutable. StaticSerializable does allow serializing enum field data (as per versatility) even though a mutable
+ * singleton is a dependency injection smell.</p>
+ *
+ * <p>Likewise Java's {@link Serializable} doesn't allow custom serialization methods for record classes. There's not
+ * much reason to have custom serialization for record classes but StaticSerializable does allow it.</p>
+ *
+ * <p>Java's {@link Serializable} doesn't preserve a record class appearing in multiple places in an object graph.
+ * There's really no reason for that restriction so I consider that to be a bug. StaticSerializable does allow proper
+ * backreferencing of record objects.</p>
  *
  * @see ObjectStreamReader
  * @see ObjectStreamWriter

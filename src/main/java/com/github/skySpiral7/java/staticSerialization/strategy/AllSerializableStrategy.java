@@ -26,12 +26,17 @@ public class AllSerializableStrategy
                                   final StringSerializableStrategy stringSerializableStrategy,
                                   final UuidSerializableStrategy uuidSerializableStrategy)
    {
-      /* order: supported java.lang serial must be before javaSerializableStrategy so that they get compression,
-       * staticSerializableStrategy before java since it has priority,
-       * enum in between so that it can be static by default but can also be manually serial. */
-      strategyList = List.of(boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
-         bitSetSerializableStrategy, uuidSerializableStrategy,
-         staticSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy);
+      /* order:
+       * first is supported jdk final classes (none of which are static) so that they have better compression than java.
+       * then static so that it will respect any manual serial.
+       * then bitset/enum (which can be static) so that the non-static ones will have better compression than java.
+       * then java if all else fails */
+      strategyList = List.of(
+         boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
+         uuidSerializableStrategy,
+         staticSerializableStrategy,
+         bitSetSerializableStrategy, enumSerializableStrategy,
+         javaSerializableStrategy);
       /*
        * TODO: also Big int/dec, stream: new ArrayList<>().stream().collect(Collectors.toList()).toArray()
        * there's already enum. big int/dec could do same

@@ -56,6 +56,7 @@ class UuidSerializableStrategy_UT
       final Object actual = testObject.read(null);
 
       assertEquals(expected, actual);
+      new FullVerifications() {};
    }
 
    @Test

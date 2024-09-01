@@ -24,7 +24,6 @@ public class EnumSerializableStrategy implements SerializableStrategy
    public void write(final Object rawData)
    {
       final Enum<?> data = (Enum<?>) rawData;
-      //TODO: does java serial allow enum data? if yes: JavaSerializableStrategy, if no: doc it
       integerSerializableStrategy.write(data.ordinal());
    }
 
@@ -34,7 +33,7 @@ public class EnumSerializableStrategy implements SerializableStrategy
       final int ordinal = integerSerializableStrategy.read("Missing enum ordinal");
       if (ordinal < 0) throw new StreamCorruptedException("Invalid enum ordinal. Actual: " + ordinal);
 
-      final Enum<?>[] values = Enum[].class.cast(expectedClass.getEnumConstants());  //won't return null because it is an enum
+      final Enum<?>[] values = (Enum<?>[]) expectedClass.getEnumConstants();  //won't return null because it is an enum
       if (values.length <= ordinal) throw new StreamCorruptedException(
          String.format("%s.values()[%d] doesn't exist. Actual length: %d", expectedClass.getName(), ordinal, values.length));
 
