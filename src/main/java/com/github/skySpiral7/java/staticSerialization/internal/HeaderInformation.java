@@ -33,6 +33,7 @@ public final class HeaderInformation<T_Value>
    public static HeaderInformation<?> forPrimitiveArrayValue(final String boxClassName)
    {
       //TODO: isn't this only possible with 2d+? in which case rename forInheritedPrimitiveArray
+      //primitiveArray=false because this header info is for a primitive value not an array
       return new HeaderInformation<>(boxClassName, null, 0, false);
    }
 

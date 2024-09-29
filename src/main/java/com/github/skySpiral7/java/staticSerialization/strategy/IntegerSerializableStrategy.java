@@ -40,6 +40,7 @@ public class IntegerSerializableStrategy
 
    public int read(final String corruptMessage)
    {
+      //TODO: have everything take a message so that this class can be replaced by BoxPrimitiveSerializableStrategy
       final int data = bitWiseUtil.bigEndianBytesToInteger(
          StreamCorruptedException.throwIfNotEnoughData(reader, 4, corruptMessage)
       );

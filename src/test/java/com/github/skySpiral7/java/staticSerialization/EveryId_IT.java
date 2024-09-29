@@ -10,6 +10,7 @@ import com.github.skySpiral7.java.staticSerialization.testClasses.GraphCallsRegi
 import com.github.skySpiral7.java.staticSerialization.testClasses.GraphUnregistered;
 import org.junit.jupiter.api.Test;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -91,18 +92,43 @@ public class EveryId_IT
    public void sameObject()
    {
       final BigInteger same = new BigInteger("10");
-      final BigInteger bigOne = new BigInteger("1");
+      final BigInteger otherBig = new BigInteger("1");
 
       final ByteAppender mockFile = new ByteAppender();
       final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
       writer.writeObject(same);
-      writer.writeObject(bigOne);
+      writer.writeObject(otherBig);
       writer.writeObject(same);
       writer.close();
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
       final BigInteger actualSame = reader.readObject(BigInteger.class);
-      reader.readObject(BigInteger.class);  //bigOne
+      reader.readObject(BigInteger.class);  //otherBig
       assertSame(actualSame, reader.readObject(BigInteger.class));
+      assertNotSame(same, actualSame);
+      reader.close();
+   }
+
+   /**
+    * Records aren't special to me but they are to java's Serializable. This proves I'm better.
+    */
+   @Test
+   public void sameRecord()
+   {
+      //doesn't need to be StaticSerializable
+      record MyRecord(int fieldData) implements Serializable {}
+      final MyRecord same = new MyRecord(10);
+      final MyRecord otherRecord = new MyRecord(1);
+
+      final ByteAppender mockFile = new ByteAppender();
+      final ObjectStreamWriter writer = new ObjectStreamWriter(mockFile);
+      writer.writeObject(same);
+      writer.writeObject(otherRecord);
+      writer.writeObject(same);
+      writer.close();
+      final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(mockFile.getAllBytes()));
+      final MyRecord actualSame = reader.readObject(MyRecord.class);
+      reader.readObject(MyRecord.class);  //otherRecord
+      assertSame(actualSame, reader.readObject(MyRecord.class));
       assertNotSame(same, actualSame);
       reader.close();
    }
