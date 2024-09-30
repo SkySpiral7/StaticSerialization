@@ -37,7 +37,7 @@ public class ArraySerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public boolean supports(Class<?> actualClass)
+   public boolean supports(final byte firstByte, final Class<?> actualClass)
    {
       return actualClass.isArray();
    }

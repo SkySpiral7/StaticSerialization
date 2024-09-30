@@ -53,9 +53,9 @@ public class HeaderSerializableStrategy
       possible printable ASCII headers: space to / (not $ or .) is 14, : to @ is +7, [ to ` (not _) is +5, { to ~ is +4 = 30
       I've used 14 so far which leaves 16 free spots
       forbidden: $.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
-      rest: !"#%&'()*+,-/:;<=>?@[\]^`{|}~ space
-      used: !"#%&'+-?@[]^~
-      free: ()*,/:;<=>\`{|} space
+      allowed (30): !"#%&'()*+,-/:;<=>?@[\]^`{|}~ space
+      used (14): !"#%&'+-?@[]^~
+      available (16): ()*,/:;<=>\`{|} space
       technically a FQ class name can't start with a number or dot so I could use them but I won't
       variables names can start with $ so I assume a package/class can too
       */
@@ -148,7 +148,7 @@ public class HeaderSerializableStrategy
          primitiveArray = baseComponent.isPrimitive();
          if ('?' == firstByte)
          {
-            return HeaderInformation.forPossibleArray(baseComponent.getName(), dimensionCount, primitiveArray);
+            return HeaderInformation.forPossibleArray(firstByte, baseComponent.getName(), dimensionCount, primitiveArray);
          }
          //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
       }
@@ -168,19 +168,19 @@ public class HeaderSerializableStrategy
                throw new StreamCorruptedException("header's array component type can't be null");
             if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
             if ('+' == firstByte)
-               return HeaderInformation.forPossibleArray(Boolean.class.getName(), dimensionCount, primitiveArray);
+               return HeaderInformation.forPossibleArray(firstByte, Boolean.class.getName(), dimensionCount, primitiveArray);
          }
          else dimensionCount = 0;
       }
 
       if (StringSerializableStrategy.TERMINATOR == firstByte)
-         return HeaderInformation.forNull();  //the empty string class name means null
-      if ('+' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.TRUE);
-      if ('-' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.FALSE);
+         return HeaderInformation.forNull(firstByte);  //the empty string class name means null
+      if ('+' == firstByte) return HeaderInformation.forValue(firstByte, Boolean.class.getName(), Boolean.TRUE);
+      if ('-' == firstByte) return HeaderInformation.forValue(firstByte, Boolean.class.getName(), Boolean.FALSE);
       if (COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte))  //safe cast because map contains only ASCII
       {
          final Class<?> compressedClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
-         return HeaderInformation.forPossibleArray(compressedClass.getName(), dimensionCount, primitiveArray);
+         return HeaderInformation.forPossibleArray(firstByte, compressedClass.getName(), dimensionCount, primitiveArray);
       }
       if ('&' == firstByte)
       {
@@ -190,12 +190,12 @@ public class HeaderSerializableStrategy
          if (registeredObject == null) throw new StreamCorruptedException("id not found");
          //LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
          LOG.debug("id: " + id + " (" + registeredObject + " " + registeredObject.getClass().getSimpleName() + ")");
-         return HeaderInformation.forValue(registeredObject.getClass().getName(), registeredObject);
+         return HeaderInformation.forValue(firstByte, registeredObject.getClass().getName(), registeredObject);
       }
 
       //else firstByte is part of a class name
       String className = "" + ((char) firstByte) + stringSerializableStrategy.read(null);
-      return HeaderInformation.forPossibleArray(className, dimensionCount, primitiveArray);
+      return HeaderInformation.forPossibleArray(firstByte, className, dimensionCount, primitiveArray);
    }
 
    //TODO: rename since true also for null, bool

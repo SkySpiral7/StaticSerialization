@@ -30,7 +30,7 @@ public class StaticSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public boolean supports(final Class<?> actualClass)
+   public boolean supports(final byte firstByte, final Class<?> actualClass)
    {
       return StaticSerializable.class.isAssignableFrom(actualClass);
    }

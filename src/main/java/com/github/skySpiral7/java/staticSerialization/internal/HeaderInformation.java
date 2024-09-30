@@ -2,6 +2,7 @@ package com.github.skySpiral7.java.staticSerialization.internal;
 
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -13,6 +14,7 @@ import java.util.Objects;
 public final class HeaderInformation<T_Value>
    //TODO: confirm no raw types
 {
+   private final byte firstByte;
    private final String className;
    private final T_Value value;
    private final int dimensionCount;
@@ -21,9 +23,9 @@ public final class HeaderInformation<T_Value>
    /**
     * @return HeaderInformation to represent a header with a null value.
     */
-   public static HeaderInformation<?> forNull()
+   public static HeaderInformation<?> forNull(final byte firstByte)
    {
-      return new HeaderInformation<>(null, null, 0, false);
+      return new HeaderInformation<>(firstByte, null, null, 0, false);
    }
 
    /**
@@ -34,37 +36,46 @@ public final class HeaderInformation<T_Value>
    {
       //TODO: isn't this only possible with 2d+? in which case rename forInheritedPrimitiveArray
       //primitiveArray=false because this header info is for a primitive value not an array
-      return new HeaderInformation<>(boxClassName, null, 0, false);
+      return new HeaderInformation<>(boxClassName.getBytes(StandardCharsets.UTF_8)[0], boxClassName, null, 0, false);
    }
 
    /**
     * @param dimensionCount the number of array dimensions (0 if not an array)
     * @return a HeaderInformation without a value (this is the norm)
     */
-   public static HeaderInformation<?> forPossibleArray(final String baseComponentClassName, final int dimensionCount,
+   public static HeaderInformation<?> forPossibleArray(final byte firstByte, final String baseComponentClassName, final int dimensionCount,
                                                        final boolean primitiveArray)
    {
-      return new HeaderInformation<>(baseComponentClassName, null, dimensionCount, primitiveArray);
+      return new HeaderInformation<>(firstByte, baseComponentClassName, null, dimensionCount, primitiveArray);
    }
 
    /**
     * @return HeaderInformation with the given value and 0 array dimensions (ie not an array).
     */
-   public static <T_Value> HeaderInformation<T_Value> forValue(final String boxClassName, final T_Value value)
+   public static <T_Value> HeaderInformation<T_Value> forValue(final byte firstByte, final String className, final T_Value value)
    {
-      return new HeaderInformation<>(boxClassName, value, 0, false);
+      return new HeaderInformation<>(firstByte, className, value, 0, false);
    }
 
    /**
     * For private use and testing only. Takes every value as-is.
     */
-   public HeaderInformation(final String className, final T_Value value, final int dimensionCount,
+   public HeaderInformation(final byte firstByte, final String className, final T_Value value, final int dimensionCount,
                       final boolean primitiveArray)
    {
+      this.firstByte = firstByte;
       this.className = className;
       this.value = value;
       this.dimensionCount = dimensionCount;
       this.primitiveArray = primitiveArray;
+   }
+
+   /**
+    * @return the first byte read from stream. Will be either a compressed header or first byte of class name.
+    */
+   public byte getFirstByte()
+   {
+      return firstByte;
    }
 
    /**

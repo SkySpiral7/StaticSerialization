@@ -13,6 +13,7 @@ import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.io.Closeable;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -93,7 +94,7 @@ public class InternalStreamReader implements Closeable
       {
          registry.reserveIdForLater();
       }
-      final T_Actual returnValue = allSerializableStrategy.read(actualClass);
+      final T_Actual returnValue = allSerializableStrategy.read(headerInformation.getFirstByte(), actualClass);
       //null, boolean, and id don't reach here
       if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: can array?
       //TODO: make util for should register since long should

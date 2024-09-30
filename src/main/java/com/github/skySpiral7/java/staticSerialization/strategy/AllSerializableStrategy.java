@@ -11,6 +11,7 @@ import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSer
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.UuidSerializableStrategy;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class AllSerializableStrategy
@@ -49,16 +50,17 @@ public class AllSerializableStrategy
    public void write(final Object data)
    {
       final Class<?> dataClass = data.getClass();
+      byte firstByte = dataClass.getName().getBytes(StandardCharsets.UTF_8)[0];
       strategyList.stream()
-         .filter(strategy -> strategy.supports(dataClass))
+         .filter(strategy -> strategy.supports(firstByte, dataClass))
          .findFirst()
          .ifPresentOrElse(strategy -> strategy.write(data), () -> {throw new NotSerializableException(dataClass);});
    }
 
-   public <T> T read(final Class<T> actualClass)
+   public <T> T read(final byte firstByte, final Class<T> actualClass)
    {
       return strategyList.stream()
-         .filter(strategy -> strategy.supports(actualClass))
+         .filter(strategy -> strategy.supports(firstByte, actualClass))
          .findFirst()
          .orElseThrow(() -> new NotSerializableException(actualClass))
          .read(actualClass);
