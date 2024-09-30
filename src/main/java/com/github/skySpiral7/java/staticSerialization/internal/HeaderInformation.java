@@ -5,6 +5,8 @@ import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializabl
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
+
 /**
  * An immutable bean to hold the information that the stream's header contains. It is returned by HeaderSerializableStrategy.
  *
@@ -16,6 +18,7 @@ public final class HeaderInformation<T_Value>
 {
    private final byte firstByte;
    private final String className;
+   private final Class<T_Value> knownClass;
    private final T_Value value;
    private final int dimensionCount;
    private final boolean primitiveArray;
@@ -25,18 +28,29 @@ public final class HeaderInformation<T_Value>
     */
    public static HeaderInformation<?> forNull(final byte firstByte)
    {
-      return new HeaderInformation<>(firstByte, null, null, 0, false);
+      return new HeaderInformation<>(firstByte, null, Object.class, null, 0, false);
    }
 
    /**
-    * @param boxClassName must be the class name of the box not the primitive
+    * @param knownClass must be the class of the box not the primitive
     * @return HeaderInformation to represent an element within a primitive array (which has no header).
     */
-   public static HeaderInformation<?> forPrimitiveArrayValue(final String boxClassName)
+   public static <T_Value> HeaderInformation<T_Value> forPrimitiveArrayValue(final Class<T_Value> knownClass)
    {
       //TODO: isn't this only possible with 2d+? in which case rename forInheritedPrimitiveArray
       //primitiveArray=false because this header info is for a primitive value not an array
-      return new HeaderInformation<>(boxClassName.getBytes(StandardCharsets.UTF_8)[0], boxClassName, null, 0, false);
+      String boxClassName = knownClass.getName();
+      return new HeaderInformation<>(boxClassName.getBytes(StandardCharsets.UTF_8)[0], boxClassName, null, null, 0, false);
+   }
+
+   /**
+    * @param dimensionCount the number of array dimensions (0 if not an array)
+    * @return a HeaderInformation without a value (this is the norm)
+    */
+   public static <T_Value> HeaderInformation<T_Value> forPossibleArray(final byte firstByte, final Class<T_Value> baseComponentClass, final int dimensionCount,
+                                                       final boolean primitiveArray)
+   {
+      return new HeaderInformation<>(firstByte, baseComponentClass.getName(), null, null, dimensionCount, primitiveArray);
    }
 
    /**
@@ -46,7 +60,7 @@ public final class HeaderInformation<T_Value>
    public static HeaderInformation<?> forPossibleArray(final byte firstByte, final String baseComponentClassName, final int dimensionCount,
                                                        final boolean primitiveArray)
    {
-      return new HeaderInformation<>(firstByte, baseComponentClassName, null, dimensionCount, primitiveArray);
+      return new HeaderInformation<>(firstByte, baseComponentClassName, null, null, dimensionCount, primitiveArray);
    }
 
    /**
@@ -54,17 +68,18 @@ public final class HeaderInformation<T_Value>
     */
    public static <T_Value> HeaderInformation<T_Value> forValue(final byte firstByte, final String className, final T_Value value)
    {
-      return new HeaderInformation<>(firstByte, className, value, 0, false);
+      return new HeaderInformation<>(firstByte, className, cast(value.getClass()), value, 0, false);
    }
 
    /**
     * For private use and testing only. Takes every value as-is.
     */
-   public HeaderInformation(final byte firstByte, final String className, final T_Value value, final int dimensionCount,
+   public HeaderInformation(final byte firstByte, final String className, final Class<T_Value> knownClass, final T_Value value, final int dimensionCount,
                       final boolean primitiveArray)
    {
       this.firstByte = firstByte;
       this.className = className;
+      this.knownClass=knownClass;
       this.value = value;
       this.dimensionCount = dimensionCount;
       this.primitiveArray = primitiveArray;
@@ -84,6 +99,14 @@ public final class HeaderInformation<T_Value>
     * @see #isPrimitiveArray()
     */
    public String getClassName(){return className;}
+
+   /**
+    * @return only non-null if an already loaded class. If non-null will match {@link #className}
+    */
+   public Class<T_Value> getKnownClass()
+   {
+      return knownClass;
+   }
 
    /**
     * If {@link #getClassName()} is null then the header represents null. Else null means there is no value. There will be a value for true,

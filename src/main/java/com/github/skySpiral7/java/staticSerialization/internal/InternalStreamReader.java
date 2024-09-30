@@ -13,7 +13,6 @@ import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.io.Closeable;
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -70,6 +69,7 @@ public class InternalStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(classUtil.boxClass(expectedClass));
 
+      //TODO: move header reading into the strats
       final HeaderInformation<?> headerInformation = headerSerializableStrategy.readHeader(inheritFromClass);
       //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
       //if cast it will NPE is that better? what about allowing children?
@@ -88,8 +88,17 @@ public class InternalStreamReader implements Closeable
          return cast(headerInformation.getValue());
       }
 
-      final Class<T_Actual> actualClass = readerValidationStrategy.getClassFromHeader(headerInformation,
-         expectedClass, allowChildClass);
+      final Class<T_Actual> actualClass;
+      if (headerInformation.getKnownClass() != null)
+      {
+         actualClass = cast(headerInformation.getKnownClass());
+      }
+      else
+      {
+         //TODO: split in half
+         actualClass = readerValidationStrategy.getClassFromHeader(headerInformation,
+            expectedClass, allowChildClass);
+      }
       if (!classUtil.isPrimitiveOrBox(actualClass))
       {
          registry.reserveIdForLater();

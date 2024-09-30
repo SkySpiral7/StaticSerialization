@@ -47,7 +47,7 @@ public class ReaderValidationStrategy
             if (expectedBaseComponentType.isPrimitive())
             {
                expectedHeader = HeaderInformation.forPossibleArray(classUtil.boxClass(expectedBaseComponentType).getName().getBytes(StandardCharsets.UTF_8)[0],
-                  classUtil.boxClass(expectedBaseComponentType).getName(),
+                  classUtil.boxClass(expectedBaseComponentType),
                   expectedDimensions,
                   true
                );
@@ -55,7 +55,7 @@ public class ReaderValidationStrategy
             else
             {
                expectedHeader = HeaderInformation.forPossibleArray(expectedBaseComponentType.getName().getBytes(StandardCharsets.UTF_8)[0],
-                  expectedBaseComponentType.getName(),
+                  expectedBaseComponentType,
                   expectedDimensions,
                   false
                );

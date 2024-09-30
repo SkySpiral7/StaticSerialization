@@ -138,7 +138,7 @@ public class HeaderSerializableStrategy
          //It is only primitive if contained in a primitive array in which case there is no header
          //since it can't be null or any other class.
          if (inheritFromClass.isPrimitive())
-            return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass).getName());
+            return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass));
          //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or 0xFF)
          firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
          dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
@@ -148,7 +148,7 @@ public class HeaderSerializableStrategy
          primitiveArray = baseComponent.isPrimitive();
          if ('?' == firstByte)
          {
-            return HeaderInformation.forPossibleArray(firstByte, baseComponent.getName(), dimensionCount, primitiveArray);
+            return HeaderInformation.forPossibleArray(firstByte, baseComponent, dimensionCount, primitiveArray);
          }
          //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
       }
@@ -168,7 +168,7 @@ public class HeaderSerializableStrategy
                throw new StreamCorruptedException("header's array component type can't be null");
             if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
             if ('+' == firstByte)
-               return HeaderInformation.forPossibleArray(firstByte, Boolean.class.getName(), dimensionCount, primitiveArray);
+               return HeaderInformation.forPossibleArray(firstByte, Boolean.class, dimensionCount, primitiveArray);
          }
          else dimensionCount = 0;
       }
@@ -180,7 +180,7 @@ public class HeaderSerializableStrategy
       if (COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte))  //safe cast because map contains only ASCII
       {
          final Class<?> compressedClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
-         return HeaderInformation.forPossibleArray(firstByte, compressedClass.getName(), dimensionCount, primitiveArray);
+         return HeaderInformation.forPossibleArray(firstByte, compressedClass, dimensionCount, primitiveArray);
       }
       if ('&' == firstByte)
       {
