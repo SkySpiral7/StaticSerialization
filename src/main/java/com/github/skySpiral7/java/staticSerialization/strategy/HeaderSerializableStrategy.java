@@ -121,58 +121,87 @@ public class HeaderSerializableStrategy
       this.stringSerializableStrategy = stringSerializableStrategy;
    }
 
+   private record PartialHeader(HeaderInformation<?> fullHeader, byte firstByte, int dimensionCount,
+                                boolean primitiveArray) {}
+
    /**
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
    public HeaderInformation<?> readHeader(final Class<?> inheritFromClass)
    {
-      byte firstByte;
-      final int dimensionCount;
-      final boolean primitiveArray;
-
-      //excludes Object for the sake of Object[]
-      if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
+      if (null != inheritFromClass && !Object.class.equals(inheritFromClass) && inheritFromClass.isPrimitive())
       {
          //TODO: tests are likely thin
          //inheritFromClass is never primitive void.class.
          //It is only primitive if contained in a primitive array in which case there is no header
          //since it can't be null or any other class.
-         if (inheritFromClass.isPrimitive())
-            return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass));
-         //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or 0xFF)
-         firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
-         dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
-         final Class<?> baseComponent = inheritFromClass.isArray()
-            ? arrayUtil.getBaseComponentType(inheritFromClass)
-            : inheritFromClass;
-         primitiveArray = baseComponent.isPrimitive();
-         if ('?' == firstByte)
-         {
-            return HeaderInformation.forPossibleArray(firstByte, baseComponent, dimensionCount, primitiveArray);
-         }
-         //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
-      }
-      else
-      {
-         firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
-         if ('?' == firstByte) throw new StreamCorruptedException("Only array elements can inherit type");
-         primitiveArray = (']' == firstByte);  //is false if not an array at all
-         if ('[' == firstByte || ']' == firstByte)
-         {
-            dimensionCount = Byte.toUnsignedInt(
-               StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array dimensions")[0]
-            );
-            //not the first byte but needs to conform for below. don't know what else to call this variable
-            firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array component type")[0];
-            if (StringSerializableStrategy.TERMINATOR == firstByte)
-               throw new StreamCorruptedException("header's array component type can't be null");
-            if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
-            if ('+' == firstByte)
-               return HeaderInformation.forPossibleArray(firstByte, Boolean.class, dimensionCount, primitiveArray);
-         }
-         else dimensionCount = 0;
+         return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass));
       }
 
+      final byte firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
+
+      final PartialHeader partialHeader;
+      //excludes Object for the sake of Object[]
+      if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
+         partialHeader = readInheritHeader(inheritFromClass, firstByte);
+      else partialHeader = readArrayHeader(firstByte);
+      if (partialHeader.fullHeader != null) return partialHeader.fullHeader;
+
+      final HeaderInformation<?> result = readSingleHeader(partialHeader.dimensionCount, partialHeader.primitiveArray,
+         partialHeader.firstByte);
+      if (result != null) return result;
+
+      //else firstByte is part of a class name
+      String className = "" + ((char) partialHeader.firstByte) + stringSerializableStrategy.read(null);
+      return HeaderInformation.forPossibleArray(partialHeader.firstByte, className, partialHeader.dimensionCount, partialHeader.primitiveArray);
+   }
+
+   private PartialHeader readInheritHeader(final Class<?> inheritFromClass, byte firstByte)
+   {
+      final int dimensionCount;
+      final boolean primitiveArray;
+
+      //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or 0xFF)
+      dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
+      final Class<?> baseComponent = inheritFromClass.isArray()
+         ? arrayUtil.getBaseComponentType(inheritFromClass)
+         : inheritFromClass;
+      primitiveArray = baseComponent.isPrimitive();
+      if ('?' == firstByte)
+      {
+         return new PartialHeader(HeaderInformation.forPossibleArray(firstByte, baseComponent, dimensionCount, primitiveArray), firstByte, dimensionCount, primitiveArray);
+      }
+      //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
+      return new PartialHeader(null, firstByte, dimensionCount, primitiveArray);
+   }
+
+   private PartialHeader readArrayHeader(byte firstByte)
+   {
+      final int dimensionCount;
+      final boolean primitiveArray;
+
+      if ('?' == firstByte) throw new StreamCorruptedException("Only array elements can inherit type");
+      primitiveArray = (']' == firstByte);  //is false if not an array at all
+      if ('[' == firstByte || ']' == firstByte)
+      {
+         dimensionCount = Byte.toUnsignedInt(
+            StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array dimensions")[0]
+         );
+         //not the first byte but needs to conform for below. don't know what else to call this variable
+         firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array component type")[0];
+         if (StringSerializableStrategy.TERMINATOR == firstByte)
+            throw new StreamCorruptedException("header's array component type can't be null");
+         if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
+         if ('+' == firstByte)
+            return new PartialHeader(HeaderInformation.forPossibleArray(firstByte, Boolean.class, dimensionCount, primitiveArray), firstByte, dimensionCount, primitiveArray);
+      }
+      else dimensionCount = 0;
+
+      return new PartialHeader(null, firstByte, dimensionCount, primitiveArray);
+   }
+
+   private HeaderInformation<?> readSingleHeader(final int dimensionCount, final boolean primitiveArray, final byte firstByte)
+   {
       if (StringSerializableStrategy.TERMINATOR == firstByte)
          return HeaderInformation.forNull(firstByte);  //the empty string class name means null
       if ('+' == firstByte) return HeaderInformation.forValue(firstByte, Boolean.class.getName(), Boolean.TRUE);
@@ -193,9 +222,7 @@ public class HeaderSerializableStrategy
          return HeaderInformation.forValue(firstByte, registeredObject.getClass().getName(), registeredObject);
       }
 
-      //else firstByte is part of a class name
-      String className = "" + ((char) firstByte) + stringSerializableStrategy.read(null);
-      return HeaderInformation.forPossibleArray(firstByte, className, dimensionCount, primitiveArray);
+      return null;
    }
 
    //TODO: rename since true also for null, bool
@@ -243,7 +270,8 @@ public class HeaderSerializableStrategy
       //do nothing because non-boolean primitive array elements have no header
       else if (null != inheritFromClass && inheritFromClass.isPrimitive()) ;
          //(below) if class matches containing array exactly then inherit type.
-      else if (null != inheritFromClass && inheritFromClass.equals(data.getClass())) byteSerializableStrategy.writeByte('?');
+      else if (null != inheritFromClass && inheritFromClass.equals(data.getClass()))
+         byteSerializableStrategy.writeByte('?');
       else if (CLASS_TO_COMPRESSED_HEADER.containsKey(data.getClass()))
          byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(data.getClass()));
       else if (data.getClass().isArray())

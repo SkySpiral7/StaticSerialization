@@ -36,6 +36,19 @@ public class ReaderValidationStrategy
                                                                                        final Class<T_Expected> expectedClass,
                                                                                        final boolean allowChildClass)
    {
+      validatePreClass(actualHeader, expectedClass, allowChildClass);
+      //it is important to validate here so that some nefarious static initialization blocks won't be ran
+      //if casting is allowed then loading the class is unavoidable at this point
+
+      Class<?> actualClass = readClass(actualHeader);
+
+      return validatePostClass(actualHeader, expectedClass, actualClass);
+   }
+
+   public void validatePreClass(final HeaderInformation<?> actualHeader,
+                                final Class<?> expectedClass,
+                                final boolean allowChildClass)
+   {
       final int expectedDimensions = arrayUtil.countArrayDimensions(expectedClass);
       final Class<?> expectedBaseComponentType = arrayUtil.getBaseComponentType(expectedClass);
       //TODO: dimension count must always match except for Object
@@ -74,21 +87,28 @@ public class ReaderValidationStrategy
                "Class doesn't match exactly. Expected: " + expectedClass.getName() + " Got: " + actualHeader.getClassName());
          }
       }
-      //it is important to validate here so that some nefarious static initialization blocks won't be ran
-      //if casting is allowed then loading the class is unavoidable at this point
+   }
 
-      Class<?> actualClass;
+   public static Class<?> readClass(final HeaderInformation<?> actualHeader)
+   {
       try
       {
          /* No support for "int" etc. primitives can only reach here by someone else writing "int" in the stream.
           * Since Class.forName doesn't support primitives it likewise won't allow primitive void.
           * Compressed header will get converted into box. That and manual box both forName here. */
-         actualClass = Class.forName(actualHeader.getClassName());
+         return Class.forName(actualHeader.getClassName());
       }
       catch (final ClassNotFoundException classNotFoundException)
       {
          throw new DeserializationException(classNotFoundException);
       }
+   }
+
+   public <T_Expected, T_Actual extends T_Expected> Class<T_Actual> validatePostClass(final HeaderInformation<?> actualHeader,
+                                                                                      final Class<T_Expected> expectedClass,
+                                                                                      Class<?> actualClass)
+   {
+      final Class<?> expectedBaseComponentType = arrayUtil.getBaseComponentType(expectedClass);
       if (0 != actualHeader.getDimensionCount())
       {
          if (actualHeader.isPrimitiveArray()) actualClass = classUtil.unboxClass(actualClass);

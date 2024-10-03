@@ -32,15 +32,14 @@ public final class HeaderInformation<T_Value>
    }
 
    /**
-    * @param knownClass must be the class of the box not the primitive
     * @return HeaderInformation to represent an element within a primitive array (which has no header).
     */
-   public static <T_Value> HeaderInformation<T_Value> forPrimitiveArrayValue(final Class<T_Value> knownClass)
+   public static <T_Value> HeaderInformation<T_Value> forPrimitiveArrayValue(final Class<T_Value> boxedClass)
    {
       //TODO: isn't this only possible with 2d+? in which case rename forInheritedPrimitiveArray
       //primitiveArray=false because this header info is for a primitive value not an array
-      String boxClassName = knownClass.getName();
-      return new HeaderInformation<>(boxClassName.getBytes(StandardCharsets.UTF_8)[0], boxClassName, null, null, 0, false);
+      String boxClassName = boxedClass.getName();
+      return new HeaderInformation<>(boxClassName.getBytes(StandardCharsets.UTF_8)[0], boxClassName, boxedClass, null, 0, false);
    }
 
    /**
@@ -48,7 +47,7 @@ public final class HeaderInformation<T_Value>
     * @return a HeaderInformation without a value (this is the norm)
     */
    public static <T_Value> HeaderInformation<T_Value> forPossibleArray(final byte firstByte, final Class<T_Value> baseComponentClass, final int dimensionCount,
-                                                       final boolean primitiveArray)
+                                                                       final boolean primitiveArray)
    {
       return new HeaderInformation<>(firstByte, baseComponentClass.getName(), null, null, dimensionCount, primitiveArray);
    }
@@ -75,11 +74,11 @@ public final class HeaderInformation<T_Value>
     * For private use and testing only. Takes every value as-is.
     */
    public HeaderInformation(final byte firstByte, final String className, final Class<T_Value> knownClass, final T_Value value, final int dimensionCount,
-                      final boolean primitiveArray)
+                            final boolean primitiveArray)
    {
       this.firstByte = firstByte;
       this.className = className;
-      this.knownClass=knownClass;
+      this.knownClass = knownClass;
       this.value = value;
       this.dimensionCount = dimensionCount;
       this.primitiveArray = primitiveArray;
