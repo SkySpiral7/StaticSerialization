@@ -43,7 +43,7 @@ public class JavaSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public boolean supports(final byte firstByte, final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass)
    {
       return Serializable.class.isAssignableFrom(actualClass);
    }

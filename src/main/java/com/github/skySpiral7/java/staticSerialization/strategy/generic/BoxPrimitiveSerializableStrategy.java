@@ -48,7 +48,7 @@ public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public boolean supports(final byte firstByte, final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass)
    {
       return classUtil.isPrimitiveOrBox(actualClass);
    }
