@@ -87,12 +87,14 @@ public class HeaderSerializableStrategy
    private final ObjectWriterRegistry writerRegistry;
    private final ArrayUtil arrayUtil;
    private final ClassUtil classUtil;
+   private final AllSerializableStrategy allSerializableStrategy;
    private final ByteSerializableStrategy byteSerializableStrategy;
    private final IntegerSerializableStrategy integerSerializableStrategy;
    private final StringSerializableStrategy stringSerializableStrategy;
 
    public HeaderSerializableStrategy(final EasyReader reader, final ObjectReaderRegistry registry,
                                      final UtilInstances utilInstances,
+                                     final AllSerializableStrategy allSerializableStrategy,
                                      final IntegerSerializableStrategy integerSerializableStrategy,
                                      final StringSerializableStrategy stringSerializableStrategy)
    {
@@ -101,13 +103,15 @@ public class HeaderSerializableStrategy
       writerRegistry = null;
       arrayUtil = utilInstances.getArrayUtil();
       classUtil = utilInstances.getClassUtil();
+      this.allSerializableStrategy = allSerializableStrategy;
       byteSerializableStrategy = null;
       this.integerSerializableStrategy = integerSerializableStrategy;
       this.stringSerializableStrategy = stringSerializableStrategy;
    }
 
    public HeaderSerializableStrategy(final ObjectWriterRegistry registry,
-                                     final UtilInstances utilInstances, final ByteSerializableStrategy byteSerializableStrategy,
+                                     final UtilInstances utilInstances,
+                                     final ByteSerializableStrategy byteSerializableStrategy,
                                      final IntegerSerializableStrategy integerSerializableStrategy,
                                      final StringSerializableStrategy stringSerializableStrategy)
    {
@@ -116,6 +120,7 @@ public class HeaderSerializableStrategy
       writerRegistry = registry;
       arrayUtil = utilInstances.getArrayUtil();
       classUtil = utilInstances.getClassUtil();
+      this.allSerializableStrategy = null;
       this.byteSerializableStrategy = byteSerializableStrategy;
       this.integerSerializableStrategy = integerSerializableStrategy;
       this.stringSerializableStrategy = stringSerializableStrategy;
@@ -146,6 +151,10 @@ public class HeaderSerializableStrategy
          partialHeader = readInheritHeader(inheritFromClass, firstByte);
       else partialHeader = readArrayHeader(firstByte);
       if (partialHeader.fullHeader != null) return partialHeader.fullHeader;
+
+      final Class<?> componentType = allSerializableStrategy.readHeader(inheritFromClass, firstByte);
+      if (componentType != null)
+         HeaderInformation.forPossibleArray(partialHeader.firstByte, componentType, partialHeader.dimensionCount, partialHeader.primitiveArray);
 
       final HeaderInformation<?> result = readSingleHeader(partialHeader.dimensionCount, partialHeader.primitiveArray,
          partialHeader.firstByte);

@@ -52,12 +52,12 @@ public class StrategyInstances
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
 
-      this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances,
-         integerSerializableStrategy, stringSerializableStrategy);
       this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
          bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
          staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
+      this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances,
+         allSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
    }
 
    public StrategyInstances(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,

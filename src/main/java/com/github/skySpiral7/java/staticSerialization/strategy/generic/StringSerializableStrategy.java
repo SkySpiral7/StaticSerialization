@@ -39,6 +39,18 @@ public class StringSerializableStrategy implements SerializableStrategy
    }
 
    @Override
+   public boolean supportsHeader(byte firstByte)
+   {
+      return firstByte == '"';
+   }
+
+   @Override
+   public Class<?> readHeader(Class<?> inheritFromClass, byte firstByte)
+   {
+      return String.class;
+   }
+
+   @Override
    public boolean supportsData(final Class<?> actualClass)
    {
       return String.class.isAssignableFrom(actualClass);

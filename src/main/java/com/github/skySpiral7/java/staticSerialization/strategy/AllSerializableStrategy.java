@@ -46,6 +46,15 @@ public class AllSerializableStrategy
        */
    }
 
+   public Class<?> readHeader(final Class<?> inheritFromClass, final byte firstByte)
+   {
+      return strategyList.stream()
+         .filter(strategy -> strategy.supportsHeader(firstByte))
+         .findFirst()
+         .map(strategy -> strategy.readHeader(inheritFromClass, firstByte))
+         .orElse(null);
+   }
+
    public void write(final Object data)
    {
       final Class<?> dataClass = data.getClass();

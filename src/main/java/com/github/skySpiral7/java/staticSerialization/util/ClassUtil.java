@@ -48,7 +48,7 @@ public class ClassUtil
     */
    public Class<?> unboxClass(final Class<?> boxedClass)
    {
-      //boxClassList.contains is pointless: just let it fall through
+      //BOX_CLASS_LIST.contains is pointless: just let it fall through
       if (Byte.class.equals(boxedClass)) return byte.class;
       if (Short.class.equals(boxedClass)) return short.class;
       if (Integer.class.equals(boxedClass)) return int.class;

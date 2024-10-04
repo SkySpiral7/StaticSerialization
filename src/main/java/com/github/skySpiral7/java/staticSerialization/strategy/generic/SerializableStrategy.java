@@ -1,7 +1,5 @@
 package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
-import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
-
 public interface SerializableStrategy
 {
    public default boolean supportsHeader(final byte firstByte)
@@ -9,7 +7,7 @@ public interface SerializableStrategy
       return false;
    }
 
-   public default HeaderInformation<?> readHeader(final Class<?> inheritFromClass, final byte firstByte)
+   public default Class<?> readHeader(final Class<?> inheritFromClass, final byte firstByte)
    {
       return null;
    }
