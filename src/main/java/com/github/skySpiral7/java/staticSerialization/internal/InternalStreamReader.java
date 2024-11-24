@@ -69,36 +69,15 @@ public class InternalStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(classUtil.boxClass(expectedClass));
 
-      //TODO: move header reading into the strats
-      final HeaderInformation<?> headerInformation = headerSerializableStrategy.readHeader(inheritFromClass);
-      //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
-      //if cast it will NPE is that better? what about allowing children?
-      if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
-      if (headerInformation.getDimensionCount() == 0 && Boolean.class.getName().equals(headerInformation.getClassName()))
+      final HeaderInformation<?> headerInformation = headerSerializableStrategy.readHeader(null,
+         inheritFromClass, expectedClass, allowChildClass);
+      if (headerHasValue(headerInformation, expectedClass, allowChildClass))
       {
-         readerValidationStrategy.validateBoolean(expectedClass, allowChildClass);
-         if (headerInformation.getValue() != null) return cast(headerInformation.getValue());  //either true or false
-         //will be null for primitive arrays or if the header explicitly contained Boolean for some reason
-         //either way will be read below
-      }
-      else if (headerInformation.getValue() != null)
-      {
-         //TODO: add validation that the id matches the expected class
-         //ReaderValidationStrategy.validateIdClass(expectedClass, headerInformation.getValue(), allowChildClass);
-         return cast(headerInformation.getValue());
+         return readHeaderValue(headerInformation, expectedClass, allowChildClass);
       }
 
-      final Class<T_Actual> actualClass;
-      if (headerInformation.getKnownClass() != null)
-      {
-         actualClass = cast(headerInformation.getKnownClass());
-      }
-      else
-      {
-         //TODO: split in half
-         actualClass = readerValidationStrategy.getClassFromHeader(headerInformation,
-            expectedClass, allowChildClass);
-      }
+      //TODO: move header reading into the strats
+      final Class<T_Actual> actualClass = cast(readHeaderClass(headerInformation, expectedClass, allowChildClass));
       if (!classUtil.isPrimitiveOrBox(actualClass))
       {
          registry.reserveIdForLater();
@@ -120,5 +99,73 @@ public class InternalStreamReader implements Closeable
    public ReflectionSerializableStrategy getReflectionSerializableStrategy()
    {
       return reflectionSerializableStrategy;
+   }
+
+   public boolean headerHasValue(final HeaderInformation<?> headerInformation,
+                                 final Class<?> expectedClass,
+                                 final boolean allowChildClass)
+   {
+      //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
+      //if cast it will NPE is that better? what about allowing children?
+      if (headerInformation.getClassName() == null) return true;
+      if (headerInformation.getDimensionCount() == 0 && Boolean.class.getName().equals(headerInformation.getClassName()))
+      {
+         readerValidationStrategy.validateBoolean(expectedClass, allowChildClass);
+         if (headerInformation.getValue() != null) return true;
+         //will be null for primitive arrays or if the header explicitly contained Boolean for some reason
+         //either way will be read below
+      }
+      else if (headerInformation.getValue() != null)
+      {
+         return true;
+      }
+      return false;
+   }
+
+   public <T> T readHeaderValue(final HeaderInformation<?> headerInformation,
+                                final Class<?> expectedClass,
+                                final boolean allowChildClass)
+   {
+      //TODO: throw new IllegalStateException("Expected: int, Actual: null, Consider using Integer")
+      //if cast it will NPE is that better? what about allowing children?
+      if (headerInformation.getClassName() == null) return null;  //can be cast to anything safely
+      if (headerInformation.getDimensionCount() == 0 && Boolean.class.getName().equals(headerInformation.getClassName()))
+      {
+         readerValidationStrategy.validateBoolean(expectedClass, allowChildClass);
+         if (headerInformation.getValue() != null) return cast(headerInformation.getValue());  //either true or false
+         //will be null for primitive arrays or if the header explicitly contained Boolean for some reason
+         //either way will be read below
+      }
+      else if (headerInformation.getValue() != null)
+      {
+         //TODO: add validation that the id matches the expected class
+         //ReaderValidationStrategy.validateIdClass(expectedClass, headerInformation.getValue(), allowChildClass);
+         return cast(headerInformation.getValue());
+      }
+
+      throw new IllegalStateException("header has no value");
+   }
+
+   public Class<?> readHeaderClass(final HeaderInformation<?> headerInformation,
+                                   final Class<?> expectedClass,
+                                   final boolean allowChildClass)
+   {
+      final Class<?> actualClass;
+      if (headerInformation.getKnownClass() != null)
+      {
+         actualClass = cast(headerInformation.getKnownClass());
+      }
+      else
+      {
+         //TODO: split in half
+         actualClass = readerValidationStrategy.getClassFromHeader(headerInformation,
+            expectedClass, allowChildClass);
+      }
+      return actualClass;
+   }
+
+   public HeaderSerializableStrategy getHeaderSerializableStrategy()
+   {
+      return headerSerializableStrategy;
    }
 }

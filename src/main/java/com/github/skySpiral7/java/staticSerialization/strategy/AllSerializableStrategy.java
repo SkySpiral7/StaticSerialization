@@ -46,12 +46,15 @@ public class AllSerializableStrategy
        */
    }
 
-   public Class<?> readHeader(final Class<?> inheritFromClass, final byte firstByte)
+   public Class<?> readHeader(final Class<?> inheritFromClass,
+                              final HeaderSerializableStrategy.PartialHeader partialHeader,
+                              final Class<?> expectedClass,
+                              final boolean allowChildClass)
    {
       return strategyList.stream()
-         .filter(strategy -> strategy.supportsHeader(firstByte))
+         .filter(strategy -> strategy.supportsHeader(partialHeader.firstByte()))
          .findFirst()
-         .map(strategy -> strategy.readHeader(inheritFromClass, firstByte))
+         .map(strategy -> strategy.readHeader(inheritFromClass, partialHeader, expectedClass, allowChildClass))
          .orElse(null);
    }
 
@@ -61,7 +64,8 @@ public class AllSerializableStrategy
       strategyList.stream()
          .filter(strategy -> strategy.supportsData(dataClass))
          .findFirst()
-         .ifPresentOrElse(strategy -> strategy.write(data), () -> {throw new NotSerializableException(dataClass);});
+         .orElseThrow(() -> new NotSerializableException(dataClass))
+         .write(data);
    }
 
    public <T> T read(final Class<T> actualClass)

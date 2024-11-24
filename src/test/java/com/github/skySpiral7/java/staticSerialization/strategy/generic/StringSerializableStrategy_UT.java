@@ -40,7 +40,7 @@ class StringSerializableStrategy_UT
    public void read_returns_whenHasData()
    {
       final ByteReader byteReader = new ByteReader(new byte[]{'h', 'i', StringSerializableStrategy.TERMINATOR});
-      final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader);
+      final StringSerializableStrategy testObject = new StringSerializableStrategy(null, byteReader);
       final String expected = "hi";
 
       final Object actual = testObject.read(null);
@@ -52,7 +52,7 @@ class StringSerializableStrategy_UT
    public void read_throws_whenNotTerminated()
    {
       final ByteReader byteReader = new ByteReader(new byte[]{'h', 'i'});
-      final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader);
+      final StringSerializableStrategy testObject = new StringSerializableStrategy(null, byteReader);
 
       assertThrows(StreamCorruptedException.class, () -> testObject.read(null));
    }

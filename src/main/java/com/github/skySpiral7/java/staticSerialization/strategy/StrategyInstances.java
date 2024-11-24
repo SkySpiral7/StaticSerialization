@@ -33,17 +33,17 @@ public class StrategyInstances
                             final ObjectReaderRegistry registry,
                             final UtilInstances utilInstances)
    {
-      //don't need another strategy
+      //ones that don't need another strategy
       final IntegerSerializableStrategy integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.readerValidationStrategy = new ReaderValidationStrategy(utilInstances);
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamReader, utilInstances);
       final ShortSerializableStrategy shortSerializableStrategy = new ShortSerializableStrategy(reader);
       final StaticSerializableStrategy staticSerializableStrategy = new StaticSerializableStrategy(streamReader);
-      final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(reader);
+      final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(readerValidationStrategy, reader);
 
       //ones that need other strategies
-      final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(streamReader, internalStreamReader,
-         integerSerializableStrategy);
+      final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(readerValidationStrategy,
+         reader, streamReader, internalStreamReader, integerSerializableStrategy);
       final JavaSerializableStrategy javaSerializableStrategy = new JavaSerializableStrategy(reader, integerSerializableStrategy);
       final EnumSerializableStrategy enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(reader, utilInstances,
@@ -68,7 +68,7 @@ public class StrategyInstances
       final ByteSerializableStrategy byteSerializableStrategy = new ByteSerializableStrategy(appender, utilInstances);
       this.readerValidationStrategy = null;  //don't need
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamWriter, utilInstances);
-      //don't need another strategy
+      //ones that don't need another strategy
       final StaticSerializableStrategy staticSerializableStrategy = new StaticSerializableStrategy(streamWriter);
 
       //ones that need other strategies

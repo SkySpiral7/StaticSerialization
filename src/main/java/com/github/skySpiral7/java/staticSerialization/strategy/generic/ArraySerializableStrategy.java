@@ -2,9 +2,13 @@ package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
+import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 
 import java.lang.reflect.Array;
 
@@ -12,15 +16,21 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 
 public class ArraySerializableStrategy implements SerializableStrategy
 {
+   private final ReaderValidationStrategy readerValidationStrategy;
+   private final EasyReader reader;
    private final ObjectStreamReader streamReader;
    private final InternalStreamReader internalStreamReader;
    private final InternalStreamWriter internalStreamWriter;
    private final IntegerSerializableStrategy integerSerializableStrategy;
 
-   public ArraySerializableStrategy(final ObjectStreamReader streamReader,
+   public ArraySerializableStrategy(final ReaderValidationStrategy readerValidationStrategy,
+                                    final EasyReader reader,
+                                    final ObjectStreamReader streamReader,
                                     final InternalStreamReader internalStreamReader,
                                     final IntegerSerializableStrategy integerSerializableStrategy)
    {
+      this.readerValidationStrategy = readerValidationStrategy;
+      this.reader = reader;
       this.streamReader = streamReader;
       this.internalStreamReader = internalStreamReader;
       this.internalStreamWriter = null;
@@ -30,10 +40,48 @@ public class ArraySerializableStrategy implements SerializableStrategy
    public ArraySerializableStrategy(final InternalStreamWriter internalStreamWriter,
                                     final IntegerSerializableStrategy integerSerializableStrategy)
    {
+      this.readerValidationStrategy = null;
+      this.reader = null;
       this.streamReader = null;
       this.internalStreamReader = null;
       this.internalStreamWriter = internalStreamWriter;
       this.integerSerializableStrategy = integerSerializableStrategy;
+   }
+
+   @Override
+   public boolean supportsHeader(final byte firstByte)
+   {
+      return ('[' == firstByte || ']' == firstByte);
+   }
+
+   @Override
+   public Class<?> readHeader(final Class<?> inheritFromClass,
+                              final HeaderSerializableStrategy.PartialHeader partialHeader,
+                              final Class<?> expectedClass,
+                              final boolean allowChildClass)
+   {
+      final boolean primitiveArray = (']' == partialHeader.firstByte());
+      final int dimensionCount = Byte.toUnsignedInt(
+         StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array dimensions")[0]
+      );
+      //TODO: shouldn't this return here for primitive 1D arrays? (thin tests)
+      final byte componentFirstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array component type")[0];
+      if (StringSerializableStrategy.TERMINATOR == componentFirstByte)
+         throw new StreamCorruptedException("header's array component type can't be null");
+      if ('-' == componentFirstByte) throw new StreamCorruptedException("header's array component type can't be false");
+
+      final Class<?> componentType;
+      if ('+' == componentFirstByte) componentType = Boolean.class;
+      else
+      {
+         final HeaderInformation<?> headerInformation = internalStreamReader.getHeaderSerializableStrategy().readHeader(componentFirstByte,
+            inheritFromClass, expectedClass, allowChildClass);
+         componentType = internalStreamReader.readHeaderClass(headerInformation, expectedClass, allowChildClass);
+      }
+
+      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(componentFirstByte,
+         componentType, dimensionCount, primitiveArray);
+      return readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
    }
 
    @Override

@@ -89,6 +89,7 @@ public final class HeaderInformation<T_Value>
     */
    public byte getFirstByte()
    {
+      //TODO: remove getFirstByte
       return firstByte;
    }
 

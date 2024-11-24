@@ -126,13 +126,16 @@ public class HeaderSerializableStrategy
       this.stringSerializableStrategy = stringSerializableStrategy;
    }
 
-   private record PartialHeader(HeaderInformation<?> fullHeader, byte firstByte, int dimensionCount,
+   public record PartialHeader(HeaderInformation<?> fullHeader, byte firstByte, int dimensionCount,
                                 boolean primitiveArray) {}
 
    /**
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
-   public HeaderInformation<?> readHeader(final Class<?> inheritFromClass)
+   public HeaderInformation<?> readHeader(final Byte firstByteArg,
+                                          final Class<?> inheritFromClass,
+                                          final Class<?> expectedClass,
+                                          final boolean allowChildClass)
    {
       if (null != inheritFromClass && !Object.class.equals(inheritFromClass) && inheritFromClass.isPrimitive())
       {
@@ -143,18 +146,25 @@ public class HeaderSerializableStrategy
          return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass));
       }
 
-      final byte firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
+      final byte firstByte;
+      if (firstByteArg != null) firstByte = firstByteArg;
+      else firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
 
       final PartialHeader partialHeader;
       //excludes Object for the sake of Object[]
       if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
          partialHeader = readInheritHeader(inheritFromClass, firstByte);
-      else partialHeader = readArrayHeader(firstByte);
+      else partialHeader = readPossibleArrayHeader(firstByte);
       if (partialHeader.fullHeader != null) return partialHeader.fullHeader;
 
-      final Class<?> componentType = allSerializableStrategy.readHeader(inheritFromClass, firstByte);
+      final Class<?> componentType = allSerializableStrategy.readHeader(inheritFromClass, partialHeader, expectedClass, allowChildClass);
       if (componentType != null)
-         HeaderInformation.forPossibleArray(partialHeader.firstByte, componentType, partialHeader.dimensionCount, partialHeader.primitiveArray);
+      {
+         final int componentDim = arrayUtil.countArrayDimensions(componentType);  //TODO: is this always partial-1?
+         final Class<?> baseComponentType = arrayUtil.getBaseComponentType(componentType);
+         final Class<?> headerClass = componentType.isArray() ? baseComponentType : componentType;
+         return HeaderInformation.forPossibleArray(partialHeader.firstByte, headerClass, componentDim, partialHeader.primitiveArray);
+      }
 
       final HeaderInformation<?> result = readSingleHeader(partialHeader.dimensionCount, partialHeader.primitiveArray,
          partialHeader.firstByte);
@@ -184,7 +194,7 @@ public class HeaderSerializableStrategy
       return new PartialHeader(null, firstByte, dimensionCount, primitiveArray);
    }
 
-   private PartialHeader readArrayHeader(byte firstByte)
+   private PartialHeader readPossibleArrayHeader(byte firstByte)
    {
       final int dimensionCount;
       final boolean primitiveArray;
