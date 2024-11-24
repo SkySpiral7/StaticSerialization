@@ -1,21 +1,41 @@
 package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ShortSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
 public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
 {
+   private final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
+
+   {
+      COMPRESSED_HEADER_TO_CLASS = new HashMap<>();
+      COMPRESSED_HEADER_TO_CLASS.put('~', Byte.class);
+      COMPRESSED_HEADER_TO_CLASS.put('!', Short.class);
+      COMPRESSED_HEADER_TO_CLASS.put('@', Integer.class);
+      COMPRESSED_HEADER_TO_CLASS.put('#', Long.class);
+      COMPRESSED_HEADER_TO_CLASS.put('%', Float.class);
+      COMPRESSED_HEADER_TO_CLASS.put('^', Double.class);
+      COMPRESSED_HEADER_TO_CLASS.put('\'', Character.class);
+   }
+
    private final EasyReader reader;
    private final BitWiseUtil bitWiseUtil;
    private final ClassUtil classUtil;
+   private final ReaderValidationStrategy readerValidationStrategy;
    private final ByteSerializableStrategy byteSerializableStrategy;
    private final ShortSerializableStrategy shortSerializableStrategy;
    private final IntegerSerializableStrategy integerSerializableStrategy;
@@ -30,21 +50,39 @@ public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
       this.reader = null;
       this.bitWiseUtil = utilInstances.getBitWiseUtil();
       this.classUtil = utilInstances.getClassUtil();
+      this.readerValidationStrategy = null;
       this.byteSerializableStrategy = byteSerializableStrategy;
       this.shortSerializableStrategy = null;
       this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
    public BoxPrimitiveSerializableStrategy(final EasyReader reader, final UtilInstances utilInstances,
+                                           final ReaderValidationStrategy readerValidationStrategy,
                                            final ShortSerializableStrategy shortSerializableStrategy,
                                            final IntegerSerializableStrategy integerSerializableStrategy)
    {
       this.reader = reader;
       this.bitWiseUtil = utilInstances.getBitWiseUtil();
       this.classUtil = utilInstances.getClassUtil();
+      this.readerValidationStrategy = readerValidationStrategy;
       this.byteSerializableStrategy = null;
       this.shortSerializableStrategy = shortSerializableStrategy;
       this.integerSerializableStrategy = integerSerializableStrategy;
+   }
+
+   @Override
+   public boolean supportsHeader(final byte firstByte)
+   {
+      return COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte);  //safe cast because map contains only ASCII
+   }
+
+   @Override
+   public Class<?> readHeader(final Class<?> inheritFromClass, final HeaderSerializableStrategy.PartialHeader partialHeader, final Class<?> expectedClass, final boolean allowChildClass)
+   {
+      final Class<?> headerClass = COMPRESSED_HEADER_TO_CLASS.get((char) partialHeader.firstByte());  //safe cast because map contains only ASCII
+      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(partialHeader.firstByte(),
+         headerClass, partialHeader.dimensionCount(), partialHeader.primitiveArray());
+      return readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
    }
 
    @Override

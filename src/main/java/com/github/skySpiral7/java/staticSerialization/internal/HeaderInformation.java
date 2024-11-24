@@ -2,7 +2,6 @@ package com.github.skySpiral7.java.staticSerialization.internal;
 
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
@@ -39,7 +38,8 @@ public final class HeaderInformation<T_Value>
       //TODO: isn't this only possible with 2d+? in which case rename forInheritedPrimitiveArray
       //primitiveArray=false because this header info is for a primitive value not an array
       String boxClassName = boxedClass.getName();
-      return new HeaderInformation<>(boxClassName.getBytes(StandardCharsets.UTF_8)[0], boxClassName, boxedClass, null, 0, false);
+      //first byte is always j because all primitives are under java.lang
+      return new HeaderInformation<>((byte) 'j', boxClassName, boxedClass, null, 0, false);
    }
 
    /**

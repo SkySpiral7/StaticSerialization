@@ -47,7 +47,7 @@ public class StrategyInstances
       final JavaSerializableStrategy javaSerializableStrategy = new JavaSerializableStrategy(reader, integerSerializableStrategy);
       final EnumSerializableStrategy enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(reader, utilInstances,
-         shortSerializableStrategy, integerSerializableStrategy);
+         readerValidationStrategy, shortSerializableStrategy, integerSerializableStrategy);
       final BitSetSerializableStrategy bitSetSerializableStrategy =
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);

@@ -276,9 +276,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Byte> expected = new HeaderInformation<>((byte) 'j', "java.lang.Byte", null, null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Byte.class, false);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, Byte.class, false);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -295,9 +295,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Short> expected = new HeaderInformation<>((byte) 'j', "java.lang.Short", null, null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Short.class, false);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, Short.class, false);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -314,9 +314,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Integer> expected = new HeaderInformation<>((byte) 'j', "java.lang.Integer", null, null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Integer.class, false);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, Integer.class, false);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -333,9 +333,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Long> expected = new HeaderInformation<>((byte) 'j', "java.lang.Long", null, null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Long.class, false);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, Long.class, false);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -352,9 +352,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Float> expected = new HeaderInformation<>((byte) 'j', "java.lang.Float", null, null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Float.class, false);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, Float.class, false);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -371,9 +371,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Double> expected = new HeaderInformation<>((byte) 'j', "java.lang.Double", null, null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Double.class, false);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, Double.class, false);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -390,9 +390,9 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Character> expected = new HeaderInformation<>((byte) 'j', "java.lang.Character", null, null, 0, false);
 
-      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Character.class, false);
       assertEquals(expected, actual1);
-      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual2 = testObject.readHeader(null, null, Character.class, false);
       assertEquals(expected, actual2);
 
       reader.close();
@@ -424,7 +424,7 @@ public class HeaderSerializableStrategy_UT
       init(reader, null);
       final HeaderInformation<Byte> expected = new HeaderInformation<>((byte) 'j', Byte.class.getName(), Byte.class, null, 1, false);
 
-      final HeaderInformation<?> actual = testObject.readHeader(null, null, null, false);
+      final HeaderInformation<?> actual = testObject.readHeader(null, null, Byte[].class, false);
 
       assertEquals(expected, actual);
       reader.close();

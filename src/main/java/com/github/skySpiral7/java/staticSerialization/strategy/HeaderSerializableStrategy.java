@@ -162,7 +162,12 @@ public class HeaderSerializableStrategy
       {
          final int componentDim = arrayUtil.countArrayDimensions(componentType);  //TODO: is this always partial-1?
          final Class<?> baseComponentType = arrayUtil.getBaseComponentType(componentType);
-         final Class<?> headerClass = componentType.isArray() ? baseComponentType : componentType;
+         Class<?> headerClass = componentType.isArray() ? baseComponentType : componentType;
+         //headerClass can't be void so this is safe
+         if (headerClass.isPrimitive())
+         {
+            headerClass = classUtil.boxClass(headerClass);
+         }
          return HeaderInformation.forPossibleArray(partialHeader.firstByte, headerClass, componentDim, partialHeader.primitiveArray);
       }
 
