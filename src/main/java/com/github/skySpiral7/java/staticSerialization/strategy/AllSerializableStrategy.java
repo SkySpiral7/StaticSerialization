@@ -10,36 +10,29 @@ import com.github.skySpiral7.java.staticSerialization.strategy.generic.DataStrat
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.HeaderStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.NullSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.UuidSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
-import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
-import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.util.List;
 
 public class AllSerializableStrategy
 {
-   private final ArrayUtil arrayUtil;
-   private final ClassUtil classUtil;
    private final List<HeaderStrategy> headerStrategyList;
    private final List<DataStrategy> dataStrategyList;
 
-   public AllSerializableStrategy(final UtilInstances utilInstances,
-                                  final ArraySerializableStrategy arraySerializableStrategy,
+   public AllSerializableStrategy(final ArraySerializableStrategy arraySerializableStrategy,
                                   final BitSetSerializableStrategy bitSetSerializableStrategy,
                                   final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
                                   final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
                                   final EnumSerializableStrategy enumSerializableStrategy,
                                   final JavaSerializableStrategy javaSerializableStrategy,
+                                  final NullSerializableStrategy nullSerializableStrategy,
                                   final StaticSerializableStrategy staticSerializableStrategy,
                                   final StringSerializableStrategy stringSerializableStrategy,
                                   final UuidSerializableStrategy uuidSerializableStrategy)
    {
-      this.arrayUtil = utilInstances.getArrayUtil();
-      this.classUtil = utilInstances.getClassUtil();
-
       /* order:
        * first is supported jdk final classes (none of which are static) so that they have better compression than java.
        * then static so that it will respect any manual serial.
@@ -62,7 +55,7 @@ public class AllSerializableStrategy
       //header order doesn't matter since they don't overlap.
       headerStrategyList = List.of(
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
-         classHeaderSerializableStrategy);
+         classHeaderSerializableStrategy, nullSerializableStrategy);
    }
 
    public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,

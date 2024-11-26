@@ -160,7 +160,7 @@ public class HeaderSerializableStrategy
       HeaderInformation<?> result = allSerializableStrategy.readHeader(inheritFromClass, partialHeader, expectedClass, allowChildClass);
       if (result != null) return result;
 
-      result = readSingleHeader(partialHeader.dimensionCount, partialHeader.primitiveArray, partialHeader.firstByte);
+      result = readSingleHeader(partialHeader.firstByte);
       if (result != null) return result;
 
       throw new IllegalStateException("Should've been handled above");
@@ -210,17 +210,8 @@ public class HeaderSerializableStrategy
       return new PartialHeader(null, firstByte, dimensionCount, primitiveArray);
    }
 
-   private HeaderInformation<?> readSingleHeader(final int dimensionCount, final boolean primitiveArray, final byte firstByte)
+   private HeaderInformation<?> readSingleHeader(final byte firstByte)
    {
-      if (StringSerializableStrategy.TERMINATOR == firstByte)
-         return HeaderInformation.forNull(firstByte);  //the empty string class name means null
-      if ('+' == firstByte) return HeaderInformation.forValue(firstByte, Boolean.class.getName(), Boolean.TRUE);
-      if ('-' == firstByte) return HeaderInformation.forValue(firstByte, Boolean.class.getName(), Boolean.FALSE);
-      if (COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte))  //safe cast because map contains only ASCII
-      {
-         final Class<?> compressedClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
-         return HeaderInformation.forPossibleArray(firstByte, compressedClass, dimensionCount, primitiveArray);
-      }
       if ('&' == firstByte)
       {
          final int id = integerSerializableStrategy.read("Incomplete header: id type but no id");

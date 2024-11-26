@@ -23,8 +23,8 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
 
    {
       COMPRESSED_HEADER_TO_CLASS = new HashMap<>();
-      //COMPRESSED_HEADER_TO_CLASS.put('+', Boolean.class);
-      //COMPRESSED_HEADER_TO_CLASS.put('-', Boolean.class);
+      COMPRESSED_HEADER_TO_CLASS.put('+', Boolean.class);
+      COMPRESSED_HEADER_TO_CLASS.put('-', Boolean.class);
       COMPRESSED_HEADER_TO_CLASS.put('~', Byte.class);
       COMPRESSED_HEADER_TO_CLASS.put('!', Short.class);
       COMPRESSED_HEADER_TO_CLASS.put('@', Integer.class);
@@ -84,8 +84,12 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {
-      final Class<?> headerClass = COMPRESSED_HEADER_TO_CLASS.get((char) partialHeader.firstByte());  //safe cast because map contains only ASCII
-      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(partialHeader.firstByte(),
+      final byte firstByte = partialHeader.firstByte();
+      if ('+' == firstByte) return HeaderInformation.forValue(firstByte, Boolean.class.getName(), Boolean.TRUE);
+      if ('-' == firstByte) return HeaderInformation.forValue(firstByte, Boolean.class.getName(), Boolean.FALSE);
+
+      final Class<?> headerClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
+      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(firstByte,
          headerClass, partialHeader.dimensionCount(), partialHeader.primitiveArray());
       readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
       return headerInformation;

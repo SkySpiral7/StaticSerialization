@@ -12,6 +12,7 @@ import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimit
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.ClassHeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.NullSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.UuidSerializableStrategy;
@@ -38,6 +39,7 @@ public class StrategyInstances
       final IntegerSerializableStrategy integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.readerValidationStrategy = new ReaderValidationStrategy(utilInstances);
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamReader, utilInstances);
+      final NullSerializableStrategy nullSerializableStrategy = new NullSerializableStrategy();
       final ShortSerializableStrategy shortSerializableStrategy = new ShortSerializableStrategy(reader);
       final StaticSerializableStrategy staticSerializableStrategy = new StaticSerializableStrategy(streamReader);
       final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(readerValidationStrategy, reader);
@@ -54,10 +56,10 @@ public class StrategyInstances
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
 
-      this.allSerializableStrategy = new AllSerializableStrategy(utilInstances, arraySerializableStrategy,
+      this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
          bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
-         staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
+         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
       this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances,
          allSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
    }
@@ -71,6 +73,7 @@ public class StrategyInstances
       this.readerValidationStrategy = null;  //don't need
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamWriter, utilInstances);
       //ones that don't need another strategy
+      final NullSerializableStrategy nullSerializableStrategy = new NullSerializableStrategy();
       final StaticSerializableStrategy staticSerializableStrategy = new StaticSerializableStrategy(streamWriter);
 
       //ones that need other strategies
@@ -89,10 +92,10 @@ public class StrategyInstances
 
       this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
          byteSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
-      this.allSerializableStrategy = new AllSerializableStrategy(utilInstances, arraySerializableStrategy,
+      this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
          bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
-         staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
+         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
    }
 
    public AllSerializableStrategy getAllSerializableStrategy()
