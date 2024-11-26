@@ -27,33 +27,33 @@ class UuidSerializableStrategy_UT
    }
 
    @Test
-   public void write(@Mocked final BoxPrimitiveSerializableStrategy mockBoxPrimitiveSerializableStrategy)
+   public void writeData(@Mocked final BoxPrimitiveSerializableStrategy mockBoxPrimitiveSerializableStrategy)
    {
       final UuidSerializableStrategy testObject = new UuidSerializableStrategy(mockBoxPrimitiveSerializableStrategy);
       final UUID input = new UUID(0xc14661197b9c40b0L, 0x8129caca6d2b15f1L);
 
-      testObject.write(input);
+      testObject.writeData(input);
 
       new FullVerifications()
       {{
-         mockBoxPrimitiveSerializableStrategy.write(0xc14661197b9c40b0L);
-         mockBoxPrimitiveSerializableStrategy.write(0x8129caca6d2b15f1L);
+         mockBoxPrimitiveSerializableStrategy.writeData(0xc14661197b9c40b0L);
+         mockBoxPrimitiveSerializableStrategy.writeData(0x8129caca6d2b15f1L);
       }};
    }
 
    @Test
-   public void read(@Mocked final BoxPrimitiveSerializableStrategy mockBoxPrimitiveSerializableStrategy)
+   public void readData(@Mocked final BoxPrimitiveSerializableStrategy mockBoxPrimitiveSerializableStrategy)
    {
       final UuidSerializableStrategy testObject = new UuidSerializableStrategy(mockBoxPrimitiveSerializableStrategy);
       final UUID expected = new UUID(0xc14661197b9c40b0L, 0x8129caca6d2b15f1L);
 
       new Expectations()
       {{
-         mockBoxPrimitiveSerializableStrategy.read(Long.class);
+         mockBoxPrimitiveSerializableStrategy.readData(Long.class);
          returns(0xc14661197b9c40b0L, 0x8129caca6d2b15f1L);
       }};
 
-      final Object actual = testObject.read(null);
+      final Object actual = testObject.readData(null);
 
       assertEquals(expected, actual);
       new FullVerifications() {};

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class BoxPrimitiveSerializableStrategy_UT
 {
    @Test
-   public void read_throws_givenANonBooleanValue()
+   public void readData_throws_givenANonBooleanValue()
    {
       final ByteAppender inputBuilder = new ByteAppender();
       inputBuilder.append(new byte[]{']', 1, '+'});  //array indicator, dimensions, component
@@ -36,7 +36,7 @@ public class BoxPrimitiveSerializableStrategy_UT
    }
 
    @Test
-   public void read_throws_givenStreamWithNullInPrimitiveBooleanArray()
+   public void readData_throws_givenStreamWithNullInPrimitiveBooleanArray()
    {
       final ByteAppender inputBuilder = new ByteAppender();
       inputBuilder.append(new byte[]{']', 1, '+'});  //array indicator, dimensions, component

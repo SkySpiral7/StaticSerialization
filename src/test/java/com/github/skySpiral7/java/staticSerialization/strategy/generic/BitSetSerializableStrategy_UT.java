@@ -29,8 +29,8 @@ class BitSetSerializableStrategy_UT
    }
 
    @Test
-   public void write(@Mocked final BoxPrimitiveSerializableStrategy mockBoxPrimitiveSerializableStrategy,
-                     @Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
+   public void writeData(@Mocked final BoxPrimitiveSerializableStrategy mockBoxPrimitiveSerializableStrategy,
+                         @Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
    {
       final BitSetSerializableStrategy testObject =
          new BitSetSerializableStrategy(mockBoxPrimitiveSerializableStrategy, mockIntegerSerializableStrategy);
@@ -38,19 +38,19 @@ class BitSetSerializableStrategy_UT
          (byte) 0xba, (byte) 0xbe
       });
 
-      testObject.write(data);
+      testObject.writeData(data);
 
       new FullVerifications()
       {{
          mockIntegerSerializableStrategy.write(2);
-         mockBoxPrimitiveSerializableStrategy.write((byte) 0xba);
-         mockBoxPrimitiveSerializableStrategy.write((byte) 0xbe);
+         mockBoxPrimitiveSerializableStrategy.writeData((byte) 0xba);
+         mockBoxPrimitiveSerializableStrategy.writeData((byte) 0xbe);
       }};
    }
 
    @Test
-   public void read(@Mocked final BoxPrimitiveSerializableStrategy mockBoxPrimitiveSerializableStrategy,
-                    @Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
+   public void readData(@Mocked final BoxPrimitiveSerializableStrategy mockBoxPrimitiveSerializableStrategy,
+                        @Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
    {
       final BitSetSerializableStrategy testObject =
          new BitSetSerializableStrategy(mockBoxPrimitiveSerializableStrategy, mockIntegerSerializableStrategy);
@@ -63,11 +63,11 @@ class BitSetSerializableStrategy_UT
          mockIntegerSerializableStrategy.read("Missing array length");
          result = 2;
 
-         mockBoxPrimitiveSerializableStrategy.read(Byte.class);
+         mockBoxPrimitiveSerializableStrategy.readData(Byte.class);
          returns((byte) 0xba, (byte) 0xbe);
       }};
 
-      final Object actual = testObject.read(null);
+      final Object actual = testObject.readData(null);
 
       assertEquals(expected, actual);
    }

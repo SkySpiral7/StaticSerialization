@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class StringSerializableStrategy implements SerializableStrategy
+public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
 {
    private static final Logger LOG = LogManager.getLogger();
    /**
@@ -69,7 +69,7 @@ public class StringSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public void write(final Object rawData)
+   public void writeData(final Object rawData)
    {
       final String data = (String) rawData;
       LOG.debug(data);
@@ -78,7 +78,7 @@ public class StringSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public <T> T read(final Class<T> actualClass)
+   public <T> T readData(final Class<T> actualClass)
    {
       final ByteArrayOutputStream classNameStream = new ByteArrayOutputStream();
       byte[] remaining = StreamCorruptedException.throwIfNotByteTerminated(reader, TERMINATOR, "String data not " +

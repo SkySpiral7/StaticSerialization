@@ -5,9 +5,10 @@ import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySeri
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BitSetSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.ClassHeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.DataStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.HeaderStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.SerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.UuidSerializableStrategy;
@@ -16,7 +17,8 @@ import java.util.List;
 
 public class AllSerializableStrategy
 {
-   private final List<SerializableStrategy> strategyList;
+   private final List<HeaderStrategy> headerStrategyList;
+   private final List<DataStrategy> dataStrategyList;
 
    public AllSerializableStrategy(final ArraySerializableStrategy arraySerializableStrategy,
                                   final BitSetSerializableStrategy bitSetSerializableStrategy,
@@ -33,13 +35,12 @@ public class AllSerializableStrategy
        * then static so that it will respect any manual serial.
        * then bitset/enum (which can be static) so that the non-static ones will have better compression than java.
        * then java if all else fails */
-      strategyList = List.of(
+      dataStrategyList = List.of(
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
          uuidSerializableStrategy,
          staticSerializableStrategy,
          bitSetSerializableStrategy, enumSerializableStrategy,
-         javaSerializableStrategy,
-         classHeaderSerializableStrategy);
+         javaSerializableStrategy);
       /*
        * TODO: also Big int/dec, stream: new ArrayList<>().stream().collect(Collectors.toList()).toArray()
        * there's already enum. big int/dec could do same
@@ -47,6 +48,11 @@ public class AllSerializableStrategy
        * big int -> byte[]
        * big dec -> toEngineeringString? can't see any way to get base big int
        */
+
+      //header order doesn't matter since they don't overlap.
+      headerStrategyList = List.of(
+         boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
+         classHeaderSerializableStrategy);
    }
 
    public Class<?> readHeader(final Class<?> inheritFromClass,
@@ -54,29 +60,29 @@ public class AllSerializableStrategy
                               final Class<?> expectedClass,
                               final boolean allowChildClass)
    {
-      return strategyList.stream()
+      return headerStrategyList.stream()
          .filter(strategy -> strategy.supportsHeader(partialHeader.firstByte()))
          .findFirst()
          .map(strategy -> strategy.readHeader(inheritFromClass, partialHeader, expectedClass, allowChildClass))
          .orElse(null);
    }
 
-   public void write(final Object data)
+   public void writeData(final Object data)
    {
       final Class<?> dataClass = data.getClass();
-      strategyList.stream()
+      dataStrategyList.stream()
          .filter(strategy -> strategy.supportsData(dataClass))
          .findFirst()
          .orElseThrow(() -> new NotSerializableException(dataClass))
-         .write(data);
+         .writeData(data);
    }
 
-   public <T> T read(final Class<T> actualClass)
+   public <T> T readData(final Class<T> actualClass)
    {
-      return strategyList.stream()
+      return dataStrategyList.stream()
          .filter(strategy -> strategy.supportsData(actualClass))
          .findFirst()
          .orElseThrow(() -> new NotSerializableException(actualClass))
-         .read(actualClass);
+         .readData(actualClass);
    }
 }

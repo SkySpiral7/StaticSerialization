@@ -59,7 +59,7 @@ public class InternalStreamWriter implements Closeable, Flushable
       final boolean usedId = headerSerializableStrategy.writeHeaderReturnIsId(inheritFromClass, data);
       //if an id was written then don't write value
       if (usedId) return;
-      allSerializableStrategy.write(data);
+      allSerializableStrategy.writeData(data);
    }
 
    public ReflectionSerializableStrategy getReflectionSerializableStrategy()

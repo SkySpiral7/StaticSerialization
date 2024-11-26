@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class UuidSerializableStrategy implements SerializableStrategy
+public class UuidSerializableStrategy implements DataStrategy
 {
    private final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy;
 
@@ -20,21 +20,21 @@ public class UuidSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public void write(final Object rawData)
+   public void writeData(final Object rawData)
    {
       final UUID data = (UUID) rawData;
       final long[] compressed = compress(data);
-      boxPrimitiveSerializableStrategy.write(compressed[0]);
-      boxPrimitiveSerializableStrategy.write(compressed[1]);
+      boxPrimitiveSerializableStrategy.writeData(compressed[0]);
+      boxPrimitiveSerializableStrategy.writeData(compressed[1]);
    }
 
    @Override
-   public <T> T read(final Class<T> expectedClass)
+   public <T> T readData(final Class<T> expectedClass)
    {
       //TODO: could have more specific "no data" error
       final long[] compressed = {
-         boxPrimitiveSerializableStrategy.read(Long.class),
-         boxPrimitiveSerializableStrategy.read(Long.class)
+         boxPrimitiveSerializableStrategy.readData(Long.class),
+         boxPrimitiveSerializableStrategy.readData(Long.class)
       };
       return cast(decompress(compressed));
    }

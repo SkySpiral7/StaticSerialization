@@ -14,7 +14,7 @@ import java.lang.reflect.Array;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class ArraySerializableStrategy implements SerializableStrategy
+public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
 {
    private final ReaderValidationStrategy readerValidationStrategy;
    private final EasyReader reader;
@@ -91,7 +91,7 @@ public class ArraySerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public void write(final Object data)
+   public void writeData(final Object data)
    {
       final int length = Array.getLength(data);
       integerSerializableStrategy.write(length);
@@ -104,7 +104,7 @@ public class ArraySerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public <T> T read(final Class<T> actualClass)
+   public <T> T readData(final Class<T> actualClass)
    {
       final Class<?> componentType = actualClass.getComponentType();
       final int arrayLength = integerSerializableStrategy.read("Missing array length");

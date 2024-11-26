@@ -12,7 +12,7 @@ import java.lang.reflect.Modifier;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class StaticSerializableStrategy implements SerializableStrategy
+public class StaticSerializableStrategy implements DataStrategy
 {
    private final ObjectStreamReader reader;
    private final ObjectStreamWriter writer;
@@ -36,14 +36,14 @@ public class StaticSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public void write(final Object rawData)
+   public void writeData(final Object rawData)
    {
       final StaticSerializable data = (StaticSerializable) rawData;
       data.writeToStream(writer);
    }
 
    @Override
-   public <T> T read(final Class<T> expectedClass)
+   public <T> T readData(final Class<T> expectedClass)
    {
       if (!Modifier.isPublic(expectedClass.getModifiers()))
       {

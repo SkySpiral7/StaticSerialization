@@ -17,7 +17,7 @@ import java.util.Map;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
+public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStrategy
 {
    private final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
 
@@ -94,7 +94,7 @@ public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public void write(final Object data)
+   public void writeData(final Object data)
    {
       if (data instanceof Byte) byteSerializableStrategy.writeByte((byte) data);
       else if (data instanceof Short) byteSerializableStrategy.writeBytes((short) data, 2);
@@ -120,7 +120,7 @@ public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public <T> T read(final Class<T> expectedClass)
+   public <T> T readData(final Class<T> expectedClass)
    {
       if (Byte.class.equals(expectedClass))
       {

@@ -4,7 +4,7 @@ import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 
-public class ClassHeaderSerializableStrategy implements SerializableStrategy
+public class ClassHeaderSerializableStrategy implements HeaderStrategy
 {
    private final StringSerializableStrategy stringSerializableStrategy;
    private final ReaderValidationStrategy readerValidationStrategy;
@@ -35,27 +35,9 @@ public class ClassHeaderSerializableStrategy implements SerializableStrategy
    public Class<?> readHeader(final Class<?> inheritFromClass, final HeaderSerializableStrategy.PartialHeader partialHeader, final Class<?> expectedClass, final boolean allowChildClass)
    {
       //firstByte is part of a class name
-      final String className = "" + ((char) partialHeader.firstByte()) + stringSerializableStrategy.read(null);
+      final String className = "" + ((char) partialHeader.firstByte()) + stringSerializableStrategy.readData(null);
       final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(partialHeader.firstByte(), className, partialHeader.dimensionCount(),
          partialHeader.primitiveArray());
       return readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
-   }
-
-   @Override
-   public boolean supportsData(final Class<?> actualClass)
-   {
-      return false;
-   }
-
-   @Override
-   public void write(final Object rawData)
-   {
-      throw new IllegalStateException("Not implemented");
-   }
-
-   @Override
-   public <T> T read(final Class<T> actualClass)
-   {
-      throw new IllegalStateException("Not implemented");
    }
 }

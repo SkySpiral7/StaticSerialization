@@ -176,7 +176,7 @@ public class HeaderSerializableStrategy
       if (result != null) return result;
 
       //else firstByte is part of a class name
-      final String className = "" + ((char) partialHeader.firstByte) + stringSerializableStrategy.read(null);
+      final String className = "" + ((char) partialHeader.firstByte) + stringSerializableStrategy.readData(null);
       return HeaderInformation.forPossibleArray(partialHeader.firstByte, className, partialHeader.dimensionCount, partialHeader.primitiveArray);
    }
 
@@ -322,12 +322,12 @@ public class HeaderSerializableStrategy
             byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
          else
          {
-            stringSerializableStrategy.write(baseComponent.getName());
+            stringSerializableStrategy.writeData(baseComponent.getName());
          }
       }
       else
       {
-         stringSerializableStrategy.write(data.getClass().getName());
+         stringSerializableStrategy.writeData(data.getClass().getName());
       }
 
       return false;
