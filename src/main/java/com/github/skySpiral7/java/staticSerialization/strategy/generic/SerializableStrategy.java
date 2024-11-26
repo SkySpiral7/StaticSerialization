@@ -14,7 +14,8 @@ public interface SerializableStrategy
                                       final Class<?> expectedClass,
                                       final boolean allowChildClass)
    {
-      return null;
+      //TODO: split into 2 interfaces for header and data
+      throw new IllegalStateException("Not implemented");
    }
 
    public boolean supportsData(final Class<?> actualClass);

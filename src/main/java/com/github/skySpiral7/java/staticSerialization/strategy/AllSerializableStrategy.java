@@ -4,6 +4,7 @@ import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableE
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BitSetSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.ClassHeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.SerializableStrategy;
@@ -20,6 +21,7 @@ public class AllSerializableStrategy
    public AllSerializableStrategy(final ArraySerializableStrategy arraySerializableStrategy,
                                   final BitSetSerializableStrategy bitSetSerializableStrategy,
                                   final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
+                                  final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
                                   final EnumSerializableStrategy enumSerializableStrategy,
                                   final JavaSerializableStrategy javaSerializableStrategy,
                                   final StaticSerializableStrategy staticSerializableStrategy,
@@ -36,7 +38,8 @@ public class AllSerializableStrategy
          uuidSerializableStrategy,
          staticSerializableStrategy,
          bitSetSerializableStrategy, enumSerializableStrategy,
-         javaSerializableStrategy);
+         javaSerializableStrategy,
+         classHeaderSerializableStrategy);
       /*
        * TODO: also Big int/dec, stream: new ArrayList<>().stream().collect(Collectors.toList()).toArray()
        * there's already enum. big int/dec could do same

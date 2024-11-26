@@ -56,8 +56,8 @@ public class HeaderSerializableStrategy
       allowed (30): !"#%&'()*+,-/:;<=>?@[\]^`{|}~ space
       used (14): !"#%&'+-?@[]^~
       available (16): ()*,/:;<=>\`{|} space
-      technically a FQ class name can't start with a number or dot so I could use them but I won't
-      variables names can start with $ so I assume a package/class can too
+      technically a FQ class name can't start with a number or dot so I could use them but I won't.
+      variable names can start with $ so I assume a package/class can too
       */
       COMPRESSED_HEADER_TO_CLASS = new HashMap<>();
       COMPRESSED_HEADER_TO_CLASS.put('~', Byte.class);
@@ -176,7 +176,7 @@ public class HeaderSerializableStrategy
       if (result != null) return result;
 
       //else firstByte is part of a class name
-      String className = "" + ((char) partialHeader.firstByte) + stringSerializableStrategy.read(null);
+      final String className = "" + ((char) partialHeader.firstByte) + stringSerializableStrategy.read(null);
       return HeaderInformation.forPossibleArray(partialHeader.firstByte, className, partialHeader.dimensionCount, partialHeader.primitiveArray);
    }
 

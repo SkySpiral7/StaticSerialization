@@ -23,6 +23,8 @@ public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
 
    {
       COMPRESSED_HEADER_TO_CLASS = new HashMap<>();
+      //COMPRESSED_HEADER_TO_CLASS.put('+', Boolean.class);
+      //COMPRESSED_HEADER_TO_CLASS.put('-', Boolean.class);
       COMPRESSED_HEADER_TO_CLASS.put('~', Byte.class);
       COMPRESSED_HEADER_TO_CLASS.put('!', Short.class);
       COMPRESSED_HEADER_TO_CLASS.put('@', Integer.class);
