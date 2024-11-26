@@ -9,6 +9,7 @@ import com.github.skySpiral7.java.staticSerialization.strategy.generic.ClassHead
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.DataStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.HeaderStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.IdSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.NullSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
@@ -27,6 +28,7 @@ public class AllSerializableStrategy
                                   final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
                                   final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
                                   final EnumSerializableStrategy enumSerializableStrategy,
+                                  final IdSerializableStrategy idSerializableStrategy,
                                   final JavaSerializableStrategy javaSerializableStrategy,
                                   final NullSerializableStrategy nullSerializableStrategy,
                                   final StaticSerializableStrategy staticSerializableStrategy,
@@ -55,7 +57,7 @@ public class AllSerializableStrategy
       //header order doesn't matter since they don't overlap.
       headerStrategyList = List.of(
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
-         classHeaderSerializableStrategy, nullSerializableStrategy);
+         classHeaderSerializableStrategy, nullSerializableStrategy, idSerializableStrategy);
    }
 
    public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,

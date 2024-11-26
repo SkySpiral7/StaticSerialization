@@ -157,10 +157,8 @@ public class HeaderSerializableStrategy
       else partialHeader = readPossibleArrayHeader(firstByte);
       if (partialHeader.fullHeader != null) return partialHeader.fullHeader;
 
-      HeaderInformation<?> result = allSerializableStrategy.readHeader(inheritFromClass, partialHeader, expectedClass, allowChildClass);
-      if (result != null) return result;
-
-      result = readSingleHeader(partialHeader.firstByte);
+      final HeaderInformation<?> result = allSerializableStrategy.readHeader(inheritFromClass, partialHeader,
+         expectedClass, allowChildClass);
       if (result != null) return result;
 
       throw new IllegalStateException("Should've been handled above");
@@ -208,22 +206,6 @@ public class HeaderSerializableStrategy
       else dimensionCount = 0;
 
       return new PartialHeader(null, firstByte, dimensionCount, primitiveArray);
-   }
-
-   private HeaderInformation<?> readSingleHeader(final byte firstByte)
-   {
-      if ('&' == firstByte)
-      {
-         final int id = integerSerializableStrategy.read("Incomplete header: id type but no id");
-         final Object registeredObject = readerRegistry.getRegisteredObject(id);
-         //null value will not have an id. null is only possible if id was reserved but not registered
-         if (registeredObject == null) throw new StreamCorruptedException("id not found");
-         //LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
-         LOG.debug("id: " + id + " (" + registeredObject + " " + registeredObject.getClass().getSimpleName() + ")");
-         return HeaderInformation.forValue(firstByte, registeredObject.getClass().getName(), registeredObject);
-      }
-
-      return null;
    }
 
    //TODO: rename since true also for null, bool
