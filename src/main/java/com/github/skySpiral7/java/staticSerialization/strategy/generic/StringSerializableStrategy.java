@@ -52,14 +52,15 @@ public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public Class<?> readHeader(final Class<?> inheritFromClass,
-                              final HeaderSerializableStrategy.PartialHeader partialHeader,
-                              final Class<?> expectedClass,
-                              final boolean allowChildClass)
+   public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
+                                          final HeaderSerializableStrategy.PartialHeader partialHeader,
+                                          final Class<?> expectedClass,
+                                          final boolean allowChildClass)
    {
       final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray((byte) '"',
          String.class, partialHeader.dimensionCount(), false);
-      return readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+      readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+      return headerInformation;
    }
 
    @Override

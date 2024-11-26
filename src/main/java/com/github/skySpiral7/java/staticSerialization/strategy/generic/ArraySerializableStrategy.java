@@ -55,10 +55,10 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public Class<?> readHeader(final Class<?> inheritFromClass,
-                              final HeaderSerializableStrategy.PartialHeader partialHeader,
-                              final Class<?> expectedClass,
-                              final boolean allowChildClass)
+   public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
+                                          final HeaderSerializableStrategy.PartialHeader partialHeader,
+                                          final Class<?> expectedClass,
+                                          final boolean allowChildClass)
    {
       final boolean primitiveArray = (']' == partialHeader.firstByte());
       final int dimensionCount = Byte.toUnsignedInt(
@@ -76,12 +76,14 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
       {
          final HeaderInformation<?> headerInformation = internalStreamReader.getHeaderSerializableStrategy().readHeader(componentFirstByte,
             inheritFromClass, expectedClass, allowChildClass);
+         //TODO: why isn't this header info returned?
          componentType = internalStreamReader.readHeaderClass(headerInformation, expectedClass, allowChildClass);
       }
 
       final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(componentFirstByte,
          componentType, dimensionCount, primitiveArray);
-      return readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+      readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+      return headerInformation;
    }
 
    @Override

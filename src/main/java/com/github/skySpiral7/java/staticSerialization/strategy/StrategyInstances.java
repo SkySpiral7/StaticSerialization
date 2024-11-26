@@ -54,7 +54,7 @@ public class StrategyInstances
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
 
-      this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
+      this.allSerializableStrategy = new AllSerializableStrategy(utilInstances, arraySerializableStrategy,
          bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
          staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
@@ -89,7 +89,7 @@ public class StrategyInstances
 
       this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
          byteSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
-      this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
+      this.allSerializableStrategy = new AllSerializableStrategy(utilInstances, arraySerializableStrategy,
          bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, javaSerializableStrategy,
          staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);

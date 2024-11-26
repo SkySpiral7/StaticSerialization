@@ -157,27 +157,13 @@ public class HeaderSerializableStrategy
       else partialHeader = readPossibleArrayHeader(firstByte);
       if (partialHeader.fullHeader != null) return partialHeader.fullHeader;
 
-      final Class<?> componentType = allSerializableStrategy.readHeader(inheritFromClass, partialHeader, expectedClass, allowChildClass);
-      if (componentType != null)
-      {
-         final int componentDim = arrayUtil.countArrayDimensions(componentType);  //TODO: is this always partial-1?
-         final Class<?> baseComponentType = arrayUtil.getBaseComponentType(componentType);
-         Class<?> headerClass = componentType.isArray() ? baseComponentType : componentType;
-         //headerClass can't be void so this is safe
-         if (headerClass.isPrimitive())
-         {
-            headerClass = classUtil.boxClass(headerClass);
-         }
-         return HeaderInformation.forPossibleArray(partialHeader.firstByte, headerClass, componentDim, partialHeader.primitiveArray);
-      }
-
-      final HeaderInformation<?> result = readSingleHeader(partialHeader.dimensionCount, partialHeader.primitiveArray,
-         partialHeader.firstByte);
+      HeaderInformation<?> result = allSerializableStrategy.readHeader(inheritFromClass, partialHeader, expectedClass, allowChildClass);
       if (result != null) return result;
 
-      //else firstByte is part of a class name
-      final String className = "" + ((char) partialHeader.firstByte) + stringSerializableStrategy.readData(null);
-      return HeaderInformation.forPossibleArray(partialHeader.firstByte, className, partialHeader.dimensionCount, partialHeader.primitiveArray);
+      result = readSingleHeader(partialHeader.dimensionCount, partialHeader.primitiveArray, partialHeader.firstByte);
+      if (result != null) return result;
+
+      throw new IllegalStateException("Should've been handled above");
    }
 
    private PartialHeader readInheritHeader(final Class<?> inheritFromClass, byte firstByte)

@@ -32,12 +32,16 @@ public class ClassHeaderSerializableStrategy implements HeaderStrategy
    }
 
    @Override
-   public Class<?> readHeader(final Class<?> inheritFromClass, final HeaderSerializableStrategy.PartialHeader partialHeader, final Class<?> expectedClass, final boolean allowChildClass)
+   public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
+                                          final HeaderSerializableStrategy.PartialHeader partialHeader,
+                                          final Class<?> expectedClass,
+                                          final boolean allowChildClass)
    {
       //firstByte is part of a class name
       final String className = "" + ((char) partialHeader.firstByte()) + stringSerializableStrategy.readData(null);
       final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(partialHeader.firstByte(), className, partialHeader.dimensionCount(),
          partialHeader.primitiveArray());
-      return readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+      readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+      return headerInformation;
    }
 }
