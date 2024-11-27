@@ -74,7 +74,7 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
       if ('+' == componentFirstByte) componentType = Boolean.class;
       else
       {
-         final HeaderInformation<?> headerInformation = internalStreamReader.getHeaderSerializableStrategy().readHeader(componentFirstByte,
+         final HeaderInformation<?> headerInformation = internalStreamReader.getAllSerializableStrategy().readHeader(componentFirstByte,
             inheritFromClass, expectedClass, allowChildClass);
          //TODO: why isn't this header info returned?
          componentType = internalStreamReader.readHeaderClass(headerInformation, expectedClass, allowChildClass);

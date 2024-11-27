@@ -58,13 +58,13 @@ public class StrategyInstances
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
 
-      this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
+      this.allSerializableStrategy = new AllSerializableStrategy(reader, utilInstances,
+         arraySerializableStrategy,
          bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
          javaSerializableStrategy,
          nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
-      this.headerSerializableStrategy = new HeaderSerializableStrategy(reader, registry, utilInstances,
-         allSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
+      this.headerSerializableStrategy = null;
    }
 
    public StrategyInstances(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
@@ -91,16 +91,12 @@ public class StrategyInstances
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
 
-      //null arg is only safe because this strat won't be used during write
-      final ClassHeaderSerializableStrategy classHeaderSerializableStrategy = new ClassHeaderSerializableStrategy(stringSerializableStrategy, null);
-      final IdSerializableStrategy idSerializableStrategy = new IdSerializableStrategy(null, integerSerializableStrategy);
-
       this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
          byteSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
       this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
          bitSetSerializableStrategy,
-         boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy,
-         idSerializableStrategy, javaSerializableStrategy,
+         boxPrimitiveSerializableStrategy, enumSerializableStrategy,
+         javaSerializableStrategy,
          nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
    }
 

@@ -1,11 +1,8 @@
 package com.github.skySpiral7.java.staticSerialization.strategy;
 
-import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
-import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
@@ -32,20 +29,6 @@ public class HeaderSerializableStrategy
     * <li>&id reference existing object (header only)</li>
     * </ul>
     */
-   private final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
-   /**
-    * Not in map:
-    * <ul>
-    * <li>+ boolean true (header only). and component used for boolean arrays</li>
-    * <li>- boolean false (header only. not valid array component)</li>
-    * <li>[2Type object arrays</li>
-    * <li>]2Type primitive arrays</li>
-    * <li>Type normal class which is 0xFF terminated</li>
-    * <li>0xFF null (header only. not valid array component)</li>
-    * <li>? inherit type from containing array</li>
-    * <li>&id reference existing object (header only)</li>
-    * </ul>
-    */
    private final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
 
    {
@@ -59,17 +42,6 @@ public class HeaderSerializableStrategy
       technically a FQ class name can't start with a number or dot so I could use them but I won't.
       variable names can start with $ so I assume a package/class can too
       */
-      COMPRESSED_HEADER_TO_CLASS = new HashMap<>();
-      COMPRESSED_HEADER_TO_CLASS.put('~', Byte.class);
-      COMPRESSED_HEADER_TO_CLASS.put('!', Short.class);
-      COMPRESSED_HEADER_TO_CLASS.put('@', Integer.class);
-      COMPRESSED_HEADER_TO_CLASS.put('#', Long.class);
-      //$ is allowed to be in class names
-      COMPRESSED_HEADER_TO_CLASS.put('%', Float.class);
-      COMPRESSED_HEADER_TO_CLASS.put('^', Double.class);
-      COMPRESSED_HEADER_TO_CLASS.put('\'', Character.class);
-      COMPRESSED_HEADER_TO_CLASS.put('"', String.class);
-
       CLASS_TO_COMPRESSED_HEADER = new HashMap<>();
       CLASS_TO_COMPRESSED_HEADER.put(Byte.class, '~');
       CLASS_TO_COMPRESSED_HEADER.put(Short.class, '!');
@@ -82,8 +54,6 @@ public class HeaderSerializableStrategy
       CLASS_TO_COMPRESSED_HEADER.put(String.class, '"');
    }
 
-   private final EasyReader reader;
-   private final ObjectReaderRegistry readerRegistry;
    private final ObjectWriterRegistry writerRegistry;
    private final ArrayUtil arrayUtil;
    private final ClassUtil classUtil;
@@ -92,31 +62,12 @@ public class HeaderSerializableStrategy
    private final IntegerSerializableStrategy integerSerializableStrategy;
    private final StringSerializableStrategy stringSerializableStrategy;
 
-   public HeaderSerializableStrategy(final EasyReader reader, final ObjectReaderRegistry registry,
-                                     final UtilInstances utilInstances,
-                                     final AllSerializableStrategy allSerializableStrategy,
-                                     final IntegerSerializableStrategy integerSerializableStrategy,
-                                     final StringSerializableStrategy stringSerializableStrategy)
-   {
-      this.reader = reader;
-      readerRegistry = registry;
-      writerRegistry = null;
-      arrayUtil = utilInstances.getArrayUtil();
-      classUtil = utilInstances.getClassUtil();
-      this.allSerializableStrategy = allSerializableStrategy;
-      byteSerializableStrategy = null;
-      this.integerSerializableStrategy = integerSerializableStrategy;
-      this.stringSerializableStrategy = stringSerializableStrategy;
-   }
-
    public HeaderSerializableStrategy(final ObjectWriterRegistry registry,
                                      final UtilInstances utilInstances,
                                      final ByteSerializableStrategy byteSerializableStrategy,
                                      final IntegerSerializableStrategy integerSerializableStrategy,
                                      final StringSerializableStrategy stringSerializableStrategy)
    {
-      reader = null;
-      readerRegistry = null;
       writerRegistry = registry;
       arrayUtil = utilInstances.getArrayUtil();
       classUtil = utilInstances.getClassUtil();
@@ -128,85 +79,6 @@ public class HeaderSerializableStrategy
 
    public record PartialHeader(HeaderInformation<?> fullHeader, byte firstByte, int dimensionCount,
                                 boolean primitiveArray) {}
-
-   /**
-    * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
-    */
-   public HeaderInformation<?> readHeader(final Byte firstByteArg,
-                                          final Class<?> inheritFromClass,
-                                          final Class<?> expectedClass,
-                                          final boolean allowChildClass)
-   {
-      if (null != inheritFromClass && !Object.class.equals(inheritFromClass) && inheritFromClass.isPrimitive())
-      {
-         //TODO: tests are likely thin
-         //inheritFromClass is never primitive void.class.
-         //It is only primitive if contained in a primitive array in which case there is no header
-         //since it can't be null or any other class.
-         return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass));
-      }
-
-      final byte firstByte;
-      if (firstByteArg != null) firstByte = firstByteArg;
-      else firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
-
-      final PartialHeader partialHeader;
-      //excludes Object for the sake of Object[]
-      if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
-         partialHeader = readInheritHeader(inheritFromClass, firstByte);
-      else partialHeader = readPossibleArrayHeader(firstByte);
-      if (partialHeader.fullHeader != null) return partialHeader.fullHeader;
-
-      final HeaderInformation<?> result = allSerializableStrategy.readHeader(inheritFromClass, partialHeader,
-         expectedClass, allowChildClass);
-      if (result != null) return result;
-
-      throw new IllegalStateException("Should've been handled above");
-   }
-
-   private PartialHeader readInheritHeader(final Class<?> inheritFromClass, byte firstByte)
-   {
-      final int dimensionCount;
-      final boolean primitiveArray;
-
-      //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or 0xFF)
-      dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
-      final Class<?> baseComponent = inheritFromClass.isArray()
-         ? arrayUtil.getBaseComponentType(inheritFromClass)
-         : inheritFromClass;
-      primitiveArray = baseComponent.isPrimitive();
-      if ('?' == firstByte)
-      {
-         return new PartialHeader(HeaderInformation.forPossibleArray(firstByte, baseComponent, dimensionCount, primitiveArray), firstByte, dimensionCount, primitiveArray);
-      }
-      //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
-      return new PartialHeader(null, firstByte, dimensionCount, primitiveArray);
-   }
-
-   private PartialHeader readPossibleArrayHeader(byte firstByte)
-   {
-      final int dimensionCount;
-      final boolean primitiveArray;
-
-      if ('?' == firstByte) throw new StreamCorruptedException("Only array elements can inherit type");
-      primitiveArray = (']' == firstByte);  //is false if not an array at all
-      if ('[' == firstByte || ']' == firstByte)
-      {
-         dimensionCount = Byte.toUnsignedInt(
-            StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array dimensions")[0]
-         );
-         //not the first byte but needs to conform for below. don't know what else to call this variable
-         firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array component type")[0];
-         if (StringSerializableStrategy.TERMINATOR == firstByte)
-            throw new StreamCorruptedException("header's array component type can't be null");
-         if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
-         if ('+' == firstByte)
-            return new PartialHeader(HeaderInformation.forPossibleArray(firstByte, Boolean.class, dimensionCount, primitiveArray), firstByte, dimensionCount, primitiveArray);
-      }
-      else dimensionCount = 0;
-
-      return new PartialHeader(null, firstByte, dimensionCount, primitiveArray);
-   }
 
    //TODO: rename since true also for null, bool
 

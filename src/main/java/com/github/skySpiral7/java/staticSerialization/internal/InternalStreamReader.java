@@ -2,7 +2,6 @@ package com.github.skySpiral7.java.staticSerialization.internal;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamReader;
 import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StrategyInstances;
@@ -23,7 +22,6 @@ public class InternalStreamReader implements Closeable
    private final ObjectReaderRegistry registry;
    private final ClassUtil classUtil;
    private final AllSerializableStrategy allSerializableStrategy;
-   private final HeaderSerializableStrategy headerSerializableStrategy;
    private final ReaderValidationStrategy readerValidationStrategy;
    private final ReflectionSerializableStrategy reflectionSerializableStrategy;
 
@@ -47,7 +45,6 @@ public class InternalStreamReader implements Closeable
       this.registry = registry;
       this.classUtil = utilInstances.getClassUtil();
       allSerializableStrategy = strategyInstances.getAllSerializableStrategy();
-      headerSerializableStrategy = strategyInstances.getHeaderSerializableStrategy();
       readerValidationStrategy = strategyInstances.getReaderValidationStrategy();
       reflectionSerializableStrategy = strategyInstances.getReflectionSerializableStrategy();
    }
@@ -69,7 +66,7 @@ public class InternalStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(classUtil.boxClass(expectedClass));
 
-      final HeaderInformation<?> headerInformation = headerSerializableStrategy.readHeader(null,
+      final HeaderInformation<?> headerInformation = allSerializableStrategy.readHeader(null,
          inheritFromClass, expectedClass, allowChildClass);
       if (headerHasValue(headerInformation, expectedClass, allowChildClass))
       {
@@ -164,8 +161,8 @@ public class InternalStreamReader implements Closeable
       return actualClass;
    }
 
-   public HeaderSerializableStrategy getHeaderSerializableStrategy()
+   public AllSerializableStrategy getAllSerializableStrategy()
    {
-      return headerSerializableStrategy;
+      return allSerializableStrategy;
    }
 }
