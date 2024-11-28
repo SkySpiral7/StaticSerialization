@@ -120,8 +120,8 @@ public class AllSerializableStrategy
    /**
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
-   public HeaderInformation<?> readHeader(final Byte firstByteArg,
-                                          final Class<?> inheritFromClass,
+   public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
+                                          final HeaderSerializableStrategy.PartialHeader partialHeaderArg,
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {
@@ -134,15 +134,25 @@ public class AllSerializableStrategy
          return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass));
       }
 
-      final byte firstByte;
-      if (firstByteArg != null) firstByte = firstByteArg;
-      else firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
-
       final HeaderSerializableStrategy.PartialHeader partialHeader;
-      //excludes Object for the sake of Object[]
-      if (null != inheritFromClass && !Object.class.equals(inheritFromClass))
-         partialHeader = readInheritHeader(inheritFromClass, firstByte);
-      else partialHeader = readPossibleArrayHeader(firstByte);
+      if (partialHeaderArg != null)
+      {
+         partialHeader = partialHeaderArg;
+      }
+      else
+      {
+         final byte firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing header")[0];
+         //excludes Object for the sake of Object[]
+         if (null != inheritFromClass)
+            partialHeader = readInheritHeader(inheritFromClass, firstByte);
+         else
+         {
+            if ('?' == firstByte)
+               throw new StreamCorruptedException("Only array elements can inherit type");
+            partialHeader = new HeaderSerializableStrategy.PartialHeader(null, firstByte, 0, false);
+         }
+      }
+
       if (partialHeader.fullHeader() != null) return partialHeader.fullHeader();
 
       return headerStrategyList.stream()
@@ -167,34 +177,6 @@ public class AllSerializableStrategy
          return new HeaderSerializableStrategy.PartialHeader(fullHeader, firstByte, dimensionCount, primitiveArray);
       }
       //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
-      return new HeaderSerializableStrategy.PartialHeader(null, firstByte, dimensionCount, primitiveArray);
-   }
-
-   private HeaderSerializableStrategy.PartialHeader readPossibleArrayHeader(byte firstByte)
-   {
-      final int dimensionCount;
-
-      if ('?' == firstByte) throw new StreamCorruptedException("Only array elements can inherit type");
-      final boolean primitiveArray = (']' == firstByte);  //is false if not an array at all
-      if ('[' == firstByte || ']' == firstByte)
-      {
-         dimensionCount = Byte.toUnsignedInt(
-            StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array dimensions")[0]
-         );
-         //not the first byte but needs to conform for below. don't know what else to call this variable
-         firstByte = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Incomplete header: no array component type")[0];
-         if (StringSerializableStrategy.TERMINATOR == firstByte)
-            throw new StreamCorruptedException("header's array component type can't be null");
-         if ('-' == firstByte) throw new StreamCorruptedException("header's array component type can't be false");
-         if ('+' == firstByte)
-         {
-            final HeaderInformation<Boolean> fullHeader = HeaderInformation.forPossibleArray(firstByte, Boolean.class,
-               dimensionCount, primitiveArray);
-            return new HeaderSerializableStrategy.PartialHeader(fullHeader, firstByte, dimensionCount, primitiveArray);
-         }
-      }
-      else dimensionCount = 0;
-
       return new HeaderSerializableStrategy.PartialHeader(null, firstByte, dimensionCount, primitiveArray);
    }
 

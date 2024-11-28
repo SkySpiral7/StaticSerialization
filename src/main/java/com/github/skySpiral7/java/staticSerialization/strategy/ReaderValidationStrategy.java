@@ -108,9 +108,12 @@ public class ReaderValidationStrategy
                                                                                       final Class<T_Expected> expectedClass,
                                                                                       Class<?> actualClass)
    {
-      final Class<?> expectedBaseComponentType = arrayUtil.getBaseComponentType(expectedClass);
       if (0 != actualHeader.getDimensionCount())
       {
+         final Class<?> expectedBaseComponentType = expectedClass.isArray()
+            ? arrayUtil.getBaseComponentType(expectedClass)
+            : expectedClass;
+         //TODO: is this possible? should always be boxes
          if (actualHeader.isPrimitiveArray()) actualClass = classUtil.unboxClass(actualClass);
          //TODO: tests are likely thin
          if (!Object.class.equals(expectedClass) && !expectedBaseComponentType.isAssignableFrom(actualClass))

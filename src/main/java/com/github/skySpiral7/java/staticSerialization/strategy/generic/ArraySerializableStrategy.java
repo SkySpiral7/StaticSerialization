@@ -70,20 +70,22 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
          throw new StreamCorruptedException("header's array component type can't be null");
       if ('-' == componentFirstByte) throw new StreamCorruptedException("header's array component type can't be false");
 
-      final Class<?> componentType;
-      if ('+' == componentFirstByte) componentType = Boolean.class;
+      if ('+' == componentFirstByte)
+      {
+         final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(componentFirstByte,
+            Boolean.class, dimensionCount, primitiveArray);
+         readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+         return headerInformation;
+      }
       else
       {
-         final HeaderInformation<?> headerInformation = internalStreamReader.getAllSerializableStrategy().readHeader(componentFirstByte,
-            inheritFromClass, expectedClass, allowChildClass);
-         //TODO: why isn't this header info returned?
-         componentType = internalStreamReader.readHeaderClass(headerInformation, expectedClass, allowChildClass);
+         final HeaderSerializableStrategy.PartialHeader componentPartialHeader = new HeaderSerializableStrategy.PartialHeader(null,
+            componentFirstByte, dimensionCount, primitiveArray);
+         final HeaderInformation<?> componentHeaderInfo = internalStreamReader.getAllSerializableStrategy().readHeader(
+            inheritFromClass, componentPartialHeader, expectedClass, allowChildClass);
+         internalStreamReader.readHeaderClass(componentHeaderInfo, expectedClass, allowChildClass);
+         return componentHeaderInfo;
       }
-
-      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(componentFirstByte,
-         componentType, dimensionCount, primitiveArray);
-      readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
-      return headerInformation;
    }
 
    @Override

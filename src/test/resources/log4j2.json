@@ -17,6 +17,10 @@
       }
     },
     "loggers": {
+      "Logger": {
+        "name": "com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader",
+        "level": "warn"
+      },
       "root": {
         "level": "warn",
         "AppenderRef": {

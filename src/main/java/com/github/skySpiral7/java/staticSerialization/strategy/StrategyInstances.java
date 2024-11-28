@@ -46,7 +46,8 @@ public class StrategyInstances
       final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(readerValidationStrategy, reader);
 
       //ones that need other strategies
-      final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(readerValidationStrategy,
+      final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(
+         readerValidationStrategy,
          reader, streamReader, internalStreamReader, integerSerializableStrategy);
       final ClassHeaderSerializableStrategy classHeaderSerializableStrategy = new ClassHeaderSerializableStrategy(stringSerializableStrategy, readerValidationStrategy);
       final IdSerializableStrategy idSerializableStrategy = new IdSerializableStrategy(registry, integerSerializableStrategy);

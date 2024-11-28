@@ -9,6 +9,8 @@ import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileRea
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.Closeable;
 import java.io.File;
@@ -17,6 +19,7 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 
 public class InternalStreamReader implements Closeable
 {
+   private static final Logger LOG = LogManager.getLogger();
    private final ObjectStreamReader streamReader;
    private final EasyReader reader;
    private final ObjectReaderRegistry registry;
@@ -66,8 +69,9 @@ public class InternalStreamReader implements Closeable
       if (void.class.equals(expectedClass)) throw new IllegalArgumentException("There are no instances of void");
       if (expectedClass.isPrimitive()) expectedClass = cast(classUtil.boxClass(expectedClass));
 
-      final HeaderInformation<?> headerInformation = allSerializableStrategy.readHeader(null,
-         inheritFromClass, expectedClass, allowChildClass);
+      final HeaderInformation<?> headerInformation = allSerializableStrategy.readHeader(
+         inheritFromClass, null, expectedClass, allowChildClass);
+      LOG.debug("read header: {}", headerInformation);
       if (headerHasValue(headerInformation, expectedClass, allowChildClass))
       {
          return readHeaderValue(headerInformation, expectedClass, allowChildClass);
