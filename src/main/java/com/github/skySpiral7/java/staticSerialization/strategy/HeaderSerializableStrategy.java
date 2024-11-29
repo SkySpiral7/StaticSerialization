@@ -118,9 +118,7 @@ public class HeaderSerializableStrategy
       }
       else if (data == null)
       {
-         //if data is null then class name is the empty string
-         byteSerializableStrategy.writeByte(StringSerializableStrategy.TERMINATOR);
-         return true;
+         throw new IllegalStateException("Should not be called");
       }
       //do nothing because non-boolean primitive array elements have no header
       else if (null != inheritFromClass && inheritFromClass.isPrimitive()) ;

@@ -156,7 +156,7 @@ public class AllSerializableStrategy
       if (partialHeader.fullHeader() != null) return partialHeader.fullHeader();
 
       return headerStrategyList.stream()
-         .filter(strategy -> strategy.supportsHeader(partialHeader.firstByte()))
+         .filter(strategy -> strategy.supportsReadingHeader(partialHeader.firstByte()))
          .findFirst()
          .map(strategy -> strategy.readHeader(inheritFromClass, partialHeader, expectedClass, allowChildClass))
          .orElse(null);
@@ -178,6 +178,15 @@ public class AllSerializableStrategy
       }
       //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
       return new HeaderSerializableStrategy.PartialHeader(null, firstByte, dimensionCount, primitiveArray);
+   }
+
+   public Boolean writeHeader(final Class<?> inheritFromClass, final Object data)
+   {
+      return headerStrategyList.stream()
+         .filter(strategy -> strategy.supportsWritingHeader(data))
+         .findFirst()
+         .map(strategy -> strategy.writeHeader(inheritFromClass, data))
+         .orElse(null);
    }
 
    public void writeData(final Object data)

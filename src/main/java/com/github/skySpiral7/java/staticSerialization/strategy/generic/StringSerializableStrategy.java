@@ -46,7 +46,7 @@ public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public boolean supportsHeader(final byte firstByte)
+   public boolean supportsReadingHeader(final byte firstByte)
    {
       return firstByte == '"';
    }
@@ -61,6 +61,18 @@ public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
          String.class, partialHeader.dimensionCount(), false);
       readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
       return headerInformation;
+   }
+
+   @Override
+   public boolean supportsWritingHeader(final Object data)
+   {
+      return false;
+   }
+
+   @Override
+   public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
+   {
+      throw new IllegalStateException("Not implemented");
    }
 
    @Override

@@ -22,7 +22,7 @@ public class IdSerializableStrategy implements HeaderStrategy
    }
 
    @Override
-   public boolean supportsHeader(final byte firstByte)
+   public boolean supportsReadingHeader(final byte firstByte)
    {
       return '&' == firstByte;
    }
@@ -41,5 +41,17 @@ public class IdSerializableStrategy implements HeaderStrategy
       LOG.debug("id: " + id + " (" + registeredObject + " " + registeredObject.getClass().getSimpleName() + ")");
       return HeaderInformation.forValue(partialHeader.firstByte(), registeredObject.getClass().getName(),
          registeredObject);
+   }
+
+   @Override
+   public boolean supportsWritingHeader(final Object data)
+   {
+      return false;
+   }
+
+   @Override
+   public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
+   {
+      throw new IllegalStateException("Not implemented");
    }
 }

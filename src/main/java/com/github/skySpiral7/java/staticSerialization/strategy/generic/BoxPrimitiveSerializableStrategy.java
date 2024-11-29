@@ -73,7 +73,7 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
    }
 
    @Override
-   public boolean supportsHeader(final byte firstByte)
+   public boolean supportsReadingHeader(final byte firstByte)
    {
       return COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte);  //safe cast because map contains only ASCII
    }
@@ -93,6 +93,18 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
          headerClass, partialHeader.dimensionCount(), partialHeader.primitiveArray());
       readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
       return headerInformation;
+   }
+
+   @Override
+   public boolean supportsWritingHeader(final Object data)
+   {
+      return false;
+   }
+
+   @Override
+   public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
+   {
+      throw new IllegalStateException("Not implemented");
    }
 
    @Override

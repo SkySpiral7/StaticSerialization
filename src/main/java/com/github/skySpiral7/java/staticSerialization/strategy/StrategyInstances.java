@@ -40,7 +40,8 @@ public class StrategyInstances
       final IntegerSerializableStrategy integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.readerValidationStrategy = new ReaderValidationStrategy(utilInstances);
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamReader, utilInstances);
-      final NullSerializableStrategy nullSerializableStrategy = new NullSerializableStrategy();
+      //null is safe only here
+      final NullSerializableStrategy nullSerializableStrategy = new NullSerializableStrategy(null);
       final ShortSerializableStrategy shortSerializableStrategy = new ShortSerializableStrategy(reader);
       final StaticSerializableStrategy staticSerializableStrategy = new StaticSerializableStrategy(streamReader);
       final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(readerValidationStrategy, reader);
@@ -77,7 +78,7 @@ public class StrategyInstances
       this.readerValidationStrategy = null;  //don't need
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamWriter, utilInstances);
       //ones that don't need another strategy
-      final NullSerializableStrategy nullSerializableStrategy = new NullSerializableStrategy();
+      final NullSerializableStrategy nullSerializableStrategy = new NullSerializableStrategy(byteSerializableStrategy);
       final StaticSerializableStrategy staticSerializableStrategy = new StaticSerializableStrategy(streamWriter);
 
       //ones that need other strategies

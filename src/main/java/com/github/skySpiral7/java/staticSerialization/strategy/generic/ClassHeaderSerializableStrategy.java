@@ -17,7 +17,7 @@ public class ClassHeaderSerializableStrategy implements HeaderStrategy
    }
 
    @Override
-   public boolean supportsHeader(final byte firstByte)
+   public boolean supportsReadingHeader(final byte firstByte)
    {
       return (
          /*
@@ -43,5 +43,19 @@ public class ClassHeaderSerializableStrategy implements HeaderStrategy
          partialHeader.primitiveArray());
       readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
       return headerInformation;
+   }
+
+   @Override
+   public boolean supportsWritingHeader(final Object data)
+   {
+      //TODO: must be false until delete HeaderSerializableStrategy
+      return false;
+   }
+
+   @Override
+   public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
+   {
+      stringSerializableStrategy.writeData(data.getClass().getName());
+      return false;
    }
 }

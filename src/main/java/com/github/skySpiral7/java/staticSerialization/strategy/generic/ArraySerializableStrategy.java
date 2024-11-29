@@ -49,7 +49,7 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public boolean supportsHeader(final byte firstByte)
+   public boolean supportsReadingHeader(final byte firstByte)
    {
       return ('[' == firstByte || ']' == firstByte);
    }
@@ -86,6 +86,18 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
          internalStreamReader.readHeaderClass(componentHeaderInfo, expectedClass, allowChildClass);
          return componentHeaderInfo;
       }
+   }
+
+   @Override
+   public boolean supportsWritingHeader(final Object data)
+   {
+      return false;
+   }
+
+   @Override
+   public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
+   {
+      throw new IllegalStateException("Not implemented");
    }
 
    @Override
