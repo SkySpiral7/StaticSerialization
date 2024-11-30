@@ -6,7 +6,6 @@ import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegis
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +15,6 @@ public class IdSerializableStrategy implements HeaderStrategy
    private final ObjectReaderRegistry readerRegistry;
    private final IntegerSerializableStrategy integerSerializableStrategy;
    private final ObjectWriterRegistry writerRegistry;
-   private final ClassUtil classUtil;
    private final ByteSerializableStrategy byteSerializableStrategy;
 
    /**
@@ -28,7 +26,6 @@ public class IdSerializableStrategy implements HeaderStrategy
       this.readerRegistry = readerRegistry;
       this.integerSerializableStrategy = integerSerializableStrategy;
       this.byteSerializableStrategy = null;
-      this.classUtil = null;
       this.writerRegistry = null;
    }
 
@@ -37,13 +34,11 @@ public class IdSerializableStrategy implements HeaderStrategy
     */
    public IdSerializableStrategy(final ByteSerializableStrategy byteSerializableStrategy,
                                  final IntegerSerializableStrategy integerSerializableStrategy,
-                                 final ClassUtil classUtil,
                                  final ObjectWriterRegistry writerRegistry)
    {
       this.readerRegistry = null;
       this.integerSerializableStrategy = integerSerializableStrategy;
       this.byteSerializableStrategy = byteSerializableStrategy;
-      this.classUtil = classUtil;
       this.writerRegistry = writerRegistry;
    }
 
@@ -71,13 +66,7 @@ public class IdSerializableStrategy implements HeaderStrategy
    @Override
    public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data)
    {
-      var result = writerRegistry.getId(data) != null;
-      //TODO: Long should also get id
-      if (!result && !classUtil.isPrimitiveOrBox(data.getClass()))
-         //null, primitive, and box don't get registered
-         //TODO: shouldn't have side affect
-         writerRegistry.registerObject(data);
-      return result;
+      return writerRegistry.getId(data) != null;
    }
 
    @Override

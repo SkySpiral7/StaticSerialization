@@ -61,8 +61,7 @@ public class StrategyInstances
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
       final InheritSerializableStrategy inheritSerializableStrategy = new InheritSerializableStrategy(utilInstances, null);
 
-      this.allSerializableStrategy = new AllSerializableStrategy(reader, utilInstances.getArrayUtil(),
-         utilInstances.getClassUtil(),
+      this.allSerializableStrategy = new AllSerializableStrategy(reader, utilInstances,
          arraySerializableStrategy,
          bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
@@ -86,8 +85,7 @@ public class StrategyInstances
       //ones that need other strategies
       final IntegerSerializableStrategy integerSerializableStrategy = new IntegerSerializableStrategy(byteSerializableStrategy);
       final IdSerializableStrategy idSerializableStrategy = new IdSerializableStrategy(byteSerializableStrategy,
-         integerSerializableStrategy,
-         utilInstances.getClassUtil(), registry);
+         integerSerializableStrategy, registry);
       final InheritSerializableStrategy inheritSerializableStrategy = new InheritSerializableStrategy(utilInstances,
          byteSerializableStrategy);
       final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy);
@@ -103,7 +101,7 @@ public class StrategyInstances
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
       final ClassHeaderSerializableStrategy classHeaderSerializableStrategy = new ClassHeaderSerializableStrategy(stringSerializableStrategy);
 
-      this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
+      this.allSerializableStrategy = new AllSerializableStrategy(utilInstances, registry, arraySerializableStrategy,
          bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy,
          classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,

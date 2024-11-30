@@ -3,6 +3,7 @@ package com.github.skySpiral7.java.staticSerialization.strategy;
 import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableException;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
+import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BitSetSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
@@ -20,6 +21,7 @@ import com.github.skySpiral7.java.staticSerialization.strategy.generic.UuidSeria
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.util.List;
 
@@ -28,12 +30,77 @@ public class AllSerializableStrategy
    private final EasyReader reader;
    private final ArrayUtil arrayUtil;
    private final ClassUtil classUtil;
+   private final ObjectWriterRegistry writerRegistry;
    private final List<HeaderStrategy> headerStrategyList;
    private final List<DataStrategy> dataStrategyList;
 
+   /**
+    * For reading
+    */
+   public AllSerializableStrategy(final EasyReader reader,
+                                  final UtilInstances utilInstances,
+                                  final ArraySerializableStrategy arraySerializableStrategy,
+                                  final BitSetSerializableStrategy bitSetSerializableStrategy,
+                                  final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
+                                  final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
+                                  final EnumSerializableStrategy enumSerializableStrategy,
+                                  final IdSerializableStrategy idSerializableStrategy,
+                                  final InheritSerializableStrategy inheritSerializableStrategy,
+                                  final JavaSerializableStrategy javaSerializableStrategy,
+                                  final NullSerializableStrategy nullSerializableStrategy,
+                                  final StaticSerializableStrategy staticSerializableStrategy,
+                                  final StringSerializableStrategy stringSerializableStrategy,
+                                  final UuidSerializableStrategy uuidSerializableStrategy)
+   {
+      this(reader,
+         utilInstances.getArrayUtil(),
+         utilInstances.getClassUtil(),
+         null,
+         arraySerializableStrategy,
+         bitSetSerializableStrategy,
+         boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
+         inheritSerializableStrategy,
+         javaSerializableStrategy,
+         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
+   }
+
+   /**
+    * For writing
+    */
+   public AllSerializableStrategy(final UtilInstances utilInstances,
+                                  final ObjectWriterRegistry writerRegistry,
+                                  final ArraySerializableStrategy arraySerializableStrategy,
+                                  final BitSetSerializableStrategy bitSetSerializableStrategy,
+                                  final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
+                                  final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
+                                  final EnumSerializableStrategy enumSerializableStrategy,
+                                  final IdSerializableStrategy idSerializableStrategy,
+                                  final InheritSerializableStrategy inheritSerializableStrategy,
+                                  final JavaSerializableStrategy javaSerializableStrategy,
+                                  final NullSerializableStrategy nullSerializableStrategy,
+                                  final StaticSerializableStrategy staticSerializableStrategy,
+                                  final StringSerializableStrategy stringSerializableStrategy,
+                                  final UuidSerializableStrategy uuidSerializableStrategy)
+   {
+      this(null,
+         null,
+         utilInstances.getClassUtil(),
+         writerRegistry,
+         arraySerializableStrategy,
+         bitSetSerializableStrategy,
+         boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
+         inheritSerializableStrategy,
+         javaSerializableStrategy,
+         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
+   }
+
+   /**
+    * All args that all constructors call
+    */
    public AllSerializableStrategy(final EasyReader reader,
                                   final ArrayUtil arrayUtil,
                                   final ClassUtil classUtil,
+                                  final ObjectWriterRegistry writerRegistry,
                                   final ArraySerializableStrategy arraySerializableStrategy,
                                   final BitSetSerializableStrategy bitSetSerializableStrategy,
                                   final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
@@ -50,6 +117,7 @@ public class AllSerializableStrategy
       this.reader = reader;
       this.arrayUtil = arrayUtil;
       this.classUtil = classUtil;
+      this.writerRegistry = writerRegistry;
 
       /* order:
        * first is supported jdk final classes (none of which are static) so that they have better compression than java.
@@ -81,33 +149,6 @@ public class AllSerializableStrategy
          nullSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
          classHeaderSerializableStrategy);
-   }
-
-   /**
-    * For writing
-    */
-   public AllSerializableStrategy(final ArraySerializableStrategy arraySerializableStrategy,
-                                  final BitSetSerializableStrategy bitSetSerializableStrategy,
-                                  final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
-                                  final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
-                                  final EnumSerializableStrategy enumSerializableStrategy,
-                                  final IdSerializableStrategy idSerializableStrategy,
-                                  final InheritSerializableStrategy inheritSerializableStrategy,
-                                  final JavaSerializableStrategy javaSerializableStrategy,
-                                  final NullSerializableStrategy nullSerializableStrategy,
-                                  final StaticSerializableStrategy staticSerializableStrategy,
-                                  final StringSerializableStrategy stringSerializableStrategy,
-                                  final UuidSerializableStrategy uuidSerializableStrategy)
-   {
-      this(null,
-         null,
-         null,
-         arraySerializableStrategy,
-         bitSetSerializableStrategy,
-         boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
-         inheritSerializableStrategy,
-         javaSerializableStrategy,
-         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
    }
 
    /**
@@ -176,11 +217,17 @@ public class AllSerializableStrategy
     */
    public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
    {
-      return headerStrategyList.stream()
+      final HeaderStrategy headerStrategy = headerStrategyList.stream()
          .filter(strategy -> strategy.supportsWritingHeader(inheritFromClass, data))
          .findFirst()
-         .map(strategy -> strategy.writeHeader(inheritFromClass, data))
          .orElseThrow(() -> new AssertionError("Should have used ClassHeaderSerializableStrategy"));
+
+      //TODO: Long should also get id
+      if (data != null && writerRegistry.getId(data) == null && !classUtil.isPrimitiveOrBox(data.getClass()))
+         //null, primitive, and box don't get registered
+         writerRegistry.registerObject(data);
+
+      return headerStrategy.writeHeader(inheritFromClass, data);
    }
 
    public void writeData(final Object data)
