@@ -8,6 +8,7 @@ import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegis
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BitSetSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.BooleanArraySerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.ClassHeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
@@ -56,6 +57,8 @@ public class StrategyInstances
       final EnumSerializableStrategy enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(reader, utilInstances,
          readerValidationStrategy, shortSerializableStrategy, integerSerializableStrategy);
+      final BooleanArraySerializableStrategy booleanArraySerializableStrategy = new BooleanArraySerializableStrategy(boxPrimitiveSerializableStrategy,
+         integerSerializableStrategy);
       final BitSetSerializableStrategy bitSetSerializableStrategy =
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
@@ -64,6 +67,7 @@ public class StrategyInstances
       this.allSerializableStrategy = new AllSerializableStrategy(reader, utilInstances,
          arraySerializableStrategy,
          bitSetSerializableStrategy,
+         booleanArraySerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
          inheritSerializableStrategy,
          javaSerializableStrategy,
@@ -97,6 +101,8 @@ public class StrategyInstances
       final EnumSerializableStrategy enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
       final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(utilInstances,
          byteSerializableStrategy, integerSerializableStrategy);
+      final BooleanArraySerializableStrategy booleanArraySerializableStrategy = new BooleanArraySerializableStrategy(boxPrimitiveSerializableStrategy,
+         integerSerializableStrategy);
       final BitSetSerializableStrategy bitSetSerializableStrategy =
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
@@ -104,6 +110,7 @@ public class StrategyInstances
 
       this.allSerializableStrategy = new AllSerializableStrategy(utilInstances, registry, arraySerializableStrategy,
          bitSetSerializableStrategy,
+         booleanArraySerializableStrategy,
          boxPrimitiveSerializableStrategy,
          classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
          javaSerializableStrategy,

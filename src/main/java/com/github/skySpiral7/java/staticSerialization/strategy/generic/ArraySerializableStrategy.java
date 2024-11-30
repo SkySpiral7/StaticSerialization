@@ -196,10 +196,8 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
       for (int readIndex = 0; readIndex < arrayLength; ++readIndex)
       {
          final Object element = internalStreamReader.readObjectInternal(componentType, componentType, true);
-         //boolean is the only primitive that could return null
-         //TODO: I don't remember why. make sure there's an IT for this
-         if (null == element && componentType.isPrimitive())
-            throw new StreamCorruptedException("Primitive boolean array can't contain null");
+         //never null because primitive array has no header so the null marker is instead read as data
+         //TODO: ensure tests that never null
          Array.set(arrayValue, readIndex, element);
       }
       return arrayValue;

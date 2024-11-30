@@ -6,6 +6,7 @@ import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BitSetSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.BooleanArraySerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.ClassHeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.DataStrategy;
@@ -41,6 +42,7 @@ public class AllSerializableStrategy
                                   final UtilInstances utilInstances,
                                   final ArraySerializableStrategy arraySerializableStrategy,
                                   final BitSetSerializableStrategy bitSetSerializableStrategy,
+                                  final BooleanArraySerializableStrategy booleanArraySerializableStrategy,
                                   final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
                                   final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
                                   final EnumSerializableStrategy enumSerializableStrategy,
@@ -58,6 +60,7 @@ public class AllSerializableStrategy
          null,
          arraySerializableStrategy,
          bitSetSerializableStrategy,
+         booleanArraySerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
          inheritSerializableStrategy,
          javaSerializableStrategy,
@@ -71,6 +74,7 @@ public class AllSerializableStrategy
                                   final ObjectWriterRegistry writerRegistry,
                                   final ArraySerializableStrategy arraySerializableStrategy,
                                   final BitSetSerializableStrategy bitSetSerializableStrategy,
+                                  final BooleanArraySerializableStrategy booleanArraySerializableStrategy,
                                   final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
                                   final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
                                   final EnumSerializableStrategy enumSerializableStrategy,
@@ -88,6 +92,7 @@ public class AllSerializableStrategy
          writerRegistry,
          arraySerializableStrategy,
          bitSetSerializableStrategy,
+         booleanArraySerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
          inheritSerializableStrategy,
          javaSerializableStrategy,
@@ -103,6 +108,7 @@ public class AllSerializableStrategy
                                   final ObjectWriterRegistry writerRegistry,
                                   final ArraySerializableStrategy arraySerializableStrategy,
                                   final BitSetSerializableStrategy bitSetSerializableStrategy,
+                                  final BooleanArraySerializableStrategy booleanArraySerializableStrategy,
                                   final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
                                   final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
                                   final EnumSerializableStrategy enumSerializableStrategy,
@@ -120,11 +126,13 @@ public class AllSerializableStrategy
       this.writerRegistry = writerRegistry;
 
       /* order:
-       * first is supported jdk final classes (none of which are static) so that they have better compression than java.
+       * first is boolean[] since it's more compressed than other arrays
+       * then is supported jdk final classes (none of which are static) so that they have better compression than java.
        * then static so that it will respect any manual serial.
        * then bitset/enum (which can be static) so that the non-static ones will have better compression than java.
        * then java if all else fails */
       dataStrategyList = List.of(
+         booleanArraySerializableStrategy,
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
          uuidSerializableStrategy,
          staticSerializableStrategy,
