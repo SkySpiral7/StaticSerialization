@@ -3,24 +3,24 @@ package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 
-public class NullSerializableStrategy implements HeaderStrategy
+public class InheritSerializableStrategy implements HeaderStrategy
 {
+   private final ClassUtil classUtil;
    private final ByteSerializableStrategy byteSerializableStrategy;
 
-   /**
-    * @param byteSerializableStrategy only used for writing
-    */
-   public NullSerializableStrategy(ByteSerializableStrategy byteSerializableStrategy)
+   public InheritSerializableStrategy(final ClassUtil classUtil,
+                                      final ByteSerializableStrategy byteSerializableStrategy)
    {
+      this.classUtil = classUtil;
       this.byteSerializableStrategy = byteSerializableStrategy;
    }
 
    @Override
    public boolean supportsReadingHeader(final byte firstByte)
    {
-      //the empty string class name means null
-      return StringSerializableStrategy.TERMINATOR == firstByte;
+      return false;
    }
 
    @Override
@@ -29,20 +29,30 @@ public class NullSerializableStrategy implements HeaderStrategy
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {
-      return HeaderInformation.forNull(partialHeader.firstByte());
+      throw new IllegalStateException("Should not be called");
    }
 
    @Override
    public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data)
    {
-      return data == null;
+      if (null == inheritFromClass) return false;
+      final Class<?> dataClass = data.getClass();
+      if (Boolean.class.equals(dataClass)) return false;
+
+      if (inheritFromClass.isPrimitive())
+      {
+         return classUtil.boxClass(inheritFromClass).equals(dataClass);
+      }
+      return inheritFromClass.equals(dataClass);
    }
 
    @Override
    public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
    {
-      //if data is null then class name is the empty string
-      byteSerializableStrategy.writeByte(StringSerializableStrategy.TERMINATOR);
-      return true;
+      //inherit primitive array has no header but has data
+      if (inheritFromClass.isPrimitive()) return false;
+
+      byteSerializableStrategy.writeByte('?');
+      return false;
    }
 }

@@ -3,8 +3,11 @@ package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
+import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
+import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,12 +16,36 @@ public class IdSerializableStrategy implements HeaderStrategy
    private static final Logger LOG = LogManager.getLogger();
    private final ObjectReaderRegistry readerRegistry;
    private final IntegerSerializableStrategy integerSerializableStrategy;
+   private final ObjectWriterRegistry writerRegistry;
+   private final ClassUtil classUtil;
+   private final ByteSerializableStrategy byteSerializableStrategy;
 
+   /**
+    * For reading
+    */
    public IdSerializableStrategy(final ObjectReaderRegistry readerRegistry,
                                  final IntegerSerializableStrategy integerSerializableStrategy)
    {
       this.readerRegistry = readerRegistry;
       this.integerSerializableStrategy = integerSerializableStrategy;
+      this.byteSerializableStrategy = null;
+      this.classUtil = null;
+      this.writerRegistry = null;
+   }
+
+   /**
+    * For writing
+    */
+   public IdSerializableStrategy(final ByteSerializableStrategy byteSerializableStrategy,
+                                 final IntegerSerializableStrategy integerSerializableStrategy,
+                                 final ClassUtil classUtil,
+                                 final ObjectWriterRegistry writerRegistry)
+   {
+      this.readerRegistry = null;
+      this.integerSerializableStrategy = integerSerializableStrategy;
+      this.byteSerializableStrategy = byteSerializableStrategy;
+      this.classUtil = classUtil;
+      this.writerRegistry = writerRegistry;
    }
 
    @Override
@@ -44,14 +71,24 @@ public class IdSerializableStrategy implements HeaderStrategy
    }
 
    @Override
-   public boolean supportsWritingHeader(final Object data)
+   public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data)
    {
-      return false;
+      var result = writerRegistry.getId(data) != null;
+      //TODO: Long should also get id
+      if (!result && !classUtil.isPrimitiveOrBox(data.getClass()))
+         //null, primitive, and box don't get registered
+         //TODO: shouldn't have side affect
+         writerRegistry.registerObject(data);
+      return result;
    }
 
    @Override
    public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
    {
-      throw new IllegalStateException("Not implemented");
+      final Integer id = writerRegistry.getId(data);
+      LOG.debug("id: " + id + " (" + data + " " + data.getClass().getSimpleName() + ")");
+      byteSerializableStrategy.writeByte('&');
+      integerSerializableStrategy.write(id);
+      return true;
    }
 }

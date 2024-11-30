@@ -64,7 +64,7 @@ public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public boolean supportsWritingHeader(final Object data)
+   public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data)
    {
       return false;
    }

@@ -119,7 +119,7 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
    }
 
    @Override
-   public boolean supportsWritingHeader(final Object data)
+   public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data)
    {
       final Class<?> dataClass = data.getClass();
       return Boolean.class.equals(dataClass);// || CLASS_TO_COMPRESSED_HEADER.containsKey(dataClass));

@@ -80,31 +80,11 @@ public class HeaderSerializableStrategy
    public record PartialHeader(HeaderInformation<?> fullHeader, byte firstByte, int dimensionCount,
                                 boolean primitiveArray) {}
 
-   //TODO: rename since true also for null, bool
-
    /**
     * @return true if an id was used and no value should be written
     */
    public boolean writeHeaderReturnIsId(final Class<?> inheritFromClass, final Object data)
    {
-      if (data != null && !classUtil.isPrimitiveOrBox(data.getClass()))
-      {
-         //TODO: long gets id, other primitives don't, else do
-         final Integer id = writerRegistry.getId(data);
-         //LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data + " id=" + id);
-         if (id != null)
-         {
-            LOG.debug("id: " + id + " (" + data + " " + data.getClass().getSimpleName() + ")");
-            byteSerializableStrategy.writeByte('&');
-            integerSerializableStrategy.write(id);
-            return true;
-         }
-         //null, primitive, and box don't get registered
-         writerRegistry.registerObject(data);
-      }
-      //else if(data==null) LOG.debug("data.class=null");
-      //else LOG.debug("data.class=" + data.getClass().getSimpleName() + " val=" + data);
-
       //boolean[] and Boolean[] use only headers for elements (primitive doesn't allow null)
       if (Boolean.TRUE.equals(data))
       {
@@ -123,7 +103,7 @@ public class HeaderSerializableStrategy
          throw new IllegalStateException("Should not be called");
          //(below) if class matches containing array exactly then inherit type.
       else if (null != inheritFromClass && inheritFromClass.equals(data.getClass()))
-         byteSerializableStrategy.writeByte('?');
+         throw new IllegalStateException("Should not be called");
       else if (CLASS_TO_COMPRESSED_HEADER.containsKey(data.getClass()))
          byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(data.getClass()));
       else if (data.getClass().isArray())

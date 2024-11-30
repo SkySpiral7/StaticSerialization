@@ -46,7 +46,7 @@ public class ClassHeaderSerializableStrategy implements HeaderStrategy
    }
 
    @Override
-   public boolean supportsWritingHeader(final Object data)
+   public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data)
    {
       //TODO: must be false until delete HeaderSerializableStrategy
       return false;

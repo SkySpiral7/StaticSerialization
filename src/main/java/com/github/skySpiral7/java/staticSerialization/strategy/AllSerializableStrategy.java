@@ -11,6 +11,7 @@ import com.github.skySpiral7.java.staticSerialization.strategy.generic.DataStrat
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.HeaderStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.IdSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.InheritSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.NullSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
@@ -83,6 +84,8 @@ public class AllSerializableStrategy
                                   final BitSetSerializableStrategy bitSetSerializableStrategy,
                                   final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
                                   final EnumSerializableStrategy enumSerializableStrategy,
+                                  final IdSerializableStrategy idSerializableStrategy,
+                                  final InheritSerializableStrategy inheritSerializableStrategy,
                                   final JavaSerializableStrategy javaSerializableStrategy,
                                   final NullSerializableStrategy nullSerializableStrategy,
                                   final StaticSerializableStrategy staticSerializableStrategy,
@@ -114,7 +117,7 @@ public class AllSerializableStrategy
 
       //header order doesn't matter since they don't overlap. but check null first so the others don't NPE
       headerStrategyList = List.of(
-         nullSerializableStrategy,
+         nullSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy
          //TODO: add classHeaderSerializableStrategy, idSerializableStrategy
       );
@@ -189,12 +192,8 @@ public class AllSerializableStrategy
     */
    public Boolean writeHeader(final Class<?> inheritFromClass, final Object data)
    {
-      //do nothing because non-boolean primitive array elements have no header
-      if (null != inheritFromClass && inheritFromClass.isPrimitive() && data != null && !Boolean.class.equals(data.getClass()))
-         return false;
-
       return headerStrategyList.stream()
-         .filter(strategy -> strategy.supportsWritingHeader(data))
+         .filter(strategy -> strategy.supportsWritingHeader(inheritFromClass, data))
          .findFirst()
          .map(strategy -> strategy.writeHeader(inheritFromClass, data))
          .orElse(null);

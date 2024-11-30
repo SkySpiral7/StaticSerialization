@@ -12,7 +12,7 @@ public interface HeaderStrategy
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass);
 
-   public boolean supportsWritingHeader(final Object data);
+   public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data);
 
    /**
     * @return true if the data was fully represented by a header and thus no more data should be written
