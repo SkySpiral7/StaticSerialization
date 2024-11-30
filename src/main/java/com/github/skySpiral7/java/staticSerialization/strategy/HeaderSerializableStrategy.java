@@ -105,33 +105,10 @@ public class HeaderSerializableStrategy
       else if (null != inheritFromClass && inheritFromClass.equals(data.getClass()))
          throw new IllegalStateException("Should not be called");
       else if (CLASS_TO_COMPRESSED_HEADER.containsKey(data.getClass()))
-         byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(data.getClass()));
+         throw new IllegalStateException("Should not be called");
       else if (data.getClass().isArray())
       {
-         Class<?> baseComponent = arrayUtil.getBaseComponentType(data.getClass());
-         if (Object.class.equals(inheritFromClass) || null == inheritFromClass)
-         {
-            //array indicator and dimension count can be derived from containing array so don't populate it
-            //unless I'm inside Object[] in which case I could have new arrays.
-            //baseComponent can't be void or null
-            if (baseComponent.isPrimitive())
-            {
-               byteSerializableStrategy.writeByte(']');
-               baseComponent = classUtil.boxClass(baseComponent);
-            }
-            else byteSerializableStrategy.writeByte('[');
-
-            final int dimensionCount = arrayUtil.countArrayDimensions(data.getClass());
-            byteSerializableStrategy.writeByte(dimensionCount);  //won't be 0, max: 255. Use unsigned byte
-         }
-
-         if (baseComponent.equals(Boolean.class)) byteSerializableStrategy.writeByte('+');
-         else if (CLASS_TO_COMPRESSED_HEADER.containsKey(baseComponent))
-            byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
-         else
-         {
-            stringSerializableStrategy.writeData(baseComponent.getName());
-         }
+         throw new IllegalStateException("Should not be called");
       }
       else
       {

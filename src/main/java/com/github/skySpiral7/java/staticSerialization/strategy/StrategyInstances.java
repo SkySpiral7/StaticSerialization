@@ -89,10 +89,12 @@ public class StrategyInstances
          utilInstances.getClassUtil(), registry);
       final InheritSerializableStrategy inheritSerializableStrategy = new InheritSerializableStrategy(utilInstances.getClassUtil(),
          byteSerializableStrategy);
-      final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(internalStreamWriter, integerSerializableStrategy);
+      final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy);
+      final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(utilInstances,
+         byteSerializableStrategy, stringSerializableStrategy,
+         internalStreamWriter, integerSerializableStrategy);
       final JavaSerializableStrategy javaSerializableStrategy = new JavaSerializableStrategy(appender, byteSerializableStrategy);
       final EnumSerializableStrategy enumSerializableStrategy = new EnumSerializableStrategy(integerSerializableStrategy);
-      final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy);
       final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy = new BoxPrimitiveSerializableStrategy(utilInstances,
          byteSerializableStrategy, integerSerializableStrategy);
       final BitSetSerializableStrategy bitSetSerializableStrategy =

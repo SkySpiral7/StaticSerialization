@@ -5,12 +5,18 @@ import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedE
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
+import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.lang.reflect.Array;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -22,6 +28,25 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
    private final InternalStreamReader internalStreamReader;
    private final InternalStreamWriter internalStreamWriter;
    private final IntegerSerializableStrategy integerSerializableStrategy;
+   private final ArrayUtil arrayUtil;
+   private final ClassUtil classUtil;
+   private final ByteSerializableStrategy byteSerializableStrategy;
+   private final StringSerializableStrategy stringSerializableStrategy;
+   private final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
+
+   {
+      CLASS_TO_COMPRESSED_HEADER = new HashMap<>();
+      //Boolean has 2 values so it isn't in the map
+      CLASS_TO_COMPRESSED_HEADER.put(Byte.class, '~');
+      CLASS_TO_COMPRESSED_HEADER.put(Short.class, '!');
+      CLASS_TO_COMPRESSED_HEADER.put(Integer.class, '@');
+      CLASS_TO_COMPRESSED_HEADER.put(Long.class, '#');
+      //$ is allowed to be in class names
+      CLASS_TO_COMPRESSED_HEADER.put(Float.class, '%');
+      CLASS_TO_COMPRESSED_HEADER.put(Double.class, '^');
+      CLASS_TO_COMPRESSED_HEADER.put(Character.class, '\'');
+      CLASS_TO_COMPRESSED_HEADER.put(String.class, '"');
+   }
 
    public ArraySerializableStrategy(final ReaderValidationStrategy readerValidationStrategy,
                                     final EasyReader reader,
@@ -29,6 +54,10 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
                                     final InternalStreamReader internalStreamReader,
                                     final IntegerSerializableStrategy integerSerializableStrategy)
    {
+      this.arrayUtil = null;
+      this.classUtil = null;
+      this.byteSerializableStrategy = null;
+      this.stringSerializableStrategy = null;
       this.readerValidationStrategy = readerValidationStrategy;
       this.reader = reader;
       this.streamReader = streamReader;
@@ -37,9 +66,16 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
       this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
-   public ArraySerializableStrategy(final InternalStreamWriter internalStreamWriter,
+   public ArraySerializableStrategy(final UtilInstances utilInstances,
+                                    final ByteSerializableStrategy byteSerializableStrategy,
+                                    final StringSerializableStrategy stringSerializableStrategy,
+                                    final InternalStreamWriter internalStreamWriter,
                                     final IntegerSerializableStrategy integerSerializableStrategy)
    {
+      this.arrayUtil = utilInstances.getArrayUtil();
+      this.classUtil = utilInstances.getClassUtil();
+      this.byteSerializableStrategy = byteSerializableStrategy;
+      this.stringSerializableStrategy = stringSerializableStrategy;
       this.readerValidationStrategy = null;
       this.reader = null;
       this.streamReader = null;
@@ -91,13 +127,38 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
    @Override
    public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data)
    {
-      return false;
+      return data.getClass().isArray();
    }
 
    @Override
    public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
    {
-      throw new IllegalStateException("Not implemented");
+      Class<?> baseComponent = arrayUtil.getBaseComponentType(data.getClass());
+      if (Object.class.equals(inheritFromClass) || null == inheritFromClass)
+      {
+         //array indicator and dimension count can be derived from containing array so don't populate it
+         //unless I'm inside Object[] in which case I could have new arrays.
+         //baseComponent can't be void or null
+         if (baseComponent.isPrimitive())
+         {
+            byteSerializableStrategy.writeByte(']');
+            baseComponent = classUtil.boxClass(baseComponent);
+         }
+         else byteSerializableStrategy.writeByte('[');
+
+         final int dimensionCount = arrayUtil.countArrayDimensions(data.getClass());
+         byteSerializableStrategy.writeByte(dimensionCount);  //won't be 0, max: 255. Use unsigned byte
+      }
+
+      //TODO: should be recursive
+      if (baseComponent.equals(Boolean.class)) byteSerializableStrategy.writeByte('+');
+      else if (CLASS_TO_COMPRESSED_HEADER.containsKey(baseComponent))
+         byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
+      else
+      {
+         stringSerializableStrategy.writeData(baseComponent.getName());
+      }
+      return false;
    }
 
    @Override
