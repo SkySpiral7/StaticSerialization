@@ -2,24 +2,28 @@ package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
+import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 public class InheritSerializableStrategy implements HeaderStrategy
 {
+   private final ArrayUtil arrayUtil;
    private final ClassUtil classUtil;
    private final ByteSerializableStrategy byteSerializableStrategy;
 
-   public InheritSerializableStrategy(final ClassUtil classUtil,
+   public InheritSerializableStrategy(final UtilInstances utilInstances,
                                       final ByteSerializableStrategy byteSerializableStrategy)
    {
-      this.classUtil = classUtil;
+      this.arrayUtil = utilInstances.getArrayUtil();
+      this.classUtil = utilInstances.getClassUtil();
       this.byteSerializableStrategy = byteSerializableStrategy;
    }
 
    @Override
    public boolean supportsReadingHeader(final byte firstByte)
    {
-      return false;
+      return '?' == firstByte;
    }
 
    @Override
@@ -28,7 +32,14 @@ public class InheritSerializableStrategy implements HeaderStrategy
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {
-      throw new IllegalStateException("Should not be called");
+      //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or 0xFF)
+      final int dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
+      final Class<?> baseComponent = inheritFromClass.isArray()
+         ? arrayUtil.getBaseComponentType(inheritFromClass)
+         : inheritFromClass;
+      final boolean primitiveArray = baseComponent.isPrimitive();
+      final byte firstByte = partialHeader.firstByte();
+      return HeaderInformation.forPossibleArray(firstByte, baseComponent, dimensionCount, primitiveArray);
    }
 
    @Override

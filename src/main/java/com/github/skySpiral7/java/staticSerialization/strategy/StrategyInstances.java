@@ -59,11 +59,13 @@ public class StrategyInstances
       final BitSetSerializableStrategy bitSetSerializableStrategy =
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
+      final InheritSerializableStrategy inheritSerializableStrategy = new InheritSerializableStrategy(utilInstances, null);
 
       this.allSerializableStrategy = new AllSerializableStrategy(reader, utilInstances,
          arraySerializableStrategy,
          bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
+         inheritSerializableStrategy,
          javaSerializableStrategy,
          nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
    }
@@ -85,7 +87,7 @@ public class StrategyInstances
       final IdSerializableStrategy idSerializableStrategy = new IdSerializableStrategy(byteSerializableStrategy,
          integerSerializableStrategy,
          utilInstances.getClassUtil(), registry);
-      final InheritSerializableStrategy inheritSerializableStrategy = new InheritSerializableStrategy(utilInstances.getClassUtil(),
+      final InheritSerializableStrategy inheritSerializableStrategy = new InheritSerializableStrategy(utilInstances,
          byteSerializableStrategy);
       final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy);
       final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(utilInstances,

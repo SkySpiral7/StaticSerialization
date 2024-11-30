@@ -22,8 +22,7 @@ public final class HeaderInformation<T_Value>
    technically a FQ class name can't start with a number or dot so I could use them but I won't.
    variable names can start with $ so I assume a package/class can too
    */
-   public record PartialHeader(HeaderInformation<?> fullHeader, byte firstByte, int dimensionCount,
-                               boolean primitiveArray) {}
+   public record PartialHeader(byte firstByte, int dimensionCount, boolean primitiveArray) {}
 
    private final byte firstByte;
    private final String className;

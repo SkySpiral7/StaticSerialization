@@ -114,7 +114,7 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
       }
       else
       {
-         final HeaderInformation.PartialHeader componentPartialHeader = new HeaderInformation.PartialHeader(null,
+         final HeaderInformation.PartialHeader componentPartialHeader = new HeaderInformation.PartialHeader(
             componentFirstByte, dimensionCount, primitiveArray);
          final HeaderInformation<?> componentHeaderInfo = internalStreamReader.getAllSerializableStrategy().readHeader(
             inheritFromClass, componentPartialHeader, expectedClass, allowChildClass);

@@ -40,6 +40,7 @@ public class AllSerializableStrategy
                                   final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
                                   final EnumSerializableStrategy enumSerializableStrategy,
                                   final IdSerializableStrategy idSerializableStrategy,
+                                  final InheritSerializableStrategy inheritSerializableStrategy,
                                   final JavaSerializableStrategy javaSerializableStrategy,
                                   final NullSerializableStrategy nullSerializableStrategy,
                                   final StaticSerializableStrategy staticSerializableStrategy,
@@ -72,9 +73,9 @@ public class AllSerializableStrategy
 
       //header order doesn't matter since they don't overlap. but check null first so the others don't NPE
       headerStrategyList = List.of(
-         nullSerializableStrategy,
+         nullSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
-         classHeaderSerializableStrategy, idSerializableStrategy);
+         classHeaderSerializableStrategy);
    }
 
    /**
@@ -156,11 +157,9 @@ public class AllSerializableStrategy
          {
             if ('?' == firstByte)
                throw new StreamCorruptedException("Only array elements can inherit type");
-            partialHeader = new HeaderInformation.PartialHeader(null, firstByte, 0, false);
+            partialHeader = new HeaderInformation.PartialHeader(firstByte, 0, false);
          }
       }
-
-      if (partialHeader.fullHeader() != null) return partialHeader.fullHeader();
 
       return headerStrategyList.stream()
          .filter(strategy -> strategy.supportsReadingHeader(partialHeader.firstByte()))
@@ -171,20 +170,19 @@ public class AllSerializableStrategy
 
    private HeaderInformation.PartialHeader readInheritHeader(final Class<?> inheritFromClass, final byte firstByte)
    {
-      //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or 0xFF)
-      final int dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
-      final Class<?> baseComponent = inheritFromClass.isArray()
-         ? arrayUtil.getBaseComponentType(inheritFromClass)
-         : inheritFromClass;
-      final boolean primitiveArray = baseComponent.isPrimitive();
-      if ('?' == firstByte)
+      if ('?' != firstByte)
       {
-         final HeaderInformation<?> fullHeader = HeaderInformation.forPossibleArray(firstByte, baseComponent,
-            dimensionCount, primitiveArray);
-         return new HeaderInformation.PartialHeader(fullHeader, firstByte, dimensionCount, primitiveArray);
+         //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or 0xFF)
+         final int dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
+         final Class<?> baseComponent = inheritFromClass.isArray()
+            ? arrayUtil.getBaseComponentType(inheritFromClass)
+            : inheritFromClass;
+         final boolean primitiveArray = baseComponent.isPrimitive();
+
+         //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
+         return new HeaderInformation.PartialHeader(firstByte, dimensionCount, primitiveArray);
       }
-      //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
-      return new HeaderInformation.PartialHeader(null, firstByte, dimensionCount, primitiveArray);
+      return new HeaderInformation.PartialHeader(firstByte, 0, false);
    }
 
    /**
