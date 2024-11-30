@@ -2,7 +2,6 @@ package com.github.skySpiral7.java.staticSerialization.internal;
 
 import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StrategyInstances;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
@@ -17,7 +16,6 @@ public class InternalStreamWriter implements Closeable, Flushable
 {
    private final EasyAppender appender;
    private final AllSerializableStrategy allSerializableStrategy;
-   private final HeaderSerializableStrategy headerSerializableStrategy;
    private final ReflectionSerializableStrategy reflectionSerializableStrategy;
 
    public InternalStreamWriter(final ObjectStreamWriter streamWriter, final File destination)
@@ -38,7 +36,6 @@ public class InternalStreamWriter implements Closeable, Flushable
          utilInstances);
       this.appender = appender;
       allSerializableStrategy = strategyInstances.getAllSerializableStrategy();
-      headerSerializableStrategy = strategyInstances.getHeaderSerializableStrategy();
       reflectionSerializableStrategy = strategyInstances.getReflectionSerializableStrategy();
    }
 
@@ -56,10 +53,9 @@ public class InternalStreamWriter implements Closeable, Flushable
 
    public void writeObjectInternal(final Class<?> inheritFromClass, final Object data)
    {
-      final boolean usedId = headerSerializableStrategy.writeHeaderReturnIsId(inheritFromClass, data);
-      //if an id was written then don't write value
-      if (usedId) return;
-      allSerializableStrategy.write(data);
+      boolean headerOnly = allSerializableStrategy.writeHeader(inheritFromClass, data);
+      if (headerOnly) return;
+      allSerializableStrategy.writeData(data);
    }
 
    public ReflectionSerializableStrategy getReflectionSerializableStrategy()

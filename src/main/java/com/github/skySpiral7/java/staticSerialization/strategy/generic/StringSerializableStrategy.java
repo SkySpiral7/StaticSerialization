@@ -1,7 +1,9 @@
 package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import org.apache.logging.log4j.LogManager;
@@ -12,19 +14,22 @@ import java.nio.charset.StandardCharsets;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class StringSerializableStrategy implements SerializableStrategy
+public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
 {
    private static final Logger LOG = LogManager.getLogger();
    /**
     * Used as a string terminating byte. The value isn't valid UTF-8.
     */
    public static final byte TERMINATOR = (byte) 0xFF;
+   private final ReaderValidationStrategy readerValidationStrategy;
    private final EasyReader reader;
    private final EasyAppender appender;
    private final ByteSerializableStrategy byteSerializableStrategy;
 
-   public StringSerializableStrategy(final EasyReader reader)
+   public StringSerializableStrategy(final ReaderValidationStrategy readerValidationStrategy,
+                                     final EasyReader reader)
    {
+      this.readerValidationStrategy = readerValidationStrategy;
       this.reader = reader;
       appender = null;
       this.byteSerializableStrategy = null;
@@ -33,19 +38,50 @@ public class StringSerializableStrategy implements SerializableStrategy
    public StringSerializableStrategy(final EasyAppender appender,
                                      final ByteSerializableStrategy byteSerializableStrategy)
    {
+      readerValidationStrategy = null;
       reader = null;
       this.appender = appender;
       this.byteSerializableStrategy = byteSerializableStrategy;
    }
 
    @Override
-   public boolean supports(final Class<?> actualClass)
+   public boolean supportsReadingHeader(final byte firstByte)
+   {
+      return firstByte == '"';
+   }
+
+   @Override
+   public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
+                                          final HeaderInformation.PartialHeader partialHeader,
+                                          final Class<?> expectedClass,
+                                          final boolean allowChildClass)
+   {
+      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(
+         String.class, partialHeader.dimensionCount(), false);
+      readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+      return headerInformation;
+   }
+
+   @Override
+   public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data)
+   {
+      return false;
+   }
+
+   @Override
+   public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
+   {
+      throw new IllegalStateException("Not implemented");
+   }
+
+   @Override
+   public boolean supportsData(final Class<?> actualClass)
    {
       return String.class.isAssignableFrom(actualClass);
    }
 
    @Override
-   public void write(final Object rawData)
+   public void writeData(final Object rawData)
    {
       final String data = (String) rawData;
       LOG.debug(data);
@@ -54,7 +90,7 @@ public class StringSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public <T> T read(final Class<T> actualClass)
+   public <T> T readData(final Class<T> actualClass)
    {
       final ByteArrayOutputStream classNameStream = new ByteArrayOutputStream();
       byte[] remaining = StreamCorruptedException.throwIfNotByteTerminated(reader, TERMINATOR, "String data not " +

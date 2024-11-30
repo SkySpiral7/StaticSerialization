@@ -17,7 +17,7 @@ import java.io.Serializable;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class JavaSerializableStrategy implements SerializableStrategy
+public class JavaSerializableStrategy implements DataStrategy
 {
    private final EasyReader reader;
    private final EasyAppender appender;
@@ -43,13 +43,13 @@ public class JavaSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public boolean supports(final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass)
    {
       return Serializable.class.isAssignableFrom(actualClass);
    }
 
    @Override
-   public void write(final Object rawData)
+   public void writeData(final Object rawData)
    {
       final Serializable data = (Serializable) rawData;
       final byte[] serializedData = javaSerialize(data);
@@ -73,7 +73,7 @@ public class JavaSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public <T> T read(final Class<T> actualClass)
+   public <T> T readData(final Class<T> actualClass)
    {
       final int length = integerSerializableStrategy.read("Missing java.io.Serializable size");
       final byte[] objectData = StreamCorruptedException.throwIfNotEnoughData(reader, length, "Missing java.io.Serializable data");

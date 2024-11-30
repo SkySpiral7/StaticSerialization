@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class BitSetSerializableStrategy implements SerializableStrategy
+public class BitSetSerializableStrategy implements DataStrategy
 {
    private final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy;
    private final IntegerSerializableStrategy integerSerializableStrategy;
@@ -19,31 +19,31 @@ public class BitSetSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public boolean supports(Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass)
    {
       return BitSet.class.isAssignableFrom(actualClass);
    }
 
    @Override
-   public void write(final Object rawData)
+   public void writeData(final Object rawData)
    {
       final BitSet data = (BitSet) rawData;
       final byte[] compressed = compress(data);
       integerSerializableStrategy.write(compressed.length);
       for (final byte element : compressed)
       {
-         boxPrimitiveSerializableStrategy.write(element);
+         boxPrimitiveSerializableStrategy.writeData(element);
       }
    }
 
    @Override
-   public <T> T read(final Class<T> actualClass)
+   public <T> T readData(final Class<T> actualClass)
    {
       final int byteLength = integerSerializableStrategy.read("Missing array length");
       final byte[] byteArray = new byte[byteLength];
       for (int readIndex = 0; readIndex < byteLength; ++readIndex)
       {
-         byteArray[readIndex] = boxPrimitiveSerializableStrategy.read(Byte.class);
+         byteArray[readIndex] = boxPrimitiveSerializableStrategy.readData(Byte.class);
       }
       return cast(decompress(byteArray));
    }

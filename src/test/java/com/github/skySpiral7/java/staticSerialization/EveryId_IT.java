@@ -183,7 +183,7 @@ public class EveryId_IT
       assertEquals(Arrays.toString(expectedInFile).replace(", ", ",\n"), Arrays.toString(actualInFile).replace(", ", ",\n"));
 
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(actualInFile));
-      assertEquals(Arrays.deepToString(data), Arrays.deepToString(reader.readObject(Object[][][].class)));
+      assertEquals(Arrays.deepToString(data), Arrays.deepToString(reader.readObject(Object[].class)));
       reader.close();
    }
 
@@ -214,7 +214,7 @@ public class EveryId_IT
       assertEquals(Arrays.toString(expectedInFile).replace(", ", ",\n"), Arrays.toString(actualInFile).replace(", ", ",\n"));
 
       final ObjectStreamReader reader = new ObjectStreamReader(new ByteReader(actualInFile));
-      assertEquals(Arrays.deepToString(data), Arrays.deepToString(reader.readObject(Object[][][].class)));
+      assertEquals(Arrays.deepToString(data), Arrays.deepToString(reader.readObject(Object[].class)));
       reader.close();
    }
 

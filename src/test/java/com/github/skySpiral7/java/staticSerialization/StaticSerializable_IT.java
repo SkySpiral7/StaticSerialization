@@ -283,10 +283,11 @@ public class StaticSerializable_IT
 
       /*
 Object graph (using non-compressed names and ; for terminator):
-[3java.lang.Object;<id 0>3
+<id 0>
+[3java.lang.Object;3
    java.lang.CharSequence;1
       java.lang.String;1
-         ? 0002 hi
+         ? hi;
    java.lang.Number;2
       java.lang.Integer;2
          ? 0001
@@ -298,10 +299,10 @@ Object graph (using non-compressed names and ; for terminator):
       ?
          [1java.lang.Object;4
             ;
-            java.lang.String; 0003 joe
+            java.lang.String; joe
             [1int;1
                0006
-            \<id 0>
+            &<id 0>
        */
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(new byte[]{'[', 3});   //data array indicator and dimensions

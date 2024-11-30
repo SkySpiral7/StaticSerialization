@@ -22,12 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class StringSerializableStrategy_UT
 {
    @Test
-   public void write(@Mocked final EasyAppender mockAppender, @Mocked final ByteSerializableStrategy mockByteSerializableStrategy)
+   public void writeData(@Mocked final EasyAppender mockAppender, @Mocked final ByteSerializableStrategy mockByteSerializableStrategy)
    {
       final StringSerializableStrategy testObject = new StringSerializableStrategy(mockAppender, mockByteSerializableStrategy);
       final String input = "hi";
 
-      testObject.write(input);
+      testObject.writeData(input);
 
       new FullVerifications()
       {{
@@ -37,24 +37,24 @@ class StringSerializableStrategy_UT
    }
 
    @Test
-   public void read_returns_whenHasData()
+   public void readData_returns_whenHasData()
    {
       final ByteReader byteReader = new ByteReader(new byte[]{'h', 'i', StringSerializableStrategy.TERMINATOR});
-      final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader);
+      final StringSerializableStrategy testObject = new StringSerializableStrategy(null, byteReader);
       final String expected = "hi";
 
-      final Object actual = testObject.read(null);
+      final Object actual = testObject.readData(null);
 
       assertEquals(expected, actual);
    }
 
    @Test
-   public void read_throws_whenNotTerminated()
+   public void readData_throws_whenNotTerminated()
    {
       final ByteReader byteReader = new ByteReader(new byte[]{'h', 'i'});
-      final StringSerializableStrategy testObject = new StringSerializableStrategy(byteReader);
+      final StringSerializableStrategy testObject = new StringSerializableStrategy(null, byteReader);
 
-      assertThrows(StreamCorruptedException.class, () -> testObject.read(null));
+      assertThrows(StreamCorruptedException.class, () -> testObject.readData(null));
    }
 
    @Test

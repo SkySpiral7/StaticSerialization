@@ -21,11 +21,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class EnumSerializableStrategy_IT
 {
    @Test
-   public void write(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
+   public void writeData(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
    {
       final var testObject = new EnumSerializableStrategy(mockIntegerSerializableStrategy);
 
-      testObject.write(RoundingMode.DOWN);
+      testObject.writeData(RoundingMode.DOWN);
 
       new FullVerifications()
       {{
@@ -34,7 +34,7 @@ public class EnumSerializableStrategy_IT
    }
 
    @Test
-   public void read(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
+   public void readData(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
    {
       final var testObject = new EnumSerializableStrategy(mockIntegerSerializableStrategy);
 
@@ -44,14 +44,14 @@ public class EnumSerializableStrategy_IT
          result = 0;
       }};
 
-      RoundingMode actual = testObject.read(RoundingMode.class);
+      RoundingMode actual = testObject.readData(RoundingMode.class);
 
       assertEquals(RoundingMode.UP, actual);
       new FullVerifications() {};
    }
 
    @Test
-   public void read_throws_whenOrdinalInvalid(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
+   public void readData_throws_whenOrdinalInvalid(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
    {
       final var testObject = new EnumSerializableStrategy(mockIntegerSerializableStrategy);
 
@@ -63,7 +63,7 @@ public class EnumSerializableStrategy_IT
 
       try
       {
-         testObject.read(RoundingMode.class);
+         testObject.readData(RoundingMode.class);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -74,7 +74,7 @@ public class EnumSerializableStrategy_IT
    }
 
    @Test
-   public void read_throws_whenOrdinalNotFound(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
+   public void readData_throws_whenOrdinalNotFound(@Mocked final IntegerSerializableStrategy mockIntegerSerializableStrategy)
    {
       final var testObject = new EnumSerializableStrategy(mockIntegerSerializableStrategy);
 
@@ -86,7 +86,7 @@ public class EnumSerializableStrategy_IT
 
       try
       {
-         testObject.read(RoundingMode.class);
+         testObject.readData(RoundingMode.class);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)

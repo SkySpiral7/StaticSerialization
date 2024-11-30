@@ -1,21 +1,65 @@
 package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ShortSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
-public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
+public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStrategy
 {
+   private final Map<Character, Class<?>> COMPRESSED_HEADER_TO_CLASS;
+
+   {
+      COMPRESSED_HEADER_TO_CLASS = new HashMap<>();
+      COMPRESSED_HEADER_TO_CLASS.put('+', Boolean.class);
+      COMPRESSED_HEADER_TO_CLASS.put('-', Boolean.class);
+      COMPRESSED_HEADER_TO_CLASS.put('~', Byte.class);
+      COMPRESSED_HEADER_TO_CLASS.put('!', Short.class);
+      COMPRESSED_HEADER_TO_CLASS.put('@', Integer.class);
+      COMPRESSED_HEADER_TO_CLASS.put('#', Long.class);
+      COMPRESSED_HEADER_TO_CLASS.put('%', Float.class);
+      COMPRESSED_HEADER_TO_CLASS.put('^', Double.class);
+      COMPRESSED_HEADER_TO_CLASS.put('\'', Character.class);
+   }
+
+   /**
+    * Not in map:
+    * <ul>
+    * <li>+ boolean true (header only). and component used for boolean arrays</li>
+    * <li>- boolean false (header only. not valid array component)</li>
+    * </ul>
+    */
+   private final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
+
+   {
+      CLASS_TO_COMPRESSED_HEADER = new HashMap<>();
+      //Boolean has 2 values so it isn't in the map
+      CLASS_TO_COMPRESSED_HEADER.put(Byte.class, '~');
+      CLASS_TO_COMPRESSED_HEADER.put(Short.class, '!');
+      CLASS_TO_COMPRESSED_HEADER.put(Integer.class, '@');
+      CLASS_TO_COMPRESSED_HEADER.put(Long.class, '#');
+      //$ is allowed to be in class names
+      CLASS_TO_COMPRESSED_HEADER.put(Float.class, '%');
+      CLASS_TO_COMPRESSED_HEADER.put(Double.class, '^');
+      CLASS_TO_COMPRESSED_HEADER.put(Character.class, '\'');
+      CLASS_TO_COMPRESSED_HEADER.put(String.class, '"');
+   }
+
    private final EasyReader reader;
    private final BitWiseUtil bitWiseUtil;
    private final ClassUtil classUtil;
+   private final ReaderValidationStrategy readerValidationStrategy;
    private final ByteSerializableStrategy byteSerializableStrategy;
    private final ShortSerializableStrategy shortSerializableStrategy;
    private final IntegerSerializableStrategy integerSerializableStrategy;
@@ -30,31 +74,81 @@ public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
       this.reader = null;
       this.bitWiseUtil = utilInstances.getBitWiseUtil();
       this.classUtil = utilInstances.getClassUtil();
+      this.readerValidationStrategy = null;
       this.byteSerializableStrategy = byteSerializableStrategy;
       this.shortSerializableStrategy = null;
       this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
    public BoxPrimitiveSerializableStrategy(final EasyReader reader, final UtilInstances utilInstances,
+                                           final ReaderValidationStrategy readerValidationStrategy,
                                            final ShortSerializableStrategy shortSerializableStrategy,
                                            final IntegerSerializableStrategy integerSerializableStrategy)
    {
       this.reader = reader;
       this.bitWiseUtil = utilInstances.getBitWiseUtil();
       this.classUtil = utilInstances.getClassUtil();
+      this.readerValidationStrategy = readerValidationStrategy;
       this.byteSerializableStrategy = null;
       this.shortSerializableStrategy = shortSerializableStrategy;
       this.integerSerializableStrategy = integerSerializableStrategy;
    }
 
    @Override
-   public boolean supports(final Class<?> actualClass)
+   public boolean supportsReadingHeader(final byte firstByte)
+   {
+      return COMPRESSED_HEADER_TO_CLASS.containsKey((char) firstByte);  //safe cast because map contains only ASCII
+   }
+
+   @Override
+   public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
+                                          final HeaderInformation.PartialHeader partialHeader,
+                                          final Class<?> expectedClass,
+                                          final boolean allowChildClass)
+   {
+      final byte firstByte = partialHeader.firstByte();
+      if ('+' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.TRUE);
+      if ('-' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.FALSE);
+
+      final Class<?> headerClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
+      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(
+         headerClass, partialHeader.dimensionCount(), partialHeader.primitiveArray());
+      readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
+      return headerInformation;
+   }
+
+   @Override
+   public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data)
+   {
+      final Class<?> dataClass = data.getClass();
+      return (Boolean.class.equals(dataClass) || CLASS_TO_COMPRESSED_HEADER.containsKey(dataClass));
+   }
+
+   @Override
+   public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
+   {
+      if (Boolean.TRUE.equals(data))
+      {
+         byteSerializableStrategy.writeByte('+');
+         return true;
+      }
+      else if (Boolean.FALSE.equals(data))
+      {
+         byteSerializableStrategy.writeByte('-');
+         return true;
+      }
+      byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(data.getClass()));
+      return false;
+   }
+
+   @Override
+   public boolean supportsData(final Class<?> actualClass)
    {
       return classUtil.isPrimitiveOrBox(actualClass);
    }
 
    @Override
-   public void write(final Object data)
+   public void writeData(final Object data)
    {
       if (data instanceof Byte) byteSerializableStrategy.writeByte((byte) data);
       else if (data instanceof Short) byteSerializableStrategy.writeBytes((short) data, 2);
@@ -80,7 +174,7 @@ public class BoxPrimitiveSerializableStrategy implements SerializableStrategy
    }
 
    @Override
-   public <T> T read(final Class<T> expectedClass)
+   public <T> T readData(final Class<T> expectedClass)
    {
       if (Byte.class.equals(expectedClass))
       {
