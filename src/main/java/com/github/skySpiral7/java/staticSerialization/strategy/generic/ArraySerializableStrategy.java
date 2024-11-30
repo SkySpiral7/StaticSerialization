@@ -21,21 +21,22 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 
 public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
 {
-   private final ReaderValidationStrategy readerValidationStrategy;
    private final EasyReader reader;
    private final ObjectStreamReader streamReader;
    private final InternalStreamReader internalStreamReader;
+   private final ReaderValidationStrategy readerValidationStrategy;
    private final InternalStreamWriter internalStreamWriter;
-   private final IntegerSerializableStrategy integerSerializableStrategy;
    private final ArrayUtil arrayUtil;
    private final ClassUtil classUtil;
    private final ByteSerializableStrategy byteSerializableStrategy;
+   private final IntegerSerializableStrategy integerSerializableStrategy;
    private final StringSerializableStrategy stringSerializableStrategy;
+
    private final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
 
    {
       CLASS_TO_COMPRESSED_HEADER = new HashMap<>();
-      //Boolean has 2 values so it isn't in the map
+      CLASS_TO_COMPRESSED_HEADER.put(Boolean.class, '+');
       CLASS_TO_COMPRESSED_HEADER.put(Byte.class, '~');
       CLASS_TO_COMPRESSED_HEADER.put(Short.class, '!');
       CLASS_TO_COMPRESSED_HEADER.put(Integer.class, '@');
@@ -149,14 +150,15 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
          byteSerializableStrategy.writeByte(dimensionCount);  //won't be 0, max: 255. Use unsigned byte
       }
 
-      //TODO: should be recursive
-      if (baseComponent.equals(Boolean.class)) byteSerializableStrategy.writeByte('+');
-      else if (CLASS_TO_COMPRESSED_HEADER.containsKey(baseComponent))
+      //recursive would be better however an empty array has no element to pass down
+      if (CLASS_TO_COMPRESSED_HEADER.containsKey(baseComponent))
          byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(baseComponent));
       else
       {
+         //can't use ClassHeaderSerializableStrategy because I only have the class
          stringSerializableStrategy.writeData(baseComponent.getName());
       }
+      //always false because the length (may be 0) is data
       return false;
    }
 

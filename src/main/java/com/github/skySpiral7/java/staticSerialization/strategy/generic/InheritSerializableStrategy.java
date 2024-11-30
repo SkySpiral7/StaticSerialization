@@ -12,10 +12,23 @@ public class InheritSerializableStrategy implements HeaderStrategy
    private final ClassUtil classUtil;
    private final ByteSerializableStrategy byteSerializableStrategy;
 
+   /**
+    * For reading
+    */
+   public InheritSerializableStrategy(final UtilInstances utilInstances)
+   {
+      this.arrayUtil = utilInstances.getArrayUtil();
+      this.classUtil = null;
+      this.byteSerializableStrategy = null;
+   }
+
+   /**
+    * For writing
+    */
    public InheritSerializableStrategy(final UtilInstances utilInstances,
                                       final ByteSerializableStrategy byteSerializableStrategy)
    {
-      this.arrayUtil = utilInstances.getArrayUtil();
+      this.arrayUtil = null;
       this.classUtil = utilInstances.getClassUtil();
       this.byteSerializableStrategy = byteSerializableStrategy;
    }

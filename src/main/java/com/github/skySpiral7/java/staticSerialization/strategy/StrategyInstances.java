@@ -31,7 +31,8 @@ public class StrategyInstances
    private final ReaderValidationStrategy readerValidationStrategy;
    private final ReflectionSerializableStrategy reflectionSerializableStrategy;
 
-   public StrategyInstances(final ObjectStreamReader streamReader, final InternalStreamReader internalStreamReader,
+   public StrategyInstances(final ObjectStreamReader streamReader,
+                            final InternalStreamReader internalStreamReader,
                             final EasyReader reader,
                             final ObjectReaderRegistry registry,
                             final UtilInstances utilInstances)
@@ -40,8 +41,7 @@ public class StrategyInstances
       final IntegerSerializableStrategy integerSerializableStrategy = new IntegerSerializableStrategy(reader, utilInstances);
       this.readerValidationStrategy = new ReaderValidationStrategy(utilInstances);
       this.reflectionSerializableStrategy = new ReflectionSerializableStrategy(streamReader, utilInstances);
-      //null is safe only here
-      final NullSerializableStrategy nullSerializableStrategy = new NullSerializableStrategy(null);
+      final NullSerializableStrategy nullSerializableStrategy = new NullSerializableStrategy();
       final ShortSerializableStrategy shortSerializableStrategy = new ShortSerializableStrategy(reader);
       final StaticSerializableStrategy staticSerializableStrategy = new StaticSerializableStrategy(streamReader);
       final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(readerValidationStrategy, reader);
@@ -59,7 +59,7 @@ public class StrategyInstances
       final BitSetSerializableStrategy bitSetSerializableStrategy =
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
-      final InheritSerializableStrategy inheritSerializableStrategy = new InheritSerializableStrategy(utilInstances, null);
+      final InheritSerializableStrategy inheritSerializableStrategy = new InheritSerializableStrategy(utilInstances);
 
       this.allSerializableStrategy = new AllSerializableStrategy(reader, utilInstances,
          arraySerializableStrategy,
@@ -70,7 +70,8 @@ public class StrategyInstances
          nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
    }
 
-   public StrategyInstances(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
+   public StrategyInstances(final ObjectStreamWriter streamWriter,
+                            final InternalStreamWriter internalStreamWriter,
                             final EasyAppender appender,
                             final ObjectWriterRegistry registry,
                             final UtilInstances utilInstances)

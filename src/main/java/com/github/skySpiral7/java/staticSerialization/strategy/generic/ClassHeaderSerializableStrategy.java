@@ -8,6 +8,9 @@ public class ClassHeaderSerializableStrategy implements HeaderStrategy
    private final StringSerializableStrategy stringSerializableStrategy;
    private final ReaderValidationStrategy readerValidationStrategy;
 
+   /**
+    * For reading
+    */
    public ClassHeaderSerializableStrategy(final StringSerializableStrategy stringSerializableStrategy, final ReaderValidationStrategy readerValidationStrategy)
    {
       this.stringSerializableStrategy = stringSerializableStrategy;

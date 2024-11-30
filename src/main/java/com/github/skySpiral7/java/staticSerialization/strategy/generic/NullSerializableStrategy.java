@@ -8,9 +8,17 @@ public class NullSerializableStrategy implements HeaderStrategy
    private final ByteSerializableStrategy byteSerializableStrategy;
 
    /**
-    * @param byteSerializableStrategy only used for writing
+    * For reading
     */
-   public NullSerializableStrategy(ByteSerializableStrategy byteSerializableStrategy)
+   public NullSerializableStrategy()
+   {
+      this.byteSerializableStrategy = null;
+   }
+
+   /**
+    * For writing
+    */
+   public NullSerializableStrategy(final ByteSerializableStrategy byteSerializableStrategy)
    {
       this.byteSerializableStrategy = byteSerializableStrategy;
    }
