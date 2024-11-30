@@ -151,17 +151,11 @@ public class InternalStreamReader implements Closeable
                                    final Class<?> expectedClass,
                                    final boolean allowChildClass)
    {
-      final Class<?> actualClass;
       if (headerInformation.getKnownClass() != null)
-      {
-         actualClass = cast(headerInformation.getKnownClass());
-      }
-      else
-      {
-         actualClass = readerValidationStrategy.getClassFromHeader(headerInformation,
-            expectedClass, allowChildClass);
-      }
-      return actualClass;
+         return cast(headerInformation.getKnownClass());
+
+      return readerValidationStrategy.getClassFromHeader(headerInformation,
+         expectedClass, allowChildClass);
    }
 
    public AllSerializableStrategy getAllSerializableStrategy()

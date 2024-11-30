@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @see #close()
  * @see #append(byte[])
+ * @see BufferedFileAppender
  */
 public final class AsynchronousFileAppender implements EasyAppender
 {
@@ -34,8 +35,6 @@ public final class AsynchronousFileAppender implements EasyAppender
     */
    public AsynchronousFileAppender(final File targetFile)
    {
-      //TODO: I don't know if these classes do anything beyond BufferedInputStream etc
-      //mine has better API though
       if (targetFile.isDirectory())
          throw new IllegalArgumentException("It is not possible to write to a directory (" + targetFile + ")");
       //it's ok if the file doesn't exist since writing to it will create it

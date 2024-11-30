@@ -8,13 +8,14 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class AsynchronousFileAppender_UT
 {
    @Test
    public void constructor_clears() throws IOException
    {
-      final File tempFile = File.createTempFile("InternalStreamWriter_UT.TempFile.constructor_clears.", ".txt");
+      final File tempFile = File.createTempFile("AsynchronousFileAppender_UT.TempFile.constructor_clears.", ".txt");
       tempFile.deleteOnExit();
       FileIoUtil.writeToFile(tempFile, "test");
       new AsynchronousFileAppender(tempFile).close();
@@ -57,6 +58,7 @@ public class AsynchronousFileAppender_UT
       try
       {
          testObject.append("hi");
+         fail("Should've thrown");
       }
       catch (final ClosedResourceException actual)
       {

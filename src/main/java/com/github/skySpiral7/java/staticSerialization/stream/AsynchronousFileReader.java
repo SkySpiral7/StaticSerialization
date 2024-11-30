@@ -19,6 +19,7 @@ import java.util.concurrent.ArrayBlockingQueue;
  *
  * @see #close()
  * @see #readBytes(int)
+ * @see BufferedFileReader
  */
 public final class AsynchronousFileReader implements EasyReader
 {
@@ -46,9 +47,9 @@ public final class AsynchronousFileReader implements EasyReader
       {
          reader = new ReaderClass(new FileInputStream(targetFile), queueLength, this);
       }
-      catch (final FileNotFoundException e)
+      catch (final FileNotFoundException fileNotFoundException)
       {
-         throw new AssertionError("This can't be thrown", e);  //since I already checked that it exists
+         throw new IllegalStateException("Race condition: file was deleted after validation", fileNotFoundException);
       }
       new Thread(reader).start();
    }
@@ -132,7 +133,7 @@ public final class AsynchronousFileReader implements EasyReader
             throw new RuntimeException(e);
          }
       }
-      byte[] result = resultBuilder.toByteArray();
+      final byte[] result = resultBuilder.toByteArray();
       remainingBytes -= result.length;
       return result;
    }
