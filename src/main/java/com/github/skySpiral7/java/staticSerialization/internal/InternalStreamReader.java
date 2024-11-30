@@ -77,7 +77,7 @@ public class InternalStreamReader implements Closeable
          return readHeaderValue(headerInformation, expectedClass, allowChildClass);
       }
 
-      //TODO: move header reading into the strats
+      //TODO: are these validations already done?
       final Class<T_Actual> actualClass = cast(readHeaderClass(headerInformation, expectedClass, allowChildClass));
       if (!classUtil.isPrimitiveOrBox(actualClass))
       {
@@ -158,7 +158,6 @@ public class InternalStreamReader implements Closeable
       }
       else
       {
-         //TODO: split in half
          actualClass = readerValidationStrategy.getClassFromHeader(headerInformation,
             expectedClass, allowChildClass);
       }

@@ -20,7 +20,6 @@ import com.github.skySpiral7.java.staticSerialization.strategy.generic.UuidSeria
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
-import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.util.List;
 
@@ -33,7 +32,8 @@ public class AllSerializableStrategy
    private final List<DataStrategy> dataStrategyList;
 
    public AllSerializableStrategy(final EasyReader reader,
-                                  final UtilInstances utilInstances,
+                                  final ArrayUtil arrayUtil,
+                                  final ClassUtil classUtil,
                                   final ArraySerializableStrategy arraySerializableStrategy,
                                   final BitSetSerializableStrategy bitSetSerializableStrategy,
                                   final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
@@ -48,15 +48,14 @@ public class AllSerializableStrategy
                                   final UuidSerializableStrategy uuidSerializableStrategy)
    {
       this.reader = reader;
-      this.arrayUtil = utilInstances.getArrayUtil();
-      this.classUtil = utilInstances.getClassUtil();
+      this.arrayUtil = arrayUtil;
+      this.classUtil = classUtil;
 
       /* order:
        * first is supported jdk final classes (none of which are static) so that they have better compression than java.
        * then static so that it will respect any manual serial.
        * then bitset/enum (which can be static) so that the non-static ones will have better compression than java.
        * then java if all else fails */
-      //TODO: try to DRY
       dataStrategyList = List.of(
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
          uuidSerializableStrategy,
@@ -71,7 +70,13 @@ public class AllSerializableStrategy
        * big dec -> toEngineeringString? can't see any way to get base big int
        */
 
-      //header order doesn't matter since they don't overlap. but check null first so the others don't NPE
+      /* order:
+       * null so that the rest don't need to null check.
+       * id trumps data and headers.
+       * inherit trumps headers but not data.
+       * everything else since they don't overlap.
+       * lastly class name since that's a catch-all.
+       */
       headerStrategyList = List.of(
          nullSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
@@ -94,35 +99,15 @@ public class AllSerializableStrategy
                                   final StringSerializableStrategy stringSerializableStrategy,
                                   final UuidSerializableStrategy uuidSerializableStrategy)
    {
-      this.reader = null;
-      this.arrayUtil = null;
-      this.classUtil = null;
-
-      /* order:
-       * first is supported jdk final classes (none of which are static) so that they have better compression than java.
-       * then static so that it will respect any manual serial.
-       * then bitset/enum (which can be static) so that the non-static ones will have better compression than java.
-       * then java if all else fails */
-      dataStrategyList = List.of(
-         boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
-         uuidSerializableStrategy,
-         staticSerializableStrategy,
-         bitSetSerializableStrategy, enumSerializableStrategy,
-         javaSerializableStrategy);
-      /*
-       * TODO: also Big int/dec, stream: new ArrayList<>().stream().collect(Collectors.toList()).toArray()
-       * there's already enum. big int/dec could do same
-       * only auto do it if it is always more compressed and accounts for all data
-       * big int -> byte[]
-       * big dec -> toEngineeringString? can't see any way to get base big int
-       */
-
-      //header order doesn't matter since they don't overlap. but check null first so the others don't NPE
-      headerStrategyList = List.of(
-         nullSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
-         boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
-         classHeaderSerializableStrategy
-      );
+      this(null,
+         null,
+         null,
+         arraySerializableStrategy,
+         bitSetSerializableStrategy,
+         boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
+         inheritSerializableStrategy,
+         javaSerializableStrategy,
+         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
    }
 
    /**

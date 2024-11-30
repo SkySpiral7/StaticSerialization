@@ -61,7 +61,8 @@ public class StrategyInstances
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
       final InheritSerializableStrategy inheritSerializableStrategy = new InheritSerializableStrategy(utilInstances, null);
 
-      this.allSerializableStrategy = new AllSerializableStrategy(reader, utilInstances,
+      this.allSerializableStrategy = new AllSerializableStrategy(reader, utilInstances.getArrayUtil(),
+         utilInstances.getClassUtil(),
          arraySerializableStrategy,
          bitSetSerializableStrategy,
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
