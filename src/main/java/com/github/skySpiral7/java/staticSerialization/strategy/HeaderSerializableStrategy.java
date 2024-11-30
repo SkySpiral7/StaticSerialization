@@ -108,20 +108,19 @@ public class HeaderSerializableStrategy
       //boolean[] and Boolean[] use only headers for elements (primitive doesn't allow null)
       if (Boolean.TRUE.equals(data))
       {
-         byteSerializableStrategy.writeByte('+');
-         return true;
+         throw new IllegalStateException("Should not be called");
       }
       else if (Boolean.FALSE.equals(data))
       {
-         byteSerializableStrategy.writeByte('-');
-         return true;
+         throw new IllegalStateException("Should not be called");
       }
       else if (data == null)
       {
          throw new IllegalStateException("Should not be called");
       }
       //do nothing because non-boolean primitive array elements have no header
-      else if (null != inheritFromClass && inheritFromClass.isPrimitive()) ;
+      else if (null != inheritFromClass && inheritFromClass.isPrimitive())
+         throw new IllegalStateException("Should not be called");
          //(below) if class matches containing array exactly then inherit type.
       else if (null != inheritFromClass && inheritFromClass.equals(data.getClass()))
          byteSerializableStrategy.writeByte('?');

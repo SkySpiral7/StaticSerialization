@@ -34,6 +34,29 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
       COMPRESSED_HEADER_TO_CLASS.put('\'', Character.class);
    }
 
+   /**
+    * Not in map:
+    * <ul>
+    * <li>+ boolean true (header only). and component used for boolean arrays</li>
+    * <li>- boolean false (header only. not valid array component)</li>
+    * </ul>
+    */
+   private final Map<Class<?>, Character> CLASS_TO_COMPRESSED_HEADER;
+
+   {
+      CLASS_TO_COMPRESSED_HEADER = new HashMap<>();
+      //Boolean has 2 values so it isn't in the map
+      CLASS_TO_COMPRESSED_HEADER.put(Byte.class, '~');
+      CLASS_TO_COMPRESSED_HEADER.put(Short.class, '!');
+      CLASS_TO_COMPRESSED_HEADER.put(Integer.class, '@');
+      CLASS_TO_COMPRESSED_HEADER.put(Long.class, '#');
+      //$ is allowed to be in class names
+      CLASS_TO_COMPRESSED_HEADER.put(Float.class, '%');
+      CLASS_TO_COMPRESSED_HEADER.put(Double.class, '^');
+      CLASS_TO_COMPRESSED_HEADER.put(Character.class, '\'');
+      CLASS_TO_COMPRESSED_HEADER.put(String.class, '"');
+   }
+
    private final EasyReader reader;
    private final BitWiseUtil bitWiseUtil;
    private final ClassUtil classUtil;
@@ -98,13 +121,25 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
    @Override
    public boolean supportsWritingHeader(final Object data)
    {
-      return false;
+      final Class<?> dataClass = data.getClass();
+      return Boolean.class.equals(dataClass);// || CLASS_TO_COMPRESSED_HEADER.containsKey(dataClass));
    }
 
    @Override
    public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
    {
-      throw new IllegalStateException("Not implemented");
+      if (Boolean.TRUE.equals(data))
+      {
+         byteSerializableStrategy.writeByte('+');
+         return true;
+      }
+      else if (Boolean.FALSE.equals(data))
+      {
+         byteSerializableStrategy.writeByte('-');
+         return true;
+      }
+      byteSerializableStrategy.writeByte(CLASS_TO_COMPRESSED_HEADER.get(data.getClass()));
+      return false;
    }
 
    @Override

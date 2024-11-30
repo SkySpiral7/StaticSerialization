@@ -302,7 +302,7 @@ Object graph (using non-compressed names and ; for terminator):
             java.lang.String; joe
             [1int;1
                0006
-            \<id 0>
+            &<id 0>
        */
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(new byte[]{'[', 3});   //data array indicator and dimensions

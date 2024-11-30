@@ -69,10 +69,11 @@ public class AllSerializableStrategy
        * big dec -> toEngineeringString? can't see any way to get base big int
        */
 
-      //header order doesn't matter since they don't overlap.
+      //header order doesn't matter since they don't overlap. but check null first so the others don't NPE
       headerStrategyList = List.of(
+         nullSerializableStrategy,
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
-         classHeaderSerializableStrategy, nullSerializableStrategy, idSerializableStrategy);
+         classHeaderSerializableStrategy, idSerializableStrategy);
    }
 
    /**
@@ -111,10 +112,12 @@ public class AllSerializableStrategy
        * big dec -> toEngineeringString? can't see any way to get base big int
        */
 
-      //header order doesn't matter since they don't overlap.
+      //header order doesn't matter since they don't overlap. but check null first so the others don't NPE
       headerStrategyList = List.of(
-         boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
-         nullSerializableStrategy);
+         nullSerializableStrategy,
+         boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy
+         //TODO: add classHeaderSerializableStrategy, idSerializableStrategy
+      );
    }
 
    /**
@@ -180,8 +183,16 @@ public class AllSerializableStrategy
       return new HeaderSerializableStrategy.PartialHeader(null, firstByte, dimensionCount, primitiveArray);
    }
 
+   /**
+    * @return true if the data was fully represented by a header and thus no more data should be written.
+    * false means the header is done but needs data. null means nothing happened (delegate to HeaderSerializableStrategy)
+    */
    public Boolean writeHeader(final Class<?> inheritFromClass, final Object data)
    {
+      //do nothing because non-boolean primitive array elements have no header
+      if (null != inheritFromClass && inheritFromClass.isPrimitive() && data != null && !Boolean.class.equals(data.getClass()))
+         return false;
+
       return headerStrategyList.stream()
          .filter(strategy -> strategy.supportsWritingHeader(data))
          .findFirst()
