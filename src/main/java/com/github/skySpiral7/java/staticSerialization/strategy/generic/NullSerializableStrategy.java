@@ -28,7 +28,7 @@ public class NullSerializableStrategy implements HeaderStrategy
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {
-      return HeaderInformation.forNull(partialHeader.firstByte());
+      return HeaderInformation.forNull();
    }
 
    @Override

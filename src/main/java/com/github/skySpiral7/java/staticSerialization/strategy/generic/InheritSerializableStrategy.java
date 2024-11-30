@@ -38,8 +38,7 @@ public class InheritSerializableStrategy implements HeaderStrategy
          ? arrayUtil.getBaseComponentType(inheritFromClass)
          : inheritFromClass;
       final boolean primitiveArray = baseComponent.isPrimitive();
-      final byte firstByte = partialHeader.firstByte();
-      return HeaderInformation.forPossibleArray(firstByte, baseComponent, dimensionCount, primitiveArray);
+      return HeaderInformation.forPossibleArray(baseComponent, dimensionCount, primitiveArray);
    }
 
    @Override

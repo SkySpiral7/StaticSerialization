@@ -56,7 +56,7 @@ public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {
-      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray((byte) '"',
+      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(
          String.class, partialHeader.dimensionCount(), false);
       readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
       return headerInformation;

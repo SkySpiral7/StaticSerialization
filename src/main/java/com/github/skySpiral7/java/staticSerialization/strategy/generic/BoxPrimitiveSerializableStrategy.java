@@ -107,11 +107,11 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
                                           final boolean allowChildClass)
    {
       final byte firstByte = partialHeader.firstByte();
-      if ('+' == firstByte) return HeaderInformation.forValue(firstByte, Boolean.class.getName(), Boolean.TRUE);
-      if ('-' == firstByte) return HeaderInformation.forValue(firstByte, Boolean.class.getName(), Boolean.FALSE);
+      if ('+' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.TRUE);
+      if ('-' == firstByte) return HeaderInformation.forValue(Boolean.class.getName(), Boolean.FALSE);
 
       final Class<?> headerClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
-      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(firstByte,
+      final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(
          headerClass, partialHeader.dimensionCount(), partialHeader.primitiveArray());
       readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
       return headerInformation;

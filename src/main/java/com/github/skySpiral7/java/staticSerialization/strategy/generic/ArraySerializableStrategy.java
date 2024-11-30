@@ -107,7 +107,7 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
 
       if ('+' == componentFirstByte)
       {
-         final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(componentFirstByte,
+         final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(
             Boolean.class, dimensionCount, primitiveArray);
          readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
          return headerInformation;

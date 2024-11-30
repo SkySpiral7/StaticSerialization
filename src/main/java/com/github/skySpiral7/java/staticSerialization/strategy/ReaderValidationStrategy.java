@@ -7,7 +7,6 @@ import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
 import java.lang.reflect.Array;
-import java.nio.charset.StandardCharsets;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
 
@@ -59,7 +58,7 @@ public class ReaderValidationStrategy
             final HeaderInformation<?> expectedHeader;
             if (expectedBaseComponentType.isPrimitive())
             {
-               expectedHeader = HeaderInformation.forPossibleArray(classUtil.boxClass(expectedBaseComponentType).getName().getBytes(StandardCharsets.UTF_8)[0],
+               expectedHeader = HeaderInformation.forPossibleArray(
                   classUtil.boxClass(expectedBaseComponentType),
                   expectedDimensions,
                   true
@@ -67,7 +66,7 @@ public class ReaderValidationStrategy
             }
             else
             {
-               expectedHeader = HeaderInformation.forPossibleArray(expectedBaseComponentType.getName().getBytes(StandardCharsets.UTF_8)[0],
+               expectedHeader = HeaderInformation.forPossibleArray(
                   expectedBaseComponentType,
                   expectedDimensions,
                   false

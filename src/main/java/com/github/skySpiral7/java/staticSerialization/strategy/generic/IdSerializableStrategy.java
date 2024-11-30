@@ -65,8 +65,7 @@ public class IdSerializableStrategy implements HeaderStrategy
       if (registeredObject == null) throw new StreamCorruptedException("id not found");
       //LOG.debug("data.class=" + registeredObject.getClass().getSimpleName() + " val=" + registeredObject + " id=" + id);
       LOG.debug("id: " + id + " (" + registeredObject + " " + registeredObject.getClass().getSimpleName() + ")");
-      return HeaderInformation.forValue(partialHeader.firstByte(), registeredObject.getClass().getName(),
-         registeredObject);
+      return HeaderInformation.forValue(registeredObject.getClass().getName(), registeredObject);
    }
 
    @Override
