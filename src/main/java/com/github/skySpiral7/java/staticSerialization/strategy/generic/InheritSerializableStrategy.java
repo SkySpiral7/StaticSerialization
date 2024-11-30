@@ -2,7 +2,6 @@ package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 
 public class InheritSerializableStrategy implements HeaderStrategy
@@ -25,7 +24,7 @@ public class InheritSerializableStrategy implements HeaderStrategy
 
    @Override
    public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
-                                          final HeaderSerializableStrategy.PartialHeader partialHeader,
+                                          final HeaderInformation.PartialHeader partialHeader,
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {

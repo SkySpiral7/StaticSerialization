@@ -3,7 +3,6 @@ package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ShortSerializableStrategy;
@@ -103,7 +102,7 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
 
    @Override
    public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
-                                          final HeaderSerializableStrategy.PartialHeader partialHeader,
+                                          final HeaderInformation.PartialHeader partialHeader,
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {

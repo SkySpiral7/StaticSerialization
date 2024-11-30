@@ -83,6 +83,7 @@ public class AllSerializableStrategy
    public AllSerializableStrategy(final ArraySerializableStrategy arraySerializableStrategy,
                                   final BitSetSerializableStrategy bitSetSerializableStrategy,
                                   final BoxPrimitiveSerializableStrategy boxPrimitiveSerializableStrategy,
+                                  final ClassHeaderSerializableStrategy classHeaderSerializableStrategy,
                                   final EnumSerializableStrategy enumSerializableStrategy,
                                   final IdSerializableStrategy idSerializableStrategy,
                                   final InheritSerializableStrategy inheritSerializableStrategy,
@@ -118,8 +119,8 @@ public class AllSerializableStrategy
       //header order doesn't matter since they don't overlap. but check null first so the others don't NPE
       headerStrategyList = List.of(
          nullSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
-         boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy
-         //TODO: add classHeaderSerializableStrategy, idSerializableStrategy
+         boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
+         classHeaderSerializableStrategy
       );
    }
 
@@ -127,7 +128,7 @@ public class AllSerializableStrategy
     * @param inheritFromClass the component type of the containing array. null if not currently inside an array.
     */
    public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
-                                          final HeaderSerializableStrategy.PartialHeader partialHeaderArg,
+                                          final HeaderInformation.PartialHeader partialHeaderArg,
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {
@@ -140,7 +141,7 @@ public class AllSerializableStrategy
          return HeaderInformation.forPrimitiveArrayValue(classUtil.boxClass(inheritFromClass));
       }
 
-      final HeaderSerializableStrategy.PartialHeader partialHeader;
+      final HeaderInformation.PartialHeader partialHeader;
       if (partialHeaderArg != null)
       {
          partialHeader = partialHeaderArg;
@@ -155,7 +156,7 @@ public class AllSerializableStrategy
          {
             if ('?' == firstByte)
                throw new StreamCorruptedException("Only array elements can inherit type");
-            partialHeader = new HeaderSerializableStrategy.PartialHeader(null, firstByte, 0, false);
+            partialHeader = new HeaderInformation.PartialHeader(null, firstByte, 0, false);
          }
       }
 
@@ -168,7 +169,7 @@ public class AllSerializableStrategy
          .orElse(null);
    }
 
-   private HeaderSerializableStrategy.PartialHeader readInheritHeader(final Class<?> inheritFromClass, final byte firstByte)
+   private HeaderInformation.PartialHeader readInheritHeader(final Class<?> inheritFromClass, final byte firstByte)
    {
       //can't ignore header if inheritFromClass is final because it could be null (thus component will be either '?' or 0xFF)
       final int dimensionCount = arrayUtil.countArrayDimensions(inheritFromClass);
@@ -180,23 +181,23 @@ public class AllSerializableStrategy
       {
          final HeaderInformation<?> fullHeader = HeaderInformation.forPossibleArray(firstByte, baseComponent,
             dimensionCount, primitiveArray);
-         return new HeaderSerializableStrategy.PartialHeader(fullHeader, firstByte, dimensionCount, primitiveArray);
+         return new HeaderInformation.PartialHeader(fullHeader, firstByte, dimensionCount, primitiveArray);
       }
       //if inheritFromClass isn't primitive then it is not required to inherit type (eg null or child class) and continues below
-      return new HeaderSerializableStrategy.PartialHeader(null, firstByte, dimensionCount, primitiveArray);
+      return new HeaderInformation.PartialHeader(null, firstByte, dimensionCount, primitiveArray);
    }
 
    /**
     * @return true if the data was fully represented by a header and thus no more data should be written.
     * false means the header is done but needs data. null means nothing happened (delegate to HeaderSerializableStrategy)
     */
-   public Boolean writeHeader(final Class<?> inheritFromClass, final Object data)
+   public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
    {
       return headerStrategyList.stream()
          .filter(strategy -> strategy.supportsWritingHeader(inheritFromClass, data))
          .findFirst()
          .map(strategy -> strategy.writeHeader(inheritFromClass, data))
-         .orElse(null);
+         .orElseThrow(() -> new AssertionError("Should have used ClassHeaderSerializableStrategy"));
    }
 
    public void writeData(final Object data)

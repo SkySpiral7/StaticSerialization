@@ -28,7 +28,6 @@ import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 public class StrategyInstances
 {
    private final AllSerializableStrategy allSerializableStrategy;
-   private final HeaderSerializableStrategy headerSerializableStrategy;
    private final ReaderValidationStrategy readerValidationStrategy;
    private final ReflectionSerializableStrategy reflectionSerializableStrategy;
 
@@ -67,7 +66,6 @@ public class StrategyInstances
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
          javaSerializableStrategy,
          nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
-      this.headerSerializableStrategy = null;
    }
 
    public StrategyInstances(final ObjectStreamWriter streamWriter, final InternalStreamWriter internalStreamWriter,
@@ -100,12 +98,12 @@ public class StrategyInstances
       final BitSetSerializableStrategy bitSetSerializableStrategy =
          new BitSetSerializableStrategy(boxPrimitiveSerializableStrategy, integerSerializableStrategy);
       final UuidSerializableStrategy uuidSerializableStrategy = new UuidSerializableStrategy(boxPrimitiveSerializableStrategy);
+      final ClassHeaderSerializableStrategy classHeaderSerializableStrategy = new ClassHeaderSerializableStrategy(stringSerializableStrategy);
 
-      this.headerSerializableStrategy = new HeaderSerializableStrategy(registry, utilInstances,
-         byteSerializableStrategy, integerSerializableStrategy, stringSerializableStrategy);
       this.allSerializableStrategy = new AllSerializableStrategy(arraySerializableStrategy,
          bitSetSerializableStrategy,
-         boxPrimitiveSerializableStrategy, enumSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
+         boxPrimitiveSerializableStrategy,
+         classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
          javaSerializableStrategy,
          nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
    }
@@ -113,11 +111,6 @@ public class StrategyInstances
    public AllSerializableStrategy getAllSerializableStrategy()
    {
       return allSerializableStrategy;
-   }
-
-   public HeaderSerializableStrategy getHeaderSerializableStrategy()
-   {
-      return headerSerializableStrategy;
    }
 
    public ReaderValidationStrategy getReaderValidationStrategy()

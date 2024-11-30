@@ -1,7 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 
 public class ClassHeaderSerializableStrategy implements HeaderStrategy
@@ -9,11 +8,19 @@ public class ClassHeaderSerializableStrategy implements HeaderStrategy
    private final StringSerializableStrategy stringSerializableStrategy;
    private final ReaderValidationStrategy readerValidationStrategy;
 
-   /**For reading only*/
    public ClassHeaderSerializableStrategy(final StringSerializableStrategy stringSerializableStrategy, final ReaderValidationStrategy readerValidationStrategy)
    {
       this.stringSerializableStrategy = stringSerializableStrategy;
       this.readerValidationStrategy = readerValidationStrategy;
+   }
+
+   /**
+    * For writing.
+    */
+   public ClassHeaderSerializableStrategy(final StringSerializableStrategy stringSerializableStrategy)
+   {
+      this.stringSerializableStrategy = stringSerializableStrategy;
+      this.readerValidationStrategy = null;
    }
 
    @Override
@@ -33,7 +40,7 @@ public class ClassHeaderSerializableStrategy implements HeaderStrategy
 
    @Override
    public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
-                                          final HeaderSerializableStrategy.PartialHeader partialHeader,
+                                          final HeaderInformation.PartialHeader partialHeader,
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {
@@ -48,8 +55,7 @@ public class ClassHeaderSerializableStrategy implements HeaderStrategy
    @Override
    public boolean supportsWritingHeader(final Class<?> inheritFromClass, final Object data)
    {
-      //TODO: must be false until delete HeaderSerializableStrategy
-      return false;
+      return true;
    }
 
    @Override

@@ -1,7 +1,5 @@
 package com.github.skySpiral7.java.staticSerialization.internal;
 
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
-
 import java.util.Objects;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
@@ -10,11 +8,23 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
  * An immutable bean to hold the information that the stream's header contains. It is returned by HeaderSerializableStrategy.
  *
  * @param <T_Value> The type whose name is className.
- * @see HeaderSerializableStrategy
  */
 public final class HeaderInformation<T_Value>
    //TODO: confirm no raw types
 {
+   /*
+   possible printable ASCII headers: space to / (not $ or .) is 14, : to @ is +7, [ to ` (not _) is +5, { to ~ is +4 = 30
+   I've used 14 so far which leaves 16 free spots
+   forbidden: $.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
+   allowed (30): !"#%&'()*+,-/:;<=>?@[\]^`{|}~ space
+   used (14): !"#%&'+-?@[]^~
+   available (16): ()*,/:;<=>\`{|} space
+   technically a FQ class name can't start with a number or dot so I could use them but I won't.
+   variable names can start with $ so I assume a package/class can too
+   */
+   public record PartialHeader(HeaderInformation<?> fullHeader, byte firstByte, int dimensionCount,
+                               boolean primitiveArray) {}
+
    private final byte firstByte;
    private final String className;
    private final Class<T_Value> knownClass;

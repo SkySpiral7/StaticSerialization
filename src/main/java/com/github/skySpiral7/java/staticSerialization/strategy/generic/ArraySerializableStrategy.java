@@ -6,7 +6,6 @@ import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamReader;
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.strategy.ByteSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.HeaderSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReaderValidationStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
@@ -92,7 +91,7 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
 
    @Override
    public HeaderInformation<?> readHeader(final Class<?> inheritFromClass,
-                                          final HeaderSerializableStrategy.PartialHeader partialHeader,
+                                          final HeaderInformation.PartialHeader partialHeader,
                                           final Class<?> expectedClass,
                                           final boolean allowChildClass)
    {
@@ -115,7 +114,7 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
       }
       else
       {
-         final HeaderSerializableStrategy.PartialHeader componentPartialHeader = new HeaderSerializableStrategy.PartialHeader(null,
+         final HeaderInformation.PartialHeader componentPartialHeader = new HeaderInformation.PartialHeader(null,
             componentFirstByte, dimensionCount, primitiveArray);
          final HeaderInformation<?> componentHeaderInfo = internalStreamReader.getAllSerializableStrategy().readHeader(
             inheritFromClass, componentPartialHeader, expectedClass, allowChildClass);
