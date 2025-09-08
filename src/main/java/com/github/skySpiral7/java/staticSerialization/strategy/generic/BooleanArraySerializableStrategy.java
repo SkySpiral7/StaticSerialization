@@ -19,7 +19,6 @@ public class BooleanArraySerializableStrategy implements DataStrategy
    @Override
    public boolean supportsData(final Class<?> actualClass)
    {
-      //TODO: need markers for compression. Bitset etc
       return boolean[].class.equals(actualClass);
    }
 

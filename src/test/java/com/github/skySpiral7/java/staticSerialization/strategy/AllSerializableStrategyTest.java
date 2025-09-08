@@ -830,13 +830,13 @@ class AllSerializableStrategyTest
       final ByteAppender mockFile = new ByteAppender();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
-      testObject.writeObject(new boolean[]{true});
+      testObject.writeObject(new boolean[]{false, true});
       testObject.close();
       final byte[] expected = {
          ']', 1,   //array indicator and dimensions
          '+',  //boolean
-         0, 0, 0, 1,  //length (int)
-         0b0000_0001
+         0, 0, 0, 2,  //length (int)
+         0b0000_0010
       };
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
@@ -848,12 +848,12 @@ class AllSerializableStrategyTest
       final ByteAppender mockFile = new ByteAppender();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
-      testObject.writeObject(new Boolean[]{false});
+      testObject.writeObject(new Boolean[]{true, false});
       testObject.close();
       final ByteAppender expectedBuilder = new ByteAppender();
       expectedBuilder.append(new byte[]{'[', 1, '+'});   //array indicator, dimensions, component
-      expectedBuilder.append(new byte[]{0, 0, 0, 1});   //length (int)
-      expectedBuilder.append(new byte[]{'-'});
+      expectedBuilder.append(new byte[]{0, 0, 0, 2});   //length (int)
+      expectedBuilder.append(new byte[]{'+', '-'});
       final byte[] fileContents = mockFile.getAllBytes();
       assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));
    }

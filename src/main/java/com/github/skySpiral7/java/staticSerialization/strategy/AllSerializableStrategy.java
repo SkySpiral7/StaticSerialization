@@ -145,6 +145,7 @@ public class AllSerializableStrategy
        * big int -> byte[]
        * big dec -> toEngineeringString? can't see any way to get base big int
        */
+      //TODO: need compression markers which allows for optional compression eg tiny binary
 
       /* order:
        * null so that the rest don't need to null check.
