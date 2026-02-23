@@ -19,7 +19,7 @@ public interface EasyReader extends Closeable
     * the stream doesn't contain enough bytes in which case the returned array length will be however
     * many bytes remain (possibly 0).
     *
-    * @param requestedByteCount the maximum number of bytes to read
+    * @param requestedByteCount the maximum number of bytes to read. 0 is permitted but negative will throw.
     * @throws ClosedResourceException if the stream is closed
     * @see StreamCorruptedException#throwIfNotEnoughData(EasyReader, int, String)
     */

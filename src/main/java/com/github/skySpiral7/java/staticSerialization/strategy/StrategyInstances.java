@@ -6,19 +6,7 @@ import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamRea
 import com.github.skySpiral7.java.staticSerialization.internal.InternalStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.BitSetSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.BooleanArraySerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.ClassHeaderSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.IdSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.InheritSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.NullSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.UuidSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.*;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
@@ -46,6 +34,7 @@ public class StrategyInstances
       final ShortSerializableStrategy shortSerializableStrategy = new ShortSerializableStrategy(reader);
       final StaticSerializableStrategy staticSerializableStrategy = new StaticSerializableStrategy(streamReader);
       final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(readerValidationStrategy, reader);
+      final TinyBinarySerializableStrategy tinyBinarySerializableStrategy = new TinyBinarySerializableStrategy(readerValidationStrategy, reader);
 
       //ones that need other strategies
       final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(
@@ -71,7 +60,7 @@ public class StrategyInstances
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
          inheritSerializableStrategy,
          javaSerializableStrategy,
-         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
+         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, tinyBinarySerializableStrategy,uuidSerializableStrategy);
    }
 
    public StrategyInstances(final ObjectStreamWriter streamWriter,
@@ -94,6 +83,7 @@ public class StrategyInstances
       final InheritSerializableStrategy inheritSerializableStrategy = new InheritSerializableStrategy(utilInstances,
          byteSerializableStrategy);
       final StringSerializableStrategy stringSerializableStrategy = new StringSerializableStrategy(appender, byteSerializableStrategy);
+      final TinyBinarySerializableStrategy tinyBinarySerializableStrategy = new TinyBinarySerializableStrategy(appender);
       final ArraySerializableStrategy arraySerializableStrategy = new ArraySerializableStrategy(utilInstances,
          byteSerializableStrategy, stringSerializableStrategy,
          internalStreamWriter, integerSerializableStrategy);
@@ -114,7 +104,7 @@ public class StrategyInstances
          boxPrimitiveSerializableStrategy,
          classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
          javaSerializableStrategy,
-         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
+         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, tinyBinarySerializableStrategy,uuidSerializableStrategy);
    }
 
    public AllSerializableStrategy getAllSerializableStrategy()

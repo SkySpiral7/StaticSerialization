@@ -71,6 +71,7 @@ public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
    @Override
    public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
    {
+      //TODO: does anything write the " short header?
       throw new IllegalStateException("Not implemented");
    }
 

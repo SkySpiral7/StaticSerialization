@@ -1,5 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization.internal;
 
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.TinyBinarySerializableStrategy;
+
 import java.util.Objects;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
@@ -10,15 +12,15 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
  * @param <T_Value> The type whose name is className.
  */
 public final class HeaderInformation<T_Value>
-   //TODO: confirm no raw types
+   //TODO: confirm no raw types anywhere
 {
    /*
    possible printable ASCII headers: space to / (not $ or .) is 14, : to @ is +7, [ to ` (not _) is +5, { to ~ is +4 = 30
    I've used 14 so far which leaves 16 free spots
    forbidden: $.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
    allowed (30): !"#%&'()*+,-/:;<=>?@[\]^`{|}~ space
-   used (14): !"#%&'+-?@[]^~
-   available (16): ()*,/:;<=>\`{|} space
+   used (14): !"#%&'+-=?@[]^~
+   available (16): ()*,/:;<>\`{|} space
    technically a FQ class name can't start with a number or dot so I could use them but I won't.
    variable names can start with $ so I assume a package/class can too
    Non-printable 0xFF is also used for null (and string termination)
@@ -29,7 +31,10 @@ public final class HeaderInformation<T_Value>
     * Used to mark better compression than typical for that class.
     */
    public enum CompressionScenario {
-      //reserved for later
+      /**
+       * @see TinyBinarySerializableStrategy
+       */
+      TINY_BINARY
    }
 
    private final String className;
@@ -72,10 +77,10 @@ public final class HeaderInformation<T_Value>
     * @param dimensionCount the number of array dimensions (0 if not an array)
     * @return a HeaderInformation without a value (this is the norm)
     */
-   public static HeaderInformation<?> forPossibleArray(final String baseComponentClassName, final CompressionScenario compressionScenario, final int dimensionCount,
+   public static HeaderInformation<?> forPossibleArray(final String baseComponentClassName, final int dimensionCount,
                                                        final boolean primitiveArray)
    {
-      return new HeaderInformation<>(baseComponentClassName, compressionScenario, null, null, dimensionCount, primitiveArray);
+      return new HeaderInformation<>(baseComponentClassName, null, null, null, dimensionCount, primitiveArray);
    }
 
    /**

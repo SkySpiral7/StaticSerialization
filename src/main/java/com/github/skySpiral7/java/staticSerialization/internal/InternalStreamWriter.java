@@ -4,6 +4,7 @@ import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.strategy.AllSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.ReflectionSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.strategy.StrategyInstances;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.HeaderStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.AsynchronousFileAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
@@ -53,8 +54,9 @@ public class InternalStreamWriter implements Closeable, Flushable
 
    public void writeObjectInternal(final Class<?> inheritFromClass, final Object data)
    {
-      if (!allSerializableStrategy.writeHeader(inheritFromClass, data))
-         allSerializableStrategy.writeData(data);
+      final HeaderStrategy headerStrategy = allSerializableStrategy.determineHeaderStrategy(inheritFromClass, data);
+      if (!allSerializableStrategy.writeHeader(headerStrategy, inheritFromClass, data))
+         allSerializableStrategy.writeData(data, headerStrategy);
    }
 
    public ReflectionSerializableStrategy getReflectionSerializableStrategy()

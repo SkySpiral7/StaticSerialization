@@ -31,7 +31,6 @@ public interface EasyAppender extends Closeable, Flushable
     */
    default void append(final byte data)
    {
-      //only used once but fair enough to exist as default
       append(new byte[]{data});
    }
 

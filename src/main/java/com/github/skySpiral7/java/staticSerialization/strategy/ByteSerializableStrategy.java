@@ -4,6 +4,7 @@ import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.util.BitWiseUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 
+//TODO: rename to byte writer
 public class ByteSerializableStrategy
 {
    private final EasyAppender appender;

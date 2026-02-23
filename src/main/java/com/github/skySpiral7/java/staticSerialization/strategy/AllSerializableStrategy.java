@@ -4,21 +4,7 @@ import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableE
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.BitSetSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.BooleanArraySerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.ClassHeaderSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.DataStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.HeaderStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.IdSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.InheritSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.NullSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.UuidSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.*;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
@@ -52,6 +38,7 @@ public class AllSerializableStrategy
                                   final NullSerializableStrategy nullSerializableStrategy,
                                   final StaticSerializableStrategy staticSerializableStrategy,
                                   final StringSerializableStrategy stringSerializableStrategy,
+                                  final TinyBinarySerializableStrategy tinyBinarySerializableStrategy,
                                   final UuidSerializableStrategy uuidSerializableStrategy)
    {
       this(reader,
@@ -64,7 +51,7 @@ public class AllSerializableStrategy
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
          inheritSerializableStrategy,
          javaSerializableStrategy,
-         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
+         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, tinyBinarySerializableStrategy,uuidSerializableStrategy);
    }
 
    /**
@@ -84,6 +71,7 @@ public class AllSerializableStrategy
                                   final NullSerializableStrategy nullSerializableStrategy,
                                   final StaticSerializableStrategy staticSerializableStrategy,
                                   final StringSerializableStrategy stringSerializableStrategy,
+                                  final TinyBinarySerializableStrategy tinyBinarySerializableStrategy,
                                   final UuidSerializableStrategy uuidSerializableStrategy)
    {
       this(null,
@@ -96,7 +84,7 @@ public class AllSerializableStrategy
          boxPrimitiveSerializableStrategy, classHeaderSerializableStrategy, enumSerializableStrategy, idSerializableStrategy,
          inheritSerializableStrategy,
          javaSerializableStrategy,
-         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, uuidSerializableStrategy);
+         nullSerializableStrategy, staticSerializableStrategy, stringSerializableStrategy, tinyBinarySerializableStrategy,uuidSerializableStrategy);
    }
 
    /**
@@ -118,6 +106,7 @@ public class AllSerializableStrategy
                                   final NullSerializableStrategy nullSerializableStrategy,
                                   final StaticSerializableStrategy staticSerializableStrategy,
                                   final StringSerializableStrategy stringSerializableStrategy,
+                                  final TinyBinarySerializableStrategy tinyBinarySerializableStrategy,
                                   final UuidSerializableStrategy uuidSerializableStrategy)
    {
       this.reader = reader;
@@ -126,13 +115,14 @@ public class AllSerializableStrategy
       this.writerRegistry = writerRegistry;
 
       /* order:
-       * first is boolean[] since it's more compressed than other arrays
+       * first is boolean[] and tiny byte[] since they are more compressed than other arrays
        * then is supported jdk final classes (none of which are static) so that they have better compression than java.
        * then static so that it will respect any manual serial.
        * then bitset/enum (which can be static) so that the non-static ones will have better compression than java.
        * then java if all else fails */
       dataStrategyList = List.of(
          booleanArraySerializableStrategy,
+              tinyBinarySerializableStrategy,
          boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
          uuidSerializableStrategy,
          staticSerializableStrategy,
@@ -145,18 +135,19 @@ public class AllSerializableStrategy
        * big int -> byte[]
        * big dec -> toEngineeringString? can't see any way to get base big int
        */
-      //TODO: need compression markers which allows for optional compression eg tiny binary
 
       /* order:
        * null so that the rest don't need to null check.
        * id trumps data and headers.
        * inherit trumps headers but not data.
+       * tiny binary since it trumps arrays
        * everything else since they don't overlap.
        * lastly class name since that's a catch-all.
        */
       headerStrategyList = List.of(
          nullSerializableStrategy, idSerializableStrategy, inheritSerializableStrategy,
-         boxPrimitiveSerializableStrategy, stringSerializableStrategy, arraySerializableStrategy,
+              tinyBinarySerializableStrategy,
+              arraySerializableStrategy,boxPrimitiveSerializableStrategy, stringSerializableStrategy,
          classHeaderSerializableStrategy);
    }
 
@@ -220,18 +211,20 @@ public class AllSerializableStrategy
       return new HeaderInformation.PartialHeader(firstByte, 0, false);
    }
 
-   /**
-    * @return true if the data was fully represented by a header and thus no more data should be written.
-    * false means the header is done but needs data. null means nothing happened (delegate to HeaderSerializableStrategy)
-    */
-   public boolean writeHeader(final Class<?> inheritFromClass, final Object data)
-   {
-      final HeaderStrategy headerStrategy = headerStrategyList.stream()
-         .filter(strategy -> strategy.supportsWritingHeader(inheritFromClass, data))
-         .findFirst()
-         .orElseThrow(() -> new AssertionError("Should have used ClassHeaderSerializableStrategy"));
+   public HeaderStrategy determineHeaderStrategy(final Class<?> inheritFromClass, final Object data) {
+      return headerStrategyList.stream()
+              .filter(strategy -> strategy.supportsWritingHeader(inheritFromClass, data))
+              .findFirst()
+              .orElseThrow(() -> new AssertionError("Should have used ClassHeaderSerializableStrategy"));
+   }
 
-      //TODO: Long should also get id
+      /**
+       * @return true if the data was fully represented by a header and thus no more data should be written.
+       * false means the header is done but needs data. null means nothing happened (delegate to HeaderSerializableStrategy)
+       */
+      public boolean writeHeader(final HeaderStrategy headerStrategy, final Class<?> inheritFromClass, final Object data)
+      {
+         //TODO: Long should also get id
       if (data != null && writerRegistry.getId(data) == null && !classUtil.isPrimitiveOrBox(data.getClass()))
          //null, primitive, and box don't get registered
          writerRegistry.registerObject(data);
@@ -239,11 +232,12 @@ public class AllSerializableStrategy
       return headerStrategy.writeHeader(inheritFromClass, data);
    }
 
-   public void writeData(final Object data)
+   public void writeData(final Object data, final HeaderStrategy headerStrategy)
    {
+      final HeaderInformation.CompressionScenario compressionScenario = headerStrategy.determineCompressionScenario(data);
       final Class<?> dataClass = data.getClass();
       dataStrategyList.stream()
-         .filter(strategy -> strategy.supportsData(dataClass, null))
+         .filter(strategy -> strategy.supportsData(dataClass, compressionScenario))
          .findFirst()
          .orElseThrow(() -> new NotSerializableException(dataClass))
          .writeData(data);

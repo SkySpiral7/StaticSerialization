@@ -793,16 +793,19 @@ class AllSerializableStrategyTest
       final ByteAppender mockFile = new ByteAppender();
       final ObjectStreamWriter testObject = new ObjectStreamWriter(mockFile);
 
-      testObject.writeObject(new byte[]{1, 2});
+      final byte[] input = new byte[300];
+      input[0] = 1;
+      input[1] = 2;
+      testObject.writeObject(input);
       testObject.close();
       final byte[] expected = {
          ']', 1,   //array indicator and dimensions
          '~',  //byte
-         0, 0, 0, 2,  //length (int)
+         0, 0, 1, 0x2C,  //length (int)
          1, 2  //primitive elements have no header
       };
       final byte[] fileContents = mockFile.getAllBytes();
-      assertEquals(Arrays.toString(expected), Arrays.toString(fileContents));
+      assertEquals(Arrays.toString(expected), Arrays.toString(shortenBytesKeepStart(fileContents, expected.length)));
    }
 
    @Test
@@ -875,15 +878,22 @@ class AllSerializableStrategyTest
       assertEquals(Arrays.toString(expectedBuilder.getAllBytes()), Arrays.toString(fileContents));
    }
 
-   private String bytesToString(final byte[] data, final int bytesToIgnore)
+   private String bytesToString(final byte[] data, final int endingBytesToIgnore)
    {
-      return new String(data, 0, (data.length - bytesToIgnore), StandardCharsets.UTF_8);
+      return new String(data, 0, (data.length - endingBytesToIgnore), StandardCharsets.UTF_8);
    }
 
-   private byte[] shortenBytes(final byte[] data, final int bytesToKeep)
+   private byte[] shortenBytes(final byte[] data, final int endingBytesToKeep)
    {
-      final byte[] smallerData = new byte[bytesToKeep];
-      System.arraycopy(data, (data.length - bytesToKeep), smallerData, 0, bytesToKeep);
+      final byte[] smallerData = new byte[endingBytesToKeep];
+      System.arraycopy(data, (data.length - endingBytesToKeep), smallerData, 0, endingBytesToKeep);
+      return smallerData;
+   }
+
+   private byte[] shortenBytesKeepStart(final byte[] data, final int startingBytesToKeep)
+   {
+      final byte[] smallerData = new byte[startingBytesToKeep];
+      System.arraycopy(data, 0, smallerData, 0, startingBytesToKeep);
       return smallerData;
    }
 

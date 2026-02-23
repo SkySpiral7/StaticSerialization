@@ -17,4 +17,8 @@ public interface HeaderStrategy
     * @return true if the data was fully represented by a header and thus no more data should be written
     */
    public boolean writeHeader(final Class<?> inheritFromClass, final Object data);
+
+   default HeaderInformation.CompressionScenario determineCompressionScenario(final Object data) {
+      return null;
+   }
 }
