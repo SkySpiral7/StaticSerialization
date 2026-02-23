@@ -44,7 +44,7 @@ public class EnumSerializableStrategy_IT
          result = 0;
       }};
 
-      RoundingMode actual = testObject.readData(RoundingMode.class);
+      RoundingMode actual = testObject.readData(RoundingMode.class, null);
 
       assertEquals(RoundingMode.UP, actual);
       new FullVerifications() {};
@@ -63,7 +63,7 @@ public class EnumSerializableStrategy_IT
 
       try
       {
-         testObject.readData(RoundingMode.class);
+         testObject.readData(RoundingMode.class, null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)
@@ -86,7 +86,7 @@ public class EnumSerializableStrategy_IT
 
       try
       {
-         testObject.readData(RoundingMode.class);
+         testObject.readData(RoundingMode.class, null);
          fail("Didn't throw");
       }
       catch (final StreamCorruptedException actual)

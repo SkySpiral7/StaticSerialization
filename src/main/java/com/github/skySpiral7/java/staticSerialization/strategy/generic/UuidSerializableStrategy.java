@@ -1,5 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
+
 import java.util.UUID;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
@@ -14,7 +16,7 @@ public class UuidSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public boolean supportsData(final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       return UUID.class.isAssignableFrom(actualClass);
    }
@@ -29,12 +31,13 @@ public class UuidSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> expectedClass)
+   public <T> T readData(final Class<T> expectedClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       //TODO: could have more specific "no data" error
       final long[] compressed = {
-         boxPrimitiveSerializableStrategy.readData(Long.class),
-         boxPrimitiveSerializableStrategy.readData(Long.class)
+              //compressionScenario is always null
+         boxPrimitiveSerializableStrategy.readData(Long.class, compressionScenario),
+         boxPrimitiveSerializableStrategy.readData(Long.class, compressionScenario)
       };
       return cast(decompress(compressed));
    }

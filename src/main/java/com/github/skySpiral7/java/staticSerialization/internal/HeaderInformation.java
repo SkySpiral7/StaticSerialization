@@ -21,10 +21,19 @@ public final class HeaderInformation<T_Value>
    available (16): ()*,/:;<=>\`{|} space
    technically a FQ class name can't start with a number or dot so I could use them but I won't.
    variable names can start with $ so I assume a package/class can too
+   Non-printable 0xFF is also used for null (and string termination)
    */
    public record PartialHeader(byte firstByte, int dimensionCount, boolean primitiveArray) {}
 
+   /**
+    * Used to mark better compression than typical for that class.
+    */
+   public enum CompressionScenario {
+      //reserved for later
+   }
+
    private final String className;
+   private final CompressionScenario compressionScenario;
    private final Class<T_Value> knownClass;
    private final T_Value value;
    private final int dimensionCount;
@@ -35,7 +44,7 @@ public final class HeaderInformation<T_Value>
     */
    public static HeaderInformation<?> forNull()
    {
-      return new HeaderInformation<>(null, Object.class, null, 0, false);
+      return new HeaderInformation<>(null, null, Object.class, null, 0, false);
    }
 
    /**
@@ -46,27 +55,27 @@ public final class HeaderInformation<T_Value>
       //TODO: isn't this only possible with 2d+? in which case rename forInheritedPrimitiveArray
       //primitiveArray=false because this header info is for a primitive value not an array
       String boxClassName = boxedClass.getName();
-      return new HeaderInformation<>(boxClassName, boxedClass, null, 0, false);
+      return new HeaderInformation<>(boxClassName, null, boxedClass, null, 0, false);
    }
 
    /**
     * @param dimensionCount the number of array dimensions (0 if not an array)
     * @return a HeaderInformation without a value (this is the norm)
     */
-   public static <T_Value> HeaderInformation<T_Value> forPossibleArray(final Class<T_Value> baseComponentClass, final int dimensionCount,
+   public static <T_Value> HeaderInformation<T_Value> forPossibleArray(final Class<T_Value> baseComponentClass, final CompressionScenario compressionScenario, final int dimensionCount,
                                                                        final boolean primitiveArray)
    {
-      return new HeaderInformation<>(baseComponentClass.getName(), null, null, dimensionCount, primitiveArray);
+      return new HeaderInformation<>(baseComponentClass.getName(), compressionScenario, null, null, dimensionCount, primitiveArray);
    }
 
    /**
     * @param dimensionCount the number of array dimensions (0 if not an array)
     * @return a HeaderInformation without a value (this is the norm)
     */
-   public static HeaderInformation<?> forPossibleArray(final String baseComponentClassName, final int dimensionCount,
+   public static HeaderInformation<?> forPossibleArray(final String baseComponentClassName, final CompressionScenario compressionScenario, final int dimensionCount,
                                                        final boolean primitiveArray)
    {
-      return new HeaderInformation<>(baseComponentClassName, null, null, dimensionCount, primitiveArray);
+      return new HeaderInformation<>(baseComponentClassName, compressionScenario, null, null, dimensionCount, primitiveArray);
    }
 
    /**
@@ -74,16 +83,17 @@ public final class HeaderInformation<T_Value>
     */
    public static <T_Value> HeaderInformation<T_Value> forValue(final String className, final T_Value value)
    {
-      return new HeaderInformation<>(className, cast(value.getClass()), value, 0, false);
+      return new HeaderInformation<>(className, null, cast(value.getClass()), value, 0, false);
    }
 
    /**
     * For private use and testing only. Takes every value as-is.
     */
-   public HeaderInformation(final String className, final Class<T_Value> knownClass, final T_Value value, final int dimensionCount,
+   public HeaderInformation(final String className, final CompressionScenario compressionScenario, final Class<T_Value> knownClass, final T_Value value, final int dimensionCount,
                             final boolean primitiveArray)
    {
       this.className = className;
+      this.compressionScenario=compressionScenario;
       this.knownClass = knownClass;
       this.value = value;
       this.dimensionCount = dimensionCount;
@@ -96,6 +106,14 @@ public final class HeaderInformation<T_Value>
     * @see #isPrimitiveArray()
     */
    public String getClassName(){return className;}
+
+   /**
+    * @return usually null. Is used to mark classes that have better compression than typical for the class.
+    * @see CompressionScenario
+    */
+   public CompressionScenario getCompressionScenario() {
+      return compressionScenario;
+   }
 
    /**
     * @return only non-null if an already loaded class. If non-null will match {@link #className}

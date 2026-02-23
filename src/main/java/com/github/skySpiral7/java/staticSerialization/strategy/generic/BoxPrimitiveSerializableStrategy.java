@@ -112,7 +112,7 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
 
       final Class<?> headerClass = COMPRESSED_HEADER_TO_CLASS.get((char) firstByte);  //safe cast because map contains only ASCII
       final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(
-         headerClass, partialHeader.dimensionCount(), partialHeader.primitiveArray());
+         headerClass, null, partialHeader.dimensionCount(), partialHeader.primitiveArray());
       readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
       return headerInformation;
    }
@@ -142,7 +142,7 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
    }
 
    @Override
-   public boolean supportsData(final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       return classUtil.isPrimitiveOrBox(actualClass);
    }
@@ -174,7 +174,7 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
    }
 
    @Override
-   public <T> T readData(final Class<T> expectedClass)
+   public <T> T readData(final Class<T> expectedClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       if (Byte.class.equals(expectedClass))
       {

@@ -191,7 +191,7 @@ class AllSerializableStrategyTest
    {
       final EasyReader reader = new ByteReader(new byte[]{'[', 1, '+'});
       init(reader, null);
-      final HeaderInformation<Boolean> expected = new HeaderInformation<>(Boolean.class.getName(), Boolean.class, null, 1, false);
+      final HeaderInformation<Boolean> expected = new HeaderInformation<>(Boolean.class.getName(), null, Boolean.class, null, 1, false);
 
       final HeaderInformation<?> actual = testObject.readHeader(null, null, Boolean[].class, false);
 
@@ -204,7 +204,7 @@ class AllSerializableStrategyTest
    {
       final EasyReader reader = new ByteReader(new byte[]{']', 1, '+'});
       init(reader, null);
-      final HeaderInformation<Boolean> expected = new HeaderInformation<>(Boolean.class.getName(), Boolean.class, null, 1, true);
+      final HeaderInformation<Boolean> expected = new HeaderInformation<>(Boolean.class.getName(), null, Boolean.class, null, 1, true);
 
       final HeaderInformation<?> actual = testObject.readHeader(null, null, boolean[].class, false);
 
@@ -217,7 +217,7 @@ class AllSerializableStrategyTest
    {
       final EasyReader reader = new ByteReader(new byte[]{StringSerializableStrategy.TERMINATOR});
       init(reader, null);
-      final HeaderInformation<?> expected = new HeaderInformation<>(null, Object.class, null, 0, false);
+      final HeaderInformation<?> expected = new HeaderInformation<>(null, null, Object.class, null, 0, false);
 
       final HeaderInformation<?> actual = testObject.readHeader(null, null, null, false);
 
@@ -230,7 +230,7 @@ class AllSerializableStrategyTest
    {
       final EasyReader reader = new ByteReader(new byte[]{'+'});
       init(reader, null);
-      final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", null, Boolean.TRUE, 0, false);
+      final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", null, null, Boolean.TRUE, 0, false);
 
       final HeaderInformation<?> actual = testObject.readHeader(null, null, null, false);
 
@@ -243,7 +243,7 @@ class AllSerializableStrategyTest
    {
       final EasyReader reader = new ByteReader(new byte[]{'-'});
       init(reader, null);
-      final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", null, Boolean.FALSE, 0, false);
+      final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", null, null, Boolean.FALSE, 0, false);
 
       final HeaderInformation<?> actual = testObject.readHeader(null, null, null, false);
 
@@ -259,7 +259,7 @@ class AllSerializableStrategyTest
       inputBuilder.append(StringSerializableStrategy.TERMINATOR);
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", null, null, 0, false);
+      final HeaderInformation<Boolean> expected = new HeaderInformation<>("java.lang.Boolean", null, null, null, 0, false);
 
       final HeaderInformation<?> actual = testObject.readHeader(null, null, Boolean.class, false);
       assertEquals(expected, actual);
@@ -276,7 +276,7 @@ class AllSerializableStrategyTest
       inputBuilder.append((byte) '~');
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<Byte> expected = new HeaderInformation<>("java.lang.Byte", null, null, 0, false);
+      final HeaderInformation<Byte> expected = new HeaderInformation<>("java.lang.Byte", null, null, null, 0, false);
 
       final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Byte.class, false);
       assertEquals(expected, actual1);
@@ -295,7 +295,7 @@ class AllSerializableStrategyTest
       inputBuilder.append((byte) '!');
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<Short> expected = new HeaderInformation<>("java.lang.Short", null, null, 0, false);
+      final HeaderInformation<Short> expected = new HeaderInformation<>("java.lang.Short", null, null, null, 0, false);
 
       final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Short.class, false);
       assertEquals(expected, actual1);
@@ -314,7 +314,7 @@ class AllSerializableStrategyTest
       inputBuilder.append((byte) '@');
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<Integer> expected = new HeaderInformation<>("java.lang.Integer", null, null, 0, false);
+      final HeaderInformation<Integer> expected = new HeaderInformation<>("java.lang.Integer", null, null, null, 0, false);
 
       final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Integer.class, false);
       assertEquals(expected, actual1);
@@ -333,7 +333,7 @@ class AllSerializableStrategyTest
       inputBuilder.append((byte) '#');
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<Long> expected = new HeaderInformation<>("java.lang.Long", null, null, 0, false);
+      final HeaderInformation<Long> expected = new HeaderInformation<>("java.lang.Long", null, null, null, 0, false);
 
       final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Long.class, false);
       assertEquals(expected, actual1);
@@ -352,7 +352,7 @@ class AllSerializableStrategyTest
       inputBuilder.append((byte) '%');
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<Float> expected = new HeaderInformation<>("java.lang.Float", null, null, 0, false);
+      final HeaderInformation<Float> expected = new HeaderInformation<>("java.lang.Float", null, null, null, 0, false);
 
       final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Float.class, false);
       assertEquals(expected, actual1);
@@ -371,7 +371,7 @@ class AllSerializableStrategyTest
       inputBuilder.append((byte) '^');
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<Double> expected = new HeaderInformation<>("java.lang.Double", null, null, 0, false);
+      final HeaderInformation<Double> expected = new HeaderInformation<>("java.lang.Double", null, null, null, 0, false);
 
       final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Double.class, false);
       assertEquals(expected, actual1);
@@ -390,7 +390,7 @@ class AllSerializableStrategyTest
       inputBuilder.append((byte) '\'');
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<Character> expected = new HeaderInformation<>("java.lang.Character", null, null, 0, false);
+      final HeaderInformation<Character> expected = new HeaderInformation<>("java.lang.Character", null, null, null, 0, false);
 
       final HeaderInformation<?> actual1 = testObject.readHeader(null, null, Character.class, false);
       assertEquals(expected, actual1);
@@ -409,7 +409,7 @@ class AllSerializableStrategyTest
       inputBuilder.append((byte) '"');
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<String> expected = new HeaderInformation<>("java.lang.String", null, null, 0, false);
+      final HeaderInformation<String> expected = new HeaderInformation<>("java.lang.String", null, null, null, 0, false);
 
       final HeaderInformation<?> actual1 = testObject.readHeader(null, null, String.class, false);
       assertEquals(expected, actual1);
@@ -424,7 +424,7 @@ class AllSerializableStrategyTest
    {
       final EasyReader reader = new ByteReader(new byte[]{'[', 1, '~'});
       init(reader, null);
-      final HeaderInformation<Byte> expected = new HeaderInformation<>(Byte.class.getName(), Byte.class, null, 1, false);
+      final HeaderInformation<Byte> expected = new HeaderInformation<>(Byte.class.getName(), null, Byte.class, null, 1, false);
 
       final HeaderInformation<?> actual = testObject.readHeader(null, null, Byte[].class, false);
 
@@ -487,7 +487,7 @@ class AllSerializableStrategyTest
 
       final EasyReader reader = new ByteReader(new byte[]{'&', 0, 0, 0, 0});
       init(reader, registry);
-      final HeaderInformation<String> expected = new HeaderInformation<>(String.class.getName(), null, objectValue, 0, false);
+      final HeaderInformation<String> expected = new HeaderInformation<>(String.class.getName(), null, null, objectValue, 0, false);
 
       final HeaderInformation<?> actual = testObject.readHeader(null, null, null, false);
 
@@ -522,7 +522,7 @@ class AllSerializableStrategyTest
       inputBuilder.append(StringSerializableStrategy.TERMINATOR);
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<Object> expected = new HeaderInformation<>("java.lang.Object", null, null, 0, false);
+      final HeaderInformation<Object> expected = new HeaderInformation<>("java.lang.Object", null, null, null, 0, false);
 
       final HeaderInformation<?> actual = testObject.readHeader(null, null, Object.class, true);
       assertEquals(expected, actual);
@@ -539,7 +539,7 @@ class AllSerializableStrategyTest
       inputBuilder.append(StringSerializableStrategy.TERMINATOR);
       final EasyReader reader = new ByteReader(inputBuilder.getAllBytes());
       init(reader, null);
-      final HeaderInformation<Object> expected = new HeaderInformation<>(Object.class.getName(), null, null, 1, false);
+      final HeaderInformation<Object> expected = new HeaderInformation<>(Object.class.getName(), null, null, null, 1, false);
 
       final HeaderInformation<?> actual = testObject.readHeader(null, null, Object[].class, true);
 

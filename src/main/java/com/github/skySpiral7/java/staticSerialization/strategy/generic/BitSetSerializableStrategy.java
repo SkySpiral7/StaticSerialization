@@ -1,5 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 
 import java.util.BitSet;
@@ -19,7 +20,7 @@ public class BitSetSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public boolean supportsData(final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       return BitSet.class.isAssignableFrom(actualClass);
    }
@@ -37,13 +38,13 @@ public class BitSetSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> actualClass)
+   public <T> T readData(final Class<T> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       final int byteLength = integerSerializableStrategy.read("Missing array length");
       final byte[] byteArray = new byte[byteLength];
       for (int readIndex = 0; readIndex < byteLength; ++readIndex)
       {
-         byteArray[readIndex] = boxPrimitiveSerializableStrategy.readData(Byte.class);
+         byteArray[readIndex] = boxPrimitiveSerializableStrategy.readData(Byte.class, null);
       }
       return cast(decompress(byteArray));
    }

@@ -60,7 +60,8 @@ public class ReaderValidationStrategy
             {
                expectedHeader = HeaderInformation.forPossibleArray(
                   classUtil.boxClass(expectedBaseComponentType),
-                  expectedDimensions,
+                       null,
+                       expectedDimensions,
                   true
                );
             }
@@ -68,7 +69,8 @@ public class ReaderValidationStrategy
             {
                expectedHeader = HeaderInformation.forPossibleArray(
                   expectedBaseComponentType,
-                  expectedDimensions,
+                       null,
+                       expectedDimensions,
                   false
                );
             }

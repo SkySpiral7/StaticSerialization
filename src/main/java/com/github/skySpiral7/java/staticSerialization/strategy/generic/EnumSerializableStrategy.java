@@ -1,6 +1,7 @@
 package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
@@ -15,7 +16,7 @@ public class EnumSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public boolean supportsData(final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       return actualClass.isEnum();
    }
@@ -28,7 +29,7 @@ public class EnumSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> expectedClass)
+   public <T> T readData(final Class<T> expectedClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       final int ordinal = integerSerializableStrategy.read("Missing enum ordinal");
       if (ordinal < 0) throw new StreamCorruptedException("Invalid enum ordinal. Actual: " + ordinal);

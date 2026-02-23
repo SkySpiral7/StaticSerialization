@@ -243,18 +243,18 @@ public class AllSerializableStrategy
    {
       final Class<?> dataClass = data.getClass();
       dataStrategyList.stream()
-         .filter(strategy -> strategy.supportsData(dataClass))
+         .filter(strategy -> strategy.supportsData(dataClass, null))
          .findFirst()
          .orElseThrow(() -> new NotSerializableException(dataClass))
          .writeData(data);
    }
 
-   public <T> T readData(final Class<T> actualClass)
+   public <T> T readData(final Class<T> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       return dataStrategyList.stream()
-         .filter(strategy -> strategy.supportsData(actualClass))
+         .filter(strategy -> strategy.supportsData(actualClass, compressionScenario))
          .findFirst()
          .orElseThrow(() -> new NotSerializableException(actualClass))
-         .readData(actualClass);
+         .readData(actualClass, compressionScenario);
    }
 }

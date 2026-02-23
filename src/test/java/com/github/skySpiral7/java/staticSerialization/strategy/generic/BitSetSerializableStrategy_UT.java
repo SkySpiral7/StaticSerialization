@@ -63,11 +63,11 @@ class BitSetSerializableStrategy_UT
          mockIntegerSerializableStrategy.read("Missing array length");
          result = 2;
 
-         mockBoxPrimitiveSerializableStrategy.readData(Byte.class);
+         mockBoxPrimitiveSerializableStrategy.readData(Byte.class, null);
          returns((byte) 0xba, (byte) 0xbe);
       }};
 
-      final Object actual = testObject.readData(null);
+      final Object actual = testObject.readData(null, null);
 
       assertEquals(expected, actual);
    }

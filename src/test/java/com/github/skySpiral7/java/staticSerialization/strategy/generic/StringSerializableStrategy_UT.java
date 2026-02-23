@@ -43,7 +43,7 @@ class StringSerializableStrategy_UT
       final StringSerializableStrategy testObject = new StringSerializableStrategy(null, byteReader);
       final String expected = "hi";
 
-      final Object actual = testObject.readData(null);
+      final Object actual = testObject.readData(null, null);
 
       assertEquals(expected, actual);
    }
@@ -54,7 +54,7 @@ class StringSerializableStrategy_UT
       final ByteReader byteReader = new ByteReader(new byte[]{'h', 'i'});
       final StringSerializableStrategy testObject = new StringSerializableStrategy(null, byteReader);
 
-      assertThrows(StreamCorruptedException.class, () -> testObject.readData(null));
+      assertThrows(StreamCorruptedException.class, () -> testObject.readData(null, null));
    }
 
    @Test

@@ -57,7 +57,7 @@ public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
                                           final boolean allowChildClass)
    {
       final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(
-         String.class, partialHeader.dimensionCount(), false);
+         String.class, null, partialHeader.dimensionCount(), false);
       readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
       return headerInformation;
    }
@@ -75,7 +75,7 @@ public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public boolean supportsData(final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       return String.class.isAssignableFrom(actualClass);
    }
@@ -90,7 +90,7 @@ public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> actualClass)
+   public <T> T readData(final Class<T> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       final ByteArrayOutputStream classNameStream = new ByteArrayOutputStream();
       byte[] remaining = StreamCorruptedException.throwIfNotByteTerminated(reader, TERMINATOR, "String data not " +

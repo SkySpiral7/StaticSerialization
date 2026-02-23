@@ -109,7 +109,7 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
       if ('+' == componentFirstByte)
       {
          final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(
-            Boolean.class, dimensionCount, primitiveArray);
+            Boolean.class, null, dimensionCount, primitiveArray);
          readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);
          return headerInformation;
       }
@@ -163,7 +163,7 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public boolean supportsData(final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       return actualClass.isArray();
    }
@@ -182,7 +182,7 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> actualClass)
+   public <T> T readData(final Class<T> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       final Class<?> componentType = actualClass.getComponentType();
       final int arrayLength = integerSerializableStrategy.read("Missing array length");

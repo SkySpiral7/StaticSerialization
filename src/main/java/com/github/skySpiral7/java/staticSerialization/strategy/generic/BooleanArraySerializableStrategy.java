@@ -1,5 +1,6 @@
 package com.github.skySpiral7.java.staticSerialization.strategy.generic;
 
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.strategy.IntegerSerializableStrategy;
 
 import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast;
@@ -17,7 +18,7 @@ public class BooleanArraySerializableStrategy implements DataStrategy
    }
 
    @Override
-   public boolean supportsData(final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       return boolean[].class.equals(actualClass);
    }
@@ -35,14 +36,14 @@ public class BooleanArraySerializableStrategy implements DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> expectedClass)
+   public <T> T readData(final Class<T> expectedClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       final int flagLength = integerSerializableStrategy.read("Missing array length");
       final int byteLength = (flagLength + 7) / 8;  //rounds up
       final byte[] byteArray = new byte[byteLength];
       for (int readIndex = 0; readIndex < byteLength; ++readIndex)
       {
-         byteArray[readIndex] = boxPrimitiveSerializableStrategy.readData(Byte.class);
+         byteArray[readIndex] = boxPrimitiveSerializableStrategy.readData(Byte.class, null);
       }
       return cast(decompress(byteArray, flagLength));
    }

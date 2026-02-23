@@ -5,6 +5,7 @@ import com.github.skySpiral7.java.staticSerialization.ObjectStreamWriter;
 import com.github.skySpiral7.java.staticSerialization.StaticSerializable;
 import com.github.skySpiral7.java.staticSerialization.exception.DeserializationException;
 import com.github.skySpiral7.java.staticSerialization.exception.InvalidClassException;
+import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -30,7 +31,7 @@ public class StaticSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public boolean supportsData(final Class<?> actualClass)
+   public boolean supportsData(final Class<?> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       return StaticSerializable.class.isAssignableFrom(actualClass);
    }
@@ -43,7 +44,7 @@ public class StaticSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> expectedClass)
+   public <T> T readData(final Class<T> expectedClass, final HeaderInformation.CompressionScenario compressionScenario)
    {
       if (!Modifier.isPublic(expectedClass.getModifiers()))
       {
