@@ -16,14 +16,21 @@ public final class HeaderInformation<T_Value>
 {
    /*
    possible printable ASCII headers: space to / (not $ or .) is 14, : to @ is +7, [ to ` (not _) is +5, { to ~ is +4 = 30
-   I've used 14 so far which leaves 16 free spots
+   I've used 15 so far which leaves 15 free spots
    forbidden: $.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
    allowed (30): !"#%&'()*+,-/:;<=>?@[\]^`{|}~ space
-   used (14): !"#%&'+-=?@[]^~
-   available (16): ()*,/:;<>\`{|} space
+   used (15): !"#%&'+-=?@[]^~
+   available (15): ()*,/:;<>\`{|} space
    technically a FQ class name can't start with a number or dot so I could use them but I won't.
-   variable names can start with $ so I assume a package/class can too
    Non-printable 0xFF is also used for null (and string termination)
+
+   BoxPrimitiveSerializableStrategy: !#%'+-@^~
+   StringSerializableStrategy: "
+   NullSerializableStrategy: 0xFF
+   IdSerializableStrategy: &
+   TinyBinarySerializableStrategy: =
+   ArraySerializableStrategy: []
+   inherit: ?
    */
    public record PartialHeader(byte firstByte, int dimensionCount, boolean primitiveArray) {}
 

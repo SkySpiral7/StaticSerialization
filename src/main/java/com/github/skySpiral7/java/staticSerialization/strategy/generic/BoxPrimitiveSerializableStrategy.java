@@ -53,7 +53,6 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
       CLASS_TO_COMPRESSED_HEADER.put(Float.class, '%');
       CLASS_TO_COMPRESSED_HEADER.put(Double.class, '^');
       CLASS_TO_COMPRESSED_HEADER.put(Character.class, '\'');
-      CLASS_TO_COMPRESSED_HEADER.put(String.class, '"');
    }
 
    private final EasyReader reader;

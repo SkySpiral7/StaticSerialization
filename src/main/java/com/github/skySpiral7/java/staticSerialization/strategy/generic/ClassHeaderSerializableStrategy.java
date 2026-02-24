@@ -32,13 +32,12 @@ public class ClassHeaderSerializableStrategy implements HeaderStrategy
       return (
          /*
          FQ class names can't start with . or a number.
-         Class names can start with $
-         I don't think packages can but $ is possible here with no package (default package).
+         Package and class names can start with $ and _
          */
          ('a' <= firstByte && firstByte <= 'z')
             || ('A' <= firstByte && firstByte <= 'Z')
             || '$' == firstByte
-           //TODO: add test for _
+            || '_' == firstByte
       );
    }
 
