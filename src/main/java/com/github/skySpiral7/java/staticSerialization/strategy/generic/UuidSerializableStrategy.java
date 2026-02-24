@@ -31,13 +31,13 @@ public class UuidSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> expectedClass, final HeaderInformation.CompressionScenario compressionScenario)
+   public <T> T readData(final Class<T> expectedClass)
    {
       //TODO: could have more specific "no data" error
       final long[] compressed = {
               //compressionScenario is always null
-         boxPrimitiveSerializableStrategy.readData(Long.class, compressionScenario),
-         boxPrimitiveSerializableStrategy.readData(Long.class, compressionScenario)
+         boxPrimitiveSerializableStrategy.readData(Long.class),
+         boxPrimitiveSerializableStrategy.readData(Long.class)
       };
       return cast(decompress(compressed));
    }

@@ -74,7 +74,7 @@ public class JavaSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
+   public <T> T readData(final Class<T> actualClass)
    {
       final int length = integerSerializableStrategy.read("Missing java.io.Serializable size");
       final byte[] objectData = StreamCorruptedException.throwIfNotEnoughData(reader, length, "Missing java.io.Serializable data");

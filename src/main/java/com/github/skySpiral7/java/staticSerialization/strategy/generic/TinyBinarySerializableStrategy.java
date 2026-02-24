@@ -80,7 +80,7 @@ public class TinyBinarySerializableStrategy implements HeaderStrategy, DataStrat
    }
 
    @Override
-   public <T> T readData(final Class<T> expectedClass, final HeaderInformation.CompressionScenario compressionScenario)
+   public <T> T readData(final Class<T> expectedClass)
    {
       final byte byteLength = StreamCorruptedException.throwIfNotEnoughData(reader, 1, "Missing array length")[0];
       final int binaryLength = 0xFF & byteLength;

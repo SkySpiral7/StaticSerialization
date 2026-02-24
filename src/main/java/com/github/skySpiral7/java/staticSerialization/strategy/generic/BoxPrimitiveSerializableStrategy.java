@@ -174,7 +174,7 @@ public class BoxPrimitiveSerializableStrategy implements HeaderStrategy, DataStr
    }
 
    @Override
-   public <T> T readData(final Class<T> expectedClass, final HeaderInformation.CompressionScenario compressionScenario)
+   public <T> T readData(final Class<T> expectedClass)
    {
       if (Byte.class.equals(expectedClass))
       {

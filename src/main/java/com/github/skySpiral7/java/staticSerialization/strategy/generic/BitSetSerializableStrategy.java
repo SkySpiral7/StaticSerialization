@@ -38,13 +38,13 @@ public class BitSetSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
+   public <T> T readData(final Class<T> actualClass)
    {
       final int byteLength = integerSerializableStrategy.read("Missing array length");
       final byte[] byteArray = new byte[byteLength];
       for (int readIndex = 0; readIndex < byteLength; ++readIndex)
       {
-         byteArray[readIndex] = boxPrimitiveSerializableStrategy.readData(Byte.class, null);
+         byteArray[readIndex] = boxPrimitiveSerializableStrategy.readData(Byte.class);
       }
       return cast(decompress(byteArray));
    }

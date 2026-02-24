@@ -44,7 +44,7 @@ public class StaticSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> expectedClass, final HeaderInformation.CompressionScenario compressionScenario)
+   public <T> T readData(final Class<T> expectedClass)
    {
       if (!Modifier.isPublic(expectedClass.getModifiers()))
       {

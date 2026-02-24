@@ -49,11 +49,11 @@ class UuidSerializableStrategy_UT
 
       new Expectations()
       {{
-         mockBoxPrimitiveSerializableStrategy.readData(Long.class, null);
+         mockBoxPrimitiveSerializableStrategy.readData(Long.class);
          returns(0xc14661197b9c40b0L, 0x8129caca6d2b15f1L);
       }};
 
-      final Object actual = testObject.readData(null, null);
+      final Object actual = testObject.readData(null);
 
       assertEquals(expected, actual);
       new FullVerifications() {};

@@ -52,7 +52,7 @@ class TinyBinarySerializableStrategy_UT
       final TinyBinarySerializableStrategy testObject = new TinyBinarySerializableStrategy(null, byteReader);
       final byte[] expected = {0, 1};
 
-      final Object actual = testObject.readData(null, null);
+      final Object actual = testObject.readData(null);
 
       assertThat(actual, is(expected));
    }
@@ -64,7 +64,7 @@ class TinyBinarySerializableStrategy_UT
       final TinyBinarySerializableStrategy testObject = new TinyBinarySerializableStrategy(null, byteReader);
 
       try {
-         testObject.readData(null, null);
+         testObject.readData(null);
          fail("Should throw");
       } catch (StreamCorruptedException actual) {
          assertEquals("Missing array length", actual.getMessage());
@@ -78,7 +78,7 @@ class TinyBinarySerializableStrategy_UT
       final TinyBinarySerializableStrategy testObject = new TinyBinarySerializableStrategy(null, byteReader);
 
       try {
-         testObject.readData(null, null);
+         testObject.readData(null);
          fail("Should throw");
       } catch (StreamCorruptedException actual) {
          assertEquals("Not enough binary", actual.getMessage());

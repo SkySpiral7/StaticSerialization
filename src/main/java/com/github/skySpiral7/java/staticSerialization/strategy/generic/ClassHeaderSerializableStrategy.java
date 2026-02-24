@@ -49,7 +49,7 @@ public class ClassHeaderSerializableStrategy implements HeaderStrategy
                                           final boolean allowChildClass)
    {
       //firstByte is part of a class name
-      final String className = "" + ((char) partialHeader.firstByte()) + stringSerializableStrategy.readData(null, null);
+      final String className = "" + ((char) partialHeader.firstByte()) + stringSerializableStrategy.readData(null);
       final HeaderInformation<?> headerInformation = HeaderInformation.forPossibleArray(className, partialHeader.dimensionCount(),
          partialHeader.primitiveArray());
       readerValidationStrategy.getClassFromHeader(headerInformation, expectedClass, allowChildClass);

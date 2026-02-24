@@ -8,6 +8,5 @@ public interface DataStrategy
 
    public void writeData(final Object data);
 
-   //TODO: remove unused compressionScenario
-   public <T> T readData(final Class<T> actualClass, final HeaderInformation.CompressionScenario compressionScenario);
+   public <T> T readData(final Class<T> actualClass);
 }

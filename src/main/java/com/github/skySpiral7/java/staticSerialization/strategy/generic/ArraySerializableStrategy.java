@@ -182,7 +182,7 @@ public class ArraySerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
+   public <T> T readData(final Class<T> actualClass)
    {
       final Class<?> componentType = actualClass.getComponentType();
       final int arrayLength = integerSerializableStrategy.read("Missing array length");

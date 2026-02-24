@@ -249,6 +249,6 @@ public class AllSerializableStrategy
          .filter(strategy -> strategy.supportsData(actualClass, compressionScenario))
          .findFirst()
          .orElseThrow(() -> new NotSerializableException(actualClass))
-         .readData(actualClass, compressionScenario);
+         .readData(actualClass);
    }
 }

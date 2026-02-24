@@ -91,7 +91,7 @@ public class StringSerializableStrategy implements HeaderStrategy, DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> actualClass, final HeaderInformation.CompressionScenario compressionScenario)
+   public <T> T readData(final Class<T> actualClass)
    {
       final ByteArrayOutputStream classNameStream = new ByteArrayOutputStream();
       byte[] remaining = StreamCorruptedException.throwIfNotByteTerminated(reader, TERMINATOR, "String data not " +

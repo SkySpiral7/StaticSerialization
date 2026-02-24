@@ -29,7 +29,7 @@ public class EnumSerializableStrategy implements DataStrategy
    }
 
    @Override
-   public <T> T readData(final Class<T> expectedClass, final HeaderInformation.CompressionScenario compressionScenario)
+   public <T> T readData(final Class<T> expectedClass)
    {
       final int ordinal = integerSerializableStrategy.read("Missing enum ordinal");
       if (ordinal < 0) throw new StreamCorruptedException("Invalid enum ordinal. Actual: " + ordinal);
