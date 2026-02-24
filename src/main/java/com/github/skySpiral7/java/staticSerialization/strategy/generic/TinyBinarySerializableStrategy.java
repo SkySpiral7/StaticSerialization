@@ -12,7 +12,6 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 /**
  * @see HeaderInformation.CompressionScenario#TINY_BINARY
  */
-//TODO: write e2e tests
 public class TinyBinarySerializableStrategy implements HeaderStrategy, DataStrategy
 {
    private final ReaderValidationStrategy readerValidationStrategy;
