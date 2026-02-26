@@ -4,7 +4,22 @@ import com.github.skySpiral7.java.staticSerialization.exception.NotSerializableE
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.HeaderInformation;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectWriterRegistry;
-import com.github.skySpiral7.java.staticSerialization.strategy.generic.*;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.ArraySerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.BitSetSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.BooleanArraySerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.BoxPrimitiveSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.ClassHeaderSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.DataStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.EnumSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.HeaderStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.IdSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.InheritSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.JavaSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.NullSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StaticSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.StringSerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.TinyBinarySerializableStrategy;
+import com.github.skySpiral7.java.staticSerialization.strategy.generic.UuidSerializableStrategy;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
 import com.github.skySpiral7.java.staticSerialization.util.ArrayUtil;
 import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
@@ -224,11 +239,7 @@ public class AllSerializableStrategy
        */
       public boolean writeHeader(final HeaderStrategy headerStrategy, final Class<?> inheritFromClass, final Object data)
       {
-         //TODO: Long should also get id
-      if (data != null && writerRegistry.getId(data) == null && !classUtil.isPrimitiveOrBox(data.getClass()))
-         //null, primitive, and box don't get registered
-         writerRegistry.registerObject(data);
-
+      writerRegistry.registerObject(data);
       return headerStrategy.writeHeader(inheritFromClass, data);
    }
 

@@ -2,23 +2,24 @@ package com.github.skySpiral7.java.staticSerialization;
 
 import com.github.skySpiral7.java.staticSerialization.exception.StreamCorruptedException;
 import com.github.skySpiral7.java.staticSerialization.internal.ObjectReaderRegistry;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class ObjectReaderRegistry_UT
+public class ObjectReaderRegistryTest
 {
    private ObjectReaderRegistry testObject;
+   private final ClassUtil classUtil = new ClassUtil();
 
    @BeforeEach
    public void setUp()
    {
-      testObject = new ObjectReaderRegistry();
+      testObject = new ObjectReaderRegistry(classUtil);
    }
 
    @Test
@@ -31,37 +32,65 @@ public class ObjectReaderRegistry_UT
    public void isRegistered_returnsTrue_givenRegisteredObject()
    {
       final Object data = new Object();
-      testObject.reserveIdForLater();
+      testObject.reserveIdForLater(Object.class);
       testObject.registerObject(data);
       assertTrue(testObject.isRegistered(data));
    }
 
    @Test
-   public void isRegistered_throwsNpe_givenNull()
+   public void isRegistered_returnsFalse_givenNull()
    {
-      assertThrows(NullPointerException.class, () -> testObject.isRegistered(null));
+      assertFalse(testObject.isRegistered(null));
    }
 
    @Test
    public void registerObject()
    {
       final Object data = new Object();
-      testObject.reserveIdForLater();
+      testObject.reserveIdForLater(Object.class);
       testObject.registerObject(data);
       assertTrue(testObject.isRegistered(data));
    }
 
    @Test
-   public void registerObject_throwsNpe_givenNull()
+   public void registerObject_doesNothing_givenNull()
    {
-      assertThrows(NullPointerException.class, () -> testObject.registerObject(null));
+      testObject.registerObject(null);
+      assertFalse(testObject.isRegistered(null));
+   }
+
+   @Test
+   public void reserveIdForLater_doesNothing_givenSmallPrimitive()
+   {
+      final Object data = 5;
+      testObject.reserveIdForLater(Integer.class);
+      testObject.registerObject(data);
+      assertFalse(testObject.isRegistered(data));
+   }
+
+   @Test
+   public void reserveIdForLater_reserves_givenLong()
+   {
+      final Object data = 5L;
+      testObject.reserveIdForLater(Long.class);
+      testObject.registerObject(data);
+      assertEquals(data, testObject.getRegisteredObject(0));
+   }
+
+   @Test
+   public void reserveIdForLater_reserves_givenDouble()
+   {
+      final Object data = 5d;
+      testObject.reserveIdForLater(Double.class);
+      testObject.registerObject(data);
+      assertEquals(data, testObject.getRegisteredObject(0));
    }
 
    @Test
    public void registerObject_doesNothing_givenRegisteredObject()
    {
       final Object data = new Object();
-      testObject.reserveIdForLater();
+      testObject.reserveIdForLater(Object.class);
       testObject.registerObject(data);
       testObject.registerObject(data);
    }
@@ -71,8 +100,8 @@ public class ObjectReaderRegistry_UT
    {
       final Object data0 = "0";
       final Object data1 = "1";
-      testObject.reserveIdForLater();
-      testObject.reserveIdForLater();
+      testObject.reserveIdForLater(Object.class);
+      testObject.reserveIdForLater(Object.class);
       testObject.registerObject(data1);
       testObject.registerObject(data0);
       assertEquals(data0, testObject.getRegisteredObject(0));
@@ -102,7 +131,7 @@ public class ObjectReaderRegistry_UT
    public void getRegisteredObject()
    {
       final Object data = new Object();
-      testObject.reserveIdForLater();
+      testObject.reserveIdForLater(Object.class);
       testObject.registerObject(data);
       assertEquals(data, testObject.getRegisteredObject(0));
    }
@@ -125,7 +154,7 @@ public class ObjectReaderRegistry_UT
    public void getRegisteredObject_throws_whenIdNotFound()
    {
       final Object data = new Object();
-      testObject.reserveIdForLater();
+      testObject.reserveIdForLater(Object.class);
       testObject.registerObject(data);
       try
       {

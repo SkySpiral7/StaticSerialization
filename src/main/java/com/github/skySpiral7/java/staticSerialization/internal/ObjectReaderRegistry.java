@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class ObjectReaderRegistry
 {
@@ -20,22 +19,30 @@ public class ObjectReaderRegistry
     * Not redundant with {@link #registry} because this needs to be identity based.
     */
    private final Map<Object, Integer> uniqueness = new IdentityHashMap<>();
+   private final ClassUtil classUtil;
 
-   public void reserveIdForLater()
+   public ObjectReaderRegistry(ClassUtil classUtil) {
+        this.classUtil = classUtil;
+    }
+
+   public void reserveIdForLater(final Class<?> actualClass)
    {
-      registry.add(null);
-      LOG.debug(registry.size() - 1);
+      if (classUtil.isPrimitiveOrBox(actualClass) && !Long.class.isAssignableFrom(actualClass) && !Double.class.isAssignableFrom(actualClass))
+         LOG.info("Will not register type "+actualClass+". Ignoring.");
+      else {
+         registry.add(null);
+         LOG.debug("Reserving "+(registry.size() - 1));
+      }
    }
 
    public boolean isRegistered(final Object instance)
    {
-      Objects.requireNonNull(instance);
+      if(instance==null) return false;
       return uniqueness.containsKey(instance);
    }
 
    public void registerObject(final Object instance)
    {
-      Objects.requireNonNull(instance);
       /*
       reserveIdForLater is always called first since entry point is ObjectStreamReader.readObject.
       These are all cases where registerObject is called outside of InternalStreamReader.readObjectInternal:
@@ -44,10 +51,14 @@ public class ObjectReaderRegistry
       3) ArraySerializableStrategy.read
       4) GraphCallsRegister.Node.readFromStream
 
-      Therefore, this will not be logged if using the library correctly however it isn't a warn since there's no harm.
+      Therefore, "Already registered" will not be logged if using the library correctly however it isn't a warn since there's no harm.
       */
-      if (uniqueness.containsKey(instance))
+      if (instance == null)
+         LOG.info("Will not register null. Ignoring.");
+      else if(uniqueness.containsKey(instance))
          LOG.info("Already registered with id " + uniqueness.get(instance) + ": " + instance + " " + instance.getClass().getSimpleName());
+      else if(classUtil.isPrimitiveOrBox(instance.getClass()) && !(instance instanceof Long) && !(instance instanceof Double))
+         LOG.info("Will not register type "+instance.getClass()+". Ignoring.");
       else
       {
          //last index in order to make list LIFO

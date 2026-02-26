@@ -20,7 +20,6 @@ import static com.github.skySpiral7.java.staticSerialization.util.ClassUtil.cast
 public class InternalStreamReader implements Closeable
 {
    private static final Logger LOG = LogManager.getLogger();
-   private final ObjectStreamReader streamReader;
    private final EasyReader reader;
    private final ObjectReaderRegistry registry;
    private final ClassUtil classUtil;
@@ -35,15 +34,10 @@ public class InternalStreamReader implements Closeable
 
    public InternalStreamReader(final ObjectStreamReader streamReader, final EasyReader reader)
    {
-      this(streamReader, reader, new ObjectReaderRegistry(), new UtilInstances());
-   }
-
-   private InternalStreamReader(final ObjectStreamReader streamReader, final EasyReader reader, final ObjectReaderRegistry registry,
-                                final UtilInstances utilInstances)
-   {
+      final UtilInstances utilInstances=new UtilInstances();
+      final ObjectReaderRegistry registry=new ObjectReaderRegistry(utilInstances.getClassUtil());
       final StrategyInstances strategyInstances = new StrategyInstances(streamReader, this,
          reader, registry, utilInstances);
-      this.streamReader = streamReader;
       this.reader = reader;
       this.registry = registry;
       this.classUtil = utilInstances.getClassUtil();
@@ -79,16 +73,11 @@ public class InternalStreamReader implements Closeable
 
       //TODO: are these validations already done?
       final Class<T_Actual> actualClass = cast(readHeaderClass(headerInformation, expectedClass, allowChildClass));
-      if (!classUtil.isPrimitiveOrBox(actualClass))
-      {
-         registry.reserveIdForLater();
-      }
+      registry.reserveIdForLater(actualClass);
       final T_Actual returnValue = allSerializableStrategy.readData(actualClass, headerInformation.getCompressionScenario());
       //null, boolean, and id don't reach here
       if (null == returnValue) return null;  //only possible for null Boolean or Java Serial. TODO: can array?
-      //TODO: make util for should register since long should
-      if (!classUtil.isPrimitiveOrBox(returnValue.getClass()) && !streamReader.isRegistered(returnValue))
-         streamReader.registerObject(returnValue);
+      registry.registerObject(returnValue);
       return returnValue;
    }
 

@@ -26,13 +26,8 @@ public class InternalStreamWriter implements Closeable, Flushable
 
    public InternalStreamWriter(final ObjectStreamWriter streamWriter, final EasyAppender appender)
    {
-      this(streamWriter, appender, new ObjectWriterRegistry(), new UtilInstances());
-   }
-
-   public InternalStreamWriter(final ObjectStreamWriter streamWriter, final EasyAppender appender,
-                               final ObjectWriterRegistry registry,
-                               final UtilInstances utilInstances)
-   {
+      final UtilInstances utilInstances=new UtilInstances();
+      final ObjectWriterRegistry registry=new ObjectWriterRegistry(utilInstances.getClassUtil());
       final StrategyInstances strategyInstances = new StrategyInstances(streamWriter, this, appender, registry,
          utilInstances);
       this.appender = appender;

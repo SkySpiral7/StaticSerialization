@@ -13,6 +13,7 @@ import com.github.skySpiral7.java.staticSerialization.stream.ByteAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.ByteReader;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyAppender;
 import com.github.skySpiral7.java.staticSerialization.stream.EasyReader;
+import com.github.skySpiral7.java.staticSerialization.util.ClassUtil;
 import com.github.skySpiral7.java.staticSerialization.util.UtilInstances;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +29,7 @@ class AllSerializableStrategyTest
 {
    //TODO: organize tests. make almost everything an IT but named as UT
    private AllSerializableStrategy testObject;
+   private ClassUtil classUtil = new ClassUtil();
 
    @Test
    public void readHeader_primitiveArrayElementsHaveNoHeader()
@@ -435,8 +437,8 @@ class AllSerializableStrategyTest
    @Test
    public void readHeader_throws_whenIdMissing()
    {
-      ObjectReaderRegistry registry = new ObjectReaderRegistry();
-      registry.reserveIdForLater();
+      ObjectReaderRegistry registry = new ObjectReaderRegistry(classUtil);
+      registry.reserveIdForLater(Object.class);
       registry.registerObject("hi");
 
       final EasyReader reader = new ByteReader(new byte[]{'&'});
@@ -458,8 +460,8 @@ class AllSerializableStrategyTest
    @Test
    public void readHeader_throws_whenNoMatchingId()
    {
-      ObjectReaderRegistry registry = new ObjectReaderRegistry();
-      registry.reserveIdForLater();
+      ObjectReaderRegistry registry = new ObjectReaderRegistry(classUtil);
+      registry.reserveIdForLater(Object.class);
 
       final EasyReader reader = new ByteReader(new byte[]{'&', 0, 0, 0, 0});
       init(reader, registry);
@@ -480,8 +482,8 @@ class AllSerializableStrategyTest
    @Test
    public void readHeader_returns_givenId()
    {
-      ObjectReaderRegistry registry = new ObjectReaderRegistry();
-      registry.reserveIdForLater();
+      ObjectReaderRegistry registry = new ObjectReaderRegistry(classUtil);
+      registry.reserveIdForLater(Object.class);
       String objectValue = "hi";
       registry.registerObject(objectValue);
 
